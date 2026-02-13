@@ -191,6 +191,7 @@ export default {
   'THEME': "TEMA",
   'CHOOSE THEME': "SCEGLI TEMA",
   'Name of new map theme': 'Nome del nuovo tema',
+  'Name of new spatial bookmark': 'Nome del nuovo segnalibro',
   'Project Themes': 'Temi Progetto',
   'User Themes': 'Temi Utente',
   'Do you want delete the theme?': "Vuoi cancellare il tema ?",

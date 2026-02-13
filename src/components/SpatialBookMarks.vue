@@ -6,148 +6,138 @@
 <template>
   <ul
     id     = "g3w-spatial-bookmarks"
-    class  = "treeview-menu g3w-spatial-bookmarks menu-items"
-    :class = "{'g3w-tools': !showaddform}"
+    class  = "treeview-menu g3w-spatial-bookmarks menu-items g3w-tools"
   >
 
-    <!-- ADD NEW BOOKMARK (FORM) -->
-    <li v-if = "showaddform">
-      <div style = "display: flex; justify-content: end">
-        <span
-          v-t-tooltip:left = "'close'"
-          @click.stop      = "showaddform = false"
-          :class           = "$fa('close')"
-          class            = "sidebar-button sidebar-button-icon"
-          style            = "padding: 5px; margin: 3px;"
-        ></span>
-      </div>
-      
-      <!-- HELP DIV -->
-      <div style = "color: #FFF; text-align: justify; position: relative; border-radius: 3px; margin: 5px 2px 5px 2px; white-space: pre-line; background-color: #384246 !important;">
-        <span style = "text-align: center; font-size: 0.7em; margin-top: -4px; margin-left: -4px; background-color: var(--bgcolor); font-weight: bold; color: #fff; position: absolute; top: 0; left: 0; width: 15px; height: 15px; border: 1px solid #fff; border-radius: 50%;">i</span>
-        <div v-t = "'Move on map extent, insert name and click Add'" style = "max-height: 200px; padding: 10px; overflow-y: auto;"></div>
-      </div>
-
-      <form
-        class   = "container add-bookmark-input"
-        style   = "padding: 5px; width: 100%"
-        @submit = "addBookMark"
+    <!-- BOOKMARS LIST -->
+    <li v-if = "is_staff" class = "content-bookmarks" style = "display: flex; justify-content: space-between; background: transparent; border-radius: 0;cursor: unset;">
+      <span :hidden = "is_mobile" v-t = "'Project Bookmarks'"></span>
+      <a
+        :hidden         = "is_mobile"
+        :href           = "`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`"
+        target          = "_blank"
+        data-i18n-title = "QGIS Docs"
+        data-placement  = "right"
+        style           = "padding: 5px 0;"
       >
-        <label for = "add-bokmark">{{ $t('Name') }} *</label>
-        <input id = "add-bookmark" type = "text" required class = "form-control" ref="add_bookmark_input" v-model = "addbookmarkinput" />
-        <button type = "submit" style = "margin-top: 20px;background-color: var(--skin-color);" class = "btn btn-block">{{ $t('add') }}</button>
-      </form>
-      
+        <i :class = "$fa('external-link')"></i>
+      </a>
     </li>
 
-    <!-- BOOKMARS LIST -->
-    <template v-else>
-      <li v-if = "is_staff" class = "content-bookmarks" style = "display: flex; justify-content: space-between; background: transparent; border-radius: 0;cursor: unset;">
-        <span :hidden = "is_mobile" v-t = "'Project Bookmarks'"></span>
-        <a
-          :hidden         = "is_mobile"
-          :href           = "`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`"
-          target          = "_blank"
-          data-i18n-title = "QGIS Docs"
-          data-placement  = "right"
-          style           = "padding: 5px 0;"
+    <template v-for = "bookmark in project_bookmarks">
+      <li v-if = "bookmark.nodes">
+        <div
+          style       = "font-weight: bold; width: 100%;"
+          :style      = "{ borderBottom: bookmark.expanded ? '2px solid #2c3b41' : 'none' }"
+          @click.stop = "bookmark.expanded = !bookmark.expanded"
         >
-          <i :class = "$fa('external-link')"></i>
-        </a>
-      </li>
-
-      <template v-for = "bookmark in project_bookmarks">
-        <li v-if = "bookmark.nodes">
-          <div
-            style       = "font-weight: bold; width: 100%;"
-            :style      = "{ borderBottom: bookmark.expanded ? '2px solid #2c3b41' : 'none' }"
-            @click.stop = "bookmark.expanded = !bookmark.expanded"
+          <span
+            :class = "$fa(bookmark.expanded ? 'caret-down' : 'caret-right')"
+            style  = "margin-right: 5px;">
+          </span>
+          <span>{{ bookmark.name }}</span>
+        </div>
+        <ul v-show = "bookmark.expanded" style = "margin-left: 10px;">
+          <li v-for = "node in bookmark.nodes"
+            @click.stop = "gotoSpatialBookmark(node)"
+            class       = "spatial-bookmark"
           >
-            <span
-              :class = "$fa(bookmark.expanded ? 'caret-down' : 'caret-right')"
-              style  = "margin-right: 5px;">
-            </span>
-            <span>{{ bookmark.name }}</span>
-          </div>
-          <ul v-show = "bookmark.expanded" style = "margin-left: 10px;">
-            <li v-for = "node in bookmark.nodes"
-              @click.stop = "gotoSpatialBookmark(node)"
-              class       = "spatial-bookmark"
-            >
-              <div style = "display: flex; width: 100%; align-items: baseline;">
-                <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
-                <span class  = "g3w-long-text">{{ node.name }}</span>
-                <span 
-                  @click.stop     = "shareBookmark(node)" 
-                  v-t-tooltip:top = "'Share via link'" 
-                  :class          = "$fa('share-alt')" style = "margin-left: auto; padding: 5px;"
-                  class           = "sidebar-button sidebar-button-icon">
-                </span>
-              </div>
-            </li>
-          </ul>
-        </li>
-        <li v-else
-          @click.stop = "gotoSpatialBookmark(bookmark)"
-          class       = "spatial-bookmark"
-        >
-          <div style = "display: flex; width: 100%; align-items: baseline;">
-            <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
-            <span class  = "g3w-long-text">{{ bookmark.name }}</span>
-            <span 
-              @click.stop     = "shareBookmark(bookmark)" 
-              v-t-tooltip:top = "'Share via link'" 
-              :class          = "$fa('share-alt')" style = "margin-left: auto; padding: 5px;"
-              class           = "sidebar-button sidebar-button-icon">
-            </span>
-          </div>
-        </li>
-      </template>
-
-      <li
-        class = "content-bookmarks"
-        style = "display: flex; justify-content: space-between; align-items: center; margin-top: 10px;background: transparent; border-radius: 0;cursor: unset;"
-      >
-        <span :hidden = "is_mobile" v-t = "'User Bookmarks'"></span>
-        <span
-          :hidden          = "is_mobile"
-          v-t-tooltip:left = "'add'"
-          @click.stop      = "showAddForm"
-          style            = "padding: 5px; font-size: 1.2em; cursor: pointer;"
-          class            = "sidebar-button sidebar-button-icon"
-          :class           = "$fa('plus-square')"
-        ></span>
+            <div style = "display: flex; width: 100%; align-items: baseline;">
+              <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
+              <span class  = "g3w-long-text">{{ node.name }}</span>
+              <span 
+                @click.stop     = "shareBookmark(node)" 
+                v-t-tooltip:top = "'Share via link'" 
+                :class          = "$fa('share-alt')" style = "margin-left: auto; padding: 5px;"
+                class           = "sidebar-button sidebar-button-icon">
+              </span>
+            </div>
+          </li>
+        </ul>
       </li>
-
-      <li
-        v-for       = "bookmark in user_bookmarks"
+      <li v-else
         @click.stop = "gotoSpatialBookmark(bookmark)"
         class       = "spatial-bookmark"
       >
-        <div>
+        <div style = "display: flex; width: 100%; align-items: baseline;">
           <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
-          <span class = "g3w-long-text">{{ bookmark.name }}</span>
-          
-        </div>
-        <div style = "cursor: pointer">
+          <span class  = "g3w-long-text">{{ bookmark.name }}</span>
           <span 
-            @click.stop     = "shareBookmark(bookmark)"     
+            @click.stop     = "shareBookmark(bookmark)" 
             v-t-tooltip:top = "'Share via link'" 
-            :class          = "$fa('share-alt')" 
-            class           = "sidebar-button sidebar-button-icon" 
-            style           = "margin-right: 5px; padding: 5px;">
+            :class          = "$fa('share-alt')" style = "margin-left: auto; padding: 5px;"
+            class           = "sidebar-button sidebar-button-icon">
           </span>
-
-          <span 
-            @click.stop     = "removeBookMark(bookmark.id)" 
-            v-t-tooltip:top = "'Delete'" 
-            :class          = "$fa('trash')" 
-            class           = "sidebar-button sidebar-button-icon" 
-            style           = "color: red; padding: 5px;">
-          </span>
-      </div>
+        </div>
       </li>
     </template>
+
+    <li
+      class = "content-bookmarks"
+      style = "display: flex; justify-content: space-between; align-items: center; margin-top: 10px;background: transparent; border-radius: 0;cursor: unset;"
+    >
+      <span :hidden = "is_mobile" v-t = "'User Bookmarks'"></span>
+      <span
+        :hidden          = "is_mobile"
+        v-t-tooltip:left = "'add'"
+        @click.stop      = "showAddForm"
+        style            = "padding: 5px; font-size: 1.2em; cursor: pointer;"
+        class            = "sidebar-button sidebar-button-icon"
+        :class           = "$fa('plus-square')"
+      ></span>
+      <!-- ADD NEW BOOKMARK (FORM) -->
+      <dialog ref = "add_bookmark" @beforetoggle = "onBeforetoggle">
+        <div style = "display: flex; justify-content: end">
+          <span
+            v-t-tooltip:left = "'close'"
+            @click.stop      = "showaddform = false"
+            :class           = "$fa('close')"
+            class            = "sidebar-button sidebar-button-icon"
+            style            = "padding: 5px; margin: 3px;"
+          ></span>
+        </div>
+
+        <form
+          class           = "container add-bookmark-input"
+          style           = "padding: 5px; width: 100%"
+          @submit.prevent = "addBookMark"
+        >
+          <label for = "add-bokmark">{{ $t('Name of new spatial bookmark') }} *</label>
+          <input id = "add-bookmark" type = "text" required class = "form-control" ref="add_bookmark_input" v-model = "addbookmarkinput" />
+          <button type = "type" style = "margin-top: 20px;background-color: var(--skin-color);" class = "btn btn-block">{{ $t('add') }}</button>
+        </form>
+        
+      </dialog>
+    </li>
+
+    <li
+      v-for       = "bookmark in user_bookmarks"
+      @click.stop = "gotoSpatialBookmark(bookmark)"
+      class       = "spatial-bookmark"
+    >
+      <div>
+        <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
+        <span class = "g3w-long-text">{{ bookmark.name }}</span>
+        
+      </div>
+      <div style = "cursor: pointer">
+        <span 
+          @click.stop     = "shareBookmark(bookmark)"     
+          v-t-tooltip:top = "'Share via link'" 
+          :class          = "$fa('share-alt')" 
+          class           = "sidebar-button sidebar-button-icon" 
+          style           = "margin-right: 5px; padding: 5px;">
+        </span>
+
+        <span 
+          @click.stop     = "removeBookMark(bookmark.id)" 
+          v-t-tooltip:top = "'Delete'" 
+          :class          = "$fa('trash')" 
+          class           = "sidebar-button sidebar-button-icon" 
+          style           = "color: red; padding: 5px;">
+        </span>
+      </div>
+    </li>
 
   </ul>
 </template>
@@ -219,6 +209,17 @@
 
     },
 
+    watch: {
+      async showaddform(bool) {
+        // remove all "col-sm-12" classes so input is adapted to 100% width
+        if (bool) {
+          this.$refs.add_bookmark.showModal();
+        } else {
+          this.$refs.add_bookmark.close();
+        }
+      },
+    },
+
     methods: {
 
       /**
@@ -270,6 +271,15 @@
         }
         // make use of `force: true` parameter to get resolution from computed `extent`
         await GUI.zoomToExtent(extent, { force: true });
+      },
+
+      /**
+       * @since 4.1.0
+       */
+      onBeforetoggle(e) {
+        if ('closed' === e.newState) {
+          this.showaddform = false;
+        }
       },
 
     },
