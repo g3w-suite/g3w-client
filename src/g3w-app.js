@@ -668,7 +668,6 @@ export default new (class GUI extends Emitter {
       icon:               g3w.app.getFontClass('map'),
       iconColor:          '#019A4C',
       title:              'catalog',
-      resizable:          true,
       vueComponentObject: require('components/Catalog.vue').default,
     }));
 
