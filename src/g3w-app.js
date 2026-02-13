@@ -475,7 +475,7 @@ export default new (class GUI extends Emitter {
       sidebarItem.$on('hook:mounted', () => {
         const sidebar = document.getElementById('g3w-sidebarcomponents');
         if ([null, undefined].includes(options?.position) || options?.position < 0 || options?.position >= sidebar.children.length) {
-          sidebar.querySelector('#catalog').insertAdjacentElement('beforebegin', sidebarItem.$el);
+          sidebar.querySelector('#themes').insertAdjacentElement('beforebegin', sidebarItem.$el);
         } else {
           Array.from(sidebar.children).forEach((child, i) => {
             if (i === options?.position || child.id === options?.position) {

@@ -293,7 +293,17 @@
           </a>
         </li>
 
-        <li id="catalog" class="treeview sidebaritem">
+        <!-- THEME SELECTOR -->
+        <li id = "themes" class = "treeview sidebaritem" v-show="ApplicationState.sidebar.open" style = "padding: 0 3px; ">
+          <catalog-themes
+            v-if              = "ApplicationState.catalog.layerstrees.length"
+            :map_themes       = "ApplicationState.project.state.map_themes"
+            :layerstrees      = "ApplicationState.catalog.layerstrees"
+            @change-map-theme = "changeMapTheme"
+          />
+        </li>
+
+        <li id="catalog" class="treeview sidebaritem" style = "padding: 0 3px;">
           <a
             href             = "#"
             @click.prevent   = "showSidebar"
@@ -304,128 +314,115 @@
             <i aria-hidden="true" class="far fa-map" style="color: rgb(1, 154, 76);"></i>
             <span class="treeview-label"> {{ $t('Layers') }}</span>
           </a>
-          <!-- THEME SELECTOR -->
-          <div
-            id    = "g3w-catalog-toc-layers-toolbar"
-            style = "padding: 0 3px; "
-          >
-            <catalog-themes
-              v-if              = "ApplicationState.catalog.layerstrees.length"
-              :map_themes       = "ApplicationState.project.state.map_themes"
-              :layerstrees      = "ApplicationState.catalog.layerstrees"
-              @change-map-theme = "changeMapTheme"
-            />
-          </div>
 
           <!-- LAYER TREES -->
-          <div
-            id     = "layers"
-            style  = "padding: 0 3px; padding-top: 5px;"
+          <ul
+            v-for = "root in ApplicationState.catalog.layerstrees"
+            :key  = "root.storeid"
+            class = "tree-root root project-root"
+            style = "padding-top: 5px;"
           >
+            <catalog-tree
+              v-for                      = "tree in root.tree"
+              :key                       = "tree.id"
+              :layerstree                = "tree"
+              class                      = "item"
+              :parentFolder              = "false"
+              :root                      = "true"
+              :legendplace               = "ApplicationState.project.state.legend_position || 'tab'"
+              :parent_mutually_exclusive = "false"
+              :storeid                   = "root.storeid"
+            />
+          </ul>
 
-            <ul
-              v-for = "root in ApplicationState.catalog.layerstrees"
-              :key  = "root.storeid"
-              class = "tree-root root project-root"
-            >
-              <catalog-tree
-                v-for                      = "tree in root.tree"
-                :key                       = "tree.id"
-                :layerstree                = "tree"
-                class                      = "item"
-                :parentFolder              = "false"
-                :root                      = "true"
-                :legendplace               = "ApplicationState.project.state.legend_position || 'tab'"
-                :parent_mutually_exclusive = "false"
-                :storeid                   = "root.storeid"
-              />
-            </ul>
-
-            <!-- EXTERNAL LAYERS -->
-            <ul v-if = "ApplicationState.catalog.external.wms.length || ApplicationState.catalog.external.tms.length || ApplicationState.catalog.external.vector.length" class = "g3w-external_layers-group">
-              <li>
-                <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
-                  <span
-                    style       = "padding-right: 2px; padding-left: 4px; width: 20px; font-size: 1.1em; cursor: pointer;"
-                    :class      = "$fa(externalayers.collapsed ? 'caret-right' : 'caret-down')"
-                    @click.stop = "expandCollapseExternaLayers"
-                    class       = "collapse-expande-collapse-icon bold"
-                  ></span>
-                  <span
-                    @click.stop = "toggleExternalLayers"
-                    style       = "padding-right: 5px; cursor: pointer;"
-                    :class      = "$fa(externalayers.checked ? 'check': 'uncheck')"
-                  ></span>
-                  <span style = "font-weight: bold" v-t = "'EXTERNAL LAYERS'"></span>
-                  <span 
-                    style       = "color: red; padding-right: 3px; margin-left: auto; margin-right: 8px; cursor: pointer;"
-                    :class      = "$fa('trash')"
-                    @click.stop = "removeExternalLayers"
-                  ></span>
-                </div>
-              </li>
-              <catalog-tree
-                v-show          = "!externalayers.collapsed"
-                v-for           = "wms in ApplicationState.catalog.external.wms"
-                :key            = "wms.id"
-                :externallayers = "ApplicationState.catalog.external.wms"
-                :layerstree     = "wms"
-                @layerchecked   = "updateExternalLayersChecked"
-                class           = "item"
-              />
-              <!-- @since 4.1.0 add tms layers -->
-              <catalog-tree
-                v-show          = "!externalayers.collapsed"
-                v-for           = "tms in ApplicationState.catalog.external.tms"
-                :key            = "tms.id"
-                :externallayers = "ApplicationState.catalog.external.tms"
-                :layerstree     = "tms"
-                @layerchecked   = "updateExternalLayersChecked"
-                class           = "item"
-              />
-              <catalog-tree
-                v-show          = "!externalayers.collapsed"
-                v-for           = "vector in ApplicationState.catalog.external.vector"
-                :key            = "vector.id"
-                :externallayers = "ApplicationState.catalog.external.vector"
-                @layerchecked   = "updateExternalLayersChecked"
-                :layerstree     = "vector"
-                class           = "item"
-              />
-            </ul>
-
-          </div>
-
-          <div
-            v-if = "has_related_maps"
-            style  = "
-              position: sticky;
-              bottom: 0;
-              background-color: var(--bgcolor);
-              display: flex;
-              text-align: center;
-              line-height: 48px;
-              color: #fff;
-              border-top: 2px solid var(--skin-color);
-              margin-top: 12px;
-              justify-content: space-around;
-            "
+          <!-- EXTERNAL LAYERS -->
+          <ul
+            v-if  = "ApplicationState.catalog.external.wms.length || ApplicationState.catalog.external.tms.length || ApplicationState.catalog.external.vector.length"
+            class = "g3w-external_layers-group"
           >
-            <a
-              href        = "#"
-              @click.stop = "showaddLayerModal"
-            >
-              <i :class = "$fa('layers')"></i> <b>{{ $t('Add Layer') }}</b>
-            </a>
-            <a
-              v-if           = "has_related_maps && !ApplicationState.iframe"
-              href           = "#"
-              @click.stop = "openChangeMapMenu"
-            >
-              <i :class = "$fa('refresh')"></i> <b>{{ $t('changemap') }}</b>
-            </a>
-          </div>
+            <li>
+              <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
+                <span
+                  style       = "padding-right: 2px; padding-left: 4px; width: 20px; font-size: 1.1em; cursor: pointer;"
+                  :class      = "$fa(externalayers.collapsed ? 'caret-right' : 'caret-down')"
+                  @click.stop = "expandCollapseExternaLayers"
+                  class       = "collapse-expande-collapse-icon bold"
+                ></span>
+                <span
+                  @click.stop = "toggleExternalLayers"
+                  style       = "padding-right: 5px; cursor: pointer;"
+                  :class      = "$fa(externalayers.checked ? 'check': 'uncheck')"
+                ></span>
+                <span style = "font-weight: bold" v-t = "'EXTERNAL LAYERS'"></span>
+                <span 
+                  style       = "color: red; padding-right: 3px; margin-left: auto; margin-right: 8px; cursor: pointer;"
+                  :class      = "$fa('trash')"
+                  @click.stop = "removeExternalLayers"
+                ></span>
+              </div>
+            </li>
+            <catalog-tree
+              v-show          = "!externalayers.collapsed"
+              v-for           = "wms in ApplicationState.catalog.external.wms"
+              :key            = "wms.id"
+              :externallayers = "ApplicationState.catalog.external.wms"
+              :layerstree     = "wms"
+              @layerchecked   = "updateExternalLayersChecked"
+              class           = "item"
+            />
+            <!-- @since 4.1.0 add tms layers -->
+            <catalog-tree
+              v-show          = "!externalayers.collapsed"
+              v-for           = "tms in ApplicationState.catalog.external.tms"
+              :key            = "tms.id"
+              :externallayers = "ApplicationState.catalog.external.tms"
+              :layerstree     = "tms"
+              @layerchecked   = "updateExternalLayersChecked"
+              class           = "item"
+            />
+            <catalog-tree
+              v-show          = "!externalayers.collapsed"
+              v-for           = "vector in ApplicationState.catalog.external.vector"
+              :key            = "vector.id"
+              :externallayers = "ApplicationState.catalog.external.vector"
+              @layerchecked   = "updateExternalLayersChecked"
+              :layerstree     = "vector"
+              class           = "item"
+            />
+          </ul>
 
+        </li>
+
+        <li
+          v-if   = "has_related_maps && ApplicationState.sidebar.open"
+          class  = "sidebar-footer"
+          style  = "
+            position: sticky;
+            bottom: 0;
+            background-color: var(--bgcolor);
+            display: flex;
+            text-align: center;
+            color: #fff;
+            border-top: 2px solid var(--skin-color);
+            margin: 12px 3px 0 3px;
+            justify-content: space-around;
+          "
+        >
+          <a
+            href        = "#"
+            @click.stop = "showaddLayerModal"
+            style       = "border:none;"
+          >
+            <i :class = "$fa('layers')"></i> <b>{{ $t('Add Layer') }}</b>
+          </a>
+          <a
+            v-if        = "has_related_maps && !ApplicationState.iframe"
+            href        = "#"
+            @click.stop = "openChangeMapMenu"
+            style       = "border:none;"
+          >
+            <i :class = "$fa('refresh')"></i> <b>{{ $t('changemap') }}</b>
+          </a>
         </li>
 
       </ul>
@@ -1674,9 +1671,8 @@ export default {
   #catalog .layer-legend                                                         { padding: 3px 0 0 35px; background-color: var(--bgcolor); }
   #catalog .tree                                                                 { color: #fff; }
   #catalog .tree.disabled                                                        { color: #999; cursor: not-allowed; }
-  #catalog #layers ul.g3w-external_layers-group                                  { padding-left: 0 !important; background: var(--bgcolor); border-top: 2px solid var(--skin-color); padding-top: 12px; }
-  #catalog #layers ul.g3w-external_layers-group li                               { padding-left: 2px !important; }
-  #catalog #layers .sidebar-menu > li > a                                        { border: 0; }
+  #catalog ul.g3w-external_layers-group                                          { padding-left: 0 !important; background: var(--bgcolor); border-top: 2px solid var(--skin-color); padding-top: 12px; }
+  #catalog ul.g3w-external_layers-group li                                       { padding-left: 2px !important; }
   #catalog > a                                                                   { display: none !important; }
   #catalog .tree-item > .toggle-context-menu                                     { opacity: 0; position: absolute; inset: 0 4px auto auto; padding: 4px 8px; border: 1px solid; border-radius: 3px; }
   #catalog .tree-item > .toggle-context-menu.root                                { opacity: 1; border: none; }
