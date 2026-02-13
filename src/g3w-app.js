@@ -311,14 +311,27 @@ export default new (class GUI extends Emitter {
   });
 
   /**
+   * @TODO find out how to get rid of `GUI.getService('catalog')`
    * BACKOMP
    */
   #catalog_service = new Emitter({
     setters: {
-      addExternalLayer:    this.addExternalCatalogLayer,
-      removeExternalLayer: this.removeExternalCatalogLayer,
+      addExternalLayer({ layer, type = 'vector' } = {}) {
+        layer.removable = true;
+        ApplicationState.catalog.external[type].push(layer);
+      },
+      removeExternalLayer({ name, type='vector' } = {}) {
+        ApplicationState.catalog.external[type].filter((l, i) => {
+          if (name === l.name) {
+            ApplicationState.catalog.external[type].splice(i, 1);
+            return true;
+          }
+        });
+      },
       /** used by the following plugins: "processing" */
-      getExternalLayers: this.getExternalCatalogLayers,
+      getExternalLayers({ type = 'vector' }) {
+        return ApplicationState.catalog.external[type];
+      },
     }
   });
 
@@ -354,10 +367,6 @@ export default new (class GUI extends Emitter {
       'loadExternalLayer',
       /** @since 4.1.0 */
       'unloadExternalLayer',
-      /** @since 4.1.0 */
-      'addExternalCatalogLayer',
-      /** @since 4.1.0 */
-      'removeExternalCatalogLayer'
     ];
 
     // BACKOMP v3.x
@@ -728,37 +737,6 @@ export default new (class GUI extends Emitter {
 
     this.emit('ready');
     this.isready = true;
-  }
-
-  /**
-   * @param {{ layer: unknown, type: 'vector' }}
-   *
-   * @since 4.1.0
-   */
-  addExternalCatalogLayer({ layer, type = 'vector' } = {}) {
-    layer.removable = true;
-    ApplicationState.catalog.external[type].push(layer);
-  }
-
-  /**
-   * @param {{ name: string, type: 'vector' }}
-   *
-   * @since 4.1.0
-   */
-  removeExternalCatalogLayer({ name, type='vector' } = {}) {
-    ApplicationState.catalog.external[type].filter((l, i) => {
-      if (name === l.name) {
-        ApplicationState.catalog.external[type].splice(i, 1);
-        return true;
-      }
-    });
-  }
-
-  /**
-   * @since 4.1.0
-   */
-  getExternalCatalogLayers({ type = 'vector' }) {
-    return ApplicationState.catalog.external[type];
   }
 
   isReady() {
