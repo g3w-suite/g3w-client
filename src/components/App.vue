@@ -270,8 +270,10 @@
 
         <li id = "legend" class = "treeview sidebaritem">
           <a
-            href = "#"
-            @click.prevent = "showLegendPanel"
+            href             = "#"
+            @click.prevent   = "showLegendPanel"
+            :data-i18n-title = "ApplicationState.sidebar.open ? '' : 'legend'"
+            data-placement   = "right"
           >
             <i aria-hidden="true" class = "fas fa-list" style = "color: #fff;"></i>
             <span class = "treeview-label">{{ $t('legend') }}</span>
@@ -280,9 +282,11 @@
 
         <li id = "metadata" class = "treeview sidebaritem">
           <a
-            href           = "#"
-            data-toggle    = "modal"
-            data-target    = "#modal-metadata"
+            href             = "#"
+            data-toggle      = "modal"
+            data-target      = "#modal-metadata"
+            :data-i18n-title = "ApplicationState.sidebar.open ? '' : 'Metadata'"
+            data-placement   = "right"
           >
             <i aria-hidden="true" class = "fas fa-file-code" style = "color: #fff;"></i>
             <span class = "treeview-label">{{ $t('Metadata') }}</span>
@@ -291,9 +295,11 @@
 
         <li id="catalog" class="treeview sidebaritem">
           <a
-            href           = "#"
-            style          = "display: flex; justify-content: space-between; align-items: center;"
-            @click.prevent = "showSidebar"
+            href             = "#"
+            @click.prevent   = "showSidebar"
+            style            = "display: flex; justify-content: space-between; align-items: center;"
+            :data-i18n-title = "ApplicationState.sidebar.open ? '' : 'Layers'"
+            data-placement   = "right"
           >
             <i aria-hidden="true" class="far fa-map" style="color: rgb(1, 154, 76);"></i>
             <span class="treeview-label"> {{ $t('Layers') }}</span>
