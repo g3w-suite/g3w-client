@@ -3724,11 +3724,13 @@ export default new (class GUI extends Emitter {
           >
             <bar-loader :loading = "url.loading" />
             <img
-              v-show = "!url.loading && !url.error"
-              :src   = "url.url"
-              @error = "onLegendError(url)"
-              @load  = "onLegendLoad(url)"
-              alt    = ""
+              v-show      = "!url.loading && !url.error"
+              :src        = "url.url"
+              @error      = "onLegendError(url)"
+              @load       = "onLegendLoad(url)"
+              alt         = ""
+              @click.stop = "showModalLegendUrl(url)"
+              style       =  "width: 250px; cursor: zoom-in;"
             />
           </figure>
         </div>
@@ -3745,6 +3747,30 @@ export default new (class GUI extends Emitter {
           onLegendLoad(url) {
             url.loading = false;
           },
+          showModalLegendUrl(url) {
+            const dialog = Object.assign(document.createElement('template'), {
+              innerHTML: /* html */`
+                <dialog style = "background: #212c31; max-width: 50vw; position: fixed; top: 0; left: 0; margin: 0; transform: none;">
+                  <img
+                    src         = "${url.url}"
+                    alt         = ""
+                    style       = "display: block; width: auto; height: auto;"
+                  />
+                </dialog>
+                `.trim()
+              }).content.firstChild;
+
+            dialog.addEventListener('close', async () => dialog.remove());
+
+            // ensure positioning in case UA applies centering after showModal
+            document.body.appendChild(dialog);
+            dialog.showModal();
+            dialog.style.position  = 'fixed';
+            dialog.style.top       = '0';
+            dialog.style.left      = '0';
+            dialog.style.margin    = '0';
+            dialog.style.transform = 'none';
+          }
         },
         async mounted() {
           this.legendurls = await g3w.app.getLegendSrc({ change: true });
