@@ -12,12 +12,10 @@
     >
       <catalog-themes
         :map_themes       = "project.state.map_themes"
-        :layerstrees      = "state.layerstrees"
+        :layerstrees      = "ApplicationState.catalog.layerstrees"
         @change-map-theme = "changeMapTheme"
       />
     </div>
-
-    <bar-loader :loading = "loading" />
 
     <!-- LAYER TREES -->
     <div
@@ -26,7 +24,7 @@
     >
 
       <ul
-        v-for = "root in state.layerstrees"
+        v-for = "root in ApplicationState.catalog.layerstrees"
         :key  = "root.storeid"
         class = "tree-root root project-root"
       >
@@ -37,14 +35,14 @@
           class                      = "item"
           :parentFolder              = "false"
           :root                      = "true"
-          :legendplace               = "legend_position"
+          :legendplace               = "ApplicationState.project.state.legend_position || 'tab'"
           :parent_mutually_exclusive = "false"
           :storeid                   = "root.storeid"
         />
       </ul>
 
       <!-- EXTERNAL LAYERS -->
-      <ul v-if = "state.external.wms.length || state.external.tms.length || state.external.vector.length" class = "g3w-external_layers-group">
+      <ul v-if = "ApplicationState.catalog.external.wms.length || ApplicationState.catalog.external.tms.length || ApplicationState.catalog.external.vector.length" class = "g3w-external_layers-group">
         <li>
           <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
             <span
@@ -68,9 +66,9 @@
         </li>
         <catalog-tree
           v-show          = "!externalayers.collapsed"
-          v-for           = "wms in state.external.wms"
+          v-for           = "wms in ApplicationState.catalog.external.wms"
           :key            = "wms.id"
-          :externallayers = "state.external.wms"
+          :externallayers = "ApplicationState.catalog.external.wms"
           :layerstree     = "wms"
           @layerchecked   = "updateExternalLayersChecked"
           class           = "item"
@@ -78,18 +76,18 @@
         <!-- @since 4.1.0 add tms layers -->
         <catalog-tree
           v-show          = "!externalayers.collapsed"
-          v-for           = "tms in state.external.tms"
+          v-for           = "tms in ApplicationState.catalog.external.tms"
           :key            = "tms.id"
-          :externallayers = "state.external.tms"
+          :externallayers = "ApplicationState.catalog.external.tms"
           :layerstree     = "tms"
           @layerchecked   = "updateExternalLayersChecked"
           class           = "item"
         />
         <catalog-tree
           v-show          = "!externalayers.collapsed"
-          v-for           = "vector in state.external.vector"
+          v-for           = "vector in ApplicationState.catalog.external.vector"
           :key            = "vector.id"
-          :externallayers = "state.external.vector"
+          :externallayers = "ApplicationState.catalog.external.vector"
           @layerchecked   = "updateExternalLayersChecked"
           :layerstree     = "vector"
           class           = "item"
@@ -120,7 +118,7 @@
         <i :class = "$fa('layers')"></i> <b>{{ $t('Add Layer') }}</b>
       </a>
       <a
-        v-if           = "hasRelatedMaps && !iframe"
+        v-if           = "hasRelatedMaps && !ApplicationState.iframe"
         href           = "#"
         @click.stop = "openChangeMapMenu"
       >
@@ -148,11 +146,7 @@ export default {
 
   data() {
     return {
-      state:            this.$options.service.state || {},
-      legend_position:  ApplicationState.project.state.legend_position || 'tab',
-      iframe:           ApplicationState.iframe,
-      loading:          false,
-      //@since 4.1.0
+      ApplicationState,
       externalayers:    {
         checked:   false,
         collapsed: false,
@@ -177,9 +171,9 @@ export default {
 
     hasLayers() {
       return (
-        (this.state.external?.vector || []).length > 0 //has vector external layers
-        || (this.state.external?.wms || []).length > 0 //has wms external layers
-        || this.state.layerstrees.reduce(( a , l ) => l.tree.length + a, 0) > 0
+        (this.ApplicationState.catalog.external?.vector || []).length > 0 //has vector external layers
+        || (this.ApplicationState.catalog.external?.wms || []).length > 0 //has wms external layers
+        || this.ApplicationState.catalog.layerstrees.reduce(( a , l ) => l.tree.length + a, 0) > 0
       );
     },
 
@@ -209,9 +203,9 @@ export default {
     toggleExternalLayers() {
       this.externalayers.checked = !this.externalayers.checked;
       [
-        ...(this.state.external?.vector || []),
-        ...(this.state.external?.wms || []),
-        ...(this.state.external?.tms || []),
+        ...(this.ApplicationState.catalog.external?.vector || []),
+        ...(this.ApplicationState.catalog.external?.wms || []),
+        ...(this.ApplicationState.catalog.external?.tms || []),
       ].forEach(l => l.checked = this.externalayers.checked);
     },
 
@@ -220,9 +214,9 @@ export default {
      */
     removeExternalLayers() {
       [
-        ...(this.state.external?.vector || []),
-        ...(this.state.external?.wms || []),
-        ...(this.state.external?.tms || []),
+        ...(this.ApplicationState.catalog.external?.vector || []),
+        ...(this.ApplicationState.catalog.external?.wms || []),
+        ...(this.ApplicationState.catalog.external?.tms || []),
       ].forEach(l =>  GUI.removeExternalLayer(l.name));
     },
 
@@ -341,12 +335,12 @@ export default {
       GUI.closeContent();
 
       // change map theme
-      this.state.layerstrees[0].checked = true;
+      this.ApplicationState.catalog.layerstrees[0].checked = true;
 
       const changes = (await this.setLayersTreePropertiesFromMapTheme({
         map_theme,
-        rootNode:   this.state.layerstrees[0],
-        layerstree: this.state.layerstrees[0].tree[0].nodes
+        rootNode:   this.ApplicationState.catalog.layerstrees[0],
+        layerstree: this.ApplicationState.catalog.layerstrees[0].tree[0].nodes
       })).layers;
 
       // get all layers with styles
@@ -419,7 +413,7 @@ export default {
     /**
      * Handle visibilty change on legend item
      *
-     * @fires MapService~cataloglayervisible
+     * @fires GUI~cataloglayervisible
      *
      * @since 3.10.0
      */
@@ -429,8 +423,6 @@ export default {
 
     /**
      * Handle legend item select (single mouse click ?)
-     *
-     * @fires MapService~cataloglayerselected
      *
      * @since 3.10.0
      */
@@ -457,8 +449,8 @@ export default {
      */
     updateExternalLayersChecked() {
       this.externalayers.checked = [
-        ...(this.$options.service.state.external?.vector || []),
-        ...(this.$options.service.state.external?.wms || []),
+        ...(ApplicationState.catalog.external?.vector || []),
+        ...(ApplicationState.catalog.external?.wms || []),
       ].every(l => l.checked)
     },
 
@@ -466,14 +458,14 @@ export default {
 
   watch: {
 
-    'state.external.vector': {
+    'ApplicationState.catalog.external.vector': {
       immediante: true,
       handler() {
         this.updateExternalLayersChecked();
       },
     },
 
-    'state.external.wms': {
+    'ApplicationState.catalog.external.wms': {
       immediante: true,
       handler() {
         this.updateExternalLayersChecked();

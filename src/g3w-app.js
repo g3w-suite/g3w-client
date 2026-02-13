@@ -310,6 +310,18 @@ export default new (class GUI extends Emitter {
     )
   });
 
+  /**
+   * BACKOMP
+   */
+  #catalog_service = new Emitter({
+    setters: {
+      addExternalLayer:    this.addExternalCatalogLayer,
+      removeExternalLayer: this.removeExternalCatalogLayer,
+      /** used by the following plugins: "processing" */
+      getExternalLayers: this.getExternalCatalogLayers,
+    }
+  });
+
   constructor(opts) {
     super(opts);
 
@@ -341,7 +353,11 @@ export default new (class GUI extends Emitter {
       /** @since 4.1.0 */
       'loadExternalLayer',
       /** @since 4.1.0 */
-      'unloadExternalLayer'
+      'unloadExternalLayer',
+      /** @since 4.1.0 */
+      'addExternalCatalogLayer',
+      /** @since 4.1.0 */
+      'removeExternalCatalogLayer'
     ];
 
     // BACKOMP v3.x
@@ -638,55 +654,13 @@ export default new (class GUI extends Emitter {
     );
 
     // G3W-CATALOG
-    this.addComponent(new (function() {
-
-      const service = new Emitter({
-        setters: {
-          /**
-           * @param {{ layer: unknown, type: 'vector' }}
-           *
-           * @fires CatalogService~addExternalLayer
-           *
-           * @since 3.8.0
-           */
-          addExternalLayer({ layer, type = 'vector' } = {}) {
-            layer.removable = true;
-            ApplicationState.catalog.external[type].push(layer);
-          },
-          /**
-           * @param {{ name: string, type: 'vector' }}
-           *
-           * @fires CatalogService~removeExternalLayer
-           *
-           * @since 3.8.0
-           */
-          removeExternalLayer({ name, type='vector' } = {}) {
-            ApplicationState.catalog.external[type].filter((l, i) => {
-              if (name === l.name) {
-                ApplicationState.catalog.external[type].splice(i, 1);
-                return true;
-              }
-            });
-          },
-        }
-      });
-    
-      service.state             = ApplicationState.catalog;
-
-      /** used by the following plugins: "processing" */
-      service.getExternalLayers = ({ type = 'vector' })     => ApplicationState.catalog.external[type];
-
-      const comp = new Component({
-        id:                 'catalog',
-        icon:               g3w.app.getFontClass('map'),
-        iconColor:          '#019A4C',
-        title:              'catalog',
-        resizable:          true,
-        vueComponentObject: require('components/Catalog.vue').default,
-        service,
-      });
-    
-      return comp;
+    this.addComponent(new Component({
+      id:                 'catalog',
+      icon:               g3w.app.getFontClass('map'),
+      iconColor:          '#019A4C',
+      title:              'catalog',
+      resizable:          true,
+      vueComponentObject: require('components/Catalog.vue').default,
     }));
 
     this.#CONTENTS = Object.assign(new Component({
@@ -756,6 +730,37 @@ export default new (class GUI extends Emitter {
     this.isready = true;
   }
 
+  /**
+   * @param {{ layer: unknown, type: 'vector' }}
+   *
+   * @since 4.1.0
+   */
+  addExternalCatalogLayer({ layer, type = 'vector' } = {}) {
+    layer.removable = true;
+    ApplicationState.catalog.external[type].push(layer);
+  }
+
+  /**
+   * @param {{ name: string, type: 'vector' }}
+   *
+   * @since 4.1.0
+   */
+  removeExternalCatalogLayer({ name, type='vector' } = {}) {
+    ApplicationState.catalog.external[type].filter((l, i) => {
+      if (name === l.name) {
+        ApplicationState.catalog.external[type].splice(i, 1);
+        return true;
+      }
+    });
+  }
+
+  /**
+   * @since 4.1.0
+   */
+  getExternalCatalogLayers({ type = 'vector' }) {
+    return ApplicationState.catalog.external[type];
+  }
+
   isReady() {
     return new Promise(resolve => this.isready ? resolve() : this.once('ready', resolve));
   };
@@ -779,6 +784,9 @@ export default new (class GUI extends Emitter {
   getService(componentId) {
     if ('queryresults' === componentId || 'map' === componentId) {
       return this;
+    }
+    if ('catalog' === componentId) {
+      return this.#catalog_service;
     }
     const component = this.getComponent(componentId);
     return component && component.getService();
@@ -1026,8 +1034,7 @@ export default new (class GUI extends Emitter {
   }
 
   async showPanel(content) {
-    //set null to reactivity
-    ApplicationState.sidebar.title  = null;
+    ApplicationState.sidebar.title  = content.title;
     ApplicationState.sidebar.parent = '#g3w-sidebarpanel-placeholder'
 
     const current = ApplicationState.sidebar.contentsdata.at(-1);
@@ -1049,8 +1056,6 @@ export default new (class GUI extends Emitter {
 
     // Mount vue component
     await content.mount(parent);
-    //set content title
-    ApplicationState.sidebar.title = content.title;
 
     data.push({ content, options: { parent: '#g3w-sidebarpanel-placeholder' } });
   }
