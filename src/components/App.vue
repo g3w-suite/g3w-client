@@ -273,7 +273,7 @@
             href = "#"
             @click.prevent = "showLegendPanel"
           >
-            <i class = "fas fa-list" style = "color: #fff;"></i>
+            <i aria-hidden="true" class = "fas fa-list" style = "color: #fff;"></i>
             <span class = "treeview-label">{{ $t('legend') }}</span>
           </a>
         </li>
@@ -284,7 +284,7 @@
             data-toggle    = "modal"
             data-target    = "#modal-metadata"
           >
-            <i class = "fas fa-file-code" style = "color: #fff;"></i>
+            <i aria-hidden="true" class = "fas fa-file-code" style = "color: #fff;"></i>
             <span class = "treeview-label">{{ $t('Metadata') }}</span>
           </a>
         </li>
