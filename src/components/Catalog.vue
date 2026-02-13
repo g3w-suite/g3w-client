@@ -11,7 +11,6 @@
       id    = "g3w-catalog-toc-layers-toolbar"
     >
       <catalog-change-map-themes
-        :key              = "project.state.gid"
         :map_themes       = "project.state.map_themes"
         :layerstrees      = "state.layerstrees"
         @change-map-theme = "changeMapTheme"
