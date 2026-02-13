@@ -1034,7 +1034,8 @@ export default new (class GUI extends Emitter {
   }
 
   async showPanel(content) {
-    ApplicationState.sidebar.title  = content.title;
+    //set null to reactivity
+    ApplicationState.sidebar.title  = null;
     ApplicationState.sidebar.parent = '#g3w-sidebarpanel-placeholder'
 
     const current = ApplicationState.sidebar.contentsdata.at(-1);
@@ -1056,6 +1057,8 @@ export default new (class GUI extends Emitter {
 
     // Mount vue component
     await content.mount(parent);
+    //set content title
+    ApplicationState.sidebar.title = content.title;
 
     data.push({ content, options: { parent: '#g3w-sidebarpanel-placeholder' } });
   }
