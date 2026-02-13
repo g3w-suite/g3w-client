@@ -28,7 +28,7 @@
         <img style="height: 100%;" alt = "" :src = "logo_url" />
       </a>
 
-      <button class="navbar-toggler" hidden="" @click.prevent="toggleSidebar">
+      <button type="button" class="navbar-toggler" hidden="" @click="toggleSidebar">
         <i :class = "$fa('bars')" ></i><b style="margin-left: 8px;">MENU</b>
       </button>
 
