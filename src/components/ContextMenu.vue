@@ -582,7 +582,9 @@
        * @since 3.11.0
        */
        canEdit(layer) {
-        return layer ? !layer.external && getCatalogLayerById(layer.id).isEditable() && getCatalogLayerById(layer.id).config.editing?.visible: Object.values(GUI.getPlugin('editing')?.getEditableLayers() || {}).find(l => l.isGeoLayer());
+        return layer 
+          ? !layer.external && getCatalogLayerById(layer.id).isEditable() && getCatalogLayerById(layer.id).config.editing?.visible
+          : Object.values(GUI.getPlugin('editing')?.getEditableLayers() || {}).find(l => l.isGeoLayer() && !l.isInEditing());
       },
 
       /**
