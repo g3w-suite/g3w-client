@@ -291,8 +291,9 @@
 
         <li id="catalog" class="treeview sidebaritem">
           <a
-            href="#"
-            style="display: flex; justify-content: space-between; align-items: center;"
+            href           = "#"
+            style          = "display: flex; justify-content: space-between; align-items: center;"
+            @click.prevent = "showSidebar"
           >
             <i aria-hidden="true" class="far fa-map" style="color: rgb(1, 154, 76);"></i>
             <span class="treeview-label"> {{ $t('Layers') }}</span>
@@ -1154,6 +1155,13 @@ export default {
      */
     toggleSidebar() {
       GUI.toggleSidebar();
+    },
+
+    /**
+     * @since 4.1.0
+     */
+    showSidebar() {
+      GUI.showSidebar();
     },
 
     /**
