@@ -1125,7 +1125,7 @@ export default {
     },
 
     custom_theme_invalid() {
-      return this.custom_theme_input && this.map_themes.project.concat(this.map_themes.custom).find(({ theme }) => theme === this.custom_theme_input.trim());
+      return this.custom_theme_input && this.ApplicationState.project.state.map_themes.project.concat(this.ApplicationState.project.state.map_themes.custom).find(({ theme }) => theme === this.custom_theme_input.trim());
     },
 
   },
