@@ -297,7 +297,7 @@
               @click.stop = "toggleThemeSelector"
             >
               <i aria-hidden="true" :class = "$fa(theme_selector_collapsed ? 'caret-right' : 'caret-down')" style = "padding: 3px;"></i>
-              <i aria-hidden="true" :class = "$fa('eye')"                                    style = "padding: 0 0 0 4px;"></i>
+              <i aria-hidden="true" :class = "$fa('eye')"                                                   style = "padding: 0 0 0 4px;"></i>
               <!-- Text of current theme -->
               <span
                 v-if  = "active_theme"
@@ -345,19 +345,19 @@
                 <ul style = "padding: 0">
                   <li>
                     <div class = "user_map_theme">
-                      <span v-t = "'User Themes'"></span>
-                      <!-- Add theme button -->
-                      <span
-                        v-t-tooltip:left = "'add'"
-                        @click.stop      = "theme_dialog_open = !theme_dialog_open"
-                        :class           = "$fa('plus-square')"
-                        class            = "action sidebar-button sidebar-button-icon"
-                        style            = "margin-left: auto; padding: 5px; font-size: 1.2em;"
+                      <span>{{ $t('User Themes') }}</span>
+                      <!-- ADD MAP THEME -->
+                      <button
+                        type   = "button"
+                        title  = "add"
+                        @click = "theme_dialog_open = !theme_dialog_open"
+                        class  = "action sidebar-button sidebar-button-icon"
+                        style  = "margin-left: auto; padding: 5px; font-size: 1.2em; border: 0;"
                       >
-                      </span>
+                        <i aria-hidden="true" class = "fas fa-plus-square"></i>
+                      </button>
                     </div>
                   </li>
-                  <!-- DELETE THEME -->
                   <li style = "padding: 5px 5px 5px 17px">
                     <div
                       v-for = "(map_theme, i) in ApplicationState.project.state.map_themes.custom"
@@ -377,30 +377,27 @@
                         </label>
                       </span>
                       <span>
-                      <span
-                        @click.stop     = "updateTheme(map_theme.theme)"
-                        class           = "action sidebar-button sidebar-button-icon"
-                        style           = "padding: 5px;"
-                        v-t-tooltip:top = "'update'"
-                        v-disabled      = "active_theme !== map_theme.theme"
-                      >
-                        <i
-                          :class = "$fa('save')"
-                          class  = "skin-color"></i>
-
-                      </span>
+                        <!-- UPDATE MAP THEME -->
                         <span
-                          @click.stop     = "deleteTheme(map_theme.theme)"
-                          class           = "action sidebar-button sidebar-button-icon"
-                          style           = "padding: 5px;"
-                          v-t-tooltip:top = "'cancel'"
+                          @click.stop    = "updateTheme(map_theme.theme)"
+                          class          = "action sidebar-button sidebar-button-icon"
+                          style          = "padding: 5px;"
+                          title          = "update"
+                          data-placement = "top"
+                          v-disabled     = "active_theme !== map_theme.theme"
                         >
-                          <i
-                            :class = "$fa('trash')"
-                            style  = "color: red;">
-                          </i>
+                          <i aria-hidden="true" class = "far fa-save" style = "color: var(--skin-color);"></i>
                         </span>
-
+                        <!-- DELETE MAP THEME -->
+                        <span
+                          @click.stop    = "deleteTheme(map_theme.theme)"
+                          class          = "action sidebar-button sidebar-button-icon"
+                          style          = "padding: 5px;"
+                          title          = "cancel"
+                          data-placement = "top"
+                        >
+                          <i aria-hidden="true" class = "fas fa-trash" style = "color: red;"></i>
+                        </span>
                       </span>
 
                     </div>
@@ -423,8 +420,8 @@
               <form @submit.prevent = "saveTheme">
                 <label for = "add-theme">{{ $t('Name of new map theme') }} *</label>
                 <input id = "add-theme" type = "text" required class = "form-control" ref = "add_map_theme_input" v-model = "custom_theme_input" />
-                <p v-if="custom_theme_invalid" class="g3w-long-text error-input-message">{{ $t('Invalid or exiting name') }}</p>
-                <button type = "submit" class = "btn btn-block btn-success">{{ $t('add') }}</button>
+                <p v-if="custom_theme_invalid" class="g3w-long-text error-input-message" style = "margin: 0">{{ $t('Invalid or exiting name') }}</p>
+                <button type = "submit" class = "btn btn-block btn-success" style = "margin-top: 20px;">{{ $t('add') }}</button>
               </form>
             </dialog>
           </template>
@@ -564,8 +561,8 @@
         style          = "z-index: 2"
         @click.prevent = "toggleSidebar"
         role           = "button"
+        title          = "Sidebar menu"
         data-placement = "right"
-        v-t-tooltip    = "'Sidebar menu'"
       ></a>
 
     </aside>
@@ -708,7 +705,8 @@
               <!-- SWITCH COORDINATES  -->
               <div
                 v-if                = "mouse.visible && mouse.switch_icon && !isMobile()"
-                v-t-tooltip:top     = "mouse.tooltip"
+                :title              = "mouse.tooltip"
+                data-placement      = "top"
                 @click.stop.prevent = "switchMapsCoordinateTo4326"
                 style               = "caret-color: transparent; padding: 0 5px 0 0; display: flex; height: 100%; align-items: center; cursor: pointer;"
                 :class              = "$fa('mouse')"
@@ -716,7 +714,8 @@
 
               <div
                 id              = "permalink"
-                v-t-tooltip:top = "'Copy share URL'"
+                title           = "Copy share URL"
+                data-placement  = "top"
                 :class          = "$fa('share-alt')"
                 @click.stop     = "showEmbedModal"
               ></div>
@@ -840,27 +839,30 @@
               "
             >
               <i
-                v-if               = "undefined !== state.split"
-                :class             = "$fa(`resize-${state.split}`)"
-                v-t-tooltip:bottom = "'Enlarge / Reduce'"
-                style              = "margin-right: 3px;"
-                class              = "action-button action-button-resize skin-color-dark"
-                @click             = "resizeFull"
+                v-if           = "undefined !== state.split"
+                :class         = "$fa(`resize-${state.split}`)"
+                title          = "Enlarge / Reduce"
+                data-placement = "bottom"
+                style          = "margin-right: 3px;"
+                class          = "action-button action-button-resize skin-color-dark"
+                @click         = "resizeFull"
               ></i>
             </div>
             <i
-              style              = "cursor: pointer; scale:.9;"
-              :style             = "{ transform: 'h' === state.split ? 'rotate(134deg)' : 'rotate(44deg)'}"
-              v-t-tooltip:bottom = "`Dock to ${'h' === this.state.split ? 'Bottom' : 'Right'}`"
-              class              = "action-button action-button-dock skin-color-dark fa fa-external-link-alt"
-              @click             = "splitContent"
+              style          = "cursor: pointer; scale:.9;"
+              :style         = "{ transform: 'h' === state.split ? 'rotate(134deg)' : 'rotate(44deg)'}"
+              :title         = "`Dock to ${'h' === this.state.split ? 'Bottom' : 'Right'}`"
+              data-placement = "bottom"
+              class          = "action-button action-button-dock skin-color-dark fa fa-external-link-alt"
+              @click         = "splitContent"
             ></i>
             <i
-              v-if               = "state.content.closable"
-              @click             = "closeContent"
-              v-t-tooltip:bottom = "'close'"
-              :class             = "{'mobile': isMobile()}"
-              class              = "action-button action-button-close skin-color-dark fas fa-times"
+              v-if           = "state.content.closable"
+              @click         = "closeContent"
+              title          = "close"
+              data-placement = "bottom"
+              :class         = "{'mobile': isMobile()}"
+              class          = "action-button action-button-close skin-color-dark fas fa-times"
             ></i>
           </div>
         </div>

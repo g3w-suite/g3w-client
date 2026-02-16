@@ -47,7 +47,8 @@
               <span class  = "g3w-long-text">{{ node.name }}</span>
               <span 
                 @click.stop     = "shareBookmark(node)" 
-                v-t-tooltip:top = "'Share via link'" 
+                title           = "Share via link"
+                data-placement  = "top"
                 :class          = "$fa('share-alt')" style = "margin-left: auto; padding: 5px;"
                 class           = "sidebar-button sidebar-button-icon">
               </span>
@@ -64,7 +65,8 @@
           <span class  = "g3w-long-text">{{ bookmark.name }}</span>
           <span 
             @click.stop     = "shareBookmark(bookmark)" 
-            v-t-tooltip:top = "'Share via link'" 
+            title           = "Share via link"
+            data-placement  = "top"
             :class          = "$fa('share-alt')" style = "margin-left: auto; padding: 5px;"
             class           = "sidebar-button sidebar-button-icon">
           </span>
@@ -78,12 +80,12 @@
     >
       <span :hidden = "is_mobile" v-t = "'User Bookmarks'"></span>
       <span
-        :hidden          = "is_mobile"
-        v-t-tooltip:left = "'add'"
-        @click.stop      = "showAddForm"
-        style            = "padding: 5px; font-size: 1.2em; cursor: pointer;"
-        class            = "sidebar-button sidebar-button-icon"
-        :class           = "$fa('plus-square')"
+        :hidden     = "is_mobile"
+        title       = "add"
+        @click.stop = "showAddForm"
+        style       = "padding: 5px; font-size: 1.2em; cursor: pointer;"
+        class       = "sidebar-button sidebar-button-icon"
+        :class      = "$fa('plus-square')"
       ></span>
       <!-- ADD NEW BOOKMARK (FORM) -->
       <dialog ref = "add_bookmark" @beforetoggle = "onBeforetoggle">
@@ -118,7 +120,8 @@
       <div style = "cursor: pointer">
         <span 
           @click.stop     = "shareBookmark(bookmark)"     
-          v-t-tooltip:top = "'Share via link'" 
+          title           = "Share via link"
+          data-placement  = "top"
           :class          = "$fa('share-alt')" 
           class           = "sidebar-button sidebar-button-icon" 
           style           = "margin-right: 5px; padding: 5px;">
@@ -126,7 +129,8 @@
 
         <span 
           @click.stop     = "removeBookMark(bookmark.id)" 
-          v-t-tooltip:top = "'Delete'" 
+          title           = "Delete"
+          data-placement  = "top"
           :class          = "$fa('trash')" 
           class           = "sidebar-button sidebar-button-icon" 
           style           = "color: red; padding: 5px;">

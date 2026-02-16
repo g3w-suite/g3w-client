@@ -11,7 +11,8 @@
     :class                    = "{'toggled': (action.state || {}).toggled && action.state.toggled[featureIndex] }"
     class                     = "action-button"
     v-disabled                = "ApplicationState.download || !!(action.state || {}).disabled"
-    v-t-tooltip:top           = "action.hint"
+    :title                    = "action.hint"
+    data-placement            = "top"
   >
     <span
       style  = "padding: 2px;"

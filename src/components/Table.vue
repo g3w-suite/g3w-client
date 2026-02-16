@@ -94,23 +94,27 @@
               <i
                 v-if            = "layer.isEditable() && (layer.config.editing || {}).visible"
                 @click.stop     = "editFeature(feature)"
-                v-t-tooltip:top = "'Editing'"
+                title           = "Editing"
+                data-placement  = "top"
                 :class          = "'action-button skin-color ' + $fa('pencil')"
               ></i>
               <i
                 @click.stop     = "openForm(feature)"
-                v-t-tooltip:top = "'Form View'"
+                title           = "Form View"
+                data-placement  = "top"
                 :class          = "'action-button skin-color ' + $fa('table')"
               ></i>
               <i
                 v-if            = "layer.hasRelations()"
                 @click.stop     = "showRelations(feature)"
-                v-t-tooltip:top = "'Show Relations'"
+                title           = "Show Relations"
+                data-placement  = "top"
                 :class          = "'action-button skin-color ' + $fa('relation')"
               ></i>
               <i
                 v-if            = "layer.state.geolayer && !feature.geometry"
-                v-t-tooltip:top = "'This item has no geometry'"
+                title           = "This item has no geometry"
+                data-placement  = "top"
                 style           = "color: currentColor !important;"
                 :class          = "'action-button ' + $fa('alert')"
               ></i>
@@ -141,7 +145,8 @@
         v-if            = "layer.isGeoLayer()"
         v-disabled      = "state.geolayer.active && current_layout.rightpanel.height_100"
         :class          = "['btn', state.geolayer.active ? 'toggled' : '' ]"
-        v-t-tooltip:top = "'Update results when map moves'"
+        title           = "Update results when map moves"
+        data-placement  = "top"
         @click.stop     = "getDataFromBBOX"
       ><i class = "far fa-map"></i></button>
 
@@ -149,7 +154,8 @@
       <button
         v-show          = "layer.state.selection.active"
         class           = "btn"
-        v-t-tooltip:top = "'Clear Selection'"
+        title           = "Clear Selection"
+        data-placement  = "top"
         @click.stop     = "layer.clearSelectionFids()"
       ><i class = "fas fa-broom"></i></button>
 
@@ -157,7 +163,8 @@
       <button
         v-show          = "!layer.state.filter.active && layer.state.selection.active"
         :class          = "[ 'btn', layer.state.filter.active ? 'g3w-disabled': '' ]"
-        v-t-tooltip:top = "'Invert Selection'"
+        title           = "Invert Selection"
+        data-placement  = "top"
         @click.stop     = "setSelection('inverse')"
       ><i class = "fas fa-exchange-alt"></i></button>
 
@@ -165,7 +172,8 @@
       <button
         v-show          = "layer.state.selection.active && !layer.state.filter.pagination"
         :class          = "[ 'btn', layer.state.filter.active ? 'toggled' : '' ]"
-        v-t-tooltip:top = "'Enable/Disable filter'"
+        title           = "Enable/Disable filter"
+        data-placement  = "top"
         @click.stop     = "layer.toggleToken()"
       ><i class = "fas fa-filter"></i></button>
 
@@ -181,7 +189,7 @@
         <select
           v-model         = "search.page"
           style           = "padding: 5px 12px; appearance: none; border: 0; text-align: center; border-radius: 3px; cursor: pointer;"
-          v-t-tooltip:top = "search.page + $t(' of ') + pages"
+          :title          = "search.page + $t(' of ') + pages"
           data-placement  = "top"
         >
           <option v-for = "p in pages" :selected = "p == search.page">{{ p }}</option>

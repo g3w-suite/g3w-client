@@ -244,7 +244,8 @@ template: /*html*/`
       ">i</legend>
       <details>
         <summary
-          v-t-tooltip:right = "'Show more'"
+          title             = "Show more"
+          data-placement    = "right"
           style             = "
             cursor: pointer;
             display: flex;

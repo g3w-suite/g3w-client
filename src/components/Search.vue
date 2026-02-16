@@ -35,19 +35,20 @@
           <span
             class          = "search-action"
             :class         = "$fa('trash')"
+            title          = "Delete"
             data-placement = "bottom"
-            v-t-tooltip    = "'Delete'"
             @click.stop    = "remove(search, i)"
             style          = "color: red;margin-right: 5px;"
           ></span>
           <span>{{ search.name }}</span>
           <div>
             <span
-            class              = "search-action"
-            :class             = "$fa('run')"
-            v-t-tooltip:bottom = "'Run'"
-            @click.stop        = "run(search)"
-            style              = "color: green;"
+            class          = "search-action"
+            :class         = "$fa('run')"
+            title          = "Run"
+            data-placement = "bottom"
+            @click.stop    = "run(search)"
+            style          = "color: green;"
           ></span>
           </div>
         </div>

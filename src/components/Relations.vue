@@ -39,7 +39,7 @@
         <!-- BACK BUTTON -->
         <span
           v-if        = "relations.length > 1"
-          v-t-tooltip = "'Back to relations'"
+          title       = "Back to relations"
           class       = "action-button-icon action-button back-button fas fa-door-open"
           @click.stop = "back"
         ></span>
@@ -55,21 +55,23 @@
 
         <!-- DOWNLOAD BUTTON -->
         <span
-          v-if             = "download_formats.length"
-          v-disabled       = "ApplicationState.download"
-          class            = "action-button-icon action-button"
-          :class           = "$fa('download')"
-          @click.stop      = "showDownloadModal"
-          v-t-tooltip:left = "'Downloads'"
+          v-if           = "download_formats.length"
+          v-disabled     = "ApplicationState.download"
+          class          = "action-button-icon action-button"
+          :class         = "$fa('download')"
+          @click.stop    = "showDownloadModal"
+          title          = "Downloads"
+          data-placement = "left"
         ></span>
 
         <!-- CHART BUTTON -->
         <span
-          v-if               = "has_charts"
-          class              = "action-button-icon action-button"
-          :class             = "[ $fa('chart'), chart.toggled ? 'toggled-white' : '',]"
-          @click.stop        = "toggleChart"
-          v-t-tooltip:bottom = "'Show Chart'"
+          v-if           = "has_charts"
+          class          = "action-button-icon action-button"
+          :class         = "[ $fa('chart'), chart.toggled ? 'toggled-white' : '',]"
+          @click.stop    = "toggleChart"
+          title          = "Show Chart"
+          data-placement = "bottom"
         ></span>
 
       </div>
@@ -135,25 +137,28 @@
                 class = "table-tools"
               >
                 <span
-                  v-if              = "table.features[i].geometry"
-                  @click.stop       = "zoomToGeometry(table.features[i].geometry)"
-                  class             = "action-button row-form skin-color"
-                  v-t-tooltip:right = "'Zoom to Geometry'"
-                  :class            = "$fa('marker')"
+                  v-if           = "table.features[i].geometry"
+                  @click.stop    = "zoomToGeometry(table.features[i].geometry)"
+                  class          = "action-button row-form skin-color"
+                  title          = "Zoom to Geometry"
+                  data-placement = "right"
+                  :class         = "$fa('marker')"
                 ></span>
                 <span
-                  v-if              = "form_structure"
-                  @click.stop       = "showForm(i)"
-                  v-t-tooltip:right = "'Form View'"
-                  class             = "action-button row-form skin-color"
-                  :class            = "$fa('table')"
+                  v-if           = "form_structure"
+                  @click.stop    = "showForm(i)"
+                  title          = "Form View"
+                  data-placement = "right"
+                  class          = "action-button row-form skin-color"
+                  :class         = "$fa('table')"
                 ></span>
                 <span
-                  v-if              = "isEditable"
-                  @click.stop       = "editFeature(i)"
-                  class             = "action-button row-form skin-color"
-                  v-t-tooltip:right = "'Edit'"
-                  :class            = "$fa('pencil')"
+                  v-if           = "isEditable"
+                  @click.stop    = "editFeature(i)"
+                  class          = "action-button row-form skin-color"
+                  title          = "Edit"
+                  data-placement = "right"
+                  :class         = "$fa('pencil')"
                 ></span>
               </td>
               <td v-for = "value in row">
@@ -174,10 +179,10 @@
           <!-- PAGINATION BUTTONS -->
           <div style = "margin-left: auto;" >
             <select
-              v-model         = "table.page"
-              style           = "padding: 5px 12px; appearance: none; border: 0; text-align: center; border-radius: 3px; cursor: pointer;"
-              v-t-tooltip:top = "table.page + $t(' of ') + pages"
-              data-placement  = "top"
+              v-model        = "table.page"
+              style          = "padding: 5px 12px; appearance: none; border: 0; text-align: center; border-radius: 3px; cursor: pointer;"
+              :title         = "table.page + $t(' of ') + pages"
+              data-placement = "top"
             >
               <option v-for = "p in pages" :selected = "p == table.page">{{ p }}</option>
             </select>

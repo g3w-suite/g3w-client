@@ -18,10 +18,11 @@
         <div v-t = "'Search values are limited based on the active filter. Remove the filter to search all data.'" style = "max-height: 200px; padding: 10px; overflow-y: auto;"></div>
       </div>
       <button
-        v-t-tooltip:left = "'Remove Filter'"
-        @click.stop      = "clearFilters"
-        class            = "btn skin-border-color"
-        style            = "background-color: transparent; margin: 5px 0"
+        title          = "Remove Filter"
+        data-placement = "left"
+        @click.stop    = "clearFilters"
+        class          = "btn skin-border-color"
+        style          = "background-color: transparent; margin: 5px 0"
       >
         <i class = "skin-color" :class = "$fa('clear')"></i>
       </button>
@@ -154,7 +155,7 @@
 
         <!-- "AUTOFILTER" -->
         <div class = "form-group" v-disabled = "'data' !== state.return">
-          <label v-t-tooltip:right = "'Whether automatically filter geometries displayed within the map<br>in order to show only those related to current search results.'" style = "display: block;">
+          <label title = "Whether automatically filter geometries displayed within the map<br>in order to show only those related to current search results." data-placement = "right" style = "display: block;">
             <input type = "checkbox" v-model = "autofilter" style = "margin:0;" />
             <span v-t = "'Filter results'"></span>
             <i class = "fa fa-filter fa-pull-right" :style = "{ opacity: state.autofilter.value ? 1 : .5 }"></i>
