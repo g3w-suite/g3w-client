@@ -600,7 +600,7 @@ export default {
                       visibility: false,
                       style:      false
                     };
-                    changes.layers[node.id].style = project.getLayerById(node.id).setCurrentStyle(node.style);
+                    changes.layers[node.id].style = project.getLayerById(node.id).changeCurrentStyle(node.style);
                     resolve();
                   };
                   if (project.getLayersStore()) { setCurrentStyleAndResolvePromise(node) }

@@ -2590,10 +2590,14 @@ class Layer extends G3WObject {
         this.config.styles.forEach(s => s.current = style === s.name);
         //In case of change need to call change function
         this.change();
+        //return true. Style change
+        return true;
       } catch(e) {
         console.warn(e);    
       }
     }
+    //return false because style is current or in case of error
+    return false;
   }
 
   /**
