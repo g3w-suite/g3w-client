@@ -88,23 +88,18 @@
       <!-- ADD NEW BOOKMARK (FORM) -->
       <dialog ref = "add_bookmark" @beforetoggle = "onBeforetoggle">
         <div style = "display: flex; justify-content: end">
-          <span
-            v-t-tooltip:left = "'close'"
-            @click.stop      = "showaddform = false"
-            :class           = "$fa('close')"
-            class            = "sidebar-button sidebar-button-icon"
-            style            = "padding: 5px; margin: 3px;"
-          ></span>
+          <button
+            type        = "button"
+            title       = "close"
+            @click.stop = "showaddform = false"
+            class       = "fas fa-times"
+            style       = "border: medium;line-height: 1;font-weight: 700;font-size: 15px;background: none;width: 40px;height: 40px;"
+          ></button>
         </div>
-
-        <form
-          class           = "container add-bookmark-input"
-          style           = "padding: 5px; width: 100%"
-          @submit.prevent = "addBookMark"
-        >
+        <form @submit.prevent = "addBookMark">
           <label for = "add-bokmark">{{ $t('Name of new spatial bookmark') }} *</label>
           <input id = "add-bookmark" type = "text" required class = "form-control" ref="add_bookmark_input" v-model = "addbookmarkinput" />
-          <button type = "type" style = "margin-top: 20px;background-color: var(--skin-color);" class = "btn btn-block">{{ $t('add') }}</button>
+          <button type = "submit" class = "btn btn-block btn-success" style = "margin-top: 20px;">{{ $t('add') }}</button>
         </form>
         
       </dialog>

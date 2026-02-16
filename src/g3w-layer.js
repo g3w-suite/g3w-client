@@ -2304,7 +2304,7 @@ export class Layer extends Emitter {
    * 
    * @param style
    * 
-   * @returns { Promise<Object | void>}
+   * @returns { Promise<boolean> } true = style change; false = no style changed 
    * 
    * @since 4.1.0
    */
@@ -2350,10 +2350,13 @@ export class Layer extends Emitter {
       this.state.styles.forEach(s => s.current = style === s.name);
 
       this.change();
+
+      return true;
     } catch(e) {
       console.warn(e);
       this.state.stylesfeaturecount[style] = {};
     }
+    return false;
   }
 
   /**

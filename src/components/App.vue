@@ -412,29 +412,20 @@
             <!-- ADD NEW MAP THEME (FORM) -->
             <dialog ref = "add_map_theme" @beforetoggle = "onBeforetoggleThemeDialog">
               <div style="display: flex; justify-content: end; padding-top: 5px;">
-                <span
-                  v-t-tooltip:left = "'close'"
-                  @click.stop      = "theme_dialog_open = false"
-                  :class           = "$fa('close')"
-                  class            = "sidebar-button sidebar-button-icon"
-                  style            = "padding: 2px; margin: 2px;"
-                ></span>
-              </div>
-              <div class = "container" style="width: 100%;">
-                <input-text
-                  ref    = "add_map_theme_input"
-                  :state = "custom_theme"
-                />
-              </div>
-              <div style = "margin-top: 5px;">
                 <button
                   type        = "button"
-                  class       = "btn btn-block"
-                  @click      = "saveTheme"
-                  v-disabled  = "!custom_theme.validate.valid"
-                  style       = "background-color: var(--skin-color);"
-                >{{ $t('add') }}</button>
+                  title       = "close"
+                  @click.stop = "theme_dialog_open = false"
+                  class       = "fas fa-times"
+                  style       = "border: medium;line-height: 1;font-weight: 700;font-size: 15px;background: none;width: 40px;height: 40px;"
+                ></button>
               </div>
+              <form @submit.prevent = "saveTheme">
+                <label for = "add-theme">{{ $t('Name of new map theme') }} *</label>
+                <input id = "add-theme" type = "text" required class = "form-control" ref = "add_map_theme_input" v-model = "custom_theme_input" />
+                <p v-if="custom_theme_invalid" class="g3w-long-text error-input-message">{{ $t('Invalid or exiting name') }}</p>
+                <button type = "submit" class = "btn btn-block btn-success">{{ $t('add') }}</button>
+              </form>
             </dialog>
           </template>
         </li>
@@ -922,7 +913,6 @@ import ModalAddlayer           from 'components/ModalAddLayer.vue';
 import ModalChangemap          from 'components/ModalChangeMap.vue';
 import ModalMetadata           from 'components/ModalMetadata.vue';
 import CatalogTree             from 'components/CatalogTree.vue';
-import InputText               from 'components/InputText.vue';
 import { gettext as _ }        from 'g3w-i18n';
 
 
@@ -939,7 +929,6 @@ export default {
       iframe:                false,
       language:              null,
       updatePreviousTitle:   false,
-      header:                _('main navigation'),
       custom_links:          (window.initConfig.header_custom_links || []).concat(ApplicationState.navbaritems).filter(Boolean).map(l => Object.assign(l, { id: l.id || getUniqueDomId() })),
       mouse: {
         visible:     true,
@@ -951,27 +940,11 @@ export default {
         checked:   false,
         collapsed: false,
       },
-      active_theme: Object.values(ApplicationState.project.state.map_themes).flat().find(mt => mt.default)?.theme ?? null,
-      theme_selector_collapsed:    'collapsed' === ApplicationState.project.state.toc_themes_init_status,
       // user themes
-      custom_theme: {
-        name:     'add-user-theme',
-        label:    'Name of new map theme',
-        i18nLabel: true,
-        value:     null,
-        editable:  true,
-        type:      'varchar',
-        input:    { type: 'text', options: {} },
-        visible:  true,
-        //@TODO add info messsage to validation input name text
-        validate: {
-          valid:    false,
-          required: true,
-          error:    'Invalid or exiting name',
-        }
-      },
-      /**@since 3.10.0 whether show add a new map theme form **/
-      theme_dialog_open: false,
+      active_theme:             Object.values(ApplicationState.project.state.map_themes).flat().find(mt => mt.default)?.theme ?? null,
+      theme_selector_collapsed: 'collapsed' === ApplicationState.project.state.toc_themes_init_status,
+      custom_theme_input:       null,
+      theme_dialog_open:        false,
     }
   },
 
@@ -983,7 +956,6 @@ export default {
     ModalChangemap,
     ModalMetadata,
     CatalogTree,
-    InputText,
   },
 
   computed: {
@@ -1150,6 +1122,10 @@ export default {
      */
     is_staff() {
       return window.initConfig.user.is_staff;
+    },
+
+    custom_theme_invalid() {
+      return this.custom_theme_input && this.map_themes.project.concat(this.map_themes.custom).find(({ theme }) => theme === this.custom_theme_input.trim();
     },
 
   },
@@ -1522,7 +1498,7 @@ export default {
                         style:      false
                       }
                     }
-                    changes.layers[node.id].style = project.getLayerById(node.id).setCurrentStyle(node.style);
+                    changes.layers[node.id].style = project.getLayerById(node.id).changeCurrentStyle(node.style);
                     resolve();
                   };
                   if (project.getLayersStore()) { setCurrentStyleAndResolvePromise(node) }
@@ -1719,7 +1695,11 @@ export default {
      * @since 4.1.0
      */
     async saveTheme() {
-      const theme = this.custom_theme.value;
+      if (this.custom_theme_invalid) {
+        return;
+
+      }
+      const theme = this.custom_theme_input;
       // skip when no name provided 
       if (!theme) {
         return;
@@ -1735,17 +1715,17 @@ export default {
         if (!response.result) {
           throw response;
         }
-        this.ApplicationState.project.state.map_themes.custom.push({ theme: this.custom_theme.value, styles: params.styles });
+        this.ApplicationState.project.state.map_themes.custom.push({ theme: this.custom_theme_input, styles: params.styles });
         // show a success add custom matp theme message to user
         GUI.showUserMessage({ type: 'success', message: 'Theme saved successfully', autoclose: true });
         // close dialog
         this.theme_dialog_open    = false;
         //set as current active name map theme
-        this.active_theme = this.custom_theme.value;
+        this.active_theme = this.custom_theme_input;
         //need to wait watch
         await this.$nextTick();
         //set custom map theme value to null. Reset value
-        this.custom_theme.value = null;
+        this.custom_theme_input = null;
       } catch(e) {
         console.warn(e);
         GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error' });
@@ -1898,7 +1878,7 @@ export default {
       handler(map_theme) {
         //in the case of save new custom map theme, no need to emit event
         //in case of remove custom map theme at moment se as default
-        if (null === map_theme || map_theme === this.custom_theme.value) { return }
+        if (null === map_theme || map_theme === this.custom_theme_input) { return }
         // this.$emit('change-map-theme', map_theme);
         this.changeMapTheme(map_theme);
       }
@@ -1907,24 +1887,10 @@ export default {
     /**
      * @since 4.1.0
      */
-    'custom_theme.value'(name) {
-      // can save check if value name is set and is not yet set on custom map_theme
-      setTimeout(() => {
-        this.custom_theme.validate.valid = name ? !this.ApplicationState.project.state.map_themes.custom.find(({ theme }) => theme === name.trim()) : false;
-      }, 200)
-
-    },
-
-    /**
-     * @since 4.1.0
-     */
     async theme_dialog_open(bool) {
-      this.custom_theme.value = null;
-      // remove all "col-sm-12" classes so input is adapted to 100% width
+      this.custom_theme_input = null;
       if (bool) {
         this.$refs.add_map_theme.showModal();
-        await this.$nextTick();
-        Array.from(this.$refs.add_map_theme_input.$el.children).forEach(child => child.classList.remove('col-sm-12'));
       } else {
         this.$refs.add_map_theme.close();
       }
