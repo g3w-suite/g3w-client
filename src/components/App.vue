@@ -54,8 +54,8 @@
             :title         = "item.i18n ? item.title : ('&nbsp;' + item.title + '&nbsp;')"
             data-placement = "bottom"
           >
-            <i v-if     = "item.icon" :class = "item.icon" aria-hidden="true"></i>
-            <img v-if   = "item.img" height = "20" :src  = "item.img" :title="item.img_title" :alt="item.img_title" />
+            <i v-if     = "item.icon"  :class = "item.icon" aria-hidden="true"></i>
+            <img v-if   = "item.img"   height = "20" :src  = "item.img" :title="item.img_title" :alt="item.img_title" />
             <span v-if  = "item.i18n"  v-t    = "item.text || item.title || item.img_title" :hidden="item.text ? undefined : ''"></span>
             <span v-if  = "!item.i18n" v-html = "item.text || item.title || item.img_title" :hidden="item.text ? undefined : ''"></span>
           </a>
@@ -73,7 +73,7 @@
           >
             <i :class = "$fa('user')" aria-hidden="true"></i>
             <span v-if = "user">{{ user.username }}</span>
-            <span v-else v-t = "'sign_in'"></span>
+            <span v-else>{{ $t('sign_in') }}</span>
             <i class="triangle"></i>
           </a>
 
@@ -95,7 +95,7 @@
                 :data-target = "has_iframe_login ? '#modal-login' : undefined"
                 class        = "nav-login btn btn-default btn-flat skin-color"
               >
-                <b v-t="'sign_in'"></b><i :class = "$fa('sign-in')"></i>
+                <b>{{ $t('sign_in') }}</b><i :class = "$fa('sign-in')"></i>
               </a>
 
               <!-- ADMIN URL -->
@@ -113,7 +113,7 @@
                 :href = "urls.frontendurl"
                 class = "nav-home btn btn-default btn-flat skin-color"
               >
-                <b v-t="'homepage'"></b><i :class="$fa('home')"></i>
+                <b>{{ $t('homepage') }}</b><i :class="$fa('home')"></i>
               </a>
 
               <!-- LOGOUT URL -->
@@ -122,7 +122,7 @@
                 :href = "user.logout_url"
                 class = "nav-logout btn btn-default btn-flat skin-color"
               >
-                <b v-t="'Logout'"></b><i :class = "$fa('sign-out')"></i>
+                <b>{{ $t('Logout') }}</b><i :class = "$fa('sign-out')"></i>
               </a>
 
               <!-- SHARE URL -->
@@ -131,7 +131,7 @@
                 @click = "showEmbedModal"
                 class  = "nav-embedmap btn btn-default btn-flat skin-color"
               >
-                <b v-t="'Embed map'"></b><i :class = "$fa('share-alt')"></i>
+                <b>{{ $t('Embed map') }}</b><i :class = "$fa('share-alt')"></i>
               </a>
 
               <!-- CHANGE MAP -->
@@ -141,7 +141,7 @@
                 @click = "openChangeMapMenu"
                 class  = "nav-changemap btn btn-default btn-flat"
               >
-                <b v-t="'changemap'"></b><i :class = "$fa('refresh')"></i>
+                <b>{{ $t('changemap') }}</b><i :class = "$fa('refresh')"></i>
               </a>
 
               <!-- ADD LAYER -->
@@ -150,7 +150,7 @@
                 @click = "showaddLayerModal"
                 class  = "nav-addlayer btn btn-default btn-flat"
               >
-                <b v-t="'Add Layer'"></b><i :class="$fa('layers')"></i> 
+                <b>{{ $t('Add Layer') }}</b><i :class="$fa('layers')"></i> 
               </a>
 
             </li>
@@ -351,7 +351,7 @@
                         type   = "button"
                         title  = "add"
                         @click = "theme_dialog_open = !theme_dialog_open"
-                        class  = "action sidebar-button sidebar-button-icon"
+                        class  = "action sidebar-button"
                         style  = "margin-left: auto; padding: 5px; font-size: 1.2em; border: 0;"
                       >
                         <i aria-hidden="true" class = "fas fa-plus-square"></i>
@@ -380,7 +380,7 @@
                         <!-- UPDATE MAP THEME -->
                         <span
                           @click.stop    = "updateTheme(map_theme.theme)"
-                          class          = "action sidebar-button sidebar-button-icon"
+                          class          = "action sidebar-button"
                           style          = "padding: 5px;"
                           title          = "update"
                           data-placement = "top"
@@ -391,7 +391,7 @@
                         <!-- DELETE MAP THEME -->
                         <span
                           @click.stop    = "deleteTheme(map_theme.theme)"
-                          class          = "action sidebar-button sidebar-button-icon"
+                          class          = "action sidebar-button"
                           style          = "padding: 5px;"
                           title          = "cancel"
                           data-placement = "top"
@@ -477,7 +477,7 @@
                   style       = "padding-right: 5px; cursor: pointer;"
                   :class      = "$fa(externalayers.checked ? 'check': 'uncheck')"
                 ></span>
-                <span style = "font-weight: bold" v-t = "'EXTERNAL LAYERS'"></span>
+                <span style = "font-weight: bold">{{ $t('EXTERNAL LAYERS') }}</span>
                 <span 
                   style       = "color: red; padding-right: 3px; margin-left: auto; margin-right: 8px; cursor: pointer;"
                   :class      = "$fa('trash')"
@@ -790,22 +790,16 @@
               v-if   = "'back' === backOrBackTo "
               :class = "backOrBackTo"
             >
-              <span
-                class  = "action-button"
-                :class = "$fa('back')">
-              </span>
-              <span v-t = "'back'"></span>
+              <span class = "action-button fas fa-chevron-circle-left"></span>
+              <span>{{ $t('back') }}</span>
             </div>
             <div
               v-else
               @click.stop = "gotoPreviousContent()"
               :class      = "backOrBackTo"
             >
-              <span
-                class  = "action-button"
-                :class = "$fa('back')">
-              </span>
-              <span v-t = "'backto'"></span>
+              <span class = "action-button fas fa-chevron-circle-left"></span>
+              <span>{{ $t('backto') }}</span>
               <span v-if = "!updatePreviousTitle" v-t = "previousTitle"></span>
             </div>
           </div>
@@ -874,8 +868,8 @@
 
     <!-- COOKIE BANNER -->
     <div v-if = "!state.cookie_accepted" class = "cookie-banner">
-      <div v-t = "'This website uses cookies to ensure you get the best experience on our website.'"></div>
-      <button class = "cookie-button" v-t = "'Got It!'" @click = "acceptCookie"></button>
+      <div>{{ $t('This website uses cookies to ensure you get the best experience on our website.') }}</div>
+      <button class = "cookie-button" @click = "acceptCookie">{{ $t('Got It!') }}</button>
     </div>
 
     <!-- MODAL (FULL SCREEN) -->

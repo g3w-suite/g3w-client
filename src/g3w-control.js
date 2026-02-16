@@ -598,7 +598,7 @@ export default class MapControl extends ol.control.Control {
      * @TODO check if it is deprecated. It used to show help message for map control
      */
     if ('how' === toggledTool.how && this._onhover) {
-      this._toolButton = $(`<span style="display:none" class="tool_mapcontrol_button"><i class="${GUI.getFontClass('tool')}"></i></span>`);
+      this._toolButton = $(`<span style="display:none" class="tool_mapcontrol_button"><i class="fas fa-cog"></i></span>`);
       $(this.element).prepend(this._toolButton);
       this._toolButton.on('click', e => {
         e.stopPropagation();

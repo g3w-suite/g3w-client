@@ -6,12 +6,12 @@
 <template>
   <ul
     id     = "g3w-spatial-bookmarks"
-    class  = "treeview-menu g3w-spatial-bookmarks menu-items g3w-tools"
+    class  = "treeview-menu menu-items"
   >
 
     <!-- BOOKMARS LIST -->
     <li v-if = "is_staff" class = "content-bookmarks" style = "display: flex; justify-content: space-between; background: transparent; border-radius: 0;cursor: unset;">
-      <span :hidden = "is_mobile" v-t = "'Project Bookmarks'"></span>
+      <span :hidden = "is_mobile">{{ $t('Project Bookmarks') }}</span>
       <a
         :hidden         = "is_mobile"
         :href           = "`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`"
@@ -20,57 +20,51 @@
         data-placement  = "right"
         style           = "padding: 5px 0;"
       >
-        <i :class = "$fa('external-link')"></i>
+        <i aria-hidden = "true" class = "fa fa-external-link-alt"></i>
       </a>
     </li>
 
     <template v-for = "bookmark in project_bookmarks">
       <li v-if = "bookmark.nodes">
-        <div
-          style       = "font-weight: bold; width: 100%;"
-          :style      = "{ borderBottom: bookmark.expanded ? '2px solid #2c3b41' : 'none' }"
-          @click.stop = "bookmark.expanded = !bookmark.expanded"
-        >
-          <span
-            :class = "$fa(bookmark.expanded ? 'caret-down' : 'caret-right')"
-            style  = "margin-right: 5px;">
-          </span>
-          <span>{{ bookmark.name }}</span>
-        </div>
-        <ul v-show = "bookmark.expanded" style = "margin-left: 10px;">
-          <li v-for = "node in bookmark.nodes"
-            @click.stop = "gotoSpatialBookmark(node)"
-            class       = "spatial-bookmark"
-          >
-            <div style = "display: flex; width: 100%; align-items: baseline;">
-              <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
-              <span class  = "g3w-long-text">{{ node.name }}</span>
-              <span 
-                @click.stop     = "shareBookmark(node)" 
-                title           = "Share via link"
-                data-placement  = "top"
-                :class          = "$fa('share-alt')" style = "margin-left: auto; padding: 5px;"
-                class           = "sidebar-button sidebar-button-icon">
-              </span>
-            </div>
-          </li>
-        </ul>
+        <details>
+          <summary>{{ bookmark.name }}</summary>
+          <ul style = "margin-left: 10px;">
+            <li v-for = "node in bookmark.nodes"
+              @click.stop = "gotoSpatialBookmark(node)"
+              class       = "spatial-bookmark"
+            >
+              <i class = "fas fa-bookmark" aria-hidden = "true" style = "margin-right: 5px; font-size: 0.7em;"></i>
+              <span class = "g3w-long-text">{{ node.name }}</span>
+              <button
+                type           = "button"
+                @click.stop    = "shareBookmark(node)" 
+                title          = "Share via link"
+                data-placement = "top"
+                style          = "margin-left: auto; padding: 5px;"
+                class          = "sidebar-button"
+              >
+                <i aria-hidden="true" class = "fa fa-share-alt"></i>
+              </button>
+            </li>
+          </ul>
+        </details>
       </li>
       <li v-else
         @click.stop = "gotoSpatialBookmark(bookmark)"
         class       = "spatial-bookmark"
       >
-        <div style = "display: flex; width: 100%; align-items: baseline;">
-          <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
-          <span class  = "g3w-long-text">{{ bookmark.name }}</span>
-          <span 
-            @click.stop     = "shareBookmark(bookmark)" 
-            title           = "Share via link"
-            data-placement  = "top"
-            :class          = "$fa('share-alt')" style = "margin-left: auto; padding: 5px;"
-            class           = "sidebar-button sidebar-button-icon">
-          </span>
-        </div>
+        <i class = "fas fa-bookmark" aria-hidden = "true" style = "margin-right: 5px; font-size: 0.7em;"></i>
+        <span class  = "g3w-long-text">{{ bookmark.name }}</span>
+        <button
+          type           = "button"
+          @click.stop    = "shareBookmark(bookmark)" 
+          title          = "Share via link"
+          data-placement = "top"
+          class          = "sidebar-button"
+          style          = "margin-left: auto; padding: 5px;"
+        >
+          <i aria-hidden="true" class = "fa fa-share-alt"></i>
+        </button>
       </li>
     </template>
 
@@ -78,15 +72,17 @@
       class = "content-bookmarks"
       style = "display: flex; justify-content: space-between; align-items: center; margin-top: 10px;background: transparent; border-radius: 0;cursor: unset;"
     >
-      <span :hidden = "is_mobile" v-t = "'User Bookmarks'"></span>
-      <span
+      <span :hidden = "is_mobile">{{ $t('User Bookmarks') }}</span>
+      <button
+        type        = "button"
         :hidden     = "is_mobile"
         title       = "add"
         @click.stop = "showAddForm"
-        style       = "padding: 5px; font-size: 1.2em; cursor: pointer;"
-        class       = "sidebar-button sidebar-button-icon"
-        :class      = "$fa('plus-square')"
-      ></span>
+        class       = "sidebar-button"
+        style       = "padding: 5px; font-size: 1.2em;"
+      >
+        <i aria-hidden="true" class = "fas fa-plus-square"></i>
+      </button>
       <!-- ADD NEW BOOKMARK (FORM) -->
       <dialog ref = "add_bookmark" @beforetoggle = "onBeforetoggle">
         <div style = "display: flex; justify-content: end">
@@ -112,30 +108,28 @@
       @click.stop = "gotoSpatialBookmark(bookmark)"
       class       = "spatial-bookmark"
     >
-      <div>
-        <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
-        <span class = "g3w-long-text">{{ bookmark.name }}</span>
-        
-      </div>
-      <div style = "cursor: pointer">
-        <span 
-          @click.stop     = "shareBookmark(bookmark)"     
-          title           = "Share via link"
-          data-placement  = "top"
-          :class          = "$fa('share-alt')" 
-          class           = "sidebar-button sidebar-button-icon" 
-          style           = "margin-right: 5px; padding: 5px;">
-        </span>
+      <i class = "fas fa-bookmark" aria-hidden = "true" style = "margin-right: 5px; font-size: 0.7em;"></i>
+      <span class = "g3w-long-text">{{ bookmark.name }}</span>
+      <button
+        type           = "button"
+        @click.stop    = "shareBookmark(bookmark)"
+        title          = "Share via link"
+        data-placement = "top"
+        style          = "margin-left: auto; margin-right: 5px; padding: 5px;"
+        class          = "sidebar-button"
+      >
+        <i aria-hidden="true" class = "fa fa-share-alt"></i>
+      </button>
 
-        <span 
-          @click.stop     = "removeBookMark(bookmark.id)" 
-          title           = "Delete"
-          data-placement  = "top"
-          :class          = "$fa('trash')" 
-          class           = "sidebar-button sidebar-button-icon" 
-          style           = "color: red; padding: 5px;">
-        </span>
-      </div>
+      <button
+        @click.stop     = "removeBookMark(bookmark.id)" 
+        title           = "Delete"
+        data-placement  = "top"
+        class           = "sidebar-button"
+        style           = "color: red; padding: 5px;"
+      >
+        <i aria-hidden="true" class = "fas fa-trash"></i>
+      </button>
     </li>
 
   </ul>
@@ -144,7 +138,6 @@
 <script>
   import ApplicationState   from 'g3w-state'
   import GUI                from 'g3w-app';
-  import InputText          from 'components/InputText.vue';
   import { getUniqueDomId } from 'utils/getUniqueDomId';
   import { gettext as _ }   from 'g3w-i18n';
 
@@ -152,10 +145,6 @@
 
     /** @since 3.8.6 */
     name: 'spatial-bookmarks',
-
-    components: {
-      InputText,
-    },
 
     data() {
       const gid             = ApplicationState.project.getId();
@@ -313,4 +302,9 @@
   #add-bookmark:user-invalid {
     outline: 2px solid red;
   }
+
+  ul#g3w-spatial-bookmarks > li > details > *                     { padding: 5px;}
+  ul#g3w-spatial-bookmarks > li > details       > summary::marker { content: "\f0da\a0\a0"; font-family: "Font Awesome 5 Free"; font-weight: 900; }
+  ul#g3w-spatial-bookmarks > li > details[open] > summary::marker { content: "\f0d7\a0\a0"; }
+  ul#g3w-spatial-bookmarks > li > details[open] > summary         { border-bottom: 2px solid #2c3b41; }
 </style>

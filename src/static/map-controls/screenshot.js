@@ -1044,7 +1044,7 @@ if (GUI.getComponent('print')) {
 GUI.addComponent(Object.assign(new Component({
   id:                'print',
   visible:           window.initConfig.user.is_staff || (ApplicationState.project.getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
-  icon:              g3w.app.getFontClass('print'),
+  icon:              "fas fa-print",
   iconColor:         '#FF9B21',
   title:             'print',
   internalComponent: new (Vue.extend({})),

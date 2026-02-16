@@ -524,7 +524,7 @@ export default new (class GUI extends Emitter {
     this.addComponent(new Component({
       id:         'search',
       visible:     true,
-      icon:        g3w.app.getFontClass('search'),
+      icon:        "fas fa-search",
       iconColor:   '#8dc3e3',
       title:       ApplicationState.project.state.search_title || 'search',
       service: Object.assign(new Emitter, {
@@ -550,7 +550,7 @@ export default new (class GUI extends Emitter {
       actions:     [
         {
           id:      "querybuilder",
-          class:   `${g3w.app.getFontClass('calculator')} sidebar-button sidebar-button-icon`,
+          class:   "sidebar-button fas fa-calculator",
           tooltip: _('Advanced search'),
           fnc:     () => {
             g3w.app.closeContent();
@@ -576,7 +576,7 @@ export default new (class GUI extends Emitter {
     this.addComponent(new (function() {
       const state   = {
         id:          'tools',
-        icon:        g3w.app.getFontClass('tools'),
+        icon:        "fas fa-cogs",
         iconColor:   '#FFE721',
         toolsGroups: [],
         visible: false,
@@ -623,7 +623,7 @@ export default new (class GUI extends Emitter {
     
       const comp = new Component({
         id:          'tools',
-        icon:        g3w.app.getFontClass('tools'),
+        icon:        "fas fa-cogs",
         iconColor:   '#FFE721',
         title: "tools",
         service,
@@ -632,7 +632,7 @@ export default new (class GUI extends Emitter {
             <ul class="g3w-tools treeview-menu">
               <div v-show = "state.loading" class = "bar-loader"></div>
               <li v-for="g in state.toolsGroups" :key="g.name">
-                <div class="tool-header"><i :class="g3wtemplate.getFontClass('tool')"></i><span>{{ g.name }}</span></div>
+                <div class="tool-header"><i :class="fas fa-cog"></i><span>{{ g.name }}</span></div>
                 <div :id="g.name + '-tools'" class="tool-box"><g3w-tool v-for="t in g.tools" :key="t.name" :tool="t" /></div>
               </li>
             </ul>`,
@@ -2523,7 +2523,7 @@ export default new (class GUI extends Emitter {
         layer.hasgeometry && {
           id:        'gotogeometry',
           mouseover: true,
-          class:     this.getFontClass('marker'),
+          class:     "fas fa-map-marker-alt",
           hint:      'Zoom to feature',
           cbk:       throttle((layer, feature) => {
             if (!feature.geometry) {
@@ -2548,7 +2548,7 @@ export default new (class GUI extends Emitter {
         // show relations (query)
         (this.#relations[layer.id] || []).some(r => 'MANY' === r.type) && {
           id:       'show-query-relations',
-          class:    this.getFontClass('relation'),
+          class:    "fas fa-sitemap",
           hint:     'Show Relations',
           cbk: (layer, feature) => {
             this.showRelations({ feature, layerId: layer.id });
@@ -2559,7 +2559,7 @@ export default new (class GUI extends Emitter {
         this.#atlas.filter(a => a.atlas.qgs_layer_id === layer.id).length && {
           id:       'printatlas',
           download: true,
-          class:    this.getFontClass('print'),
+          class:    "fas fa-print",
           hint:     'Print Atlas',
           cbk:      (layer, feature) => this.printAtlas(layer, feature)
         },
@@ -2568,7 +2568,7 @@ export default new (class GUI extends Emitter {
         ('__g3w_marker' === layer.id || (!layer.external && 'wms' !== (layer.source || {}).type)) && {
           id:        'removefeaturefromresult',
           mouseover: true,
-          class:     this.getFontClass('minus-square'),
+          class:     "far fa-minus-square",
           style:     { color: 'red' },
           /** @since 3.11.0 hide element in case of pagination (show = false) */
           state:     Vue.observable({ show: !layer.filter.pagination }),
@@ -2588,7 +2588,7 @@ export default new (class GUI extends Emitter {
         // select feature
         (layer.toc && undefined !== layer.selection.active) && {
           id:       'selection',
-          class:    this.getFontClass('success'),
+          class:    "far fa-check-circle",
           hint:     'Add/Remove Selection',
           state:    Vue.observable({
             toggled: layer.features.reduce((a, _ , i ) => { a[i] = false; return a; }, {}),
@@ -2616,7 +2616,7 @@ export default new (class GUI extends Emitter {
         // permalink (click to copy)
         (layer.hasgeometry && !layer.external && 'wms' !== (layer.source || {}).type) && {
           id:          'link_zoom_to_fid',
-          class:       this.getFontClass('share-alt'),
+          class:       "fa fa-share-alt",
           hint:        'Share via link',
           cbk: (layer, feature) => {
             const url = new URL(location.href);
@@ -2628,7 +2628,7 @@ export default new (class GUI extends Emitter {
         // edit
         (layer.editable && false === layer.inediting) && {
           id:    'editing',
-          class: this.getFontClass('pencil'),
+          class: "fas fa-pencil-alt",
           hint:  'Editing',
           cbk:   (layer, feature) => this.editFeature({ layer, feature })
         },

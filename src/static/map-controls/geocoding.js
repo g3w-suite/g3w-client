@@ -443,7 +443,7 @@ class GeocodingControl extends ol.control.Control {
         tmp.style.cursor = 'pointer';
         tmp.id           = 'geocoding-advanced-search';
         tmp.className    = 'action-tool';
-        tmp.innerHTML    = /* html */`<i class="${action.class.replace('sidebar-button', '').replace('sidebar-button-icon', '')}"></i> ${action.tooltip}`;
+        tmp.innerHTML    = /* html */`<i class="${action.class.replace('sidebar-button', '')}"></i> ${action.tooltip}`;
         tmp.addEventListener('click', e => {
           e.preventDefault();
           GUI.showSidebar();
@@ -628,7 +628,7 @@ class GeocodingControl extends ol.control.Control {
     actions[layer.id] = actions[layer.id] || [];
     actions[layer.id].push({
       id:         'choose_layer',
-      class:      GUI.getFontClass('pencil'),
+      class:      "fas fa-pencil-alt",
       state:      Vue.observable({ toggled: Array(layer.features.length).fill(null) }),
       toggleable: true,
       hint:       'Choose a layer',

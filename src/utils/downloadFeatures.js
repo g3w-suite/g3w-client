@@ -25,7 +25,7 @@ GUI.onafter('addActionsForLayers', (actions, layers) => {
       actions[layer.id].push({
         id:         'downloads',
         download:   true,
-        class:      GUI.getFontClass('download'),
+        class:      "fas fa-download",
         state:      Vue.observable({ toggled: layer.features.reduce((a, _ , i ) => Object.assign(a, { [i]: null }), {}) }),
         toggleable: true,
         hint:       'Downloads',

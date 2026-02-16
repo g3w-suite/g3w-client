@@ -441,8 +441,6 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
 .box-header                               { cursor: pointer; }
 .box-title.fa-plus:before,
 .box-title.fa-minus:before                { content: ''; }
-.btn.quick-action                         { font-size: 1.5em; color: #888; background-color: transparent; border: 0; margin: -5px 0 0 0; padding: 6px 10px; vertical-align: middle; }
-.btn.quick-action:hover                   { color: #888; border-color: var(--skin-primary); background-color: transparent; }
 .g3w-icon                                 { box-shadow: 0 2px 4px rgba(0,0,0,0.2); padding: 5px; font-size: 1.3em; border-radius: 30%; cursor: pointer; }
 .g3w-icon.trash                           { color:red !important; }
 
@@ -586,16 +584,13 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
 .main-sidebar .menu-items li.toggled                               { color: #374850; background-color: #fff; }
 .main-sidebar .menu-items li.toggled:hover                         { background-color: #fff; }
 .main-sidebar .menu-items li:hover                                 { background-color: hsl(from var(--bgcolor) h s calc(l + 15)); }
-.main-sidebar .sidebar-menu > li                                   { border-bottom: 1px solid hsl(from var(--bgcolor) h s calc(l - 2));}
-.main-sidebar .btn.quick-action                                    { color: #bbb; background-color: var(--bgcolor); border: 2px solid #888; }
-.main-sidebar .btn.quick-action:hover                              { color: #bbb; background-color: var(--bgcolor); border: 2px solid #888; }
-.main-sidebar .sidebar-button                                      { color: var(--skin-color); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); font-weight: bold; border-radius: 3px; background-color: #fff !important; cursor: pointer; }
-.main-sidebar .sidebar-button.toggled                              { background-color: var(--skin-color) !important; color: #fff !important; box-shadow: 0 2px 5px rgba(0,0,0, 0.2); }
-.main-sidebar .sidebar-button.sidebar-button-icon                  { background-color: transparent !important; }
-.main-sidebar ul.sidebar-menu > li a span.treeview-label           { color: #FFF; }
-.main-sidebar ul.sidebar-menu > li a:hover                         { color: hsl(from var(--skin-color) h s calc(l + 30)) !important; }
+.sidebar-menu > li                                                 { border-bottom: 1px solid hsl(from var(--bgcolor) h s calc(l - 2));}
+.sidebar-button                                                    { color: var(--skin-color); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); font-weight: bold; border-radius: 3px; border: transparent; background-color: transparent; cursor: pointer; }
+.sidebar-button.toggled                                            { background-color: var(--skin-color) !important; color: #fff !important; box-shadow: 0 2px 5px rgba(0,0,0, 0.2); }
+ul.sidebar-menu > li a span.treeview-label                         { color: #FFF; }
+ul.sidebar-menu > li a:hover                                       { color: hsl(from var(--skin-color) h s calc(l + 30)) !important; }
 
-.skin-green  .main-sidebar ul.sidebar-menu > li a:hover            { color: #a1e096 !important; }
+.skin-green ul.sidebar-menu > li a:hover                           { color: #a1e096 !important; }
 
 .datetimeinput                                                     { color: var(--skin-color); }
 
@@ -617,12 +612,12 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
 
 .sidebar-mini.sidebar-collapse .main-sidebar .menu-open,
 .sidebar-mini.sidebar-collapse .sidebar-panel,
-.sidebar-mini.sidebar-collapse #catalog > *                                                   { display: none; }
-.sidebar-mini.sidebar-collapse #catalog > a                                                   { display: block !important; }
-.sidebar-mini.sidebar-collapse #g3w-sidebarcomponents                                         { padding-top: 50px; overflow: hidden; }
-.sidebar-mini.sidebar-collapse .ol-geocoder                                                   { margin-left: 5px; }
-.sidebar-mini.sidebar-collapse .main-sidebar ul.sidebar-menu > li a span.treeview-label       { color:  transparent; }
-.sidebar-mini.sidebar-collapse .main-sidebar                                                  { overflow-y: hidden; }
+.sidebar-mini.sidebar-collapse #catalog > *                                     { display: none; }
+.sidebar-mini.sidebar-collapse #catalog > a                                     { display: block !important; }
+.sidebar-mini.sidebar-collapse #g3w-sidebarcomponents                           { padding-top: 50px; overflow: hidden; }
+.sidebar-mini.sidebar-collapse .ol-geocoder                                     { margin-left: 5px; }
+.sidebar-mini.sidebar-collapse ul.sidebar-menu > li a span.treeview-label       { color:  transparent; }
+.sidebar-mini.sidebar-collapse .main-sidebar                                    { overflow-y: hidden; }
 
 /** mobile menu */
 @media (max-width: 767px) {
