@@ -1356,7 +1356,7 @@ export default new (class GUI extends Emitter {
     const center      = options.center      && 'margin: auto'                  || '';
     if (!document.getElementById(id)) {
       container.insertAdjacentHTML('prepend' === where ? 'afterbegin' : 'beforeend', /* html */`
-        <div id="${id}" class="spinner-wrapper ${style}" style="${transparent}">
+        <div id="${id}" class="spinner-wrapper ${style}" style = "${transparent}">
             <div class="spinner ${style}" style="${center}"></div>
         </div>`
       );
@@ -3729,8 +3729,8 @@ export default new (class GUI extends Emitter {
               @error      = "onLegendError(url)"
               @load       = "onLegendLoad(url)"
               alt         = ""
-              @click.stop = "showModalLegendUrl(url)"
-              style       =  "width: 250px; cursor: zoom-in;"
+              @click.stop = "showModalLegendUrl($event, url)"
+              style       =  "width: 100%; cursor: zoom-in;"
             />
           </figure>
         </div>
@@ -3747,7 +3747,8 @@ export default new (class GUI extends Emitter {
           onLegendLoad(url) {
             url.loading = false;
           },
-          showModalLegendUrl(url) {
+          showModalLegendUrl(evt, url) {
+            g3w.app.disableSideBar(true);
             const dialog = Object.assign(document.createElement('template'), {
               innerHTML: /* html */`
                 <dialog style = "background: #212c31; max-width: 50vw; position: fixed; top: 0; left: 0; margin: 0; transform: none;">
@@ -3764,12 +3765,30 @@ export default new (class GUI extends Emitter {
 
             // ensure positioning in case UA applies centering after showModal
             document.body.appendChild(dialog);
-            dialog.showModal();
-            dialog.style.position  = 'fixed';
-            dialog.style.top       = '0';
-            dialog.style.left      = '0';
-            dialog.style.margin    = '0';
-            dialog.style.transform = 'none';
+            g3w.app.showSpinner({ container: evt.target.parentNode, id: 'legendloadspinner', style: 'transparent' });
+            setTimeout(() => {
+              const style         = document.querySelector('#legendloadspinner').style;
+              style.position      = 'fixed';
+              style.top           = `${evt.y}px`;
+              style.left          = `125px`;
+            })
+              
+            dialog.querySelector('img').addEventListener('load', () => {
+              dialog.showModal();
+              dialog.style.position  = 'fixed';
+              dialog.style.top       = '0';
+              dialog.style.left      = '0';
+              dialog.style.margin    = '0';
+              dialog.style.transform = 'none';
+              g3w.app.disableSideBar(false);
+              g3w.app.hideSpinner('legendloadspinner');
+            })
+
+            dialog.querySelector('img').addEventListener('error', () => {
+              g3w.app.disableSideBar(false);
+              g3w.app.hideSpinner('legendloadspinner');
+            })
+            
           }
         },
         async mounted() {
