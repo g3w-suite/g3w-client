@@ -1493,14 +1493,14 @@ export default {
               // if it has a style settled
               if (node.style) {
                 const promise = new Promise(resolve => {
-                  const setCurrentStyleAndResolvePromise = node => {
+                  const setCurrentStyleAndResolvePromise = async node => {
                     if (undefined === changes.layers[node.id]) {
                       changes.layers[node.id] = {
                         visibility: false,
                         style:      false
                       }
                     }
-                    changes.layers[node.id].style = project.getLayerById(node.id).changeCurrentStyle(node.style);
+                    changes.layers[node.id].style = await project.getLayerById(node.id).changeCurrentStyle(node.style);
                     resolve();
                   };
                   if (project.getLayersStore()) { setCurrentStyleAndResolvePromise(node) }
