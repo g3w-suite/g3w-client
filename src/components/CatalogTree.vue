@@ -153,8 +153,8 @@
           v-if           = "layerstree.selection.active"
           type           = "button"
           class          = "action-button fas fa-broom"
+          title          = "Clear Selection"
           data-placement = "left"
-          :title         = "'Clear Selection'"
           @click.stop    = "clearSelection"
         ></button>
 
@@ -163,9 +163,9 @@
           v-if           = "!layerstree.external && (layerstree.selection.active || layerstree.filter.active) && !layerstree.filter.pagination"
           type           = "button"
           class          = "action-button fas fa-filter"
+          title          = "Enable/Disable filter"
           data-placement = "left"
           :class         = "layerstree.filter.active ? 'active' : ''"
-          :title         = "'Enable/Disable filter'"
           @click.stop    = "toggleFilterLayer"
         ></button>
 
@@ -174,8 +174,8 @@
           v-if           = "logged && !layerstree.external && (layerstree.selection.active && layerstree.filter.active)"
           type           = "button"
           class          = "action-button far fa-save"
+          title          = "Save Filter"
           data-placement = "left"
-          :title         = "'Save Filter'"
           @click.stop    = "saveFilter(layerstree)"
         ></button>
 
@@ -184,11 +184,71 @@
     </div>
 
     <!-- NODE LEGEND (LAYER) -->
-    <catalog-legend
-      v-if         = "showLayerTocLegend"
-      :legendplace = "legendplace"
-      :layer       = "layerstree"
-    />
+    <div
+      v-if                = "showLayerTocLegend"
+      v-show              = "show_legend"
+      class               = "layer-legend"
+      @click.stop.prevent = ""
+    >
+
+      <bar-loader v-if = "legend_tree" :loading = "legend_tree.loading" />
+
+      <figure v-if = "externallegend">
+        <img 
+          loading    = "lazy"
+          :src       = "legend_tree.url" 
+          @loaderror = "setError()"
+          @load      = "urlLoaded()"
+          >
+      </figure>
+
+      <figure
+        v-else
+        v-disabled = "loading_legend"
+      >
+        <bar-loader :loading = "loading_legend"/>
+
+        <div
+          v-for                     = "(category, index) in legend_categories"
+          @contextmenu.prevent.stop = "showCategoryMenu"
+          style                     = "display: flex; align-items: center; width: 100%"
+          v-disabled                = "category.disabled"
+        >
+
+          <span
+            v-if                = "category.ruleKey"
+            @click.stop.prevent = "showHideLayerCategory(index)"
+            style               = "padding-right: 3px;"
+            :class              = "$fa(category.checked ? 'check': 'uncheck')"
+          ></span>
+
+          <img
+            v-if   = "('toc' === legendplace)"
+            :src   = "category.icon && `data:image/png;base64,${category.icon}`"
+            @error = "setError()"
+            @load  = "urlLoaded()"
+          >
+
+          <span
+            v-if        = "('tab' === legendplace && category.ruleKey) || ('toc' === legendplace)"
+            class       = "g3w-long-text"
+            style       = "padding-left: 3px;"
+            @click.stop = "onCategoryClick"
+          >
+            <span>{{category.title}}</span>
+            <span
+              v-if = "showfeaturecount && undefined !== category.ruleKey"
+              style = "font-weight: bold"
+            >
+              [{{layerstree.featurecount[category.ruleKey]}}]
+            </span>
+          </span>
+
+        </div>
+
+      </figure>
+
+    </div>
 
     <!-- CHILD NODES (GROUP) -->
     <ul
@@ -219,7 +279,7 @@
       type           = "button"
       class          = "fas fa-list"
       data-placement = "left"
-      :title         = "'legend'"
+      title          = "legend"
       @click.stop    = "showLegendPanel"
       style          = "position: absolute;inset: 0 4px auto auto;padding: 4px 8px;border-radius: 3px;"
     ></button>
@@ -241,8 +301,8 @@
 import ApplicationState        from 'g3w-state';
 import GUI                     from 'g3w-app';
 import ClickMixin              from 'mixins/click';
-import CatalogLegend           from 'components/CatalogLegend.vue';
 import { getCatalogLayerById } from 'utils/getCatalogLayerById';
+import { XHR }                 from 'utils/XHR';
 
 function _setAllLayersVisible(layers) {
   layers.nodes.forEach(n => {
@@ -271,10 +331,6 @@ export default {
     'parent'
   ],
 
-  components: {
-    CatalogLegend
-  },
-
   mixins: [ClickMixin],
 
   data() {
@@ -285,6 +341,24 @@ export default {
       n_childs:       null,
       filtered:       false,
       logged:         undefined !== ApplicationState.user.id, //@since 3.10.0
+      /**
+       * Whether to show loading bar while changing style categories
+       *
+       * @since 3.8.0
+       */
+      loading_legend: false,
+
+      /**
+       * Array of categories
+       */
+      legend_categories: [],
+
+      /**
+       * Holds a reference to current layer style (active category)
+       *
+       * @since 3.8.0
+       */
+      currentstyle: null,
     }
   },
 
@@ -351,6 +425,37 @@ export default {
       return Object.values(this.layerstree.featurecount).reduce((total, categoryFeatureCount) => total + 1 * categoryFeatureCount, 0);
     },
 
+    /**
+     * @returns {boolean} whether is a WMS layer
+     * 
+     * @since 4.1.0
+     */
+    externallegend() {
+      return 'wms' === this.layerstree.source.type;
+    },
+
+    /**
+     * @returns {boolean} whether layer has legend to show
+     * 
+     * @since 4.1.0
+     */
+    legend_tree() {
+      return this.layerstree.legend;
+    },
+
+    /**
+     * @returns {boolean} whether to show legend
+     * 
+     * @since 4.1.0
+     */
+    show_legend() {
+      return (
+        this.layerstree.expanded 
+        && this.layerstree.visible 
+        && ('toc' === this.legendplace || 'tab' === this.legendplace && this.layerstree.categories)
+      );
+    },
+
   },
 
   watch: {
@@ -361,7 +466,98 @@ export default {
       } else {
         this.handleLayerChecked(this.layerstree);
       }
-    }
+    },
+
+    /**
+     * @since 4.1.0
+     */
+    showLayerTocLegend: {
+      immediate: true,
+      async handler(show) {
+        if (show) {
+          this.loading_legend    = false;
+          this.legend_categories = [];
+          this.currentstyle      = this.layerstree.styles.find(s => true === s.current)?.name;
+
+          /**
+           * Store `click` and `doubleclick` events on a single vue element.
+           *
+           * @see https://stackoverflow.com/q/41303982
+           */
+          this.__CATEGORY_CLICK_EVENT = {
+            count:     0,                                   // count click events
+            timeoutID: null                             // timeoutID return by setTimeout Function
+          };
+
+          /**
+           * Used to check if layer and its legend categories are initialized
+           * That means register all events at first time the layer is visible
+           * without do any server request
+           *
+           * @type {boolean}
+           *
+           * @since 3.8.0
+           */
+          this.initialize = false;
+
+          /**
+           * @FIXME the following comment seems wrong (isn't `this.dynamic` a `boolean` variable?)
+           *
+           * Store legend url icons based on the current style of layer.
+           * It uses to cache all symbols of a style without get a new request to server
+           *
+           * @type {{}}
+           */
+          this.dynamic  = ApplicationState.project.state.context_base_legend;
+
+          this.mapReady = false;
+
+          // listen to layer change style event
+          getCatalogLayerById(this.layerstree.id).onafter('change', this.onChangeLayerLegendStyle);
+
+          // Get all legend graphics of a layer when start
+          // need to exclude wms source
+          if (false === this.externallegend && true === this.layerstree.visible) {
+            await this.runInitLayerVisibleAction();
+          }
+
+          if (this.layerstree.visible && this.externallegend) {
+            await this.setWmsSourceLayerLegendUrl();
+          }
+        } else {
+          this.__resetCategoryClickMixin();
+          this.__CATEGORY_CLICK_EVENT = null;
+          //remove change event on legend
+          getCatalogLayerById(this.layerstree.id)?.un('change', this.onChangeLayerLegendStyle);
+        }
+      }
+    },
+
+    /**
+     * Only when visible show categories layer. In case of dynamic legend check
+     *
+     * @param {boolean} visible
+     * 
+     * @since 4.1.0
+     */
+    async 'layerstree.visible'(visible) {
+      if (!this.showLayerTocLegend) {
+        return;
+      }
+      // check if layer is enabled to get legend and if is visible
+      const enabled = visible && false === this.externallegend;
+      // initialize if it is the first time that is visible.
+      if (enabled && false === this.initialize) {
+        await this.runInitLayerVisibleAction();
+      }
+      // otherwise show categories base on if is dynamic legend or not
+      if (enabled && false !== this.initialize) {
+        await this.setLayerCategories(!this.dynamic);
+      }
+      if (visible && this.externallegend) {
+        await this.setWmsSourceLayerLegendUrl();
+      }
+    },
 
   },
 
@@ -579,6 +775,247 @@ export default {
       GUI.showLegendPanel();
     },
 
+    /**
+     * @since 4.1.0
+     */
+    onCategoryClick() {
+      this.handleCategoryClick({
+        '1': () => { /** @TODO this.selectCategory() */ console.info('TODO: select category (single click)'); },
+        '2': () => { /** @TODO this.zoomToCategory() */ console.info('TODO: zoom to category (double click)'); }
+      }, this);
+    },
+
+    /**
+     * Show category contextual menu
+     * 
+     * @fires showmenucategory
+     * 
+     * @since 4.1.0
+     */
+    showCategoryMenu() {
+      this.$emit('showmenucategory');
+    },
+
+    /**
+     * set external legend url
+     * 
+     * @since 4.1.0
+     */
+    async setWmsSourceLayerLegendUrl() {
+      if (!this.legend_tree.url) {
+        this.legend_tree.loading = true;
+        await this.$nextTick();
+        this.legend_tree.url = getCatalogLayerById(this.layerstree.id).getLegendUrl({
+          ...window.initConfig?.layout?.legend,
+          width:  16,
+          height: 16,
+        });
+      }
+    },
+
+    /**
+     * @since 4.1.0
+     */
+    showHideLayerCategory(index) {
+      this.legend_categories[index].checked = !this.legend_categories[index].checked;
+      //emit chang layer on map to refresh tiles
+      getCatalogLayerById(this.layerstree.id).change();
+      
+      if ('tab' === this.legendplace) {
+        this.layerstree.legend.change = true;
+        
+      } else if (this.legend_categories[index].checked && this.mapReady) {
+        this.setLayerCategories(false);
+      }
+
+    },
+
+    /**
+     * @since 4.1.0
+     */
+    setError() {
+      this.legend_tree.error   = true;
+      this.legend_tree.loading = false;
+    },
+
+    /**
+     * @since 4.1.0
+     */
+    async urlLoaded() {
+      this.legend_tree.loading = false;
+    },
+
+    /**
+     * Handle changing style of layer legend
+     *
+     * @since 4.1.0
+     */
+    async onChangeLayerLegendStyle(opts = {}) {
+  
+      if (this.externallegend) {
+        return;
+      }
+
+      this.loading_legend = true;
+
+      try {
+        await this.setLayerCategories(true);
+        this.currentstyle = opts.style;                                // Set current style.
+        if (this.dynamic) {    
+          await this.setLayerCategories(false);                           // toggle categories.
+        }
+      } catch(e) {
+        console.warn('Error while changing layer style', e)
+      }
+
+      this.loading_legend = false;
+    },
+
+    /**
+     * @param { boolean } all true = no bbox no filter (just all referred to)
+     * 
+     * @since 4.1.0
+     */
+    async setLayerCategories(all = false) {
+      try {
+        const projectLayer = getCatalogLayerById(this.layerstree.id);
+        const categories   = projectLayer.getCategories();
+
+        if (all && categories) { // check if exist current layer categories
+          this.legend_categories = categories;
+        } else {
+          const { nodes = [] } = await XHR.get({
+            url: projectLayer.getLegendUrl(
+              window.initConfig?.layout?.legend,
+              {
+                categories: true,
+                format:     'application/json', // request format (icon and label of each category)
+                all,
+              }
+            )
+          });
+          if (all) { // case of all categories
+            this._setAllLayerCategories(nodes);
+          } else {
+            this._updateLayerCategories(nodes);
+          }
+        }
+      } catch(e) {
+        console.warn(e);
+        this.setError();
+      }
+    },
+
+    /**
+     * @since 4.1.0
+     */
+    _setAllLayerCategories(nodes) {
+      const projectLayer = getCatalogLayerById(this.layerstree.id);
+
+      const categories = [];
+      nodes.forEach(({ icon, title, ruleKey, checked, symbols = [] }) => {
+        if (icon) {
+          // just one category is set (take care of `checked` and `ruleKey`).
+          categories.push({ icon, title, ruleKey, checked, disabled: false });
+        } else {
+          // there are more that one category (`symbols` array is set).
+          symbols.forEach(s => {
+            s._checked = s.checked;
+            s.disabled = false;
+            categories.push(s);
+          });
+        }
+      });
+      projectLayer.setCategories(categories);
+      this.legend_categories = categories;
+    },
+
+    /**
+     * @since 4.1.0
+     */
+    _updateLayerCategories(nodes = []) {
+
+      // case to update current categories
+      if (nodes.length > 0) {
+        nodes.forEach(({ icon, title, symbols = [] }) => {
+          if (icon) {
+            symbols = [{ icon, title }];
+          }
+          this.legend_categories.forEach(c  => {
+            const findSymbol  = symbols.find(s => s.icon === c.icon && s.title === c.title);
+            const disabled    = undefined === c.checked || c.checked;
+            c.disabled        = disabled && undefined === findSymbol;
+            //@since 4.0.x In case of icon change base on map. Check icon in case of same title
+            c.icon            = (symbols.find(s => s.title === c.title && s.icon !== c.icon) || { icon: c.icon }).icon;
+          });
+        })
+      } else {
+        this.legend_categories.forEach(c => c.disabled = (undefined === c.checked) || c.checked);
+      }
+    },
+
+    /**
+     * @since 4.1.0
+     */
+    async onChangeMapLegendParams() {
+      this.mapReady = true;
+      if (
+        this.layerstree.visible
+        && false === this.externallegend
+        && ('toc' === this.legendplace || this.layerstree.categories)
+      ) {
+        await this.setLayerCategories(false);
+      }
+    },
+
+    /**
+     * @returns {Promise<void>}
+     *
+     * @listens map~change-map-legend-params
+     *
+     * @since 4.1.0
+     */
+    async runInitLayerVisibleAction() {
+      await this.setLayerCategories(true);
+      if (this.dynamic) {
+        await this.setLayerCategories(false);
+        GUI.on('change-map-legend-params', this.onChangeMapLegendParams);
+      }
+      this.initialize = true;
+    },
+
+    /**
+     * @param {{ '1': () => {}, '2': () => {}}} callbacks hashmap of click event handlers ('1' = click, '2' = double click)
+     * @param context
+     * 
+     * @since 4.1.0
+     */
+    handleCategoryClick(callbacks = {}, context) {
+      if (!this.__CATEGORY_CLICK_EVENT) {
+        console.warn('click mixin not initialized on context:', context);
+        return;
+      }
+      this.__CATEGORY_CLICK_EVENT.count += 1;                   // increment click count
+      if (!this.__CATEGORY_CLICK_EVENT.timeoutID) {             // skip and wait for timeout in order to detect double click
+        this.__CATEGORY_CLICK_EVENT.timeoutID = setTimeout(() => {
+          if (undefined !== callbacks[this.__CATEGORY_CLICK_EVENT.count]) {
+            callbacks[this.__CATEGORY_CLICK_EVENT.count].call(context);
+          }
+          this.__resetCategoryClickMixin();
+        }, 300);
+      }
+    },
+
+    /**
+     * @since 4.1.0
+     */
+    __resetCategoryClickMixin() {
+      if (this.__CATEGORY_CLICK_EVENT ) {
+        this.__CATEGORY_CLICK_EVENT.count     = 0;
+        this.__CATEGORY_CLICK_EVENT.timeoutID = null;
+      }
+    },
+
   },
 
   /**
@@ -595,3 +1032,9 @@ export default {
 
 };
 </script>
+
+<style scoped>
+  .layer-legend {
+    padding-left: 36px;
+  }
+</style>

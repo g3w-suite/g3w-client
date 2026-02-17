@@ -632,7 +632,7 @@ export default new (class GUI extends Emitter {
             <ul class="g3w-tools treeview-menu">
               <div v-show = "state.loading" class = "bar-loader"></div>
               <li v-for="g in state.toolsGroups" :key="g.name">
-                <div class="tool-header"><i :class="fas fa-cog"></i><span>{{ g.name }}</span></div>
+                <div class="tool-header"><i class="fas fa-cog"></i><span>{{ g.name }}</span></div>
                 <div :id="g.name + '-tools'" class="tool-box"><g3w-tool v-for="t in g.tools" :key="t.name" :tool="t" /></div>
               </li>
             </ul>`,
@@ -3725,13 +3725,11 @@ export default new (class GUI extends Emitter {
           >
             <bar-loader :loading = "url.loading" />
             <img
-              v-show      = "!url.loading && !url.error"
-              :src        = "url.url"
-              @error      = "onLegendError(url)"
-              @load       = "onLegendLoad(url)"
-              alt         = ""
-              @click.stop = "showModalLegendUrl($event, url)"
-              style       =  "width: 100%; cursor: zoom-in;"
+              v-show = "!url.loading && !url.error"
+              :src   = "url.url"
+              @error = "onLegendError(url)"
+              @load  = "onLegendLoad(url)"
+              alt    = ""
             />
           </figure>
         </div>
@@ -3748,49 +3746,6 @@ export default new (class GUI extends Emitter {
           onLegendLoad(url) {
             url.loading = false;
           },
-          showModalLegendUrl(evt, url) {
-            g3w.app.disableSideBar(true);
-            const dialog = Object.assign(document.createElement('template'), {
-              innerHTML: /* html */`
-                <dialog style = "background: #212c31; max-width: 50vw; position: fixed; top: 0; left: 0; margin: 0; transform: none;">
-                  <img
-                    src         = "${url.url}"
-                    alt         = ""
-                    style       = "display: block; width: auto; height: auto;"
-                  />
-                </dialog>
-                `.trim()
-              }).content.firstChild;
-
-            dialog.addEventListener('close', async () => dialog.remove());
-
-            // ensure positioning in case UA applies centering after showModal
-            document.body.appendChild(dialog);
-            g3w.app.showSpinner({ container: evt.target.parentNode, id: 'legendloadspinner', style: 'transparent' });
-            setTimeout(() => {
-              const style         = document.querySelector('#legendloadspinner').style;
-              style.position      = 'fixed';
-              style.top           = `${evt.y}px`;
-              style.left          = `125px`;
-            })
-              
-            dialog.querySelector('img').addEventListener('load', () => {
-              dialog.showModal();
-              dialog.style.position  = 'fixed';
-              dialog.style.top       = '0';
-              dialog.style.left      = '0';
-              dialog.style.margin    = '0';
-              dialog.style.transform = 'none';
-              g3w.app.disableSideBar(false);
-              g3w.app.hideSpinner('legendloadspinner');
-            })
-
-            dialog.querySelector('img').addEventListener('error', () => {
-              g3w.app.disableSideBar(false);
-              g3w.app.hideSpinner('legendloadspinner');
-            })
-            
-          }
         },
         async mounted() {
           this.legendurls = await g3w.app.getLegendSrc({ change: true });
