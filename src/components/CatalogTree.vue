@@ -185,60 +185,55 @@
       class               = "layer-legend"
       @click.stop.prevent = ""
     >
-
       <bar-loader v-if = "legend_tree" :loading = "legend_tree.loading" />
 
-      <figure v-if = "externallegend">
-        <img 
+      <figure v-disabled = "!externallegend && loading_legend">
+        <img
+          v-if       = "externallegend" 
           loading    = "lazy"
           :src       = "legend_tree.url" 
           @loaderror = "setError()"
           @load      = "urlLoaded()"
-          >
-      </figure>
-
-      <figure
-        v-else
-        v-disabled = "loading_legend"
-      >
-        <bar-loader :loading = "loading_legend"/>
-
-        <div
-          v-for                     = "(category, index) in legend_categories"
-          @contextmenu.prevent.stop = "showCategoryMenu"
-          style                     = "display: flex; align-items: center; width: 100%"
-          v-disabled                = "category.disabled"
         >
+        <template v-else>
+          <bar-loader :loading = "loading_legend"/>
 
-          <input
-            v-if        = "category.ruleKey"
-            type        = "checkbox"
-            @click.stop = "showHideLayerCategory(index)"
-            style       = "margin-right: 3px;"
-            v-model     = "category.checked"
-          />
-
-          <img
-            v-if   = "('toc' === legendplace)"
-            :src   = "category.icon && `data:image/png;base64,${category.icon}`"
-            @error = "setError()"
-            @load  = "urlLoaded()"
+          <div
+            v-for                     = "(category, index) in legend_categories"
+            @contextmenu.prevent.stop = "showCategoryMenu"
+            style                     = "display: flex; align-items: center; width: 100%"
+            v-disabled                = "category.disabled"
           >
 
-          <span
-            v-if        = "('tab' === legendplace && category.ruleKey) || ('toc' === legendplace)"
-            class       = "g3w-long-text"
-            style       = "padding-left: 3px;"
-            @click.stop = "onCategoryClick"
-          >
-            <span>{{category.title}}</span>
-            <b v-if = "showfeaturecount && undefined !== category.ruleKey"> [{{layerstree.featurecount[category.ruleKey]}}] </b>
-          </span>
+            <input
+              v-if        = "category.ruleKey"
+              type        = "checkbox"
+              @click.stop = "toggleCategory(index)"
+              style       = "margin-right: 3px;"
+              v-model     = "category.checked"
+            />
 
-        </div>
+            <img
+              v-if   = "('toc' === legendplace)"
+              :src   = "category.icon && `data:image/png;base64,${category.icon}`"
+              @error = "setError()"
+              @load  = "urlLoaded()"
+            >
 
+            <span
+              v-if        = "('tab' === legendplace && category.ruleKey) || ('toc' === legendplace)"
+              class       = "g3w-long-text"
+              style       = "padding-left: 3px;"
+              @click.stop = "onCategoryClick"
+            >
+              <span>{{category.title}}</span>
+              <b v-if = "showfeaturecount && undefined !== category.ruleKey"> [{{layerstree.featurecount[category.ruleKey]}}] </b>
+            </span>
+
+          </div>
+
+        </template>
       </figure>
-
     </div>
 
     <!-- CHILD NODES (GROUP) -->
@@ -474,7 +469,7 @@ export default {
           this.mapReady = false;
 
           // listen to layer change style event
-          getCatalogLayerById(this.layerstree.id).onafter('change', this.onChangeLayerLegendStyle);
+          getCatalogLayerById(this.layerstree.id).onafter('change', this.onLayerChange);
 
           // Get all legend graphics of a layer when start
           // need to exclude wms source
@@ -487,7 +482,7 @@ export default {
           }
         } else {
           //remove change event on legend
-          getCatalogLayerById(this.layerstree.id)?.un('change', this.onChangeLayerLegendStyle);
+          getCatalogLayerById(this.layerstree.id)?.un('change', this.onLayerChange);
         }
       }
     },
@@ -511,7 +506,7 @@ export default {
       }
       // otherwise show categories base on if is dynamic legend or not
       if (enabled && false !== this.initialize) {
-        await this.setLayerCategories(!this.dynamic);
+        await this.setCategories(!this.dynamic);
       }
       if (visible && this.externallegend) {
         await this.setWmsSourceLayerLegendUrl();
@@ -768,16 +763,15 @@ export default {
     /**
      * @since 4.1.0
      */
-    showHideLayerCategory(index) {
+    toggleCategory(index) {
       this.legend_categories[index].checked = !this.legend_categories[index].checked;
       //emit chang layer on map to refresh tiles
       getCatalogLayerById(this.layerstree.id).change();
       
       if ('tab' === this.legendplace) {
         this.layerstree.legend.change = true;
-        
       } else if (this.legend_categories[index].checked && this.mapReady) {
-        this.setLayerCategories(false);
+        this.setCategories(false);
       }
 
     },
@@ -802,8 +796,7 @@ export default {
      *
      * @since 4.1.0
      */
-    async onChangeLayerLegendStyle(opts = {}) {
-  
+    async onLayerChange(opts = {}) {
       if (this.externallegend) {
         return;
       }
@@ -811,10 +804,10 @@ export default {
       this.loading_legend = true;
 
       try {
-        await this.setLayerCategories(true);
+        await this.setCategories(true);
         this.currentstyle = opts.style;                                // Set current style.
         if (this.dynamic) {    
-          await this.setLayerCategories(false);                           // toggle categories.
+          await this.setCategories(false);                           // toggle categories.
         }
       } catch(e) {
         console.warn('Error while changing layer style', e)
@@ -828,7 +821,7 @@ export default {
      * 
      * @since 4.1.0
      */
-    async setLayerCategories(all = false) {
+    async setCategories(all = false) {
       try {
         const projectLayer = getCatalogLayerById(this.layerstree.id);
         const categories   = projectLayer.getCategories();
@@ -847,62 +840,46 @@ export default {
             )
           });
           if (all) { // case of all categories
-            this._setAllLayerCategories(nodes);
+            const projectLayer = getCatalogLayerById(this.layerstree.id);
+            const categories = [];
+            nodes.forEach(({ icon, title, ruleKey, checked, symbols = [] }) => {
+              if (icon) {
+                // just one category is set (take care of `checked` and `ruleKey`).
+                categories.push({ icon, title, ruleKey, checked, disabled: false });
+              } else {
+                // there are more that one category (`symbols` array is set).
+                symbols.forEach(s => {
+                  s._checked = s.checked;
+                  s.disabled = false;
+                  categories.push(s);
+                });
+              }
+            });
+            projectLayer.setCategories(categories);
+            this.legend_categories = categories;
           } else {
-            this._updateLayerCategories(nodes);
+            // case to update current categories
+            if (nodes.length > 0) {
+              nodes.forEach(({ icon, title, symbols = [] }) => {
+                if (icon) {
+                  symbols = [{ icon, title }];
+                }
+                this.legend_categories.forEach(c  => {
+                  const findSymbol  = symbols.find(s => s.icon === c.icon && s.title === c.title);
+                  const disabled    = undefined === c.checked || c.checked;
+                  c.disabled        = disabled && undefined === findSymbol;
+                  //@since 4.0.x In case of icon change base on map. Check icon in case of same title
+                  c.icon            = (symbols.find(s => s.title === c.title && s.icon !== c.icon) || { icon: c.icon }).icon;
+                });
+              })
+            } else {
+              this.legend_categories.forEach(c => c.disabled = (undefined === c.checked) || c.checked);
+            }
           }
         }
       } catch(e) {
         console.warn(e);
         this.setError();
-      }
-    },
-
-    /**
-     * @since 4.1.0
-     */
-    _setAllLayerCategories(nodes) {
-      const projectLayer = getCatalogLayerById(this.layerstree.id);
-
-      const categories = [];
-      nodes.forEach(({ icon, title, ruleKey, checked, symbols = [] }) => {
-        if (icon) {
-          // just one category is set (take care of `checked` and `ruleKey`).
-          categories.push({ icon, title, ruleKey, checked, disabled: false });
-        } else {
-          // there are more that one category (`symbols` array is set).
-          symbols.forEach(s => {
-            s._checked = s.checked;
-            s.disabled = false;
-            categories.push(s);
-          });
-        }
-      });
-      projectLayer.setCategories(categories);
-      this.legend_categories = categories;
-    },
-
-    /**
-     * @since 4.1.0
-     */
-    _updateLayerCategories(nodes = []) {
-
-      // case to update current categories
-      if (nodes.length > 0) {
-        nodes.forEach(({ icon, title, symbols = [] }) => {
-          if (icon) {
-            symbols = [{ icon, title }];
-          }
-          this.legend_categories.forEach(c  => {
-            const findSymbol  = symbols.find(s => s.icon === c.icon && s.title === c.title);
-            const disabled    = undefined === c.checked || c.checked;
-            c.disabled        = disabled && undefined === findSymbol;
-            //@since 4.0.x In case of icon change base on map. Check icon in case of same title
-            c.icon            = (symbols.find(s => s.title === c.title && s.icon !== c.icon) || { icon: c.icon }).icon;
-          });
-        })
-      } else {
-        this.legend_categories.forEach(c => c.disabled = (undefined === c.checked) || c.checked);
       }
     },
 
@@ -916,7 +893,7 @@ export default {
         && false === this.externallegend
         && ('toc' === this.legendplace || this.layerstree.categories)
       ) {
-        await this.setLayerCategories(false);
+        await this.setCategories(false);
       }
     },
 
@@ -928,9 +905,9 @@ export default {
      * @since 4.1.0
      */
     async runInitLayerVisibleAction() {
-      await this.setLayerCategories(true);
+      await this.setCategories(true);
       if (this.dynamic) {
-        await this.setLayerCategories(false);
+        await this.setCategories(false);
         GUI.on('change-map-legend-params', this.onChangeMapLegendParams);
       }
       this.initialize = true;
