@@ -679,7 +679,7 @@ class GeocodingControl extends ol.control.Control {
                   class       = "btn skin-button"
                   @click.stop = "() => config.cbk(layerId, feature)"
                 >
-                  <span :class = "g3wtemplate.getFontClass(config.icon)"></span>
+                  <span :class = "$fa(config.icon)"></span>
                 </button>
               </div>
             </section>`,

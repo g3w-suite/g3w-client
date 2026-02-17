@@ -10,7 +10,7 @@
     class                     = "tree-item"
     @contextmenu.prevent.stop = "showContextMenu"
     @click.stop               = "onTreeItemClick"
-    :style="{
+    :style                    = "{
       marginLeft: !isGroup ? '5px' : '0',
       position: 'relative',
     }"
@@ -38,7 +38,7 @@
       v-if        = "isGroup"
       @click.stop = "toggle()"
       style       = "color: #ffffff"
-      :class      = "[triClass()]"
+      :class      = "[$fa(layerstree.checked ? 'check' : 'uncheck')]"
     ></span>
 
     <!-- TABLE LAYER -->
@@ -732,10 +732,6 @@ export default {
         '1': () => !this.isTable && !this.isGroup && this.select(),
         '2': () => !this.isTable && this.maybeZoomToLayer(this.layerstree)
       }, this);
-    },
-
-    triClass() {
-      return this.g3wtemplate.getFontClass(this.layerstree.checked ? 'check' : 'uncheck');
     },
 
     removeExternalLayer(name) {
