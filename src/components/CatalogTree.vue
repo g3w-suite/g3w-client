@@ -25,10 +25,7 @@
     <span
       v-if        = "isGroup"
       style       = "padding-right: 2px;"
-      :class      = "[
-        { bold : isGroup },
-        $fa(layerstree.expanded ? 'caret-down' : 'caret-right')
-      ]"
+      :class      = "['bold', $fa(layerstree.expanded ? 'caret-down' : 'caret-right')]"
       @click.stop = "expandCollapse"
       class       = "root collapse-expande-collapse-icon"
     ></span>
@@ -37,7 +34,7 @@
     <span
       v-if        = "isGroup"
       @click.stop = "toggle()"
-      style       = "color: #ffffff"
+      style       = "color: #fff"
       :class      = "[$fa(layerstree.checked ? 'check' : 'uncheck')]"
     ></span>
 
@@ -46,10 +43,7 @@
       v-else-if = "isTable"
       v-show    = "!layerstree.hidden"
       style     = "padding-left: 18px"
-      :class    = "[
-        parentFolder ? 'child' : 'root',
-        $fa('table')
-      ]"
+      :class    = "['fas fa-table', parentFolder ? 'child' : 'root']"
     ></span>
 
     <template v-else>
@@ -57,7 +51,7 @@
       <span 
         v-if        = "layerstree.external && layerstree.removable"
         style       = "color: red; padding-left: 1px;"
-        :class      = "$fa('trash')"
+        class       = "fas fa-trash"
         @click.stop = "removeExternalLayer(layerstree.name, layerstree._type)"
       ></span>
 
@@ -122,27 +116,23 @@
         data-placement       = "top"
         data-i18n-raw        = ""
       >
-        <!-- SHOW CURRENT FILTER  -->
-        <span
+        <!-- REMOVE CURRENT FILTER  -->
+        <button
           v-if             = "!isGroup && !layerstree.external && null !== layerstree.filter.current"
+          type             = "button"
           :data-i18n-title = "layerstree.filter.current.name"
           data-placement   = "top"
           data-i18n-raw    = ""
-          style            = "cursor: pointer"
+          class            = "action-button"
+          style            = "box-shadow: unset;"
           @click.stop      = "removeCurrentFilter"
         >
-          <span
-            style  = "color: red"
-            :class = "$fa('filter')"
-          ></span>
-        </span>
+          <i class = "fas fa-filter" style = "color: red"></i>
+        </button>
         <!-- VISIBLE NODE TITLE (LAYER or GROUP) -->
         <span>{{ layerstree.title }}</span>
         <!-- LAYER FEATURES COUNT-->
-        <span v-if = "!isGroup && showfeaturecount" style = "font-weight: bold">
-          [{{getFeatureCount}}]
-        </span>
-
+        <b v-if = "!isGroup && showfeaturecount"> [{{ getFeatureCount }}] </b>
       </span>
 
       <!-- VISIBLE NODE SELECTED (LAYER) -->
@@ -236,12 +226,7 @@
             @click.stop = "onCategoryClick"
           >
             <span>{{category.title}}</span>
-            <span
-              v-if = "showfeaturecount && undefined !== category.ruleKey"
-              style = "font-weight: bold"
-            >
-              [{{layerstree.featurecount[category.ruleKey]}}]
-            </span>
+            <b v-if = "showfeaturecount && undefined !== category.ruleKey"> [{{layerstree.featurecount[category.ruleKey]}}] </b>
           </span>
 
         </div>
@@ -257,21 +242,17 @@
       :class = "[`g3w-lendplace-${legendplace}`]"
       v-show ="layerstree.expanded"
     >
-
-      <span v-for = "_layerstree in layerstree.nodes" :key = "_layerstree.id || _layerstree.groupId">
-
-        <catalog-tree
-          :root                      = "false"
-          :legendConfig              = "legend"
-          :legendplace               = "legendplace"
-          :parentFolder              = "isGroup"
-          :layerstree                = "_layerstree"
-          :storeid                   = "storeid"
-          :parent                    = "layerstree"
-          :parent_mutually_exclusive = "!!layerstree.mutually_exclusive"
-        />
-
-      </span>
+      <catalog-tree
+        v-for                      = "_layerstree in layerstree.nodes" :key = "_layerstree.id || _layerstree.groupId"
+        :root                      = "false"
+        :legendConfig              = "legend"
+        :legendplace               = "legendplace"
+        :parentFolder              = "isGroup"
+        :layerstree                = "_layerstree"
+        :storeid                   = "storeid"
+        :parent                    = "layerstree"
+        :parent_mutually_exclusive = "!!layerstree.mutually_exclusive"
+      />
     </ul>
 
     <button
