@@ -172,15 +172,6 @@ module.exports = class Service {
       // check if you require or check validation
       this.state.validate.valid  = !this.state.validate.required;
     } else {
-      if (['integer', 'float', 'bigint'].includes(this.state.input.type)) {
-        if (+this.state.value < 0) {
-          this.state.value               = null;
-          this.state.validate.empty      = true;
-          this.state.validate.valid      = !this.state.validate.required;
-        } else {
-          this.state.validate.valid = this._validator.validate(this.state.value);
-        }
-      }
       //check exclude_values state.validate.unique (QGIS field property [x] Enforce unique constraint)
       if (this.state.validate.unique && this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
         //need to convert this.state.value to string because editing store exclude_values items as string
