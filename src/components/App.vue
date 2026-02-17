@@ -1422,139 +1422,6 @@ export default {
     },
 
     /**
-     * get map Theme_configuration
-     * 
-     * @since 4.1.0
-     */
-    async getMapThemeFromThemeName(theme) {
-      const project = ApplicationState.project;
-      // get map theme configuration from map_themes project config
-      const config  = Object.values(project.state.map_themes).flat().find(c => theme === c.theme );
-      if (config && undefined === config.layerstree) {
-        try {
-          const response = await XHR.get({ url: `${project.urls.map_themes}${theme}/` });
-          if (response.result) {
-            config.layerstree = response.data;
-          }
-        } catch(e) {
-          console.warn('Error while retreiving map theme configuration', e);
-        }
-      }
-      return config;
-    },
-
-    /**
-     * Set properties (checked and visible) from view to layerstree
-     * 
-     * @param map_theme map theme name
-     * @param layerstree // current layerstree of TOC
-     * 
-     * @since 4.1.0
-     */
-    async setLayersTreePropertiesFromMapTheme({ map_theme, layerstree }) {
-      const project  = ApplicationState.project;
-      layerstree     = undefined !== layerstree ? layerstree : project.state.layerstree;
-      /** map theme config */
-      const theme    = await this.getMapThemeFromThemeName(map_theme);
-      // create a chages need to apply map_theme changes to map and TOC
-      const changes  = { layers: {} }; // key is the layer id and object has style, visibility change (Boolean)
-      const promises = [];
-      /**
-       * Traverse current layerstree of TOC and get changes with the new one related to map_theme choose
-       * @param mapThemeLayersTree // new mapLayerTree
-       * @param layerstree // current layerstree
-       */
-      const groups = [];
-      const traverse = (mapThemeLayersTree, layerstree, checked) => {
-        mapThemeLayersTree
-          .forEach((node, index) => {
-            if (node.nodes) { // case of a group
-              groups.push({
-                node,
-                group: layerstree[index]
-              });
-              traverse(node.nodes, layerstree[index].nodes, checked && node.checked);
-            } else {
-              // case of layer
-              node.style = theme.styles[node.id]; // set style from map_theme
-              if (layerstree[index].checked !== node.visible) {
-                changes.layers[node.id] = {
-                  visibility: true,
-                  style:      false
-                };
-              }
-              layerstree[index].checked = node.visible;
-              // if it has a style settled
-              if (node.style) {
-                const promise = new Promise(resolve => {
-                  const setCurrentStyleAndResolvePromise = async node => {
-                    if (undefined === changes.layers[node.id]) {
-                      changes.layers[node.id] = {
-                        visibility: false,
-                        style:      false
-                      }
-                    }
-                    changes.layers[node.id].style = await project.getLayerById(node.id).changeCurrentStyle(node.style);
-                    resolve();
-                  };
-                  if (project.getLayersStore()) { setCurrentStyleAndResolvePromise(node) }
-                  else { (node => setTimeout(() => setCurrentStyleAndResolvePromise(node)))(node) }// case of starting project creation
-                });
-                promises.push(promise);
-              }
-            }
-        });
-      };
-      traverse(theme.layerstree, layerstree);
-
-      await Promise.allSettled(promises);
-
-      // all groups checked after layer checked so is set checked but not visible
-      groups.forEach(({ group, node: { checked, expanded }}) => {
-        group.checked  = checked;
-        group.expanded = expanded;
-      });
-
-      return changes // eventually, information about changes (for example style etc..)
-    },
-
-    /**
-     * Change view
-     *
-     * @fires GUI~layer-change-style
-     * @since 4.1.0
-     */
-    async changeMapTheme(map_theme) {
-      GUI.closeContent();
-
-      // change map theme
-      this.ApplicationState.catalog.layerstrees[0].checked = true;
-
-      const changes = (await this.setLayersTreePropertiesFromMapTheme({
-        map_theme,
-        rootNode:   this.ApplicationState.catalog.layerstrees[0],
-        layerstree: this.ApplicationState.catalog.layerstrees[0].tree[0].nodes
-      })).layers;
-
-      // get all layers with styles
-      const layers  = Object.keys(changes).filter(id => changes[id].style);
-      const styles  = (await this.getMapThemeFromThemeName(map_theme)).styles;
-
-      // clear categories
-      layers.forEach(id => {
-        if (!changes[id].visible) {
-          const layer = getCatalogLayerById(id);
-          layer.clearCategories();
-          layer.change();
-        }
-      });
-
-      // apply styles on each layer
-      layers.forEach(id => GUI.emit('layer-change-style', { layerId: id, style: styles[id] }));
-
-    },
-
-    /**
      * Remove layer from queryresults selection
      *
      * @since 4.1.0
@@ -1630,6 +1497,128 @@ export default {
     },
 
     /**
+     * get map Theme_configuration
+     * 
+     * @since 4.1.0
+     */
+    async getThemeConfig(theme_name) {
+      const project = ApplicationState.project;
+      // get map theme configuration from map_themes project config
+      const config  = Object.values(project.state.map_themes).flat().find(c => theme_name === c.theme );
+      if (config && undefined === config.layerstree) {
+        try {
+          const response = await XHR.get({ url: `${project.urls.map_themes}${theme_name}/` });
+          if (response.result) {
+            config.layerstree = response.data;
+          }
+        } catch(e) {
+          console.warn('Error while retreiving map theme configuration', e);
+        }
+      }
+      return config;
+    },
+
+    /**
+     * Change view
+     *
+     * @fires GUI~layer-change-style
+     * 
+     * @since 4.1.0
+     */
+    async changeTheme(map_theme) {
+      GUI.closeContent();
+
+      // change map theme
+      this.ApplicationState.catalog.layerstrees[0].checked = true;
+
+      const project  = ApplicationState.project;
+
+      /** map theme config */
+      const theme    = await this.getThemeConfig(map_theme);
+
+      // create a chages need to apply map_theme changes to map and TOC
+      const changes  = {}; // key is the layer id and object has style, visibility change (Boolean)
+      const promises = [];
+      const groups   = [];
+
+      /**
+       * Traverse current layerstree of TOC and get changes with the new one related to map_theme choose
+       * 
+       * @param themeTree new tree
+       * @param layerstree   current tree
+       */
+      const traverse = (themeTree, layerstree, checked) => {
+        themeTree
+          .forEach((node, index) => {
+            if (node.nodes) { 
+              // case of a group
+              groups.push({
+                node,
+                group: layerstree[index]
+              });
+              traverse(node.nodes, layerstree[index].nodes, checked && node.checked);
+            } else {
+              // case of layer
+              node.style = theme.styles[node.id]; // set style from map_theme
+              if (layerstree[index].checked !== node.visible) {
+                changes[node.id] = {
+                  visibility: true,
+                  style:      false
+                };
+              }
+              layerstree[index].checked = node.visible;
+              // if it has a style settled
+              if (node.style) {
+                const promise = new Promise(resolve => {
+                  const changeStyle = async node => {
+                    if (undefined === changes[node.id]) {
+                      changes[node.id] = {
+                        visibility: false,
+                        style:      false
+                      }
+                    }
+                    changes[node.id].style = await project.getLayerById(node.id).changeCurrentStyle(node.style);
+                    resolve();
+                  };
+                  if (project.getLayersStore()) { changeStyle(node) }
+                  else { (node => setTimeout(() => changeStyle(node)))(node) }// case of starting project creation
+                });
+                promises.push(promise);
+              }
+            }
+        });
+      };
+      traverse(
+        theme.layerstree,
+        this.ApplicationState.catalog.layerstrees[0].tree[0].nodes ?? this.ApplicationState.project.state.layerstree
+      );
+
+      await Promise.allSettled(promises);
+
+      // all groups checked after layer checked so is set checked but not visible
+      groups.forEach(({ group, node: { checked, expanded }}) => {
+        group.checked  = checked;
+        group.expanded = expanded;
+      });
+
+      // get all layers with styles
+      const layers  = Object.keys(changes).filter(id => changes[id].style);
+      const styles  = (await this.getThemeConfig(map_theme)).styles;
+
+      // clear categories
+      layers.forEach(id => {
+        if (!changes[id].visible) {
+          const layer = getCatalogLayerById(id);
+          layer.clearCategories();
+          layer.change();
+        }
+      });
+
+      // apply styles on each layer
+      layers.forEach(id => GUI.emit('layer-change-style', { layerId: id, style: styles[id] }));
+    },
+
+    /**
      * @since 4.1.0
      */
     toggleThemeSelector() {
@@ -1693,7 +1682,6 @@ export default {
     async saveTheme() {
       if (this.custom_theme_invalid) {
         return;
-
       }
       const theme = this.custom_theme_input;
       // skip when no name provided 
@@ -1785,7 +1773,9 @@ export default {
         // show a success message to user
         GUI.showUserMessage({ type: 'success', message: 'Theme deleted successfully', autoclose: true })
         // in the case of deleted current map theme set current theme to null
-        if (theme === this.active_theme) { this.active_theme = null;}
+        if (theme === this.active_theme) {
+          this.active_theme = null;
+        }
       } catch(e) {
         console.warn(e);
         GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error' });
@@ -1850,7 +1840,7 @@ export default {
      * @since 4.1.0
      */
     'ApplicationState.catalog.external.vector': {
-      immediante: true,
+      immediate: true,
       handler() {
         this.updateExternalLayersChecked();
       },
@@ -1860,7 +1850,7 @@ export default {
      * @since 4.1.0
      */
     'ApplicationState.catalog.external.wms': {
-      immediante: true,
+      immediate: true,
       handler() {
         this.updateExternalLayersChecked();
       },
@@ -1872,11 +1862,9 @@ export default {
     'active_theme': {
       immediate: false,
       handler(map_theme) {
-        //in the case of save new custom map theme, no need to emit event
-        //in case of remove custom map theme at moment se as default
-        if (null === map_theme || map_theme === this.custom_theme_input) { return }
-        // this.$emit('change-map-theme', map_theme);
-        this.changeMapTheme(map_theme);
+        if (![null, this.custom_theme_input].includes(map_theme)) {
+          this.changeTheme(map_theme);
+        }
       }
     },
 
