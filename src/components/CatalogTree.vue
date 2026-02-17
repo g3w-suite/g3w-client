@@ -267,7 +267,7 @@
       data-placement = "left"
       title          = "legend"
       @click.stop    = "showLegendPanel"
-      style          = "position: absolute;inset: 0 4px auto auto;padding: 4px 8px;border-radius: 3px;"
+      style          = "position: absolute;inset: 0 4px auto auto;border-radius: 3px;"
     >
       <i aria-hidden = "true" class = "fas fa-list"></i>
     </button>

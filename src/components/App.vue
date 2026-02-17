@@ -1966,7 +1966,8 @@ export default {
   #catalog .tree-item.selected ul.layer-categories                               { background-color: var(--bgcolor); }
   #catalog .tree-item div.tree-node-title                                        { padding-left: 3px; cursor: pointer; width: 80%; display: inline-flex; justify-content: space-between; user-select: none; }
   #catalog .tree-item div.tree-node-title.disabled                               { color: #999; }
-  #catalog button[type="button"]                                                 { border: unset; background-color: unset; box-shadow: rgba(0,0,0,0.3) 0 2px 5px; padding: 5px; border-radius: 3px; margin: 0 3px; font-weight: bold; color: #fff !important; }
+  #catalog button[type="button"]                                                 { border: unset; background-color: unset; box-shadow: rgba(0,0,0,0.3) 0 2px 5px; padding: 0; border-radius: 3px; margin: 0 3px; font-weight: bold; color: #fff !important; }
+  #catalog button[type="button"] > i                                             { padding: 5px; }
   #catalog button[type="button"].active                                          { box-shadow: none; background-color: #384247; }
   #catalog .tree-item                                                            { cursor: pointer; margin-bottom: 3px; }
   #catalog .tree-item.disabled > span                                            { color: #999; }
@@ -1996,7 +1997,8 @@ export default {
   #catalog ul.g3w-external_layers-group                                          { padding-left: 0 !important; background: var(--bgcolor); border-top: 2px solid var(--skin-color); padding-top: 12px; }
   #catalog ul.g3w-external_layers-group li                                       { padding-left: 2px !important; }
   #catalog > a                                                                   { display: none !important; }
-  #catalog .tree-item > .toggle-context-menu                                     { opacity: 0; position: absolute; inset: 0 4px auto auto; padding: 4px 8px; border: 1px solid; border-radius: 3px; }
+  #catalog .tree-item > .toggle-context-menu                                     { opacity: 0; position: absolute; inset: 0 4px auto auto; padding: 0; border: 1px solid; border-radius: 3px; }
+  #catalog .tree-item > .toggle-context-menu > i                                 { padding: 4px 8px; }
   #catalog .tree-item > .toggle-context-menu.root                                { opacity: 1; border: none; }
   #catalog .tree-item:not(.group):hover > .toggle-context-menu                   { opacity: 1; }
   #catalog .tree-item input[type="checkbox"]                                     { appearance: none; width: unset; margin: unset; vertical-align: unset; }
