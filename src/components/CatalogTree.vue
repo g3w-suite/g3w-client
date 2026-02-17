@@ -133,8 +133,8 @@
         >
           <span
             style  = "color: red"
-            :class = "$fa('filter')">
-          </span>
+            :class = "$fa('filter')"
+          ></span>
         </span>
         <!-- VISIBLE NODE TITLE (LAYER or GROUP) -->
         <span>{{ layerstree.title }}</span>
@@ -300,7 +300,6 @@
 <script>
 import ApplicationState        from 'g3w-state';
 import GUI                     from 'g3w-app';
-import ClickMixin              from 'mixins/click';
 import { getCatalogLayerById } from 'utils/getCatalogLayerById';
 import { XHR }                 from 'utils/XHR';
 
@@ -330,8 +329,6 @@ export default {
     'root',
     'parent'
   ],
-
-  mixins: [ClickMixin],
 
   data() {
     return {
@@ -480,16 +477,6 @@ export default {
           this.currentstyle      = this.layerstree.styles.find(s => true === s.current)?.name;
 
           /**
-           * Store `click` and `doubleclick` events on a single vue element.
-           *
-           * @see https://stackoverflow.com/q/41303982
-           */
-          this.__CATEGORY_CLICK_EVENT = {
-            count:     0,                                   // count click events
-            timeoutID: null                             // timeoutID return by setTimeout Function
-          };
-
-          /**
            * Used to check if layer and its legend categories are initialized
            * That means register all events at first time the layer is visible
            * without do any server request
@@ -525,8 +512,6 @@ export default {
             await this.setWmsSourceLayerLegendUrl();
           }
         } else {
-          this.__resetCategoryClickMixin();
-          this.__CATEGORY_CLICK_EVENT = null;
           //remove change event on legend
           getCatalogLayerById(this.layerstree.id)?.un('change', this.onChangeLayerLegendStyle);
         }
@@ -779,10 +764,7 @@ export default {
      * @since 4.1.0
      */
     onCategoryClick() {
-      this.handleCategoryClick({
-        '1': () => { /** @TODO this.selectCategory() */ console.info('TODO: select category (single click)'); },
-        '2': () => { /** @TODO this.zoomToCategory() */ console.info('TODO: zoom to category (double click)'); }
-      }, this);
+      console.log('TODO: handle click on category');
     },
 
     /**
@@ -987,33 +969,31 @@ export default {
     /**
      * @param {{ '1': () => {}, '2': () => {}}} callbacks hashmap of click event handlers ('1' = click, '2' = double click)
      * @param context
-     * 
-     * @since 4.1.0
      */
-    handleCategoryClick(callbacks = {}, context) {
-      if (!this.__CATEGORY_CLICK_EVENT) {
+    handleClick(callbacks = {}, context) {
+      if (!this.__CLICK_EVENT) {
         console.warn('click mixin not initialized on context:', context);
         return;
       }
-      this.__CATEGORY_CLICK_EVENT.count += 1;                   // increment click count
-      if (!this.__CATEGORY_CLICK_EVENT.timeoutID) {             // skip and wait for timeout in order to detect double click
-        this.__CATEGORY_CLICK_EVENT.timeoutID = setTimeout(() => {
-          if (undefined !== callbacks[this.__CATEGORY_CLICK_EVENT.count]) {
-            callbacks[this.__CATEGORY_CLICK_EVENT.count].call(context);
+      this.__CLICK_EVENT.count += 1;                   // increment click count
+      if (!this.__CLICK_EVENT.timeoutID) {             // skip and wait for timeout in order to detect double click
+        this.__CLICK_EVENT.timeoutID = setTimeout(() => {
+          if (undefined !== callbacks[this.__CLICK_EVENT.count]) {
+            callbacks[this.__CLICK_EVENT.count].call(context);
           }
-          this.__resetCategoryClickMixin();
+          this.__resetClickMixin();
         }, 300);
       }
     },
 
-    /**
-     * @since 4.1.0
-     */
-    __resetCategoryClickMixin() {
-      if (this.__CATEGORY_CLICK_EVENT ) {
-        this.__CATEGORY_CLICK_EVENT.count     = 0;
-        this.__CATEGORY_CLICK_EVENT.timeoutID = null;
-      }
+    __resetClickMixin() {
+      this.__CLICK_EVENT.count     = 0;
+      this.__CLICK_EVENT.timeoutID = null;
+    },
+
+    __clearClickMixin() {
+      this.__resetClickMixin();
+      this.__CLICK_EVENT = null;
     },
 
   },
@@ -1022,12 +1002,26 @@ export default {
    * Inizialize layer (disable, visible etc..)
    */
   created() {
+    /**
+     * Store `click` and `doubleclick` events on a single vue element.
+     *
+     * @see https://stackoverflow.com/q/41303982
+     */
+    this.__CLICK_EVENT = {
+      count:     0,                                   // count click events
+      timeoutID: null                             // timeoutID return by setTimeout Function
+    };
+
     if (this.isGroup && !this.layerstree.checked) {
       this.handleGroupChecked(this.layerstree);
     }
     if (this.isGroup && !this.root && this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive) {
       this.layerstree.nodes.forEach(node => { node.id && (node.uncheckable = true); })
     }
+  },
+
+  beforeDestroy() {
+    this.__clearClickMixin();
   },
 
 };
