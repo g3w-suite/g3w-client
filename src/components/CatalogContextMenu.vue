@@ -671,10 +671,16 @@
         }
       },
 
-      setLayerStyle(index) {
+      async setLayerStyle(index) {
         this.layer_style = this.layer.styles[index].name;
-        //change layer style
-        getCatalogLayerById(this.layer.id).changeCurrentStyle(this.layer_style);
+        try {
+          //change layer style
+          await getCatalogLayerById(this.layer.id).changeCurrentStyle(this.layer_style);
+          ApplicationState.map_theme.theme = null; // @since 4.0.7 on group or layer change , set map_theme null
+        } catch(e) { 
+          console.warn(e)  
+        }
+       
         this.closeMenu();
       },
 

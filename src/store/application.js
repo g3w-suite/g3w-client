@@ -248,6 +248,12 @@ const STATE = Vue.observable({
   /** @since 3.11.0 */
   highlightlayers: false,
 
+  /** @since 4.0.7  current map theme as object beacuse we can add new reactive proprties in the future*/
+  map_theme: {
+    theme:  null, //store the current map theme
+    change: false, //store the change of map theme
+  },
+
 });
 
 export default STATE;

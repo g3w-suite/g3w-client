@@ -2579,8 +2579,9 @@ class Layer extends G3WObject {
    * @since 4.0.0
    */
   async changeCurrentStyle(style) {
+    const { current } = (this.config.styles.find(s => style === s.name) || {});
     //check if style is current set on layer. If not change
-    if (!(this.config.styles.find(s => style === s.name) || {}).current) {
+    if (!current) {
       try {
         //get feature count for a specific style
         await this.getStyleFeatureCount(style);
@@ -2595,6 +2596,11 @@ class Layer extends G3WObject {
       } catch(e) {
         console.warn(e);    
       }
+    }
+
+    /**@since 4.0.7 in case of categories need to set style true change */
+    if (current && (this.getCategories() || []).length > 1) {
+      return true;
     }
     //return false because style is current or in case of error
     return false;

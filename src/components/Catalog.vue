@@ -386,10 +386,12 @@ export default {
     getLegendSrc(change = false) {
       // skip if not active
       if ('tab' !== this.legend_position) { return }
-
       this.state.layerstrees.forEach(t => {
         let layers = this._traverseVisibleLayers(t.tree);
+        //set visbility of legend tab
         this.showlegend = this.showlegend || layers.length > 0;
+        // skip if not active not get urls to avoid to get legend when legend tab is not active
+        if ('legend' !== this.activeTab) { return; }
         t.tree.forEach(async tree => {
           try {
             if (
@@ -560,10 +562,10 @@ export default {
      * @since 3.11.0
      */
     async setLayersTreePropertiesFromMapTheme({ map_theme, layerstree }) {
-      const project = ApplicationState.project;
-      layerstree = undefined !== layerstree ? layerstree : project.state.layerstree;
+      const project  = ApplicationState.project;
+      layerstree     = undefined !== layerstree ? layerstree : project.state.layerstree;
       /** map theme config */
-      const theme = await this.getMapThemeFromThemeName(map_theme);
+      const theme    = await this.getMapThemeFromThemeName(map_theme);
       // create a chages need to apply map_theme changes to map and TOC
       const changes  = { layers: {} }; // key is the layer id and object has style, visibility change (Boolean)
       const promises = [];
@@ -595,16 +597,18 @@ export default {
               // if it has a style settled
               if (node.style) {
                 const promise = new Promise(resolve => {
-                  const setCurrentStyleAndResolvePromise = node => {
-                    if (changes.layers[node.id] === undefined) changes.layers[node.id] = {
-                      visibility: false,
-                      style:      false
+                  const setCurrentStyleAndResolvePromise = async node => {
+                    if (changes.layers[node.id] === undefined) {
+                      changes.layers[node.id] = {
+                        visibility: false,
+                        style:      false
+                      }
                     };
-                    changes.layers[node.id].style = project.getLayerById(node.id).changeCurrentStyle(node.style);
+                    changes.layers[node.id].style = await project.getLayerById(node.id).changeCurrentStyle(node.style);
                     resolve();
                   };
                   if (project.getLayersStore()) { setCurrentStyleAndResolvePromise(node) }
-                  else { (node => setTimeout(() => setCurrentStyleAndResolvePromise(node)))(node) }// case of starting project creation
+                  else { (node => setTimeout(() => setCurrentStyleAndResolvePromise(node)))(node) } // case of starting project creation
                 });
                 promises.push(promise);
               }
@@ -630,8 +634,13 @@ export default {
      * @fires VM~layer-change-style
      */
     async changeMapTheme(map_theme) {
-      GUI.closeContent();
+      //in the case of save new custom map theme, no need to emit event
+      //in case of remove custom map theme at moment se as default
+      if (null === map_theme) { return; }
 
+      GUI.closeContent();
+      //set change map_theme
+      ApplicationState.map_theme.change = true;     
       // change map theme
       this.state.layerstrees[0].checked = true;
 
@@ -644,7 +653,7 @@ export default {
       // get all layers with styles
       const layers  = Object.keys(changes).filter(id => changes[id].style);
       const styles  = (await this.getMapThemeFromThemeName(map_theme)).styles;
-
+  
       // clear categories
       layers.forEach(id => {
         if (!changes[id].visible) {
@@ -656,6 +665,9 @@ export default {
 
       // apply styles on each layer
       layers.forEach(id => VM.$emit('layer-change-style', { layerId: id, style: styles[id] }));
+
+      //set change map_theme
+      ApplicationState.map_theme.change = false;   
 
     },
 

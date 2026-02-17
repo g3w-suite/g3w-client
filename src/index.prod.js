@@ -303,6 +303,9 @@ $.ajaxSetup({
 
   Object.assign(ApplicationState.project, project);
 
+  /**@since 4.0.7 set map_theme of application */
+  ApplicationState.map_theme.theme = Object.values(project.state.map_themes).flat().find(mt => mt.default)?.theme || null;
+  
   // set in first position (map and catalog)
   const store = project.getLayersStore();
   ApplicationState.catalog[store.getId()] = store;

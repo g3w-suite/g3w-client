@@ -270,7 +270,7 @@ export default {
       controltoggled: false,
       n_childs:       null,
       filtered:       false,
-      logged:         undefined !== ApplicationState.user.id, //@since 3.10.0
+      logged:         undefined !== ApplicationState.user.id, //@since 3.10.0,
     }
   },
 
@@ -346,6 +346,10 @@ export default {
         this.handleGroupChecked(this.layerstree);
       } else {
         this.handleLayerChecked(this.layerstree);
+      }
+      //@since 4.0.7 In case of map theme change and layers tree is not root, reset map theme
+      if (!this.layerstree.root && !ApplicationState.map_theme.change) {
+        ApplicationState.map_theme.theme = null; // @since 4.0.7 on group or layer change , set map_theme null
       }
     }
 

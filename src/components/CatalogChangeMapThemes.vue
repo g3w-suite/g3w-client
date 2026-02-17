@@ -16,11 +16,11 @@
           <i :class = "$fa(collapsed ? 'eye-close' : 'eye')"       style = "padding: 0 0 0 4px;"></i>
           <!-- Text of current theme -->
           <span
-            v-if  = "active_theme"
+            v-if  = "active_theme.theme"
             class = "current_map_theme treeview-label g3w-long-text"
           >
             <span v-t:pre = "'THEME'">:</span>
-            <span class = "skin-color" style = "font-size: 1.1em;">{{ active_theme }}</span>
+            <span class = "skin-color" style = "font-size: 1.1em;">{{ active_theme.theme }}</span>
           </span>
           <!-- Choose a theme -->
           <b
@@ -90,7 +90,7 @@
                     name     = "radio"
                     :id      = "`g3w-map_theme-${i}`"
                     :value   = "map_theme.theme"
-                    v-model  = "active_theme"
+                    v-model  = "active_theme.theme"
                   />
                   <span class = "g3w-long-text">{{ map_theme.theme }}</span>
                 </label>
@@ -132,7 +132,7 @@
                       name     = "radio"
                       :id      = "`g3w-map_theme-${i}-user`"
                       :value   = "map_theme.theme"
-                      v-model  = "active_theme"
+                      v-model  = "active_theme.theme"
                     />
                     <span class = "g3w-long-text">{{ map_theme.theme }}</span>
                   </label>
@@ -143,7 +143,7 @@
                    class           = "action sidebar-button sidebar-button-icon"
                    style           = "padding: 5px;"
                    v-t-tooltip:top = "'update'"
-                   v-disabled      = "active_theme !== map_theme.theme"
+                   v-disabled      = "active_theme.theme !== map_theme.theme"
                  >
                   <i
                     :class = "$fa('save')"
@@ -203,9 +203,8 @@ export default {
   },
 
   data() {
-    const theme = Object.values(this.map_themes).flat().find(mt => mt.default);
     return {
-      active_theme: (theme && theme.theme) || null,
+      active_theme:  ApplicationState.map_theme,
       collapsed:    'collapsed' === ApplicationState.project.state.toc_themes_init_status,
       // user themes
       custom_theme: {
@@ -310,7 +309,7 @@ export default {
         // close dialog
         this.show_form    = false;
         //set as current active name map theme
-        this.active_theme = this.custom_theme.value;
+        this.active_theme.theme = this.custom_theme.value;
         //need to wait watch
         await this.$nextTick();
         //set custom map theme value to null. Reset value
@@ -375,7 +374,7 @@ export default {
           // show a success message to user
           GUI.showUserMessage({ type: 'success', message: 'Theme deleted successfully', autoclose: true })
           // in the case of deleted current map theme set current theme to null
-          if (theme === this.active_theme) { this.active_theme = null;}
+          if (theme === this.active_theme.theme) { this.active_theme.theme = null;}
         } catch(e) {
           console.warn(e);
           GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error' });
@@ -387,12 +386,9 @@ export default {
 
   watch: {
 
-    'active_theme': {
+    'active_theme.theme': {
       immediate: false,
       handler(map_theme) {
-        //in the case of save new custom map theme, no need to emit event
-        //in case of remove custom map theme at moment se as default
-        if (null === map_theme || map_theme === this.custom_theme.value) { return }
         this.$emit('change-map-theme', map_theme);
       }
     },

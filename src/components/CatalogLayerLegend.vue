@@ -190,7 +190,8 @@
       },
 
       showHideLayerCategory(index) {
-        this.categories[index].checked = !this.categories[index].checked;
+        this.categories[index].checked   = !this.categories[index].checked;
+        ApplicationState.map_theme.theme = null; // @since 4.0.7 set map_theme null on ckick on category
         //emit chang layer on map to refresh tiles
         this.getProjectLayer().change();
         
