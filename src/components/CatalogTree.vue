@@ -322,30 +322,14 @@ export default {
 
   data() {
     return {
-      expanded:       this.layerstree.expanded,
-      isGroupChecked: true,
-      controltoggled: false,
-      n_childs:       null,
-      filtered:       false,
-      logged:         undefined !== ApplicationState.user.id, //@since 3.10.0
-      /**
-       * Whether to show loading bar while changing style categories
-       *
-       * @since 3.8.0
-       */
-      loading_legend: false,
-
-      /**
-       * Array of categories
-       */
+      expanded:          this.layerstree.expanded,
+      logged:            undefined !== ApplicationState.user.id, //@since 3.10.0
+      /** @since 3.8.0 - Whether to show loading bar while changing style categories */
+      loading_legend:    false,
+      /** Array of categories */
       legend_categories: [],
-
-      /**
-       * Holds a reference to current layer style (active category)
-       *
-       * @since 3.8.0
-       */
-      currentstyle: null,
+      /** @since 3.8.0 - Holds a reference to current layer style (active category) */
+      currentstyle:      null,
     }
   },
 
