@@ -31,12 +31,12 @@
     ></span>
 
     <!-- GROUP LAYER -->
-    <span
+    <input
       v-if        = "isGroup"
+      type        = "checkbox"
       @click.stop = "toggle()"
-      style       = "color: #fff"
-      :class      = "[$fa(layerstree.checked ? 'check' : 'uncheck')]"
-    ></span>
+      v-model     = "layerstree.checked"
+    />
 
     <!-- TABLE LAYER -->
     <span
@@ -68,10 +68,12 @@
           :class           = "$fa(layerstree.visible && layerstree.expanded ? 'caret-down' : 'caret-right')"
         ></span>
 
-        <span
+        <input
+          type        = "checkbox"
           @click.stop = "toggle()"
+          v-model     = "layerstree.checked"
           :style      = "{
-            paddingLeft: ('toc' === legendlayerposition)
+            marginLeft: ('toc' === legendlayerposition)
               ? '5px'
               : !isGroup && layerstree.categories
                 ? '5px'
@@ -79,11 +81,8 @@
                   ? '1px'
                   : '18px'
           }"
-          :class      = "[
-            $fa(layerstree.checked ? 'check': 'uncheck'),
-            { 'toc-added-external-layer': (!layerstree.legend && layerstree.external) }
-          ]"
-        ></span>
+          :class      = "[{ 'toc-added-external-layer': (!layerstree.legend && layerstree.external) }]"
+        />
 
       </span>
 
@@ -127,7 +126,7 @@
           style            = "box-shadow: unset;"
           @click.stop      = "removeCurrentFilter"
         >
-          <i class = "fas fa-filter" style = "color: red"></i>
+          <i aria-hidden = "true" class = "fas fa-filter" style = "color: red"></i>
         </button>
         <!-- VISIBLE NODE TITLE (LAYER or GROUP) -->
         <span>{{ layerstree.title }}</span>
@@ -142,32 +141,38 @@
         <button
           v-if           = "layerstree.selection.active"
           type           = "button"
-          class          = "action-button fas fa-broom"
+          class          = "action-button"
           title          = "Clear Selection"
           data-placement = "left"
           @click.stop    = "clearSelection"
-        ></button>
+        >
+          <i aria-hidden = "true" class = "fas fa-broom"></i>
+        </button>
 
         <!-- TOGGLE FILTER  -->
         <button
           v-if           = "!layerstree.external && (layerstree.selection.active || layerstree.filter.active) && !layerstree.filter.pagination"
           type           = "button"
-          class          = "action-button fas fa-filter"
+          class          = "action-button"
           title          = "Enable/Disable filter"
           data-placement = "left"
           :class         = "layerstree.filter.active ? 'active' : ''"
           @click.stop    = "toggleFilterLayer"
-        ></button>
+        >
+          <i aria-hidden = "true" class = "fas fa-filter"></i>
+        </button>
 
         <!-- SAVE FILTER  -->
         <button
           v-if           = "logged && !layerstree.external && (layerstree.selection.active && layerstree.filter.active)"
           type           = "button"
-          class          = "action-button far fa-save"
+          class          = "action-button"
           title          = "Save Filter"
           data-placement = "left"
           @click.stop    = "saveFilter(layerstree)"
-        ></button>
+        >
+          <i aria-hidden = "true" class = "far fa-save"></i>
+        </button>
 
       </div>
 
@@ -205,12 +210,13 @@
           v-disabled                = "category.disabled"
         >
 
-          <span
-            v-if                = "category.ruleKey"
-            @click.stop.prevent = "showHideLayerCategory(index)"
-            style               = "padding-right: 3px;"
-            :class              = "$fa(category.checked ? 'check': 'uncheck')"
-          ></span>
+          <input
+            v-if        = "category.ruleKey"
+            type        = "checkbox"
+            @click.stop = "showHideLayerCategory(index)"
+            style       = "margin-right: 3px;"
+            v-model     = "category.checked"
+          />
 
           <img
             v-if   = "('toc' === legendplace)"
@@ -258,21 +264,24 @@
     <button
       v-if           = "layerstree.root"
       type           = "button"
-      class          = "fas fa-list"
       data-placement = "left"
       title          = "legend"
       @click.stop    = "showLegendPanel"
       style          = "position: absolute;inset: 0 4px auto auto;padding: 4px 8px;border-radius: 3px;"
-    ></button>
+    >
+      <i aria-hidden = "true" class = "fas fa-list"></i>
+    </button>
 
     <button
       v-if           = "!isGroup"
       type           = "button"
-      class          = "toggle-context-menu fas fa-ellipsis-v"
+      class          = "toggle-context-menu"
       data-placement = "left"
-      :title         = "'Open menu'"
+      title         = "Open menu"
       @click.stop    = "showContextMenu"
-    ></button>
+    >
+      <i aria-hidden = "true" class = "fas fa-ellipsis-v"></i>
+    </button>
 
   </li>
 
@@ -1003,9 +1012,3 @@ export default {
 
 };
 </script>
-
-<style scoped>
-  .layer-legend {
-    padding-left: 36px;
-  }
-</style>

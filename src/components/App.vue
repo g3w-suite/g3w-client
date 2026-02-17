@@ -1999,6 +1999,10 @@ export default {
   #catalog .tree-item > .toggle-context-menu                                     { opacity: 0; position: absolute; inset: 0 4px auto auto; padding: 4px 8px; border: 1px solid; border-radius: 3px; }
   #catalog .tree-item > .toggle-context-menu.root                                { opacity: 1; border: none; }
   #catalog .tree-item:not(.group):hover > .toggle-context-menu                   { opacity: 1; }
+  #catalog .tree-item input[type="checkbox"]                                     { appearance: none; width: unset; margin: unset; vertical-align: unset; }
+  #catalog .tree-item input[type="checkbox"]::before                             { font-family: "Font Awesome 5 Free"; font-weight: 400; content: "\f0c8"; }
+  #catalog .tree-item input[type="checkbox"]:checked::before                     { content: "\f14a"; }
+  #catalog .layer-legend                                                         { padding-left: 36px; }
 
   #themes #g3w-catalog-views { display: none; padding: 0; }
   #themes #g3w-catalog-views.menu-open { display: block; }
