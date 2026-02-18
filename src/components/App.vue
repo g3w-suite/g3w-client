@@ -311,14 +311,14 @@
             </a>
 
             <ul
-              id     = "g3w-catalog-views"
+              id     = "g3w-themes"
               :class = "{'menu-open': !theme_selector_collapsed}"
               style  = "margin-bottom: 5px; border-bottom: 2px solid var(--skin-color);"
             >
               <!-- LIST PROJECT MAP THEME -->
               <li
                 v-if = "(ApplicationState.project.state.map_themes.project || []).length > 0"
-                id   = "g3w-catalog-views-project"
+                id   = "g3w-themes-project"
               >
                 <ul style = "padding: 0">
                   <li v-if="is_staff">
@@ -340,7 +340,7 @@
               <!-- LIST USER MAP THEME -->
               <li
                 v-if = "ApplicationState.logged"
-                id   = "g3w-catalog-views-user"
+                id   = "g3w-themes-user"
               >
                 <ul style = "padding: 0">
                   <li>
@@ -462,7 +462,7 @@
           <!-- EXTERNAL LAYERS -->
           <ul
             v-if  = "ApplicationState.catalog.external.wms.length || ApplicationState.catalog.external.tms.length || ApplicationState.catalog.external.vector.length"
-            class = "g3w-external_layers-group"
+            class = "tree-root g3w-external_layers-group"
           >
             <li>
               <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
@@ -1627,7 +1627,7 @@ export default {
         return; 
       }
       //in case of no new form map_theme is show
-      document.getElementById('g3w-catalog-views').classList.toggle('menu-open');
+      document.getElementById('g3w-themes').classList.toggle('menu-open');
       this.theme_selector_collapsed = !this.theme_selector_collapsed;
     },
 
