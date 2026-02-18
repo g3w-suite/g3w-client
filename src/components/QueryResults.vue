@@ -217,7 +217,7 @@
               </select>
 
               <!-- PAGINATION BUTTONS -->
-              <ul :disabled ="!layer.loading" style="display: flex; align-items: center;">
+              <ul :disabled = "!layer.loading" style="display: flex; align-items: center;">
 
                 <!-- GOTO: PREVIOUS PAGE -->
                 <li>
@@ -313,24 +313,30 @@
                   >
                     <!-- ORIGINAL SOURCE: src/components/QueryResultsActions.vue@v4.0.0 -->
                     <td
-                      v-if     = "state.layersactions[layer.id].length"
+                      v-if     = "state.layersactions[layer.id].length > 0"
                       style    = "padding: 3px"
                       class    = "g3w-feature-actions"
                       :colspan = "getColSpan(layer)"
                     >
-                      <action
-                        v-for  = "action in state.layersactions[layer.id]"
-                        :key   = "action.id"
-                        v-bind = "({
-                          colspan: getColSpan(layer),
-                          layer,
-                          featureIndex: index,
-                          trigger,
-                          feature,
-                          actions: state.layersactions[layer.id]
-                        })"
-                        :action = "action"
-                      />
+                      <!-- ORIGINAL SOURCE: src/components/QueryResultsActions.vue@v4.0.0 -->
+                      <span
+                        v-for                     = "action in state.layersactions[layer.id].filter(action => initAction({ action, layer, feature, index }))" 
+                        :key                      = "action.id"
+                        @contextmenu.prevent.stop = ""
+                        @click.stop               = "trigger(action, layer, feature, index)"
+                        :class                    = "{'toggled': (action.state || {}).toggled && action.state.toggled[index] }"
+                        class                     = "action-button"
+                        v-disabled                = "state.download || !!(action.state || {}).disabled"
+                        :title                    = "action.hint"
+                        data-placement            = "top"
+                      >
+                        <span
+                          style  = "padding: 2px;"
+                          :style = "action.style"
+                          :class = "`action-button-icon ${action.class}`"
+                        ></span>
+
+                      </span>
                     </td>
                   </tr>
 
@@ -497,8 +503,8 @@
     <div v-if = "state.query" style="visibility: hidden; position: sticky; bottom: -8px; background: #eee; padding: 8px 0; display: flex; gap: 1em;">
       <label style="margin-top: 5px;">{{ $t('Filter by:') }}</label>
       <select style="flex: 1;">
-        <option v-for="layer in queryableLayers" :selected ="layer === selectedLayer">{{ layer.getName() }}</option>
-        <option :selected="!selectedLayer">{{ $t('mapcontrols.queryby.all') }}</option>
+        <option v-for = "layer in queryableLayers" :selected = "layer === selectedLayer">{{ layer.getName() }}</option>
+        <option :selected = "!selectedLayer">{{ $t('mapcontrols.queryby.all') }}</option>
       </select>
     </div>
 
@@ -511,7 +517,6 @@
   import Link                     from 'components/FieldLink.vue';
   import VueField                 from 'components/FieldVue.vue';
   import Image                    from 'components/FieldImage.vue'
-  import Action                   from 'components/QueryResultsAction.vue';
   import { toRawType }            from 'utils/toRawType';
   import { throttle }             from 'utils/throttle';
   import { getCatalogLayerById }  from 'utils/getCatalogLayerById';
@@ -546,7 +551,6 @@
     mixins: [fieldsMixin],
 
     components: {
-      action:      Action,
       'g3w-link':  Link,
       'g3w-vue':   VueField,
       'g3w-image': Image,
@@ -1046,6 +1050,38 @@
         layer.loading = false;
       },
 
+      /**@since 4.1.0 */
+      async initAction({ action, layer, feature, index } = {}) {
+        console.log('initAction', action, layer, feature, index);
+        let show = true;
+        if ('function' === typeof action.condition) {
+          show = await this.action.condition({
+            layer,
+            feature,
+          });
+        }
+
+        show = show && (undefined === (action.state || {}).show ? show : action.state.show);
+
+        if (show && action.init) {
+          action.init({
+            layer,
+            feature,
+            index,
+            action,
+          });
+        }
+
+        if (show && 'function' === typeof action.clear) {
+          this.clear_actions.push(() => action.clear({
+            action,
+            layer,
+            feature
+          }));
+        }
+
+        return show;
+      }, 
     },
 
     watch: {
@@ -1104,10 +1140,15 @@
 
     created() {
       this.zoomToLayer = throttle(l => GUI.zoomToLayer(l));
+      /**since 4.1.0 store clear action function */
+      this.clear_actions = [];
     },
-
+    
     beforeDestroy() {
       this.proxied_layers.forEach(l => l?.clearProxyData?.('wms'));
+      this.clear_actions.forEach(clear => clear());
+      this.proxied_layers = [];
+      this.clear_actions  = [];
     },
 
     destroyed() {
