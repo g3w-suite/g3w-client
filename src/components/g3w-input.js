@@ -23,7 +23,10 @@ const Validators = {
 
     float: (options = {}) => ({
       options,
-      validate: (value) => !Number.isNaN(Number(1 * value))
+      validate(value) {
+        value = 1 * value;
+        return !Number.isNaN(parseFloat(1 * value))
+      }
     }),
 
     /**
@@ -34,15 +37,15 @@ const Validators = {
       options,
       validate(value) {
         value = 1 * value;
-        return !Number.isNaN(value) ? value <= Number.MAX_SAFE_INTEGER : false;
+        return !Number.isNaN(value) ? Number.isSafeInteger(value) && Math.abs(value) <= Number.MAX_SAFE_INTEGER : false;
       }
     }),
 
     integer: (options = {}) => ({
       options,
       validate(value) {
-        const integer = 1 * value;
-        return !Number.isNaN(integer) ? Number.isSafeInteger(integer) && (integer <= 2147483647) : false;
+        value = 1 * value;
+        return !Number.isNaN(value) ? Math.abs(value) <= 2147483647 : false;
       }
     }),
 
@@ -190,15 +193,6 @@ export class Service {
       // check if you require or check validation
       this.state.validate.valid  = !this.state.validate.required;
     } else {
-      if (['integer', 'float', 'bigint'].includes(this.state.input.type)) {
-        if (+this.state.value < 0) {
-          this.state.value               = null;
-          this.state.validate.empty      = true;
-          this.state.validate.valid      = !this.state.validate.required;
-        } else {
-          this.state.validate.valid      = this._validator.validate(this.state.value);
-        }
-      }
       //check exclude_values state.validate.unique (QGIS field property [x] Enforce unique constraint)
       if (this.state.validate.unique && this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
         //need to convert this.state.value to string because editing store exclude_values items as string

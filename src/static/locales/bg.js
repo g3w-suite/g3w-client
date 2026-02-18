@@ -348,7 +348,7 @@ export default {
   'sdk.form.inputs.input_validation_max_field': 'Стойността трябва да е по-малка или равна на полето ',
   'sdk.form.inputs.input_validation_exclude_values': 'Полето трябва да съдържа различна стойност',
   'sdk.form.inputs.integer': 'цяло число',
-  'sdk.form.inputs.bigint': 'цяло число',
+  'sdk.form.inputs.bigint': 'цяло число (64bit)',
   'sdk.form.inputs.text': 'текст',
   'sdk.form.inputs.varchar': 'текст',
   'sdk.form.inputs.textarea': 'текст',

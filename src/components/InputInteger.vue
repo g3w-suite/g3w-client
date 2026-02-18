@@ -6,8 +6,7 @@
 <template>
   <baseinput :state = "state">
     <input
-      slot="body"
-      :placeholder = "state.default"
+      slot         = "body"
       @change      = "change"
       @input       = "change"
       class        = "form-control"
@@ -16,7 +15,10 @@
       v-disabled   = "!editable"
       :class       = "{'input-error-validation' : notvalid}"
       v-model      = "state.value"
-      type         = "number">
+      type         = "number"
+      :step        = "state.step || 1"
+      :placeholder = "state.default"
+    >
   </baseinput>
 </template>
 
