@@ -3730,6 +3730,7 @@ export default new (class GUI extends Emitter {
               @error = "onLegendError(url)"
               @load  = "onLegendLoad(url)"
               alt    = ""
+              style  = "max-width:100%;"
             />
           </figure>
         </div>
