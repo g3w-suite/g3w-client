@@ -26,9 +26,8 @@
     <span
       v-if        = "isGroup"
       style       = "padding-right: 2px;"
-      :class      = "['bold', $fa(layerstree.expanded ? 'caret-down' : 'caret-right')]"
+      :class      = "['root collapse-expande-collapse-icon', $fa(layerstree.expanded ? 'caret-down' : 'caret-right')]"
       @click.stop = "expandCollapse"
-      class       = "root collapse-expande-collapse-icon"
     ></span>
 
     <!-- GROUP LAYER -->
