@@ -18,7 +18,8 @@
       selected:         !isGroup || !isTable ? layerstree.selected : false,
       itemmarginbottom: !isGroup,
       disabled:         isInGrey,
-      group:            isGroup
+      group:            isGroup,
+      table:            isTable
     }"
   >
     <!-- GROUP LAYER -->
@@ -40,60 +41,58 @@
 
     <!-- TABLE LAYER -->
     <span
-      v-else-if = "isTable"
-      v-show    = "!layerstree.hidden"
-      style     = "padding-left: 18px"
-      :class    = "['fas fa-table', parentFolder ? 'child' : 'root']"
+      v-if   = "isTable"
+      v-show = "!layerstree.hidden"
+      style  = "padding-left: 18px"
+      :class = "['fas fa-table', parentFolder ? 'child' : 'root']"
     ></span>
 
-    <template v-else>
-      <!-- EXTERNAL LAYER (REMOVABLE NODE) -->
-      <span 
-        v-if        = "layerstree.external && layerstree.removable"
-        style       = "color: red; padding-left: 1px;"
-        class       = "fas fa-trash"
-        @click.stop = "removeExternalLayer(layerstree.name, layerstree._type)"
+    <!-- EXTERNAL LAYER (REMOVABLE NODE) -->
+    <span 
+      v-if        = "!isTable && !isGroup && layerstree.external && layerstree.removable"
+      style       = "color: red; padding-left: 1px;"
+      class       = "fas fa-trash"
+      @click.stop = "removeExternalLayer(layerstree.name, layerstree._type)"
+    ></span>
+
+    <!-- HIDDEN NODE (LAYER) -->
+    <span
+      v-if   = "!isTable && !isGroup"
+      v-show = "!layerstree.hidden"
+      class  = "checkbox-layer"
+      :class = "parentFolder ? 'child' : 'root'"
+    >
+      <span
+        v-if             = "'toc' === legendlayerposition || !isGroup && layerstree.categories"
+        @click.self.stop = "expandCollapse"
+        class            = "collapse-expande-collapse-icon"
+        :class           = "$fa(layerstree.visible && layerstree.expanded ? 'caret-down' : 'caret-right')"
       ></span>
 
-      <!-- HIDDEN NODE (LAYER) -->
-      <span
-        v-show = "!layerstree.hidden"
-        class  = "checkbox-layer"
-        :class = "parentFolder ? 'child' : 'root'"
-      >
-        <span
-          v-if             = "'toc' === legendlayerposition || !isGroup && layerstree.categories"
-          @click.self.stop = "expandCollapse"
-          class            = "collapse-expande-collapse-icon"
-          :class           = "$fa(layerstree.visible && layerstree.expanded ? 'caret-down' : 'caret-right')"
-        ></span>
-
-        <input
-          type        = "checkbox"
-          @click.stop = "toggle()"
-          v-model     = "layerstree.checked"
-          :style      = "{
-            marginLeft: ('toc' === legendlayerposition)
+      <input
+        type        = "checkbox"
+        @click.stop = "toggle()"
+        v-model     = "layerstree.checked"
+        :style      = "{
+          marginLeft: ('toc' === legendlayerposition)
+            ? '5px'
+            : !isGroup && layerstree.categories
               ? '5px'
-              : !isGroup && layerstree.categories
-                ? '5px'
-                : (!layerstree.legend && layerstree.external)
-                  ? '1px'
-                  : '18px'
-          }"
-          :class      = "[{ 'toc-added-external-layer': (!layerstree.legend && layerstree.external) }]"
-        />
+              : (!layerstree.legend && layerstree.external)
+                ? '1px'
+                : '18px'
+        }"
+        :class      = "[{ 'toc-added-external-layer': (!layerstree.legend && layerstree.external) }]"
+      />
 
-      </span>
+    </span>
 
-      <!-- EXTERNAL LAYER  -->
-      <span
-        v-if   = "layerstree.external && !layerstree.toc"
-        style  = "color: #ffff; padding-left: 5px;"
-        :class = "$fa('vector' === layerstree._type ? 'draw' : 'image')"
-      ></span>
-
-    </template>
+    <!-- EXTERNAL LAYER  -->
+    <span
+      v-if   = "!isTable && !isGroup && layerstree.external && !layerstree.toc"
+      style  = "color: #ffff; padding-left: 5px;"
+      :class = "$fa('vector' === layerstree._type ? 'draw' : 'image')"
+    ></span>
 
     <!-- VISIBLE NODE (LAYER or GROUP) -->
     <div
@@ -180,16 +179,16 @@
 
     <!-- NODE LEGEND (LAYER) -->
     <div
-      v-if                = "showLayerTocLegend"
+      v-if                = "has_legend"
       v-show              = "show_legend"
       class               = "layer-legend"
       @click.stop.prevent = ""
     >
       <bar-loader v-if = "legend_tree" :loading = "legend_tree.loading" />
 
-      <figure v-disabled = "!externallegend && loading_legend">
+      <figure v-disabled = "!is_external_wms && loading_legend">
         <img
-          v-if       = "externallegend" 
+          v-if       = "is_external_wms" 
           loading    = "lazy"
           :src       = "legend_tree.url" 
           @loaderror = "setError()"
@@ -239,9 +238,8 @@
     <!-- CHILD NODES (GROUP) -->
     <ul
       v-if   = "isGroup"
-      class  = "tree-content-items group"
-      :class = "[`g3w-lendplace-${legendplace}`]"
-      v-show ="layerstree.expanded"
+      class  = "group"
+      v-show = "layerstree.expanded"
     >
       <catalog-tree
         v-for                      = "_layerstree in layerstree.nodes" :key = "_layerstree.id || _layerstree.groupId"
@@ -343,12 +341,16 @@ export default {
       return !this.layerstree.exclude_from_legend;
     },
 
-    showLayerTocLegend() {
+    has_legend() {
       return !this.isGroup && this.showLegendLayer && this.layerstree.geolayer;
     },
 
     isGroup() {
       return !!this.layerstree.nodes;
+    },
+
+    isTable() {
+      return !this.isGroup && !this.layerstree.geolayer && !this.layerstree.external;
     },
 
     legendlayerposition() {
@@ -361,10 +363,6 @@ export default {
 
     showScaleVisibilityToolip() {
       return this.showscalevisibilityclass && this.layerstree.disabled && this.layerstree.checked;
-    },
-
-    isTable() {
-      return !this.isGroup && !this.layerstree.geolayer && !this.layerstree.external;
     },
 
     isHidden() {
@@ -396,7 +394,7 @@ export default {
      * 
      * @since 4.1.0
      */
-    externallegend() {
+    is_external_wms() {
       return 'wms' === this.layerstree.source.type;
     },
 
@@ -437,7 +435,7 @@ export default {
     /**
      * @since 4.1.0
      */
-    showLayerTocLegend: {
+    has_legend: {
       immediate: true,
       async handler(show) {
         if (show) {
@@ -473,11 +471,11 @@ export default {
 
           // Get all legend graphics of a layer when start
           // need to exclude wms source
-          if (false === this.externallegend && true === this.layerstree.visible) {
+          if (!this.is_external_wms && true === this.layerstree.visible) {
             await this.runInitLayerVisibleAction();
           }
 
-          if (this.layerstree.visible && this.externallegend) {
+          if (this.layerstree.visible && this.is_external_wms) {
             await this.setWmsSourceLayerLegendUrl();
           }
         } else {
@@ -495,11 +493,11 @@ export default {
      * @since 4.1.0
      */
     async 'layerstree.visible'(visible) {
-      if (!this.showLayerTocLegend) {
+      if (!this.has_legend) {
         return;
       }
       // check if layer is enabled to get legend and if is visible
-      const enabled = visible && false === this.externallegend;
+      const enabled = visible && !this.is_external_wms;
       // initialize if it is the first time that is visible.
       if (enabled && false === this.initialize) {
         await this.runInitLayerVisibleAction();
@@ -508,7 +506,7 @@ export default {
       if (enabled && false !== this.initialize) {
         await this.setCategories(!this.dynamic);
       }
-      if (visible && this.externallegend) {
+      if (visible && this.is_external_wms) {
         await this.setWmsSourceLayerLegendUrl();
       }
     },
@@ -797,7 +795,7 @@ export default {
      * @since 4.1.0
      */
     async onLayerChange(opts = {}) {
-      if (this.externallegend) {
+      if (this.is_external_wms) {
         return;
       }
 
@@ -890,7 +888,7 @@ export default {
       this.mapReady = true;
       if (
         this.layerstree.visible
-        && false === this.externallegend
+        && !this.is_external_wms
         && ('toc' === this.legendplace || this.layerstree.categories)
       ) {
         await this.setCategories(false);
