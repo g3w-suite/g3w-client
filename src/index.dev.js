@@ -716,6 +716,10 @@ g3w.app.once('ready', async () => {
 
   SAVED_SEARCHES.unshift(...CUSTOM_SEARCHES);
 
+  if (!SAVED_SEARCHES.length) {
+    return;
+  }
+
   SEARCH.actions.unshift({
     id:      "widget-editor",
     class:   `fa fa-laptop-code`,

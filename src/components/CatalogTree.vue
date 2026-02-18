@@ -15,11 +15,10 @@
       position: 'relative',
     }"
     :class                    = "{
-      selected:         !isGroup || !isTable ? layerstree.selected : false,
-      itemmarginbottom: !isGroup,
-      disabled:         isInGrey,
-      group:            isGroup,
-      table:            isTable
+      selected: layerstree.selected,
+      disabled: isDisabled,
+      group:    isGroup,
+      table:    isTable,
     }"
   >
     <!-- GROUP LAYER -->
@@ -332,12 +331,8 @@ export default {
       return undefined !== this.layerstree.featurecount;
     },
 
-    showLegendLayer() {
-      return !this.layerstree.exclude_from_legend;
-    },
-
     has_legend() {
-      return !this.isGroup && this.showLegendLayer && this.layerstree.geolayer;
+      return !this.isGroup && !this.layerstree.exclude_from_legend && this.layerstree.geolayer;
     },
 
     isGroup() {
@@ -349,7 +344,7 @@ export default {
     },
 
     legendlayerposition() {
-      return (this.showLegendLayer && this.layerstree.legend) ? this.legendplace : 'tab';
+      return (!this.layerstree.exclude_from_legend && this.layerstree.legend) ? this.legendplace : 'tab';
     },
 
     showscalevisibilityclass() {
@@ -373,7 +368,7 @@ export default {
       return !this.isGroup && ApplicationState.highlightlayers && layer && layer.isVisible() && layer.getTocHighlightable();
     },
 
-    isInGrey() {
+    isDisabled() {
       return (!this.isGroup && !this.isTable && !this.layerstree.external && (!this.layerstree.visible || this.layerstree.disabled));
     },
 
