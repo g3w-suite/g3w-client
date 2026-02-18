@@ -87,7 +87,7 @@
 
     <!-- EXTERNAL LAYER  -->
     <span
-      v-if   = "!isTable && !isGroup && layerstree.external && !layerstree.toc"
+      v-if   = "!isTable && !isGroup && layerstree.external"
       style  = "color: #ffff; padding-left: 5px;"
       :class = "$fa('vector' === layerstree._type ? 'draw' : 'image')"
     ></span>
