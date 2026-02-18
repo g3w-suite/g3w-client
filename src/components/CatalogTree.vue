@@ -177,62 +177,58 @@
     </div>
 
     <!-- NODE LEGEND (LAYER) -->
-    <div
+    <figure
       v-if                = "has_legend"
       v-show              = "show_legend"
       class               = "layer-legend"
+      v-disabled          = "!is_external_wms && loading_legend"
       @click.stop.prevent = ""
     >
-      <bar-loader v-if = "legend_tree" :loading = "legend_tree.loading" />
-
-      <figure v-disabled = "!is_external_wms && loading_legend">
-        <img
-          v-if       = "is_external_wms" 
-          loading    = "lazy"
-          :src       = "legend_tree.url" 
-          @loaderror = "setError()"
-          @load      = "urlLoaded()"
+      <div  v-show = "loading_legend || legend_tree.loading" class = "bar-loader"></div>
+      <img
+        v-if       = "is_external_wms" 
+        loading    = "lazy"
+        :src       = "legend_tree.url" 
+        @loaderror = "setError()"
+        @load      = "urlLoaded()"
+      >
+      <template v-else>
+        <div
+          v-for                     = "(category, index) in legend_categories"
+          @contextmenu.prevent.stop = "showCategoryMenu"
+          style                     = "display: flex; align-items: center; width: 100%"
+          v-disabled                = "category.disabled"
         >
-        <template v-else>
-          <bar-loader :loading = "loading_legend"/>
 
-          <div
-            v-for                     = "(category, index) in legend_categories"
-            @contextmenu.prevent.stop = "showCategoryMenu"
-            style                     = "display: flex; align-items: center; width: 100%"
-            v-disabled                = "category.disabled"
+          <input
+            v-if        = "category.ruleKey"
+            type        = "checkbox"
+            @click.stop = "toggleCategory(index)"
+            style       = "margin-right: 3px;"
+            v-model     = "category.checked"
+          />
+
+          <img
+            v-if   = "('toc' === legendplace)"
+            :src   = "category.icon && `data:image/png;base64,${category.icon}`"
+            @error = "setError()"
+            @load  = "urlLoaded()"
           >
 
-            <input
-              v-if        = "category.ruleKey"
-              type        = "checkbox"
-              @click.stop = "toggleCategory(index)"
-              style       = "margin-right: 3px;"
-              v-model     = "category.checked"
-            />
+          <span
+            v-if        = "('tab' === legendplace && category.ruleKey) || ('toc' === legendplace)"
+            class       = "g3w-long-text"
+            style       = "padding-left: 3px;"
+            @click.stop = "onCategoryClick"
+          >
+            <span>{{category.title}}</span>
+            <b v-if = "showfeaturecount && undefined !== category.ruleKey"> [{{layerstree.featurecount[category.ruleKey]}}] </b>
+          </span>
 
-            <img
-              v-if   = "('toc' === legendplace)"
-              :src   = "category.icon && `data:image/png;base64,${category.icon}`"
-              @error = "setError()"
-              @load  = "urlLoaded()"
-            >
+        </div>
 
-            <span
-              v-if        = "('tab' === legendplace && category.ruleKey) || ('toc' === legendplace)"
-              class       = "g3w-long-text"
-              style       = "padding-left: 3px;"
-              @click.stop = "onCategoryClick"
-            >
-              <span>{{category.title}}</span>
-              <b v-if = "showfeaturecount && undefined !== category.ruleKey"> [{{layerstree.featurecount[category.ruleKey]}}] </b>
-            </span>
-
-          </div>
-
-        </template>
-      </figure>
-    </div>
+      </template>
+    </figure>
 
     <!-- CHILD NODES (GROUP) -->
     <ul
@@ -403,7 +399,7 @@ export default {
      * @since 4.1.0
      */
     legend_tree() {
-      return this.layerstree.legend;
+      return this.layerstree.legend || {};
     },
 
     /**
