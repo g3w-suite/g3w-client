@@ -15,8 +15,7 @@
         @removeinput      = "removeToValidate"
         :removeToValidate = "removeToValidate"
         :state            = "state"
-        :is               = "type">
-      </component>
+        :is               = "type"/>
       <divider/>
     </div>
 
@@ -28,14 +27,13 @@
       <h4 style = "font-weight: bold">{{ state.label}}</h4>
       <div> {{ state.description }} </div>
       <g3w-input v-for = "field in state.fields" :key = "field.name"
-        :state="field"
+        :state            = "field"
         @changeinput      = "changeInput"
         :changeInput      = "changeInput"
         @addinput         = "addToValidate"
         :addToValidate    = "addToValidate"
         @removeinput      = "removeToValidate"
-        :removeToValidate = "removeToValidate">
-      </g3w-input>
+        :removeToValidate = "removeToValidate"/>
     </div>
   </div>
 </template>
@@ -86,14 +84,27 @@
     },
     computed: {
       type() {
-        if (this.state.type !== 'child')
-          return this.state.input.type ? `${this.state.input.type}_input`: `${this.state.type}_input`;
+
+        /**@since 4.0.7 set integer and bigint as integer input (numeric) */
+        if (['integer', 'bigint'].includes(this.state.type)) {
+          return 'integer_input';
+        }
+
+        //In case of float, use float input (numeric)
+        if (['float'].includes(this.state.type)) {
+          return 'float_input';
+        }
+
+        return this.state.input.type ? `${this.state.input.type}_input`: `${this.state.type}_input`;
+        
+          
       }
     },
     created() {
       //TEMPORARY
-      if (this.state.type !== 'child' && !this.state.input.options)
+      if (!this.state.input.options) {
         this.state.input.options = {};
+      }
     }
   };
 </script>

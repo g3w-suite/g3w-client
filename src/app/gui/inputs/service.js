@@ -8,7 +8,6 @@ const Validators = {
     float: (options = {}) => ({
       options,
       validate(value) {
-        if (/[, \sA-Za-z]/.test(value)) { return false };
         value = 1 * value;
         return !Number.isNaN(parseFloat(1 * value))
       }
@@ -21,7 +20,6 @@ const Validators = {
     bigint: (options = {}) => ({
       options,
       validate(value) {
-        if (/[.,\sA-Za-z]/.test(value)) { return false };
         value = 1 * value;
         return !Number.isNaN(value) ? Number.isSafeInteger(value) && Math.abs(value) <= Number.MAX_SAFE_INTEGER : false;
       }
@@ -30,9 +28,8 @@ const Validators = {
     integer: (options = {}) => ({
       options,
       validate(value) {
-        if (/[.,\sA-Za-z]/.test(value)) { return false };
-        const integer = 1 * value;
-        return !Number.isNaN(integer) ? Math.abs(integer) <= 2147483647 : false;
+        value = 1 * value;
+        return !Number.isNaN(value) ? Math.abs(value) <= 2147483647 : false;
       }
     }),
 
