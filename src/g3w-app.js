@@ -5225,6 +5225,7 @@ export default new (class GUI extends Emitter {
          * @since 3.8.3
          */
         downloadUrl: options.downloadUrl,
+        toc:         true, //@since 4.1.0 whether to show layer in TOC
       };
     }
 
@@ -5241,6 +5242,7 @@ export default new (class GUI extends Emitter {
         position:     options.position ?? 'top',
         external:     true,
         checked:      false !== options.visible,
+        toc:          true, //@since 4.1.0 whether to show layer in TOC
       });
 
       // register loading events (spinner)

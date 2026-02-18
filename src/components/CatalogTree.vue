@@ -6,7 +6,7 @@
 <template>
 
   <li
-    v-if                      = "(isGroup && layerstree.toc) || (!isGroup && (!layerstree.projectLayer || layerstree.toc))"
+    v-if                      = "layerstree.toc"
     class                     = "tree-item"
     @contextmenu.prevent.stop = "showContextMenu"
     @click.stop               = "onTreeItemClick"
