@@ -470,7 +470,7 @@
                   style       = "padding-right: 2px; padding-left: 4px; width: 20px; font-size: 1.1em; cursor: pointer;"
                   :class      = "$fa(externalayers.collapsed ? 'caret-right' : 'caret-down')"
                   @click.stop = "expandCollapseExternaLayers"
-                  class       = "collapse-expande-collapse-icon"
+                  class       = "tree-toggler"
                 ></span>
                 <span
                   @click.stop = "toggleExternalLayers"

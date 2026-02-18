@@ -26,7 +26,7 @@
     <span
       v-if        = "isGroup"
       style       = "padding-right: 2px;"
-      :class      = "['root collapse-expande-collapse-icon', $fa(layerstree.expanded ? 'caret-down' : 'caret-right')]"
+      :class      = "['root tree-toggler', $fa(layerstree.expanded ? 'caret-down' : 'caret-right')]"
       @click.stop = "expandCollapse"
     ></span>
 
@@ -62,9 +62,9 @@
       :class = "parentFolder ? 'child' : 'root'"
     >
       <span
-        v-if             = "'toc' === legendlayerposition || !isGroup && layerstree.categories"
+        v-if             = "!isTable && !isGroup && ('toc' === legendlayerposition || !isGroup && layerstree.categories)"
         @click.self.stop = "expandCollapse"
-        class            = "collapse-expande-collapse-icon"
+        class            = "tree-toggler"
         :class           = "$fa(layerstree.visible && layerstree.expanded ? 'caret-down' : 'caret-right')"
       ></span>
 
