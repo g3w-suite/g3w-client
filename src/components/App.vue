@@ -816,28 +816,16 @@
             style = "display: flex; align-items: center; gap: .5ch; padding: 0 .5ch;"
           >
             <component v-for = "tool in state.content.headertools" :is = "tool"/>
-            <div
-              style  = "
-                display: flex;
-                justify-content: space-between;
-                font-size: 1em;
-                padding: 0;
-                align-self: center;
-                margin-left: auto;
-                cursor: pointer;
-              "
-            >
-              <button
-                v-if           = "undefined !== state.split"
-                type           = "button"
-                :class         = "$fa(`resize-${state.split}`)"
-                title          = "Enlarge / Reduce"
-                data-placement = "bottom"
-                style          = "margin-right: 3px;"
-                class          = "action-button action-button-resize skin-color-dark"
-                @click         = "resizeFull"
-              ></button>
-            </div>
+            <button
+              v-if           = "undefined !== state.split"
+              type           = "button"
+              :class         = "$fa(`resize-${state.split}`)"
+              title          = "Enlarge / Reduce"
+              data-placement = "bottom"
+              style          = "margin-right: 3px;"
+              class          = "action-button action-button-resize skin-color-dark"
+              @click         = "resizeFull"
+            ></button>
             <button
               type           = "button"
               style          = "scale:.9;"
