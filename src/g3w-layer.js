@@ -2310,8 +2310,9 @@ export class Layer extends Emitter {
    */
   async changeStyle(style) {
     try {
+      const { current } = (this.config.styles.find(s => style === s.name) || {});
       // skip if style is currently set on layer
-      if ((this.state.styles.find(s => style === s.name) || {}).current) {
+      if (current) {
         return;
       }
 
@@ -2356,6 +2357,12 @@ export class Layer extends Emitter {
       console.warn(e);
       this.state.stylesfeaturecount[style] = {};
     }
+
+    /**@since 4.0.7 in case of categories need to set style true change */
+    if (current && (this.getCategories() || []).length > 1) {
+      return true;
+    }
+
     return false;
   }
 

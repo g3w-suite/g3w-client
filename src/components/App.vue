@@ -300,11 +300,11 @@
               <i aria-hidden="true" :class = "$fa('eye')"                                                   style = "padding: 0 0 0 4px;"></i>
               <!-- Text of current theme -->
               <span
-                v-if  = "active_theme"
+                v-if  = "active_theme.theme"
                 class = "current_map_theme treeview-label g3w-long-text"
               >
                 <span>{{ $t('THEME') }}:</span>
-                <span class = "skin-color" style = "font-size: 1.1em;">{{ active_theme }}</span>
+                <span class = "skin-color" style = "font-size: 1.1em;">{{ active_theme.theme }}</span>
               </span>
               <!-- Choose a theme -->
               <b v-else class = "treeview-label">{{ $t('THEME') }}</b>
@@ -330,7 +330,7 @@
                       :key  = "map_theme.theme"
                     >
                       <label :for  = "`g3w-map_theme-${i}`">
-                        <input type = "radio" name = "radio" :id = "`g3w-map_theme-${i}`" :value = "map_theme.theme" v-model  = "active_theme" />
+                        <input type = "radio" name = "radio" :id = "`g3w-map_theme-${i}`" :value = "map_theme.theme" v-model  = "active_theme.theme" />
                         <span class = "g3w-long-text">{{ map_theme.theme }}</span>
                       </label>
                     </div>
@@ -371,7 +371,7 @@
                             name     = "radio"
                             :id      = "`g3w-map_theme-${i}-user`"
                             :value   = "map_theme.theme"
-                            v-model  = "active_theme"
+                            v-model  = "active_theme.theme"
                           />
                           <span class = "g3w-long-text">{{ map_theme.theme }}</span>
                         </label>
@@ -384,7 +384,7 @@
                           style          = "padding: 5px;"
                           title          = "update"
                           data-placement = "top"
-                          v-disabled     = "active_theme !== map_theme.theme"
+                          v-disabled     = "active_theme.theme !== map_theme.theme"
                         >
                           <i aria-hidden="true" class = "far fa-save" style = "color: var(--skin-color);"></i>
                         </span>
@@ -937,7 +937,7 @@ export default {
         collapsed: false,
       },
       // user themes
-      active_theme:             Object.values(ApplicationState.project.state.map_themes).flat().find(mt => mt.default)?.theme ?? null,
+      active_theme:             ApplicationState.map_theme,
       theme_selector_collapsed: 'collapsed' === ApplicationState.project.state.toc_themes_init_status,
       custom_theme_input:       null,
       theme_dialog_open:        false,
@@ -1526,9 +1526,16 @@ export default {
      * @since 4.1.0
      */
     async changeTheme(map_theme) {
+      //in the case of save new custom map theme, no need to emit event
+      //in case of remove custom map theme at moment se as default
+      if (null === map_theme) {
+        return;
+      }
+
       GUI.closeContent();
 
       // change map theme
+      this.ApplicationState.map_theme.change = true;     
       this.ApplicationState.catalog.layerstrees[0].checked = true;
 
       const project  = ApplicationState.project;
@@ -1616,6 +1623,8 @@ export default {
 
       // apply styles on each layer
       layers.forEach(id => GUI.emit('layer-change-style', { layerId: id, style: styles[id] }));
+
+      this.ApplicationState.map_theme.change = false;
     },
 
     /**
@@ -1705,7 +1714,7 @@ export default {
         // close dialog
         this.theme_dialog_open    = false;
         //set as current active name map theme
-        this.active_theme = this.custom_theme_input;
+        this.active_theme.theme = this.custom_theme_input;
         //need to wait watch
         await this.$nextTick();
         //set custom map theme value to null. Reset value
@@ -1773,8 +1782,8 @@ export default {
         // show a success message to user
         GUI.showUserMessage({ type: 'success', message: 'Theme deleted successfully', autoclose: true })
         // in the case of deleted current map theme set current theme to null
-        if (theme === this.active_theme) {
-          this.active_theme = null;
+        if (theme === this.active_theme.theme) {
+          this.active_theme.theme = null;
         }
       } catch(e) {
         console.warn(e);
@@ -1859,12 +1868,10 @@ export default {
     /**
      * @since 4.1.0
      */
-    'active_theme': {
+    'active_theme.theme': {
       immediate: false,
       handler(map_theme) {
-        if (![null, this.custom_theme_input].includes(map_theme)) {
-          this.changeTheme(map_theme);
-        }
+        this.changeTheme(map_theme);
       }
     },
 

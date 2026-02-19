@@ -127,6 +127,12 @@ const STATE = {
   /** @since 4.1.0 */
   map_unit: 'metric',
 
+  /** @since 4.0.7 */
+  map_theme: {
+    theme:  null,  // current map theme
+    change: false, // changed map theme
+  },
+
   /** @since 4.1.0 */
   logged: undefined !== window.initConfig.user.id,
 

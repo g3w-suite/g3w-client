@@ -420,6 +420,10 @@ export default {
       } else {
         this.handleLayerChecked(this.layerstree);
       }
+      //@since 4.0.7 In case of map theme change and layers tree is not root, reset map theme
+      if (!this.layerstree.root && !ApplicationState.map_theme.change) {
+        ApplicationState.map_theme.theme = null; // @since 4.0.7 on group or layer change , set map_theme null
+      }
     },
 
     /**
@@ -753,6 +757,8 @@ export default {
      */
     toggleCategory(index) {
       this.legend_categories[index].checked = !this.legend_categories[index].checked;
+      ApplicationState.map_theme.theme      = null; // @since 4.0.7 set map_theme null on ckick on category
+
       //emit chang layer on map to refresh tiles
       getCatalogLayerById(this.layerstree.id).change();
       
