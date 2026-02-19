@@ -38,6 +38,14 @@
               @mouseout.stop  = "!isMobile() && highlightLayer(layer, { zoom: false, highlight: false })"
               @click.stop     = "collapseSidebar"
             >
+              <button
+                class          = "btn-box-tool btn-collapser skin-color-dark fas fa-caret-down"
+                type           = "button"
+                style          = "font-weight: 900; font-size: 1.75rem;border: none; margin-left: 5px;"
+                title          = "Enlarge / Reduce"
+                data-placement = "top"
+              ></button>
+              
               <!-- LAYER NAME -->
               <div
                 class  = "box-title query-layer-title"
@@ -63,7 +71,7 @@
               </div>
 
               <!-- LAYER ACTIONS -->
-              <div style = "display: flex;">
+              <div style = "display: flex; gap: 2.5px; padding-right: 10px;">
                 <!-- INFO FORMATS -->
                 <select
                   v-if      = "(layer.infoformats || []).length"
@@ -169,13 +177,6 @@
                 ></button>
 
               </div>
-              <button
-                class          = "btn btn-box-tool btn-collapser skin-color fas fa-minus"
-                type           = "button"
-                style          = "font-weight: 900;"
-                title          = "Enlarge / Reduce"
-                data-placement = "top"
-              ></button>
             </div>
 
             <!-- CUSTOM ACTIONS -->
@@ -913,8 +914,8 @@
         const box       = e.target.closest(".box");
         const collapsed = box.classList.contains('collapsed-box');
         box.classList.toggle('collapsed-box');
-        box.querySelector(".btn-collapser").classList.toggle('fa-plus', !collapsed);
-        box.querySelector(".btn-collapser").classList.add('fa-minus', collapsed);
+        box.querySelector(".btn-collapser").classList.toggle('fa-caret-right', !collapsed);
+        box.querySelector(".btn-collapser").classList.add('fa-caret-down', collapsed);
       },
 
       /**
