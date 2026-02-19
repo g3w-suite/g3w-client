@@ -37,12 +37,14 @@
       <div class = "g3w-long-text">
 
         <!-- BACK BUTTON -->
-        <span
+        <button
           v-if        = "relations.length > 1"
+          type        = "button"
           title       = "Back to relations"
-          class       = "action-button-icon action-button back-button fas fa-door-open"
+          class       = "action-button fas fa-door-open"
+          style       = "font-size: 0.8em;"
           @click.stop = "back"
-        ></span>
+        ></button>
 
         <!-- RELATION NAME -->
         <b class = "relation-tile"> {{ relation.name }} </b>
@@ -54,25 +56,25 @@
       >
 
         <!-- DOWNLOAD BUTTON -->
-        <span
+        <button
           v-if           = "download_formats.length"
+          type           = "button"
           v-disabled     = "ApplicationState.download"
-          class          = "action-button-icon action-button"
-          :class         = "$fa('download')"
+          class          = "action-button fas fa-download"
           @click.stop    = "showDownloadModal"
           title          = "Downloads"
           data-placement = "left"
-        ></span>
+        ></button>
 
         <!-- CHART BUTTON -->
-        <span
+        <button
           v-if           = "has_charts"
-          class          = "action-button-icon action-button"
-          :class         = "[ $fa('chart'), chart.toggled ? 'toggled-white' : '',]"
+          class          = "action-button fas fa-chart-bar"
+          :class         = "[ chart.toggled ? 'toggled-white' : '',]"
           @click.stop    = "toggleChart"
           title          = "Show Chart"
           data-placement = "bottom"
-        ></span>
+        ></button>
 
       </div>
     </div>
@@ -842,10 +844,6 @@
 
   .table-tools > .action-button {
     padding: 5px;
-  }
-
-  .back-button {
-    font-size: 0.8em;
   }
 
   .header-component {

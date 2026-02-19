@@ -16,25 +16,25 @@
       <ul role = "tablist" class = "nav nav-tabs">
         <li class = "active">
           <a data-toggle = "tab" href="#metadata_general" class = "metadata-item-tab general" style="color: var(--skin-primary);">
-            <i class = "action-button fas fa-info-circle" aria-hidden = "true"></i>
+            <i class = "fas fa-info-circle" aria-hidden = "true"></i>
             <b>{{ $t('GENERAL') }}</b>
           </a>
         </li>
         <li>
           <a data-toggle = "tab" href="#metadata_layers" class = "metadata-item-tab layers" style="color: var(--skin-warning);">
-            <i class = "action-button fas fa-layer-group" aria-hidden = "true"></i>
+            <i class = "fas fa-layer-group" aria-hidden = "true"></i>
             <b>{{ $t('data').toUpperCase() }}</b>
           </a>
         </li>
         <li>
           <a data-toggle = "tab" href="#metadata_legend" class = "metadata-item-tab legend" style="color: purple;">
-            <i class = "action-button fas fa-list" aria-hidden = "true"></i>
+            <i class = "fas fa-list" aria-hidden = "true"></i>
             <b>{{ $t('legend').toUpperCase() }}</b>
           </a>
         </li>
         <li>
           <a data-toggle = "tab" href="#metadata_credits" class = "metadata-item-tab credits">
-            <i class = "action-button fa fa-copyright" aria-hidden = "true"></i>
+            <i class = "fa fa-copyright" aria-hidden = "true"></i>
             <b>{{ $t('Credits') }}</b>
           </a>
         </li>
@@ -246,7 +246,7 @@
           <div id = "metadata_layers" class = "tab-pane">
             <details v-for = "layer in layers" :hidden="layer.isBaseLayer()">
               <summary>
-                <i :class ="'action-button ' + ('NoGeometry' === layer.getGeometryType() ? 'fas fa-table' : 'far fa-image')" style="margin-right: 10px; color: #999;" aria-hidden = "true"></i>
+                <i :class ="('NoGeometry' === layer.getGeometryType() ? 'fas fa-table' : 'far fa-image')" style="margin-right: 10px; color: #999;" aria-hidden = "true"></i>
                 <b>{{ layer.getName() }}</b>
               </summary>
 
@@ -856,10 +856,6 @@
   
   .layer-nav-tabs > li > a::after {
     background: var(--skin-color);
-  }
-
-  .nav[role="tablist"] .action-button:hover {
-    background-color: transparent;
   }
 
   .credit-title-logo {

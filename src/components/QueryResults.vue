@@ -44,14 +44,14 @@
                 :style = "{ fontSize: isMobile() && '1em !important' }"
               >
                 <!-- OPEN ATTRIBUTE TABLE -->
-                <span
+                <button
                   v-if           = "!layer.external"
+                  type           = "button"
                   @click.stop    = "openAttributeTable(layer)"
-                  :class         = "$fa('list')"
-                  class          = "action-button action-button-icon"
+                  class          = "action-button fas fa-list-alt""
                   title          = "Open Attribute Table"
                   data-placement = "left"
-                ></span>
+                ></button>
                 {{ layer.title }}
                 <span v-if = "!layer.rawdata">
                   ({{
@@ -82,74 +82,78 @@
                 </select>
 
                 <!-- ZOOM TO LAYER -->
-                <span
+                <button
                   v-if           = "layer.hasgeometry"
+                  type           = "button"
                   @click.stop    = "zoomToLayer(layer)"
-                  :class         = "$fa('marker')"
-                  class          = "action-button action-button-icon"
+                  class          = "action-button fas fa-map-marker-alt"
                   title          = "Zoom to features extent"
                   data-placement = "top"
-                ></span>
+                ></button>
 
                 <!-- PRINT LAYER -->
-                <span
+                <button
                   v-if           = "layer.atlas.length"
+                  type           = "button"
                   @click.stop    = "printAtlas(layer)"
-                  :class         = "$fa('print')"
-                  class          = "action-button action-button-icon"
+                  class          = "action-button fas fa-print"
                   title          = "Print Atlas"
                   data-placement = "top"
                   v-disabled     = "state.download"
-                ></span>
+                ></button>
 
                 <!-- DOWNLOAD LAYER -->
-                <span
+                <button
                   v-if           = "(layer.downloads || []).filter(d => 'pdf' !== d).length > 0"
+                  type           = "button"
                   @click.stop    = "showDownloadModal(layer)"
-                  class          = "action-button action-button-icon"
-                  :class         = "{ 'toggled': layer.downloadformats.active, [$fa('download')]: true }"
+                  class          = "action-button fas fa-download"
+                  :class         = "{ 'toggled': layer.downloadformats.active }"
                   title          = "Downloads"
                   data-placement = "top"
                   v-disabled     = "state.download"
-                ></span>
+                ></button>
 
                 <!-- TOGGLE LAYER FEATURES -->
-                <span
+                <button
                   v-if           = "layer.external || (!layer.filter.active && layer.source && 'wms' !== layer.source.type && !(state.query && state.query.pagination))"
+                  type           = "button"
                   @click.stop    = "addLayerFeaturesToResults(layer)"
-                  class          = "action-button action-button-icon"
-                  :class         = "{ 'toggled': layer.addfeaturesresults.active, [$fa('plus-square')]: true }"
+                  class          = "action-button fas fa-plus-square"
+                  :class         = "{ 'toggled': layer.addfeaturesresults.active }"
                   title          = "Add/Remove features to results"
                   data-placement = "top"
-                ></span>
+                ></button>
 
                 <!-- TOGGLE LAYER SELECTION -->
-                <span
+                <button
                   v-if           = "canSelect(layer)"
+                  type           = "button"
                   @click.stop    = "toggleSelection(layer)"
-                  class          = "action-button action-button-icon"
+                  class          = "action-button fas fa-check-circle"
                   title          = "Add/Remove Selection"
                   data-placement = "top"
-                  :class         = "{ 'toggled': layer.selection.active && layer.features.every(f => f.selected), [$fa('success')]: true }"
-                ></span>
+                  :class         = "{ 'toggled': layer.selection.active && layer.features.every(f => f.selected) }"
+                ></button>
 
                 <!-- TOGGLE LAYER FILTER -->
-                <span
+                <button
                   v-if           = "
                     !layer.external
                     && layer.selection.active
                     && !layer.filter.pagination
                     && layer.features.some(f => f.selected)
                   "
+                  type           = "button"
                   @click.stop    = "toggleFilter(layer)"
-                  class          = "action-button action-button-icon"
-                  :class         = "{'toggled': layer.filter.active, [$fa('filter')]: true }"
+                  class          = "action-button fas fa-filter"
+                  :class         = "{'toggled': layer.filter.active }"
                   title          = "Enable/Disable filter"
                   data-placement = "top"
-                ></span>
+                ></button>
 
                 <!-- SAVE LAYER FILTER -->
-                <span
+                <button
                   v-if           = "
                     !layer.external
                     && layer.selection.active
@@ -157,12 +161,12 @@
                     && layer.filter.active
                     && (null === layer.filter.current || layer.selection.active)
                   "
+                  type           = "button"
                   @click.stop    = "saveFilter(layer)"
-                  :class         = "$fa('save')"
-                  class          = "action-button action-button-icon"
+                  class          = "action-button fas fa-save"
                   title          = "Save Filter"
                   data-placement = "top"
-                ></span>
+                ></button>
 
               </div>
               <button
@@ -319,8 +323,9 @@
                       :colspan = "getColSpan(layer)"
                     >
                       <!-- ORIGINAL SOURCE: src/components/QueryResultsActions.vue@v4.0.0 -->
-                      <span
+                      <button
                         v-for                     = "action in state.layersactions[layer.id].filter(action => initAction({ action, layer, feature, index }))" 
+                        type                      = "button"
                         :key                      = "action.id"
                         @contextmenu.prevent.stop = ""
                         @click.stop               = "trigger(action, layer, feature, index)"
@@ -330,13 +335,13 @@
                         :title                    = "action.hint"
                         data-placement            = "top"
                       >
-                        <span
-                          style  = "padding: 2px;"
-                          :style = "action.style"
-                          :class = "`action-button-icon ${action.class}`"
-                        ></span>
-
-                      </span>
+                        <b
+                          aria-hidden = "true"
+                          style       = "padding: 2px;"
+                          :style      = "action.style"
+                          :class      = "(action.class || '')"
+                        ></b>
+                      </button>
                     </td>
                   </tr>
 

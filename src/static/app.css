@@ -677,8 +677,10 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
 .g3w-view.content .error-message                                                 { font-weight: bold; font-size: 1.2em; color: red; padding: 5px; margin: 3px; }
 .g3w-view.content .table-header-tool                                             { padding: 10px; color: #fff; font-size: 1.3em; }
 .g3w-view.content .action-button                                                 { display:inline-block; text-align: center; padding: 3px 3px 5px 3px; cursor: pointer; border-radius: 5px; caret-color: rgba(0,0,0,0); }
-.g3w-view.content .action-button:hover                                           { background-color: #fff; }
-.g3w-view.content .action-button.toggled                                         { background-color: #eee; }
+.g3w-view.content button.action-button                                           { border: unset; background-color: unset; color: var(--skin-color); padding-top: 6px; }
+.g3w-view.content button.action-button:hover,
+.g3w-view.content .action-button:hover,
+.g3w-view.content .action-button.toggled,
 .g3w-view.content .action-button.toggled-white                                   { background-color: #fff; }
 .g3w-view.content .action-button-icon.trash                                      { color:red !important; }
 .g3w-view.content .action-button-icon                                            { padding-top: 2px; font-weight: bold; text-decoration: none; }
