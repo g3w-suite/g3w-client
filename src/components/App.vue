@@ -786,22 +786,17 @@
             v-if  = "previousTitle"
             class = "g3w_contents_back g3w-long-text"
           >
-            <div
-              v-if   = "'back' === backOrBackTo "
-              :class = "backOrBackTo"
-            >
-              <span class = "action-button fas fa-chevron-circle-left"></span>
-              <span>{{ $t('back') }}</span>
-            </div>
-            <div
-              v-else
+            <button
+              type        = "button"
               @click.stop = "gotoPreviousContent()"
+              class       = "action-button"
               :class      = "backOrBackTo"
+              :disabled   = "'back' === backOrBackTo"
             >
-              <span class = "action-button fas fa-chevron-circle-left"></span>
-              <span>{{ $t('backto') }}</span>
-              <span v-if = "!updatePreviousTitle" v-t = "previousTitle"></span>
-            </div>
+              <i aria-hidden = "true" class = "fas fa-chevron-circle-left"></i>
+              <span v-t="backOrBackTo"></span>
+              <span v-if = "'back' !== backOrBackTo && !updatePreviousTitle" v-t = "previousTitle"></span>
+            </button>
           </div>
           <div
             v-if   = "!previousTitle && showtitle && contentTitle"
@@ -832,32 +827,35 @@
                 cursor: pointer;
               "
             >
-              <i
+              <button
                 v-if           = "undefined !== state.split"
+                type           = "button"
                 :class         = "$fa(`resize-${state.split}`)"
                 title          = "Enlarge / Reduce"
                 data-placement = "bottom"
                 style          = "margin-right: 3px;"
                 class          = "action-button action-button-resize skin-color-dark"
                 @click         = "resizeFull"
-              ></i>
+              ></button>
             </div>
-            <i
-              style          = "cursor: pointer; scale:.9;"
+            <button
+              type           = "button"
+              style          = "scale:.9;"
               :style         = "{ transform: 'h' === state.split ? 'rotate(134deg)' : 'rotate(44deg)'}"
               :title         = "`Dock to ${'h' === this.state.split ? 'Bottom' : 'Right'}`"
               data-placement = "bottom"
               class          = "action-button action-button-dock skin-color-dark fa fa-external-link-alt"
               @click         = "splitContent"
-            ></i>
-            <i
+            ></button>
+            <button
               v-if           = "state.content.closable"
+              type           = "button"
               @click         = "closeContent"
               title          = "close"
               data-placement = "bottom"
               :class         = "{'mobile': isMobile()}"
               class          = "action-button action-button-close skin-color-dark fas fa-times"
-            ></i>
+            ></button>
           </div>
         </div>
         <bar-loader :loading = "state.content.loading"/>

@@ -32,25 +32,23 @@
       <div style = "position:relative" @click = "edit(search)">
         <bar-loader :loading = "search.qbloading"/>
         <div class = "search-tools">
-          <span
-            class          = "search-action"
-            :class         = "$fa('trash')"
+          <button
+            type           = "button"
+            class          = "fas fa-trash"
             title          = "Delete"
             data-placement = "bottom"
             @click.stop    = "remove(search, i)"
             style          = "color: red;margin-right: 5px;"
-          ></span>
+          ></button>
           <span>{{ search.name }}</span>
-          <div>
-            <span
-            class          = "search-action"
-            :class         = "$fa('run')"
+          <button
+            type           = "button"
+            class          = "fas fa-play"
             title          = "Run"
             data-placement = "bottom"
             @click.stop    = "run(search)"
-            style          = "color: green;"
-          ></span>
-          </div>
+            style          = "color: green;margin-left: auto;"
+          ></button>
         </div>
       </div>
     </li>
@@ -178,10 +176,6 @@ li.menu-item span {
   display: inline-flex;
   white-space: pre-wrap;
 }
-.search-action {
-  text-shadow: 0 2px 5px rgba(0,0,0,.3);
-  padding: 0 4px;
-}
 #g3w-search li i {
   width: 20px;
 }
@@ -192,7 +186,10 @@ li.menu-item span {
 .search-tools > span {
   white-space: pre-wrap;
 }
-.search-tools > div {
-  margin-left: auto;
+.search-tools > button {
+  text-shadow: 0 2px 5px rgba(0,0,0,.3);
+  padding: 0 4px;
+  border: none;
+  background-color: unset;
 }
 </style>

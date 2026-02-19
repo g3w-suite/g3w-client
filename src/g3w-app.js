@@ -2568,7 +2568,7 @@ export default new (class GUI extends Emitter {
         ('__g3w_marker' === layer.id || (!layer.external && 'wms' !== (layer.source || {}).type)) && {
           id:        'removefeaturefromresult',
           mouseover: true,
-          class:     "far fa-minus-square",
+          class:     "fas fa-minus-square",
           style:     { color: 'red' },
           /** @since 3.11.0 hide element in case of pagination (show = false) */
           state:     Vue.observable({ show: !layer.filter.pagination }),
@@ -2588,7 +2588,7 @@ export default new (class GUI extends Emitter {
         // select feature
         (layer.toc && undefined !== layer.selection.active) && {
           id:       'selection',
-          class:    "far fa-check-circle",
+          class:    "fas fa-check-circle",
           hint:     'Add/Remove Selection',
           state:    Vue.observable({
             toggled: layer.features.reduce((a, _ , i ) => { a[i] = false; return a; }, {}),
