@@ -38,7 +38,7 @@
       v-if   = "state.relationField"
       style  = "color: var(--skin-warning); padding: 3px 0 3px 15px"
     >
-      <span :class = "$fa('warning')"></span>
+      <i aria-hidden = "true" class = "fas fa-exclamation-circle"></i>
       <span v-t = "'Relation key field'"></span>
     </div>
 

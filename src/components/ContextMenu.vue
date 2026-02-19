@@ -18,7 +18,7 @@
 
     <!-- CUSTOM ITEMS -->
     <li v-for = "(item, i) in items" :key = "i"  @click.prevent.stop = "item.cbk || (() => {})" :style="{ order: item.position }">
-      <i v-if = "item.children" :class = "$fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
+      <i v-if = "item.children" class = "fas fa-chevron-right" style  = "position: absolute; right: 0; margin-top: 3px"></i>
       <i v-if = "item.icon" :class = "$fa(item.icon)"></i> {{ $t(item.label) }}
       <!--SUB MENU-->
       <ul v-if = "item.children" class = "sub-contex-menu">
@@ -49,7 +49,7 @@
       v-if                = "'project' === context || hasMetadata(layer)"
       @click.prevent.stop = "showMetadata(layer && layer.id)"
     >
-      <i :class = "$fa('info')"></i> {{ $t('Metadata') }}
+      <i class = "fas fa-info-circle"></i> {{ $t('Metadata') }}
       <ul
         v-if  = "layer && layer.metadata && layer.metadata.abstract"
         style = "border-radius: 0 3px 3px 0;"
@@ -64,8 +64,8 @@
       v-if                = "canEdit(layer)"
       @click.prevent.stop = "0 === map_coords.length && startEditing(layer)"
     >
-      <i :class = "$fa('pencil')"></i> {{ $t('Edit Layer') }} 
-      <i v-if = "'map' === context" :class = "$fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
+      <i class = "fas fa-pencil-alt"></i> {{ $t('Edit Layer') }} 
+      <i v-if = "'map' === context" class = "fas fa-chevron-right" style  = "position: absolute; right: 0; margin-top: 3px"></i>
       <ul v-if = "'map' === context" class = "sub-contex-menu">
         <li
           v-for       = "layer in editableGeometryLayers()"
@@ -94,7 +94,7 @@
         v-if                = "canZoom(layer)"
         @click.prevent.stop = "zoomToLayer(layer)"
       >
-        <i :class = "$fa('search')"></i> {{ $t('Zoom to Layer') }}
+        <i class = "fas fa-search"></i> {{ $t('Zoom to Layer') }}
       </li>
 
       <!-- Attribute Table -->
@@ -102,16 +102,16 @@
         v-if                = "canOpenAttributeTable(layer)"
         @click.prevent.stop = "showAttributeTable(layer.id)"
       >
-        <i :class = "$fa('list')"></i> {{ $t('Open Attribute Table') }}
+        <i aria-hidden = "true" class = "fas fa-link"></i> {{ $t('Open Attribute Table') }}
       </li>
 
       <!-- Change z-index of ol layer. On top or button -->
       <li
         v-if = "isExternalLayer(layer)"
       >
-        <i :class = "$fa('sort')"></i>
+        <i class = "fa fa-sort"></i>
         {{ $t('layer_position.message') }} ({{ $t('layer_position.' + layer.position) }})
-        <i :class = "$fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
+        <i class = "fas fa-chevron-right" style  = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul class = "sub-contex-menu">
           <li
             v-for  = "position in ['top', 'bottom']"
@@ -119,9 +119,9 @@
             style  = "display: list-item;"
           >
             <span
-              v-if   = "position === layer.position"
-              style  = "font-size: 0.5em; margin-right: 3px;"
-              :class = "$fa('circle')"
+              v-if  = "position === layer.position"
+              style = "font-size: 0.5em; margin-right: 3px;"
+              class = "fas fa-circle"
             ></span>
             <span v-t = "'layer_position.' + position"></span>
           </li>
@@ -132,9 +132,9 @@
       <li
         v-if = "canShowStylesMenu(layer)"
       >
-        <i :class = "$fa('palette')"></i>
+        <i class = "fas fa-palette"></i>
         {{ $t('Style') }} ({{ layer.styles.find(s => s.current).name.toLowerCase() }})
-        <i :class = "$fa('arrow-right')" style  = "position: absolute; right: 0; margin-top: 3px"></i>
+        <i class = "fas fa-chevron-right" style  = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul class = "sub-contex-menu">
           <li
             v-for       = "(style, i) in layer.styles"
@@ -143,10 +143,10 @@
             style       = "display: list-item;"
           >
             <span
-              v-if   = "style.current"
-              style  = "font-size: 0.8em;"
-              :class = "$fa('circle')">
-            </span>
+              v-if  = "style.current"
+              style = "font-size: 0.8em;"
+              class = "fas fa-circle"
+            ></span>
             {{ style.name + (layer.styles.length > 1 && style.name === layer.defaultstyle ? ` (${$t('default')})` : '') }}
           </li>
         </ul>
@@ -156,9 +156,9 @@
       <li
         v-if = "canShowOpacityPicker(layer)"
       >
-        <i :class = "$fa('slider')"></i>
+        <i class = "fas fa-sliders-h"></i>
         {{ $t('Opacity') }} ({{ (layer.opacity / 100) }})
-        <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></i>
+        <i class = "fas fa-chevron-right" style = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul class = "sub-contex-menu">
           <li style = "display: list-item;">
             <input
@@ -185,9 +185,9 @@
       <li
         v-if = "isExternalImageLayer(layer)"
       >
-        <i :class = "$fa('slider')"></i>
+        <i class = "fas fa-sliders-h"></i>
         {{ $t('Opacity') }} ({{ layer.opacity }})
-        <span :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></span>
+        <span class = "fas fa-chevron-right" style = "position: absolute; right: 0; margin-top: 3px"></span>
         <ul class = "sub-contex-menu">
           <li style = "display: list-item;">
             <input
@@ -214,10 +214,10 @@
       <li
         v-if = "isExternalVectorLayer(layer)"
       >
-        <i :class = "$fa('tint')"></i>
+        <i class = "fa fa-tint"></i>
         {{ $t('Color') }}
         <i    ref="layer_color" style  = "width: 10px;height: 10px;border-radius: 10px;position: absolute;right: 20px;margin-top: 4px;" :style="{ backgroundColor: layer.color }"></i>
-        <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></i>
+        <i class = "fas fa-chevron-right" style = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul class = "sub-contex-menu">
           <li style="padding: 14px; background-color: #E0E0E0;">
             <chrome-picker
@@ -236,9 +236,9 @@
       <li
         v-if = "canShowFiltersMenu(layer)"
       >
-        <i :class = "$fa('filter')"></i>
+        <i class = "fas fa-filter"></i>
         {{ $t('Filters') }}
-        <i :class = "$fa('arrow-right')" style = "position: absolute; right: 0; margin-top: 3px"></i>
+        <i class = "fas fa-chevron-right" style = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul class = "sub-contex-menu">
           <li
             v-for       = "filter in layer.filters"
@@ -247,17 +247,16 @@
             @click.stop = "setLayerFilter(filter)"
           >
             <span
-              v-if   = "layer.filter.current && layer.filter.current.fid === filter.fid"
-              style  = "font-size: 0.5em; margin-right: 3px;justify-self: flex-start"
-              :class = "$fa('circle')"
+              v-if  = "layer.filter.current && layer.filter.current.fid === filter.fid"
+              style = "font-size: 0.5em; margin-right: 3px;justify-self: flex-start"
+              class = "fas fa-circle"
             ></span>
             <span style = "margin-right: 5px;">{{ filter.name }}</span>
             <span
               @click.stop = "deleteFilter(filter.fid)"
-              class       = "skin-border-color"
+              class       = "fas fa-trash skin-border-color"
               style       = "color: red; right: 0; padding-left: 10px; border-left: 2px solid;"
-              :class      = "$fa('trash')">
-            </span>
+            ></span>
           </li>
         </ul>
       </li>
@@ -268,7 +267,7 @@
         :disabled           = "ApplicationState.download"
         @click.prevent.stop = "showDownloadMenu(layer)"
       >
-        <i :class = "$fa('download')"></i>
+        <i aria-hidden = "true" class = "fas fa-download"></i>
         {{ $t('Download') }}
       </li>
 
@@ -286,17 +285,17 @@
           </svg>
         </i>
         Layers settings
-        <i :class = "$fa('external-link')" style = "position: absolute; right: 0; margin-top: 3px"></i>
+        <i aria-hidden = "true" class = "fa fa-external-link-alt" style = "position: absolute; right: 0; margin-top: 3px"></i>
       </a>
     </li>
 
-    <li v-if = "'map' === context"                                      @click = "copyCoords"><i :class = "$fa('pin')"></i>{{ map_coords.map(c => c.toFixed(2)).join(', ') }}</li>
-    <li v-if = "'map' === context"                                      @click = "queryCoords"><i :class = "$fa('unknow')"></i>{{ $t("What's here?") }}</li>
+    <li v-if = "'map' === context"                                      @click = "copyCoords"><i class = "fas fa-map-pin"></i>{{ map_coords.map(c => c.toFixed(2)).join(', ') }}</li>
+    <li v-if = "'map' === context"                                      @click = "queryCoords"><i class = "far fa-question-circle"></i>{{ $t("What's here?") }}</li>
     <li v-if = "'map' === context"                                      @click = "zoomIn"><i class = "fas fa-search-plus"></i>{{ $t('Zoom in') }}</li>
     <li v-if = "'map' === context"                                      @click = "zoomOut"><i class = "fas fa-search-minus"></i>{{ $t('Zoom out') }}</li>
-    <li v-if = "'map' === context"                                      @click = "zoomHome"><i :class = "$fa('home')"></i>{{ $t('Fit map extent') }}</li>
-    <li v-if = "'map' === context && initConfig.mapcontrols.screenshot" @click = "takeScreenshot"><i :class = "$fa('camera')"></i>{{ $t('Screen capture') }}</li>
-    <li v-if = "'map' === context"                                      @click = "showEmbedModal"><i :class = "$fa('share-alt')"></i>{{ $t('Embed map') }}</li>
+    <li v-if = "'map' === context"                                      @click = "zoomHome"><i class = "fas fa-home"></i>{{ $t('Fit map extent') }}</li>
+    <li v-if = "'map' === context && initConfig.mapcontrols.screenshot" @click = "takeScreenshot"><i class = "fas fa-camera-retro"></i>{{ $t('Screen capture') }}</li>
+    <li v-if = "'map' === context"                                      @click = "showEmbedModal"><i class = "fa fa-share-alt"></i>{{ $t('Embed map') }}</li>
     <li v-if = "'map' === context && initConfig.mapcontrols.streetview" @click = "showStreetView"><i class = "fas fa-street-view"></i>{{ $t('StreetView') }}</li>
     <li v-if = "'map' === context && initConfig.mapcontrols.annotation" @click = "showAnnotation"><i class = "fas fa-font"></i>{{ $t('Annotation') }}</li>
     <li v-if = "'map' === context"                                      @click = "showLegend"><i class = "fas fa-list"></i>{{ $t('legend') }}</li>
@@ -313,7 +312,7 @@
           </svg>
         </i>
         Project settings
-        <i :class = "$fa('external-link')" style = "position: absolute; right: 0; margin-top: 3px"></i>
+        <i aria-hidden = "true" class = "fa fa-external-link-alt" style = "position: absolute; right: 0; margin-top: 3px"></i>
       </a>
     </li>
 

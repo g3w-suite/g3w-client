@@ -444,8 +444,8 @@ export default new (class GUI extends Emitter {
                   class            = "action"
                   :style           = "action.style"
                 ></span>
+                <i v-if = "false !== component.collapsible" :class = "(!!component.state.open ? 'fas fa-angle-down' : 'fas fa-angle-left')" style="margin-right: 10px;" aria-hidden="true"></i>
               </div>
-              <i v-if = "false !== component.collapsible" :class = "$fa('angle-left')" class = "pull-right"></i>
             </a>
             <div ref="component-placeholder" ></div>
           </li>`,

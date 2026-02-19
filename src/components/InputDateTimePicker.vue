@@ -27,7 +27,7 @@
           class     = "form-control"
         />
         <span class = "input-group-addon caret">
-          <span :class = "[ $fa(timeOnly() ? 'time' : 'calendar') ]"></span>
+          <span :class = "[ timeOnly() ? 'far fa-clock' : 'fas fa-calendar-alt' ]"></span>
         </span>
       </div>
 

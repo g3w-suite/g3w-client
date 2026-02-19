@@ -51,7 +51,7 @@
               data-i18n-title = "Docs"
               data-placement  = "bottom"
             >
-              <i :class = "$fa('external-link')"></i>
+              <i aria-hidden = "true" class = "fa fa-external-link-alt"></i>
             </a>
             <label for = "add_wms_url">URL</label>
             <input
@@ -93,7 +93,10 @@
             :disabled           = "!(id || '').trim() || wms_urls.some(l => id === l.id && url !== l.url) || !(url || '').trim().match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)"
             @click.prevent.stop = "addWmsURL"
             class               = "btn btn-block btn-success"
-          ><i :class = "$fa('plus-square')"></i> <span v-t = "'Connect'"></span></button>
+          >
+            <i aria-hidden = "true" class = "far fa-plus-square"></i>
+            <span v-t = "'Connect'"></span>
+          </button>
 
           <!-- LIST OF SAVED CONNECTIONS (from local storage) -->
           <div v-if = "!wms_config" class="form-group">
@@ -102,8 +105,8 @@
             <div v-for = "wms in wms_urls" :key = "wms.id" style = "border-bottom: 1px solid #ccc; padding-bottom: 3px;">
               <div style = "display: flex; justify-content: space-between; align-items: center; padding-top: 3px">
                 <b @click = "fetchWMS(wms.url)"    :title = "$t('Connect')" style = "flex-grow: 1; cursor: pointer;">{{ wms.id }}</b>
-                <i @click = "fetchWMS(wms.url)"    title  = "Connect" data-placement = "top" :class = "$fa('eye')"   style = "color: var(--skin-color); padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
-                <i @click = "deleteWmsUrl(wms.id)" title  = "Remove"  data-placement = "top" :class = "$fa('trash')" style = "color: red; padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
+                <i @click = "fetchWMS(wms.url)"    title  = "Connect" data-placement = "top"  class = "far fa-eye"   style = "color: var(--skin-color); padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
+                <i @click = "deleteWmsUrl(wms.id)" title  = "Remove"  data-placement = "top"  class = "fas fa-trash" style = "color: red; padding: 3px; margin: 2px; font-size: 1.3em; cursor: pointer;"></i>
               </div>
               <small @click = "fetchWMS(wms.url)" :title = "$t('Connect')" style = "cursor: pointer;">{{ wms.url }}</small>
             </div>
@@ -199,7 +202,7 @@
             data-i18n-title = "Docs"
             data-placement  = "bottom"
           >
-            <i :class = "$fa('external-link')"></i>
+            <i aria-hidden = "true" class = "fa fa-external-link-alt"></i>
           </a>
           <!-- TMS URL -->
           <fieldset class = "form-group">
@@ -295,7 +298,7 @@
               <b v-if = "!layer_data" v-t = "'Add your file here'"></b>
               <b v-else-if = "layer_name">{{ layer_name }}</b>
             </h4>
-            <i v-if = "!layer_data" :class = "$fa('cloud-upload')" class = "fa-5x" aria-hidden = "true"></i>
+            <i v-if = "!layer_data" class = "fas fa-cloud-upload-alt fa-5x" aria-hidden = "true"></i>
             <span v-if = "!layer_data" style="font-family: Monospace;">.gml, .geojson, .kml, .kmz, .gpx, .csv, .zip (shapefile)</span>
           </form>
 
@@ -342,7 +345,7 @@
             title          = "Docs"
             data-placement = "bottom"
           >
-            <i :class = "$fa('external-link')"></i>
+            <i aria-hidden = "true" class = "fa fa-external-link-alt"></i>
           </a>
 
           <!-- LAYER PROJECTION -->

@@ -125,7 +125,7 @@ export class QueryBy extends MapControl {
                   data-i18n-title = "Docs"
                   data-placement  = "bottom"
                 >
-                  <i :class = "$fa('external-link')"></i>
+                  <i aria-hidden = "true" class = "fa fa-external-link-alt"></i>
                 </a>
                 <!-- SPATIAL METHOD -->
                 <div style = "padding: 5px;">
@@ -156,7 +156,7 @@ export class QueryBy extends MapControl {
                       @click.stop = "radius = 0" 
                       class       = "btn btn-default"
                     >
-                      <i :class="$fa('clear')"></i>
+                      <i aria-hidden = "true" class="fas fa-broom"></i>
                     </button>
                   </div>
                 </div>
@@ -178,7 +178,8 @@ export class QueryBy extends MapControl {
                   class       = "clear-selected-layer btn btn-block"  
                   @click.stop = "selectedLayer = '__ALL__'"
                 >
-                  <i :class = "$fa('clear')"></i> <span v-t = "'Clear Selection'"></span>
+                  <i aria-hidden = "true" class="fas fa-broom"></i>
+                  <span>{{ $t('Clear Selection') }}</span>
                 </button>
               </div>`,
             computed: {

@@ -10,7 +10,7 @@
     class = "layer-relations"
   >
     <div class = "header skin-background-color lighten">
-      <span style = "font-size: 1.1em;" v-t:pre = "'List of relations of feature'"></span>
+      <span style = "font-size: 1.1em;">{{ $t('List of relations of feature') }}</span>
       <ul style = "padding: 1em 0 0 15px; list-style: square;">
         <li v-for = "info in feature_info()"><b>{{ info.key }}</b>: {{ info.value }}</li>
       </ul>
@@ -141,26 +141,23 @@
                 <span
                   v-if           = "table.features[i].geometry"
                   @click.stop    = "zoomToGeometry(table.features[i].geometry)"
-                  class          = "action-button row-form skin-color"
+                  class          = "action-button row-form skin-color fas fa-map-marker-alt"
                   title          = "Zoom to Geometry"
                   data-placement = "right"
-                  :class         = "$fa('marker')"
                 ></span>
                 <span
                   v-if           = "form_structure"
                   @click.stop    = "showForm(i)"
                   title          = "Form View"
                   data-placement = "right"
-                  class          = "action-button row-form skin-color"
-                  :class         = "$fa('table')"
+                  class          = "action-button row-form skin-color fas fa-table"
                 ></span>
                 <span
                   v-if           = "isEditable"
                   @click.stop    = "editFeature(i)"
-                  class          = "action-button row-form skin-color"
+                  class          = "action-button row-form skin-color fas fa-pencil-alt"
                   title          = "Edit"
                   data-placement = "right"
-                  :class         = "$fa('pencil')"
                 ></span>
               </td>
               <td v-for = "value in row">

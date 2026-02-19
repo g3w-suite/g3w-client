@@ -273,7 +273,7 @@ template: /*html*/`
         data-i18n-title = "QGIS Docs"
         data-placement  = "right"
       >
-      <i :class = "$fa('external-link')"></i> {{ $t('Edit in QGIS') }}
+        <i aria-hidden = "true" class = "fa fa-external-link-alt"></i> {{ $t('Edit in QGIS') }}
       </a>
     </b>
   </div>
@@ -295,7 +295,7 @@ template: /*html*/`
           class      = "btn btn-success"
           :disabled  = "!!(downloading && layers)"
           title      = "Download Image"
-        ><i :class = "$fa('download')"></i> {{ $t('Download') }}</a>
+        ><i aria-hidden = "true" class = "fas fa-download"></i> {{ $t('Download') }}</a>
         <button
           value = "cancel"
           style = "border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;position: absolute;inset: 0 0 auto auto;width: 40px;height: 40px;"

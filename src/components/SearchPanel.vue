@@ -24,7 +24,7 @@
         class          = "btn skin-border-color"
         style          = "background-color: transparent; margin: 5px 0"
       >
-        <i class = "skin-color" :class = "$fa('clear')"></i>
+        <i aria-hidden = "true" class = "fas fa-broom skin-color"></i>
       </button>
     </section>
     <!-- SEARCH TOOLS -->
@@ -125,7 +125,7 @@
             <div :ref = "'date_' + input.id" class = "input-group date">
               <input :id = "input.id" type = 'text' class = "form-control" />
               <span class = "input-group-addon skin-color">
-                <span :class = "$fa(input.options.format.time ? 'time': 'calendar')"></span>
+                <span :class = "input.options.format.time ? 'far fa-clock': 'fas fa-calendar-alt'"></span>
               </span>
             </div>
           </div>

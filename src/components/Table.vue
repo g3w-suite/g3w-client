@@ -92,31 +92,31 @@
                 <input type = "checkbox" :checked = "feature.selected" />
               </label>
               <i
-                v-if            = "layer.isEditable() && (layer.config.editing || {}).visible"
-                @click.stop     = "editFeature(feature)"
-                title           = "Editing"
-                data-placement  = "top"
-                :class          = "'action-button skin-color ' + $fa('pencil')"
+                v-if           = "layer.isEditable() && (layer.config.editing || {}).visible"
+                @click.stop    = "editFeature(feature)"
+                title          = "Editing"
+                data-placement = "top"
+                class          = "action-button skin-color fas fa-pencil-alt"
               ></i>
               <i
-                @click.stop     = "openForm(feature)"
-                title           = "Form View"
-                data-placement  = "top"
-                :class          = "'action-button skin-color ' + $fa('table')"
+                @click.stop    = "openForm(feature)"
+                title          = "Form View"
+                data-placement = "top"
+                class          = "action-button skin-color fas fa-table"
               ></i>
               <i
-                v-if            = "layer.hasRelations()"
-                @click.stop     = "showRelations(feature)"
-                title           = "Show Relations"
-                data-placement  = "top"
-                :class          = "'action-button skin-color ' + $fa('relation')"
+                v-if           = "layer.hasRelations()"
+                @click.stop    = "showRelations(feature)"
+                title          = "Show Relations"
+                data-placement = "top"
+                class          = "action-button skin-color fas fa-sitemap"
               ></i>
               <i
-                v-if            = "layer.state.geolayer && !feature.geometry"
-                title           = "This item has no geometry"
-                data-placement  = "top"
-                style           = "color: currentColor !important;"
-                :class          = "'action-button ' + $fa('alert')"
+                v-if           = "layer.state.geolayer && !feature.geometry"
+                title          = "This item has no geometry"
+                data-placement = "top"
+                style          = "color: currentColor !important;"
+                class          = "action-button fas fa-exclamation-triangle"
               ></i>
             </div>
           </td>

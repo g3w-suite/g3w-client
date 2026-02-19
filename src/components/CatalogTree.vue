@@ -25,7 +25,7 @@
     <span
       v-if        = "isGroup"
       style       = "padding-right: 2px;"
-      :class      = "['root tree-toggler', $fa(layerstree.expanded ? 'caret-down' : 'caret-right')]"
+      :class      = "['root tree-toggler', layerstree.expanded ? 'fas fa-caret-down' : 'fas fa-caret-right']"
       @click.stop = "expandCollapse"
     ></span>
 
@@ -64,7 +64,7 @@
         v-if             = "!isTable && !isGroup && ('toc' === legendlayerposition || !isGroup && layerstree.categories)"
         @click.self.stop = "expandCollapse"
         class            = "tree-toggler"
-        :class           = "$fa(layerstree.visible && layerstree.expanded ? 'caret-down' : 'caret-right')"
+        :class           = "layerstree.visible && layerstree.expanded ? 'fas fa-caret-down' : 'fas fa-caret-right'"
       ></span>
 
       <input
@@ -89,7 +89,7 @@
     <span
       v-if   = "!isTable && !isGroup && layerstree.external"
       style  = "color: #ffff; padding-left: 5px;"
-      :class = "$fa('vector' === layerstree._type ? 'draw' : 'image')"
+      :class = "'vector' === layerstree._type ? 'fas fa-draw-polygon' : 'far fa-image'"
     ></span>
 
     <!-- VISIBLE NODE (LAYER or GROUP) -->

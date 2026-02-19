@@ -12,7 +12,7 @@
         style           = "border-style: solid; border-width: 2px; width:100%; cursor: pointer; text-align: center;"
         v-t-tooltip:top = "accept"
       >
-        <i :class = "$fa('file-upload')" class = "fa-2x skin-color" style = "padding: 5px;">
+        <i class = "fas fa-file-upload fa-2x skin-color" style = "padding: 5px;">
           <input
             :id       = "mediaid"
             style     = "display:none"

@@ -38,7 +38,7 @@
               border-radius: 3px;
             "
           >
-            <i style  = "color: #FFF" :class = "$fa('reply')"></i>
+            <i style  = "color: #FFF" class = "fas fa-reply" aria-hidden = "true"></i>
           </span>
 
             <div v-if = "parent" style = "margin: auto">

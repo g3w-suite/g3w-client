@@ -16,7 +16,7 @@
       class  = "menu-item"
       @click = "showPanel(search)"
     >
-      <i :class = "$fa('empty-circle')"></i>
+      <i aria-hidden = "true" class = "far fa-circle"></i>
       <span>{{ search.name }}</span>
     </li>
 

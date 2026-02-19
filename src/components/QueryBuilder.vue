@@ -21,7 +21,7 @@
         data-i18n-title = "Docs"
         data-placement  = "right"
       >
-        <i :class = "$fa('external-link')"></i>
+        <i aria-hidden = "true" class = "fa fa-external-link-alt"></i>
       </a>
       <select id = "query_builder_layers_select" class = "form-control">
         <option
@@ -49,18 +49,24 @@
         @click    = "run"
         :disabled = "disabled"
         v-t       = "'RUN'"
-      ><i :class = "$fa('run')" style = "color: green;"></i></button>
+      >
+        <i aria-hidden = "true" class = "fas fa-play" style = "color: green;"></i>
+      </button>
       <button
         class     = "query_builder_button btn btn-secondary bold"
         @click    = "reset"
         v-t       = "'CLEAR'"
-      ><i :class = "$fa('clear')"></i></button>
+      >
+        <i aria-hidden = "true" class = "fas fa-broom"></i>
+      </button>
       <button
         class     = "query_builder_button btn btn-secondary bold"
         @click    = "save"
         :disabled = "disabled"
         v-t       = "'SAVE'"
-      ><i :class = "$fa('save')"></i></button>
+      >
+        <i aria-hidden = "true" class = "far fa-save"></i>
+      </button>
     </div>
 
     <hr>
@@ -106,7 +112,7 @@
       :class    = "{'skin-border-color' : !manual }"
       style     = "color: #000;"
     >
-      <i :class = "$fa('search')"></i>
+      <i aria-hidden = "true" class = "fas fa-search"></i>
       <span v-t = "'SEARCH A VALUE'"></span>
     </button>
 

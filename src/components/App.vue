@@ -29,7 +29,8 @@
       </a>
 
       <button type="button" class="navbar-toggler" hidden="" @click="toggleSidebar">
-        <i :class = "$fa('bars')" ></i><b style="margin-left: 8px;">MENU</b>
+        <i aria-hidden = "true" class = "fas fa-bars" ></i>
+        <b style="margin-left: 8px;">MENU</b>
       </button>
 
       <hgroup class  = "project_title">
@@ -71,7 +72,7 @@
             class       = "dropdown-toggle"
             data-toggle = "dropdown"
           >
-            <i :class = "$fa('user')" aria-hidden="true"></i>
+            <i class = "fas fa-user" aria-hidden="true"></i>
             <span v-if = "user">{{ user.username }}</span>
             <span v-else>{{ $t('sign_in') }}</span>
             <i class="triangle"></i>
@@ -95,7 +96,7 @@
                 :data-target = "has_iframe_login ? '#modal-login' : undefined"
                 class        = "nav-login btn btn-default btn-flat skin-color"
               >
-                <b>{{ $t('sign_in') }}</b><i :class = "$fa('sign-in')"></i>
+                <b>{{ $t('sign_in') }}</b><i class = "fas fa-sign-in-alt" aria-hidden = "true"></i>
               </a>
 
               <!-- ADMIN URL -->
@@ -104,7 +105,7 @@
                 :href = "user.admin_url"
                 class = "nav-admin btn btn-default btn-flat skin-color"
               >
-                <b>Admin</b><i :class="$fa('tool')"></i>
+                <b>Admin</b><i class="fas fa-cog" aria-hidden = "true"></i>
               </a>
 
               <!-- HOME URL -->
@@ -113,7 +114,7 @@
                 :href = "urls.frontendurl"
                 class = "nav-home btn btn-default btn-flat skin-color"
               >
-                <b>{{ $t('homepage') }}</b><i :class="$fa('home')"></i>
+                <b>{{ $t('homepage') }}</b><i class="fas fa-home" aria-hidden = "true"></i>
               </a>
 
               <!-- LOGOUT URL -->
@@ -122,7 +123,7 @@
                 :href = "user.logout_url"
                 class = "nav-logout btn btn-default btn-flat skin-color"
               >
-                <b>{{ $t('Logout') }}</b><i :class = "$fa('sign-out')"></i>
+                <b>{{ $t('Logout') }}</b><i class = "fas fa-sign-out-alt" aria-hidden = "true"></i>
               </a>
 
               <!-- SHARE URL -->
@@ -131,7 +132,7 @@
                 @click = "showEmbedModal"
                 class  = "nav-embedmap btn btn-default btn-flat skin-color"
               >
-                <b>{{ $t('Embed map') }}</b><i :class = "$fa('share-alt')"></i>
+                <b>{{ $t('Embed map') }}</b><i class = "fa fa-share-alt" aria-hidden = "true"></i>
               </a>
 
               <!-- CHANGE MAP -->
@@ -141,7 +142,7 @@
                 @click = "openChangeMapMenu"
                 class  = "nav-changemap btn btn-default btn-flat"
               >
-                <b>{{ $t('changemap') }}</b><i :class = "$fa('refresh')"></i>
+                <b>{{ $t('changemap') }}</b><i class = "fas fa-sync-alt" aria-hidden = "true"></i>
               </a>
 
               <!-- ADD LAYER -->
@@ -150,7 +151,7 @@
                 @click = "showaddLayerModal"
                 class  = "nav-addlayer btn btn-default btn-flat"
               >
-                <b>{{ $t('Add Layer') }}</b><i :class="$fa('layers')"></i> 
+                <b>{{ $t('Add Layer') }}</b><i class="fas fa-layer-group" aria-hidden = "true"></i>
               </a>
 
             </li>
@@ -230,7 +231,8 @@
               style          = "margin-left: auto; margin-right: 1ch;"
             >
               <i 
-                :class = "$fa('arrow-left')" 
+                aria-hidden = "true"
+                class       = "fas fa-chevron-left"
                 :style = "{ opacity: ApplicationState.sidebar.btn_close ? '1' : '0.7', cursor: ApplicationState.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
               ></i>
             </button>
@@ -242,8 +244,9 @@
               class          = "btn btn-outline"
             >
               <i
-                :style = "{ opacity: ApplicationState.sidebar.btn_close ? '1' : '0.7', cursor: ApplicationState.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
-                :class = "$fa('close')"
+                :style      = "{ opacity: ApplicationState.sidebar.btn_close ? '1' : '0.7', cursor: ApplicationState.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
+                aria-hidden = "true"
+                class       = "fas fa-times"
               ></i>
             </button>
           </div>
@@ -296,18 +299,18 @@
               style       = "margin-bottom: 5px; margin-left: -3px; display: flex; flex-wrap: wrap; align-items: center;"
               @click.stop = "toggleThemeSelector"
             >
-              <i aria-hidden="true" :class = "$fa(theme_selector_collapsed ? 'caret-right' : 'caret-down')" style = "padding: 3px;"></i>
-              <i aria-hidden="true" :class = "$fa('eye')"                                                   style = "padding: 0 0 0 4px;"></i>
+              <i aria-hidden="true" class = "far fa-eye"></i>
               <!-- Text of current theme -->
               <span
                 v-if  = "active_theme.theme"
                 class = "current_map_theme treeview-label g3w-long-text"
               >
-                <span>{{ $t('THEME') }}:</span>
+                <span style="color:#fff;">{{ $t('THEME') }}:</span>
                 <span class = "skin-color" style = "font-size: 1.1em;">{{ active_theme.theme }}</span>
               </span>
               <!-- Choose a theme -->
-              <b v-else class = "treeview-label">{{ $t('THEME') }}</b>
+              <b v-else class = "treeview-label" style="color:#fff;">{{ $t('THEME') }}</b>
+              <i aria-hidden="true" :class = "theme_selector_collapsed ? 'fas fa-angle-left' : 'fas fa-angle-down'" style = "padding: 3px; margin-left: auto; margin-right: 3px;"></i>
             </a>
 
             <ul
@@ -468,19 +471,19 @@
               <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
                 <span
                   style       = "padding-right: 2px; padding-left: 4px; width: 20px; font-size: 1.1em; cursor: pointer;"
-                  :class      = "$fa(externalayers.collapsed ? 'caret-right' : 'caret-down')"
+                  :class      = "externalayers.collapsed ? 'fas fa-caret-right' : 'fas fa-caret-down'"
                   @click.stop = "expandCollapseExternaLayers"
                   class       = "tree-toggler"
                 ></span>
                 <span
                   @click.stop = "toggleExternalLayers"
                   style       = "padding-right: 5px; cursor: pointer;"
-                  :class      = "$fa(externalayers.checked ? 'check': 'uncheck')"
+                  :class      = "externalayers.checked ? 'far fa-check-square': 'far fa-square'"
                 ></span>
                 <span style = "font-weight: bold">{{ $t('EXTERNAL LAYERS') }}</span>
                 <span 
                   style       = "color: red; padding-right: 3px; margin-left: auto; margin-right: 8px; cursor: pointer;"
-                  :class      = "$fa('trash')"
+                  class       = "fas fa-trash"
                   @click.stop = "removeExternalLayers"
                 ></span>
               </div>
@@ -537,7 +540,7 @@
             @click.stop = "showaddLayerModal"
             style       = "border:none;"
           >
-            <i :class = "$fa('layers')"></i> <b>{{ $t('Add Layer') }}</b>
+            <i class = "fas fa-layer-group" aria-hidden = "true"></i> <b>{{ $t('Add Layer') }}</b>
           </a>
           <a
             v-if        = "has_related_maps && !ApplicationState.iframe"
@@ -545,7 +548,7 @@
             @click.stop = "openChangeMapMenu"
             style       = "border:none;"
           >
-            <i :class = "$fa('refresh')"></i> <b>{{ $t('changemap') }}</b>
+            <i class = "fas fa-sync-alt" aria-hidden = "true"></i> <b>{{ $t('changemap') }}</b>
           </a>
         </li>
 
@@ -608,19 +611,19 @@
         <div id = "application-notifications">
           <!-- OFFLINE -->
           <div :class = "{ 'g3w-hide': ApplicationState.online }" style = "color: #999">
-            <i :class = "$fa('wifi')"></i>
+            <i class = "fas fa-wifi" aria-hidden = "true"></i>
             <b style = "font-size: 0.4em">offline</b>
           </div>
           <!-- DOWNLOAD -->
           <div :class = "{ 'skin-color': true, 'g3w-hide': !ApplicationState.download }">
             <bar-loader :loading = "true" />
-            <i style = "padding:3px" :class = "$fa('download')"></i>
+            <i style = "padding:3px" class = "fas fa-download" aria-hidden = "true"></i>
             <b style = "font-size: 0.35em">download</b>
           </div>
           <!-- PLUGINS -->
           <div :class = "{ 'g3w-hide': 0 === ApplicationState.plugins.length }" style = "color: #994b10">
             <bar-loader :loading = "true" />
-            <i :class = "$fa('tools')"></i>
+            <i class = "fas fa-cogs" aria-hidden = "true"></i>
             <b style = "font-size: 0.4em">plugins</b>
           </div>
         </div>
@@ -709,15 +712,15 @@
                 data-placement      = "top"
                 @click.stop.prevent = "switchMapsCoordinateTo4326"
                 style               = "caret-color: transparent; padding: 0 5px 0 0; display: flex; height: 100%; align-items: center; cursor: pointer;"
-                :class              = "$fa('mouse')"
+                class               = "fas fa-mouse"
               ></div>
 
               <div
-                id              = "permalink"
-                title           = "Copy share URL"
-                data-placement  = "top"
-                :class          = "$fa('share-alt')"
-                @click.stop     = "showEmbedModal"
+                id             = "permalink"
+                title          = "Copy share URL"
+                data-placement = "top"
+                class          = "fa fa-share-alt"
+                @click.stop    = "showEmbedModal"
               ></div>
 
               <!-- SCALE CONTROL -->

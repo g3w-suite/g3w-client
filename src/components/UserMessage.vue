@@ -37,7 +37,7 @@
           title  = "close"
           @click = "closeUserMessage"
         >
-          <i class = "usermessage-header-right-item" :class = "$fa('close')"></i>
+          <i aria-hidden = "true" class = "usermessage-header-right-item fas fa-times"></i>
         </div>
       </div>
     </div>

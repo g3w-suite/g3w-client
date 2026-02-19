@@ -155,7 +155,7 @@ class AnnotationControl extends MapControl {
                   data-i18n-title = "Docs"
                   data-placement  = "bottom"
                 >
-                  <i :class = "$fa('external-link')"></i>
+                  <i aria-hidden = "true" class = "fa fa-external-link-alt"></i>
                 </a>
 
                 <!-- SHAPE TYPES -->
@@ -201,7 +201,7 @@ class AnnotationControl extends MapControl {
                       {{ feat.get('text') }}
                     </button>
                     <button
-                      :class         = "$fa('trash')"
+                      class          = "fas fa-trash"
                       @click.stop    = "remove(feat)"
                       style          = "background:none; border: none; color: red;"
                       title          = "Remove"
@@ -439,13 +439,13 @@ class AnnotationControl extends MapControl {
 
                 <!-- SHAPES ACTIONS -->
                 <div style = "display: flex; justify-content: flex-end; gap: 5px; font-size: 1.2em; border-top: 1px solid #eee; padding: 10px 0; margin-top: 10px;">
-                  <button :class = "$fa('link')"                                       @click.stop = "share"       style = "background:none; border: none;" title = "Share"     data-placement = "bottom" :hidden = "!features.length || feature || type"></button>
-                  <button :class = "$fa('file-upload')"                                @click.stop = "upload"      style = "background:none; border: none;" title = "Import"    data-placement = "bottom" :hidden = "feature || type"></button>
-                  <button :class = "$fa('file-download')"                              @click.stop = "download"    style = "background:none; border: none;" title = "Export"    data-placement = "bottom" :hidden = "!features.length || (type && !feature)"></button>
-                  <button :class = "layer.isVisible() ? $fa('eye') : $fa('eye-close')" @click.stop = "toggleLayer" style = "background:none; border: none;" title = "Show/Hide" data-placement = "bottom" :hidden = "!features.length || feature || type"></button>
+                  <button  class = "fas fa-link"                                           @click.stop = "share"       style = "background:none; border: none;" title = "Share"     data-placement = "bottom" :hidden = "!features.length || feature || type"></button>
+                  <button  class = "fas fa-file-upload"                                    @click.stop = "upload"      style = "background:none; border: none;" title = "Import"    data-placement = "bottom" :hidden = "feature || type"></button>
+                  <button  class = "fas fa-file-download"                                  @click.stop = "download"    style = "background:none; border: none;" title = "Export"    data-placement = "bottom" :hidden = "!features.length || (type && !feature)"></button>
+                  <button :class = "layer.isVisible() ? 'far fa-eye' : 'far fa-eye-slash'" @click.stop = "toggleLayer" style = "background:none; border: none;" title = "Show/Hide" data-placement = "bottom" :hidden = "!features.length || feature || type"></button>
                   <section class = "annotations-close-back" style = "display: flex; gap: 5px; margin-left: auto;">
-                    <button :class = "$fa('arrow-left')"    @click.stop = "showAll"  style = "background:none; border: none; margin-left: auto;" title = "Show All" data-placement = "bottom" :hidden = "!type && !feature"></button>
-                    <button :class = "$fa('close')"         @click.stop = "close"    style = "background:none; border: none; margin-left: auto;" title = "close"    data-placement = "bottom"                              ></button>
+                    <button class = "fas fa-chevron-left"                                  @click.stop = "showAll"     style = "background:none; border: none; margin-left: auto;" title = "Show All" data-placement = "bottom" :hidden = "!type && !feature"></button>
+                    <button class = "fas fa-times"                                         @click.stop = "close"       style = "background:none; border: none; margin-left: auto;" title = "close"    data-placement = "bottom"                              ></button>
                   </section>  
                 </div>
 

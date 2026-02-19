@@ -546,14 +546,12 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
 .sidebar-menu > li > a > :is(.fa, .glyphicon, .ion)                         { width: 20px; }
 .sidebar-menu > li :is(.label, .badge)                                      { margin-top: 3px; margin-right: 5px; }
 .sidebar-menu li.header                                                     { padding: 10px 25px 10px 15px; font-size: 12px; }
-.sidebar-menu li > a > .fa-angle-left                                       { width: auto; height: auto; padding: 0; margin-right: 10px; margin-top: 3px; }
 .sidebar-menu li.active > .treeview-menu                                    { display: block; }
 .sidebar-menu .treeview-menu                                                { display: none; list-style: none; padding: 0; margin: 0; }
 .sidebar-menu .treeview-menu .treeview-menu                                 { padding-left: 20px; }
 .sidebar-menu .treeview-menu > li                                           { margin: 0; }
 .sidebar-menu .treeview-menu > li > a                                       { padding: 5px 5px 5px 15px; display: block; font-size: 14px; }
 .sidebar-menu .treeview-menu > li > a > :is(.fa, .glyphicon, .ion)          { width: 20px; }
-.sidebar-menu .treeview-menu > li > a > :is(.fa-angle-left, .fa-angle-down) { width: auto; }
 
 /* A fix for text overflow while transitioning from sidebar mini to full sidebar */
 .sidebar-menu,

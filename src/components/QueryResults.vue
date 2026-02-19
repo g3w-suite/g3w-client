@@ -170,10 +170,9 @@
 
               </div>
               <button
-                class          = "btn btn-box-tool btn-collapser skin-color"
+                class          = "btn btn-box-tool btn-collapser skin-color fas fa-minus"
                 type           = "button"
                 style          = "font-weight: 900;"
-                :class         = "$fa('minus')"
                 title          = "Enlarge / Reduce"
                 data-placement = "top"
               ></button>
@@ -378,7 +377,7 @@
                       :class      = "{noAttributes: attributesSubset(layer).length === 0}">
                       <span
                         class          = "fa link morelink skin-color"
-                        :class         = "$fa(getLayerFeatureBox(layer, feature).collapsed  ? 'plus': 'minus')"
+                        :class         = "getLayerFeatureBox(layer, feature).collapsed  ? 'fas fa-plus': 'fas fa-minus'"
                       ></span>
                     </td>
                   </tr>
@@ -388,11 +387,11 @@
                     v-if = "!hasLayerOneFeature(layer) && getLayerFeatureBox(layer, feature).collapsed"
                   >
                     <td v-for = "attribute in attributesSubset(layer)" class = "attribute">
-                      <span
-                        v-if   = "isLink(getLayerField({layer, feature, fieldName: attribute.name}))"
-                        class  = "skin-color"
-                        :class = "$fa('link')"
-                      ></span>
+                      <i
+                        v-if        = "isLink(getLayerField({layer, feature, fieldName: attribute.name}))"
+                        class       = "skin-color fas fa-link"
+                        aria-hidden = "true"
+                      ></i>
 
                       <g3w-image
                         v-else-if = "isPhoto(getLayerField({layer, feature, fieldName: attribute.name})) || isImage(getLayerField({layer, feature, fieldName: attribute.name}))"

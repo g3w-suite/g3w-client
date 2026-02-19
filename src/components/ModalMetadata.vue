@@ -100,7 +100,7 @@
 
                     <!-- CONTACT EMAIL -->
                     <div v-if="project.metadata.contactinformation.contactelectronicmailaddress" style = "margin-bottom: 5px;">
-                      <i style = "margin-right: 3px;" :class = "$fa('mail')" aria-hidden = "true"></i>
+                      <i style = "margin-right: 3px;" class = "fas fa-envelope" aria-hidden = "true"></i>
                       <b hidden>{{ $t('Email') }}</b>
                       <a :href = "`mailto: ${sanitizeValue(project.metadata.contactinformation.contactelectronicmailaddress)}`">
                         {{ sanitizeValue(project.metadata.contactinformation.contactelectronicmailaddress) }}
@@ -109,7 +109,7 @@
 
                     <!-- CONTACT PHONE -->
                     <div v-if="project.metadata.contactinformation.contactvoicetelephone" style = "margin-bottom: 5px;">
-                      <i style = "margin-right: 3px;" :class = "$fa('mobile')" aria-hidden = "true"></i>
+                      <i style = "margin-right: 3px;" class = "fas fa-mobile" aria-hidden = "true"></i>
                       <b hidden>{{ $t('Phone') }}</b>
                       <a :href = "`tel: ${sanitizeValue(project.metadata.contactinformation.contactvoicetelephone)}`">
                         {{ sanitizeValue(project.metadata.contactinformation.contactvoicetelephone) }}
