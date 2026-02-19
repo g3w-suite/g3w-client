@@ -545,6 +545,8 @@
         headerActionsCellWidth:      10,
         /** @since 4.1.0 */
         proxied_layers:              [],
+        /** @since 4.1.0 */
+        clear_actions: [],
       }
     },
 
@@ -1052,36 +1054,23 @@
 
       /**@since 4.1.0 */
       async initAction({ action, layer, feature, index } = {}) {
-
         let show = true;
 
         //check if action has condition to show action button in feature box header
         if ('function' === typeof action.condition) {
-          show = await this.action.condition({
-            layer,
-            feature,
-          });
+          show = await action.condition({ layer, feature });
         }
 
         show = show && (undefined === (action.state || {}).show ? show : action.state.show);
 
         //check if has init function 
         if (show && action.init) {
-          action.init({
-            layer,
-            feature,
-            index,
-            action,
-          });
+          action.init({ layer, feature, index, action });
         }
 
         //check if action has clear function to clear action state and store it in clear_actions array to be cleared on component destroy
         if (show && 'function' === typeof action.clear) {
-          this.clear_actions.push(() => action.clear({
-            action,
-            layer,
-            feature
-          }));
+          this.clear_actions.push(() => action.clear({ action, layer, feature }));
         }
 
         return show;
