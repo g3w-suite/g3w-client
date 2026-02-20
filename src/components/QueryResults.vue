@@ -551,8 +551,6 @@
         headerActionsCellWidth:      10,
         /** @since 4.1.0 */
         proxied_layers:              [],
-        /** @since 4.1.0 */
-        clear_actions: [],
       }
     },
 
@@ -1138,7 +1136,8 @@
     },
 
     created() {
-      this.zoomToLayer = throttle(l => GUI.zoomToLayer(l));
+      this.zoomToLayer   = throttle(l => GUI.zoomToLayer(l));
+      this.clear_actions = [];
     },
     
     beforeDestroy() {
