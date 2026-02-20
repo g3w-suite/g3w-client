@@ -291,12 +291,12 @@
         </li>
 
         <!-- THEME SELECTOR -->
-        <li id = "themes" class = "treeview sidebaritem" v-show="ApplicationState.sidebar.open" style = "padding: 0 3px; ">
+        <li id = "themes" class = "treeview sidebaritem" v-show="ApplicationState.sidebar.open">
           <!-- whether at least one TOC layer is visible on toc -->
           <template v-if = "ApplicationState.catalog.layerstrees.length && ApplicationState.catalog.layerstrees[0].tree[0].toc" >
             <a
               href        = "#"
-              style       = "margin-bottom: 5px; margin-left: -3px; display: flex; flex-wrap: wrap; align-items: center;"
+              style       = "display: flex; flex-wrap: wrap; align-items: center;"
               @click.stop = "toggleThemeSelector"
             >
               <i aria-hidden="true" class = "far fa-eye"></i>
@@ -310,7 +310,7 @@
               </span>
               <!-- Choose a theme -->
               <b v-else class = "treeview-label" style="color:#fff;">{{ $t('THEME') }}</b>
-              <i aria-hidden="true" :class = "theme_selector_collapsed ? 'fas fa-angle-left' : 'fas fa-angle-down'" style = "padding: 3px; margin-left: auto; margin-right: 3px;"></i>
+              <i aria-hidden="true" :class = "theme_selector_collapsed ? 'fas fa-angle-left' : 'fas fa-angle-down'" style = "margin-left: auto; margin-right: 10px;"></i>
             </a>
 
             <ul

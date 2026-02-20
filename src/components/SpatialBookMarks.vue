@@ -303,7 +303,8 @@
     outline: 2px solid red;
   }
 
-  ul#g3w-spatial-bookmarks > li > details > *                     { padding: 5px;}
+  ul#g3w-spatial-bookmarks > li > details > *                     { padding: 5px; }
+  ul#g3w-spatial-bookmarks > li > details > summary               { user-select: none; }
   ul#g3w-spatial-bookmarks > li > details       > summary::marker { content: "\f0da\a0\a0"; font-family: "Font Awesome 5 Free"; font-weight: 900; }
   ul#g3w-spatial-bookmarks > li > details[open] > summary::marker { content: "\f0d7\a0\a0"; }
   ul#g3w-spatial-bookmarks > li > details[open] > summary         { border-bottom: 2px solid #2c3b41; }
