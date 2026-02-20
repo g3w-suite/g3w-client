@@ -430,11 +430,10 @@
           </template>
         </li>
 
-        <li id="catalog" class="treeview sidebaritem" style = "padding: 0 3px;">
+        <li id="catalog" class="treeview sidebaritem">
           <a
             href             = "#"
             @click.prevent   = "showSidebar"
-            style            = "display: flex; justify-content: space-between; align-items: center;"
             :data-i18n-title = "ApplicationState.sidebar.open ? '' : 'Layers'"
             data-placement   = "right"
           >
@@ -447,7 +446,7 @@
             v-for = "root in ApplicationState.catalog.layerstrees"
             :key  = "root.storeid"
             class = "tree-root root"
-            style = "padding-top: 5px;"
+            style = "margin: 5px 3px 0 3px;"
           >
             <catalog-tree
               v-for                      = "tree in root.tree"
@@ -466,6 +465,7 @@
           <ul
             v-if  = "ApplicationState.catalog.external.wms.length || ApplicationState.catalog.external.tms.length || ApplicationState.catalog.external.vector.length"
             class = "tree-root g3w-external_layers-group"
+            style = "margin: 5px 3px 0 3px;"
           >
             <li>
               <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
