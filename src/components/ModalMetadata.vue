@@ -792,15 +792,10 @@
     white-space: unset;
   }
 
-  #metadata_layers > details > summary {
-    cursor: pointer;
-    font-size: 18px;
-    position: relative;
-    padding: 20px 0;
-  }
-
-  #metadata_layers > details > summary::marker { content: ""; }
-  #metadata_layers > details > summary::after { content: '+'; float: right; font-weight: bold; font-size: 25px; margin-top: -4px; }
+  #metadata_layers > details > summary              { border-bottom: 1px solid #eee; }
+  #metadata_layers > details > summary              { cursor: pointer; font-size: 18px; position: relative; padding: 20px 0; }
+  #metadata_layers > details > summary::marker      { content: ""; }
+  #metadata_layers > details > summary::after       { content: '+'; float: right; font-weight: bold; font-size: 25px; margin-top: -4px; }
   #metadata_layers > details[open] > summary::after { content: '-' }
 
   .layer-nav-tabs {
