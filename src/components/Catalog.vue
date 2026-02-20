@@ -518,12 +518,11 @@ export default {
                       .join('&')
                       + '&' + url_params
                 })).blob());
-          } catch (e) {
+          } catch(e) {
             console.warn(e);
-          } finally {
             //set loading to false
             obj.loading = false;
-          }
+          } 
         }
       }
       return legendurls;
