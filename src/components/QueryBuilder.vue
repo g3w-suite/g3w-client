@@ -298,6 +298,8 @@ export default {
 
       // reset items
       const ITEMS = ApplicationState.querybuilder.searches;
+
+      ITEMS[id]   = ITEMS[id] ?? [];
       
       try {
         window.localStorage.setItem('QUERYBUILDERSEARCHES', JSON.stringify(searches));
