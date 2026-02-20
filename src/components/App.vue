@@ -202,11 +202,8 @@
     </nav>
 
     <!-- SIDEBAR MENU -->
-    <aside>
-      <div
-        class  = "main-sidebar no-print"
-        :class = "{ iframe: iframe, 'g3w-disabled': disabled }"
-      >
+    <aside :class = "{ 'g3w-disabled': disabled }" style="position: relative; z-index: 1;">
+      <div class  = "main-sidebar no-print">
         <!-- SIDEBAR CONTENT -->
         <div
           :hidden = "panels.length <= 0"
@@ -261,7 +258,6 @@
           id      = "g3w-menu"
           :hidden = "!showmainpanel"
           class   = "sidebar-menu"
-          :class  = "{ 'g3w-disabled': disabled }"
           @click  = "toggleSidebarItem"
         >
 
@@ -560,7 +556,6 @@
       <a
         href           = "#"
         class          = "sidebar-aside-toggle"
-        :class         = "{ 'g3w-disabled': disabled, 'iframe': iframe}"
         style          = "z-index: 2"
         @click.prevent = "toggleSidebar"
         role           = "button"
@@ -573,7 +568,7 @@
     <!-- MAIN (content) -->
     <div
       class  = "content-wrapper"
-      :style = "{ paddingTop: isIframe ? 0 : null }"
+      :style = "{ paddingTop: ApplicationState.iframe ? 0 : null }"
     > 
       <bar-loader style = "position: absolute; z-index: 1;" :loading = "state.content.loading && 0 === state.contentsdata.length"/>
       <transition name = "fade" :duration = "{ enter: 500, leave: 500 }">
@@ -911,7 +906,6 @@ export default {
       state:                 ApplicationState,
       GUI,
       ApplicationState,
-      iframe:                false,
       language:              null,
       updatePreviousTitle:   false,
       custom_links:          (window.initConfig.header_custom_links || []).concat(ApplicationState.navbaritems).filter(Boolean).map(l => Object.assign(l, { id: l.id || getUniqueDomId() })),
@@ -956,10 +950,6 @@ export default {
 
     initConfig() {
       return window.initConfig;
-    },
-
-    isIframe() {
-      return window.top !== window.self;
     },
 
     urls() {

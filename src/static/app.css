@@ -511,7 +511,7 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
 
 /*Navbar toggle button*/
 
-.sidebar-aside-toggle                                        { position: absolute; left: 350px; top: 50px; color: #fff !important; padding: 11.6px; background-color: var(--bgcolor); opacity: 0.8; }
+.sidebar-aside-toggle                                        { position: absolute; left: 350px; color: #fff !important; padding: 11.6px; background-color: var(--bgcolor); opacity: 0.8; }
 .is-iframe .sidebar-aside-toggle                             { top: 0; }
 .sidebar-aside-toggle:before,
 .sidebar-aside-toggle:before                                 { font-family: "Font Awesome 5 Free"; font-weight: bold; content: '\f100'; }
