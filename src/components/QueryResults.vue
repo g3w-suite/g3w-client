@@ -39,11 +39,10 @@
               @click.stop     = "collapseSidebar"
             >
               <button
-                class          = "btn-box-tool btn-collapser skin-color-dark fas fa-caret-down"
-                type           = "button"
-                style          = "font-weight: 900; font-size: 1.75rem;border: none; margin-left: 5px;"
-                title          = "Enlarge / Reduce"
-                data-placement = "top"
+                class = "btn-box-tool btn-collapser skin-color-dark fas fa-caret-down"
+                type  = "button"
+                style = "font-weight: 900; font-size: 1.75rem;border: none; margin-left: 5px;"
+                title = "Enlarge / Reduce"
               ></button>
               
               <!-- LAYER NAME -->
@@ -375,10 +374,12 @@
                       @click.stop = "toggleFeatureBoxAndZoom(layer,feature)"
                       class       = "collapsed"
                       style       = "text-align: end"
-                      :class      = "{noAttributes: attributesSubset(layer).length === 0}">
+                      :class      = "{noAttributes: attributesSubset(layer).length === 0}"
+                    >
                       <span
-                        class          = "fa link morelink skin-color"
-                        :class         = "getLayerFeatureBox(layer, feature).collapsed  ? 'fas fa-plus': 'fas fa-minus'"
+                        title  = "Enlarge / Reduce"
+                        class  = "fa link morelink skin-color"
+                        :class = "getLayerFeatureBox(layer, feature).collapsed  ? 'fas fa-plus': 'fas fa-minus'"
                       ></span>
                     </td>
                   </tr>
