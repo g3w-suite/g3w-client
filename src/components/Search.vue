@@ -5,16 +5,9 @@
 
 <template>
   <ul
-    v-if  = "show"
     id    = "g3w-search"
     class = "treeview-menu g3w-search g3w-tools menu-items"
   >
-     
-    <!-- QUERY BUILDER -->
-    <li class = "menu-item" @click.stop = "showQueyBuilderPanel">
-       <i aria-hidden = "true" class = "sidebar-button far fas fa-calculator"></i>
-      <span v-t = "'Advanced search'"></span>
-    </li>
 
     <!-- SAVED SEARCHES (from g3w-admin) -->
     <li
@@ -28,6 +21,12 @@
 
     <li v-for = "searchtool in state.tools">
       <g3w-tool :tool = "searchtool" />
+    </li>
+
+    <!-- QUERY BUILDER -->
+    <li class = "menu-item" @click.stop = "showQueyBuilderPanel">
+       <i aria-hidden = "true" class = "fas fa-calculator"></i>
+      <span v-t = "'Advanced search'"></span>
     </li>
 
     <!-- ORIGINAL SOURCE: src/components/QueryBuilderSearch.vue@v3.9.3 -->
@@ -88,17 +87,11 @@ export default {
     'g3w-tool': G3WTool,
   },
 
-  computed: {
-    show() {
-      return this.state.searches.length + this.state.tools.length + this.state.querybuildersearches.length > 0;
-    }
-  },
-
   methods: {
     /**@since 4.1.0  ORIGINAL SOURCE: src/g3w-app.js@v4.0.0*/
     showQueyBuilderPanel() {
-      g3w.app.closeContent();
-      g3w.app.closeSideBar();
+      GUI.closeContent();
+      GUI.closeSideBar();
       return new Panel({
         title: _('Advanced search'),
         show: true,

@@ -521,12 +521,13 @@ export default new (class GUI extends Emitter {
     }));
 
     // G3W-SEARCH
-    this.addComponent(new Component({
+    this.addComponent(Object.assign(new Component({
       id:         'search',
       visible:     true,
       icon:        "fas fa-search",
       iconColor:   '#8dc3e3',
       title:       ApplicationState.project.state.search_title || 'search',
+      actions:     [],
       service: Object.assign(new Emitter, {
         state: {
           searches: (ApplicationState.project.state.search || []).sort((a, b) => `${a.name}`.localeCompare(b.name)),
@@ -548,6 +549,14 @@ export default new (class GUI extends Emitter {
         removeTool()              {},
       }),
       vueComponentObject: require('components/Search.vue').default,
+    }), {
+      _setOpen: bool => {
+        const search = g3w.app.getComponent('search').getInternalComponent();
+        // autotogle query builder panel when there is no other saved search
+        if (bool && !search.state.searches.length && !search.state.tools.length && !search.state.querybuildersearches.length) {
+          search.showQueyBuilderPanel();
+        }
+      },
     }));
 
     // G3W-TOOLS
