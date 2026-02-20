@@ -11,7 +11,7 @@
     @contextmenu.prevent.stop = "showContextMenu"
     @click.stop               = "onTreeItemClick"
     :style                    = "{
-      marginLeft: !isGroup ? '5px' : '0',
+      paddingLeft: !isGroup ? '5px' : '0',
       position: 'relative',
     }"
     :class                    = "{
