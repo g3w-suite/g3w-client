@@ -54,8 +54,8 @@
 
     <!-- QUERY BUILDER -->
     <li class = "menu-item" @click.stop = "showQueyBuilderPanel">
-       <i aria-hidden = "true" class = "fas fa-calculator"></i>
-      <span v-t = "'Advanced search'"></span>
+       <i aria-hidden = "true" class = "fas fa-plus"></i>
+      <span v-t = "'Create a new search'"></span>
     </li>
 
   </ul>
