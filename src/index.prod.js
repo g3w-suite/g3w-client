@@ -821,7 +821,7 @@ $.ajaxSetup({
   // set in first position
   ApplicationState.layers[project.getGid()] = project.getLayersStore();
 
-  window.addEventListener('online', () => { GUI.online(); } );
+  window.addEventListener('online',  () => { GUI.online(); } );
   window.addEventListener('offline', () => { GUI.offline(); });
 
   /** @since 4.1.0 */

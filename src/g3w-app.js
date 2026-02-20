@@ -547,28 +547,6 @@ export default new (class GUI extends Emitter {
         async stop(d)             { return d },
         removeTool()              {},
       }),
-      actions:     [
-        {
-          id:      "querybuilder",
-          class:   "sidebar-button fas fa-calculator",
-          tooltip: _('Advanced search'),
-          fnc:     () => {
-            g3w.app.closeContent();
-            g3w.app.closeSideBar();
-            return new Panel({
-              title: _('Advanced search'),
-              show: true,
-              vueComponentObject: require('components/QueryBuilder.vue').default
-            });
-          },
-          style: {
-            color:        '#8DC3E3',
-            padding:      '6px',
-            fontSize:     '1.2em',
-            borderRadius: '3px',
-            marginRight:  '5px'
-          }
-      }],
       vueComponentObject: require('components/Search.vue').default,
     }));
 
