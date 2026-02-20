@@ -408,7 +408,7 @@ export default new (class GUI extends Emitter {
           <li
             :id        = "component.id"
             v-show     = "component.state.visible"
-            class      = "treeview sidebaritem"
+            class      = "sidebar-item"
             :class     = "{'active': !!component.state.open }"
             v-disabled = "component.state.disabled"
           >
@@ -468,13 +468,13 @@ export default new (class GUI extends Emitter {
         }
         const node = component.getInternalComponent().$el; // <ul> elements
         node?.classList?.toggle?.('menu-open', open);      // toggle "menu-open" class
-        node.parentNode.classList.toggle('active', open);  // parent node is a <li> that contain <ul> node (eg. <li id="metadata" class="treeview sidebaritem">)
+        node.parentNode.classList.toggle('active', open);  // parent node is a <li> that contain <ul> node (eg. <li id="metadata" class="sidebar-item">)
         component.setOpen(open);                           // set open (attribute)
       };
 
-      // append to `g3w-sidebarcomponents`
+      // append to `g3w-menu`
       sidebarItem.$on('hook:mounted', () => {
-        const sidebar = document.getElementById('g3w-sidebarcomponents');
+        const sidebar = document.getElementById('g3w-menu');
         if ([null, undefined].includes(options?.position) || options?.position < 0 || options?.position >= sidebar.children.length) {
           sidebar.querySelector('#themes').insertAdjacentElement('beforebegin', sidebarItem.$el);
         } else {
@@ -626,7 +626,7 @@ export default new (class GUI extends Emitter {
               comp.setVisible(g.length > 0);
               this.$emit('visible', g.length > 0);
               await g3w.app.isReady();
-              document.querySelector('#g3w-sidebarcomponents #tools').classList.toggle('single', 1 === g.length && 'EDITING' === g[0].name);
+              document.querySelector('#g3w-menu #tools').classList.toggle('single', 1 === g.length && 'EDITING' === g[0].name);
             }
           },
         }))(),

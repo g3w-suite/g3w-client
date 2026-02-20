@@ -613,7 +613,7 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
 .sidebar-mini.sidebar-collapse .sidebar-panel,
 .sidebar-mini.sidebar-collapse #catalog > *                                     { display: none; }
 .sidebar-mini.sidebar-collapse #catalog > a                                     { display: block !important; }
-.sidebar-mini.sidebar-collapse #g3w-sidebarcomponents                           { padding-top: 50px; overflow: hidden; }
+.sidebar-mini.sidebar-collapse #g3w-menu                                        { padding-top: 50px; overflow: hidden; }
 .sidebar-mini.sidebar-collapse .ol-geocoder                                     { margin-left: 5px; }
 .sidebar-mini.sidebar-collapse ul.sidebar-menu > li a span.treeview-label       { color:  transparent; }
 .sidebar-mini.sidebar-collapse .main-sidebar                                    { overflow-y: hidden; }
@@ -626,11 +626,11 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
   .sidebar-open .project_title                                { position: fixed !important; inset: 0 !important; background-color: var(--skin-color); padding-left: 4px; max-width: unset !important; z-index: 2; }
   .sidebar-open .main-sidebar                                 { position: relative !important; inset: 0 !important; }
   .sidebar-open, .sidebar-open .wrapper                       { overflow-y: visible; }
-  .sidebar-open:has(#g3w-sidebarcomponents:not([hidden])) .sidebar-panel:not([hidden]),
+  .sidebar-open:has(#g3w-menu:not([hidden])) .sidebar-panel:not([hidden]),
   .sidebar-open :is(.main-sidebar, .content-wrapper)          { height: auto !important; }
   .sidebar-open .navbar                                       { display: block !important; height: auto !important; }
   .sidebar-open .nav-links :is(.nav-changemap, .nav-addlayer),
-  .sidebar-open:has(#g3w-sidebarcomponents[hidden]) .nav-links { display: none !important; }
+  .sidebar-open:has(#g3w-menu[hidden]) .nav-links { display: none !important; }
 }
 
 /** handle scrollbars width (desktop small) */

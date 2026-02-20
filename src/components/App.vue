@@ -258,14 +258,14 @@
         </div>
 
         <ul
-          id      = "g3w-sidebarcomponents"
+          id      = "g3w-menu"
           :hidden = "!showmainpanel"
           class   = "sidebar-menu"
           :class  = "{ 'g3w-disabled': disabled }"
           @click  = "toggleSidebarItem"
         >
 
-        <li id = "legend" class = "treeview sidebaritem">
+        <li id = "legend" class = "sidebar-item">
           <a
             href             = "#"
             @click.prevent   = "showLegendPanel"
@@ -277,7 +277,7 @@
           </a>
         </li>
 
-        <li id = "metadata" class = "treeview sidebaritem">
+        <li id = "metadata" class = "sidebar-item">
           <a
             href             = "#"
             data-toggle      = "modal"
@@ -291,7 +291,7 @@
         </li>
 
         <!-- THEME SELECTOR -->
-        <li id = "themes" class = "treeview sidebaritem" v-show="ApplicationState.sidebar.open">
+        <li id = "themes" class = "sidebar-item" v-show="ApplicationState.sidebar.open">
           <!-- whether at least one TOC layer is visible on toc -->
           <template v-if = "ApplicationState.catalog.layerstrees.length && ApplicationState.catalog.layerstrees[0].tree[0].toc" >
             <a
@@ -430,7 +430,7 @@
           </template>
         </li>
 
-        <li id="catalog" class="treeview sidebaritem">
+        <li id="catalog" class="sidebar-item">
           <a
             href             = "#"
             @click.prevent   = "showSidebar"
@@ -1300,7 +1300,7 @@ export default {
       const mini      = document.body.classList.contains('sidebar-mini');
       const collapsed = document.body.classList.contains('sidebar-collapse');
 
-      const li        = e.target.closest('.sidebaritem');
+      const li        = e.target.closest('.sidebar-item');
       const component = ApplicationState.sidebar.components.find(comp => li.id === comp.id);
 
       // open sidebar only in case of mini/collapsed sidebar and has a component that has a li id collapsible
