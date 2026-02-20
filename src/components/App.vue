@@ -202,355 +202,352 @@
     </nav>
 
     <!-- SIDEBAR MENU -->
-    <aside :class = "{ 'g3w-disabled': disabled }" style="position: relative; z-index: 1;">
-      <div class  = "main-sidebar no-print">
-        <!-- SIDEBAR CONTENT -->
+    <aside :class = "{ 'main-sidebar no-print': true, 'g3w-disabled': disabled }">
+      <!-- SIDEBAR CONTENT -->
+      <div
+        :hidden = "panels.length <= 0"
+        class   = "sidebar-panel"
+      >
         <div
-          :hidden = "panels.length <= 0"
-          class   = "sidebar-panel"
+          style  = "display: flex; overflow: hidden;line-height: 14px;font-size: 1.5em;min-height: 35px;border-bottom: 1px solid #FFF;padding-bottom: 5px;margin-bottom: 5px;"
+          :style = "{ justifyContent: ApplicationState.sidebar.title ? 'space-between' : 'flex-end' }"
         >
-          <div
-            style  = "display: flex; overflow: hidden;line-height: 14px;font-size: 1.5em;min-height: 35px;border-bottom: 1px solid #FFF;padding-bottom: 5px;margin-bottom: 5px;"
-            :style = "{ justifyContent: ApplicationState.sidebar.title ? 'space-between' : 'flex-end' }"
+          <h4
+            v-if  = "title"
+            style = "display: inline-block; font-weight: bold"
+            v-t   = "title"
+          ></h4>
+
+          <button
+            v-if           = "panels.length > 1"
+            @click         = "closePanel"
+            :title         = "'back'"
+            data-placement = "left"
+            class          = "btn btn-outline"
+            style          = "margin-left: auto; margin-right: 1ch;"
           >
-            <h4
-              v-if  = "title"
-              style = "display: inline-block; font-weight: bold"
-              v-t   = "title"
-            ></h4>
-
-            <button
-              v-if           = "panels.length > 1"
-              @click         = "closePanel"
-              :title         = "'back'"
-              data-placement = "left"
-              class          = "btn btn-outline"
-              style          = "margin-left: auto; margin-right: 1ch;"
-            >
-              <i 
-                aria-hidden = "true"
-                class       = "fas fa-chevron-left"
-                :style = "{ opacity: ApplicationState.sidebar.btn_close ? '1' : '0.7', cursor: ApplicationState.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
-              ></i>
-            </button>
-            <button
-              type           = "button"
-              @click         = "ApplicationState.sidebar.btn_close && closeAllPanels()"
-              :title         = "ApplicationState.sidebar.tooltip_close || 'close'"
-              data-placement = "right"
-              class          = "btn btn-outline"
-            >
-              <i
-                :style      = "{ opacity: ApplicationState.sidebar.btn_close ? '1' : '0.7', cursor: ApplicationState.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
-                aria-hidden = "true"
-                class       = "fas fa-times"
-              ></i>
-            </button>
-          </div>
-
-          <div
-            id    = "sidebar-panel-placeholder"
-            class = "sidebar-panel-placeholder"
-          ></div>
+            <i 
+              aria-hidden = "true"
+              class       = "fas fa-chevron-left"
+              :style = "{ opacity: ApplicationState.sidebar.btn_close ? '1' : '0.7', cursor: ApplicationState.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
+            ></i>
+          </button>
+          <button
+            type           = "button"
+            @click         = "ApplicationState.sidebar.btn_close && closeAllPanels()"
+            :title         = "ApplicationState.sidebar.tooltip_close || 'close'"
+            data-placement = "right"
+            class          = "btn btn-outline"
+          >
+            <i
+              :style      = "{ opacity: ApplicationState.sidebar.btn_close ? '1' : '0.7', cursor: ApplicationState.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
+              aria-hidden = "true"
+              class       = "fas fa-times"
+            ></i>
+          </button>
         </div>
 
-        <ul
-          id      = "g3w-menu"
-          :hidden = "!showmainpanel"
-          class   = "sidebar-menu"
-          @click  = "toggleSidebarItem"
+        <div
+          id    = "sidebar-panel-placeholder"
+          class = "sidebar-panel-placeholder"
+        ></div>
+      </div>
+
+      <ul
+        id      = "g3w-menu"
+        :hidden = "!showmainpanel"
+        class   = "sidebar-menu"
+        @click  = "toggleSidebarItem"
+      >
+
+      <li id = "legend" class = "sidebar-item">
+        <a
+          href             = "#"
+          @click.prevent   = "showLegendPanel"
+          :data-i18n-title = "ApplicationState.sidebar.open ? '' : 'legend'"
+          data-placement   = "right"
         >
+          <i aria-hidden="true" class = "fas fa-list" style = "color: #fff;"></i>
+          <span class = "treeview-label">{{ $t('legend') }}</span>
+        </a>
+      </li>
 
-        <li id = "legend" class = "sidebar-item">
+      <li id = "metadata" class = "sidebar-item">
+        <a
+          href             = "#"
+          data-toggle      = "modal"
+          data-target      = "#modal-metadata"
+          :data-i18n-title = "ApplicationState.sidebar.open ? '' : 'Metadata'"
+          data-placement   = "right"
+        >
+          <i aria-hidden="true" class = "fas fa-file-code" style = "color: #fff;"></i>
+          <span class = "treeview-label">{{ $t('Metadata') }}</span>
+        </a>
+      </li>
+
+      <!-- THEME SELECTOR -->
+      <li id = "themes" class = "sidebar-item" v-show="ApplicationState.sidebar.open">
+        <!-- whether at least one TOC layer is visible on toc -->
+        <template v-if = "ApplicationState.catalog.layerstrees.length && ApplicationState.catalog.layerstrees[0].tree[0].toc" >
           <a
-            href             = "#"
-            @click.prevent   = "showLegendPanel"
-            :data-i18n-title = "ApplicationState.sidebar.open ? '' : 'legend'"
-            data-placement   = "right"
+            href        = "#"
+            style       = "display: flex; flex-wrap: wrap; align-items: center;"
+            @click.stop = "toggleThemeSelector"
           >
-            <i aria-hidden="true" class = "fas fa-list" style = "color: #fff;"></i>
-            <span class = "treeview-label">{{ $t('legend') }}</span>
+            <i aria-hidden="true" class = "far fa-eye"></i>
+            <!-- Text of current theme -->
+            <span
+              v-if  = "active_theme.theme"
+              class = "current_map_theme treeview-label g3w-long-text"
+            >
+              <span style="color:#fff;">{{ $t('THEME') }}:</span>
+              <span class = "skin-color" style = "font-size: 1.1em;">{{ active_theme.theme }}</span>
+            </span>
+            <!-- Choose a theme -->
+            <b v-else class = "treeview-label" style="color:#fff;">{{ $t('THEME') }}</b>
+            <i aria-hidden="true" :class = "theme_selector_collapsed ? 'fas fa-angle-left' : 'fas fa-angle-down'" style = "margin-left: auto; margin-right: 10px;"></i>
           </a>
-        </li>
 
-        <li id = "metadata" class = "sidebar-item">
-          <a
-            href             = "#"
-            data-toggle      = "modal"
-            data-target      = "#modal-metadata"
-            :data-i18n-title = "ApplicationState.sidebar.open ? '' : 'Metadata'"
-            data-placement   = "right"
+          <ul
+            id     = "g3w-themes"
+            :class = "{'menu-open': !theme_selector_collapsed}"
+            style  = "margin-bottom: 5px; border-bottom: 2px solid var(--skin-color);"
           >
-            <i aria-hidden="true" class = "fas fa-file-code" style = "color: #fff;"></i>
-            <span class = "treeview-label">{{ $t('Metadata') }}</span>
-          </a>
-        </li>
-
-        <!-- THEME SELECTOR -->
-        <li id = "themes" class = "sidebar-item" v-show="ApplicationState.sidebar.open">
-          <!-- whether at least one TOC layer is visible on toc -->
-          <template v-if = "ApplicationState.catalog.layerstrees.length && ApplicationState.catalog.layerstrees[0].tree[0].toc" >
-            <a
-              href        = "#"
-              style       = "display: flex; flex-wrap: wrap; align-items: center;"
-              @click.stop = "toggleThemeSelector"
+            <!-- LIST PROJECT MAP THEME -->
+            <li
+              v-if = "(ApplicationState.project.state.map_themes.project || []).length > 0"
+              id   = "g3w-themes-project"
             >
-              <i aria-hidden="true" class = "far fa-eye"></i>
-              <!-- Text of current theme -->
-              <span
-                v-if  = "active_theme.theme"
-                class = "current_map_theme treeview-label g3w-long-text"
-              >
-                <span style="color:#fff;">{{ $t('THEME') }}:</span>
-                <span class = "skin-color" style = "font-size: 1.1em;">{{ active_theme.theme }}</span>
-              </span>
-              <!-- Choose a theme -->
-              <b v-else class = "treeview-label" style="color:#fff;">{{ $t('THEME') }}</b>
-              <i aria-hidden="true" :class = "theme_selector_collapsed ? 'fas fa-angle-left' : 'fas fa-angle-down'" style = "margin-left: auto; margin-right: 10px;"></i>
-            </a>
-
-            <ul
-              id     = "g3w-themes"
-              :class = "{'menu-open': !theme_selector_collapsed}"
-              style  = "margin-bottom: 5px; border-bottom: 2px solid var(--skin-color);"
+              <ul style = "padding: 0">
+                <li v-if="is_staff">
+                  <div class = "project_map_theme">{{ $t('Project Themes') }}</div>
+                </li>
+                <li style = "padding: 5px 5px 5px 17px;">
+                  <div
+                    v-for = "(map_theme, i) in ApplicationState.project.state.map_themes.project"
+                    :key  = "map_theme.theme"
+                  >
+                    <label :for  = "`g3w-map_theme-${i}`">
+                      <input type = "radio" name = "radio" :id = "`g3w-map_theme-${i}`" :value = "map_theme.theme" v-model  = "active_theme.theme" />
+                      <span class = "g3w-long-text">{{ map_theme.theme }}</span>
+                    </label>
+                  </div>
+                </li>
+              </ul>
+            </li>
+            <!-- LIST USER MAP THEME -->
+            <li
+              v-if = "ApplicationState.logged"
+              id   = "g3w-themes-user"
             >
-              <!-- LIST PROJECT MAP THEME -->
-              <li
-                v-if = "(ApplicationState.project.state.map_themes.project || []).length > 0"
-                id   = "g3w-themes-project"
-              >
-                <ul style = "padding: 0">
-                  <li v-if="is_staff">
-                    <div class = "project_map_theme">{{ $t('Project Themes') }}</div>
-                  </li>
-                  <li style = "padding: 5px 5px 5px 17px;">
-                    <div
-                      v-for = "(map_theme, i) in ApplicationState.project.state.map_themes.project"
-                      :key  = "map_theme.theme"
+              <ul style = "padding: 0">
+                <li>
+                  <div class = "user_map_theme">
+                    <span>{{ $t('User Themes') }}</span>
+                    <!-- ADD MAP THEME -->
+                    <button
+                      type   = "button"
+                      title  = "add"
+                      @click = "theme_dialog_open = !theme_dialog_open"
+                      class  = "action sidebar-button"
+                      style  = "margin-left: auto; padding: 5px; font-size: 1.2em; border: 0;"
                     >
-                      <label :for  = "`g3w-map_theme-${i}`">
-                        <input type = "radio" name = "radio" :id = "`g3w-map_theme-${i}`" :value = "map_theme.theme" v-model  = "active_theme.theme" />
+                      <i aria-hidden="true" class = "fas fa-plus-square"></i>
+                    </button>
+                  </div>
+                </li>
+                <li style = "padding: 5px 5px 5px 17px">
+                  <div
+                    v-for = "(map_theme, i) in ApplicationState.project.state.map_themes.custom"
+                    :key  = "map_theme.theme"
+                    style = "display: flex; justify-content: space-between;"
+                  >
+                    <span>
+                      <label :for = "`g3w-map_theme-${i}-user`">
+                        <input
+                          type     = "radio"
+                          name     = "radio"
+                          :id      = "`g3w-map_theme-${i}-user`"
+                          :value   = "map_theme.theme"
+                          v-model  = "active_theme.theme"
+                        />
                         <span class = "g3w-long-text">{{ map_theme.theme }}</span>
                       </label>
-                    </div>
-                  </li>
-                </ul>
-              </li>
-              <!-- LIST USER MAP THEME -->
-              <li
-                v-if = "ApplicationState.logged"
-                id   = "g3w-themes-user"
-              >
-                <ul style = "padding: 0">
-                  <li>
-                    <div class = "user_map_theme">
-                      <span>{{ $t('User Themes') }}</span>
-                      <!-- ADD MAP THEME -->
-                      <button
-                        type   = "button"
-                        title  = "add"
-                        @click = "theme_dialog_open = !theme_dialog_open"
-                        class  = "action sidebar-button"
-                        style  = "margin-left: auto; padding: 5px; font-size: 1.2em; border: 0;"
+                    </span>
+                    <span>
+                      <!-- UPDATE MAP THEME -->
+                      <span
+                        @click.stop    = "updateTheme(map_theme.theme)"
+                        class          = "action sidebar-button"
+                        style          = "padding: 5px;"
+                        title          = "update"
+                        data-placement = "top"
+                        v-disabled     = "active_theme.theme !== map_theme.theme"
                       >
-                        <i aria-hidden="true" class = "fas fa-plus-square"></i>
-                      </button>
-                    </div>
-                  </li>
-                  <li style = "padding: 5px 5px 5px 17px">
-                    <div
-                      v-for = "(map_theme, i) in ApplicationState.project.state.map_themes.custom"
-                      :key  = "map_theme.theme"
-                      style = "display: flex; justify-content: space-between;"
-                    >
-                      <span>
-                        <label :for = "`g3w-map_theme-${i}-user`">
-                          <input
-                            type     = "radio"
-                            name     = "radio"
-                            :id      = "`g3w-map_theme-${i}-user`"
-                            :value   = "map_theme.theme"
-                            v-model  = "active_theme.theme"
-                          />
-                          <span class = "g3w-long-text">{{ map_theme.theme }}</span>
-                        </label>
+                        <i aria-hidden="true" class = "far fa-save" style = "color: var(--skin-color);"></i>
                       </span>
-                      <span>
-                        <!-- UPDATE MAP THEME -->
-                        <span
-                          @click.stop    = "updateTheme(map_theme.theme)"
-                          class          = "action sidebar-button"
-                          style          = "padding: 5px;"
-                          title          = "update"
-                          data-placement = "top"
-                          v-disabled     = "active_theme.theme !== map_theme.theme"
-                        >
-                          <i aria-hidden="true" class = "far fa-save" style = "color: var(--skin-color);"></i>
-                        </span>
-                        <!-- DELETE MAP THEME -->
-                        <span
-                          @click.stop    = "deleteTheme(map_theme.theme)"
-                          class          = "action sidebar-button"
-                          style          = "padding: 5px;"
-                          title          = "cancel"
-                          data-placement = "top"
-                        >
-                          <i aria-hidden="true" class = "fas fa-trash" style = "color: red;"></i>
-                        </span>
+                      <!-- DELETE MAP THEME -->
+                      <span
+                        @click.stop    = "deleteTheme(map_theme.theme)"
+                        class          = "action sidebar-button"
+                        style          = "padding: 5px;"
+                        title          = "cancel"
+                        data-placement = "top"
+                      >
+                        <i aria-hidden="true" class = "fas fa-trash" style = "color: red;"></i>
                       </span>
+                    </span>
 
-                    </div>
-                  </li>
-                </ul>
-              </li>
-            </ul>
-
-            <!-- ADD NEW MAP THEME (FORM) -->
-            <dialog ref = "add_map_theme" @beforetoggle = "onBeforetoggleThemeDialog">
-              <div style="display: flex; justify-content: end; padding-top: 5px;">
-                <button
-                  type        = "button"
-                  title       = "close"
-                  @click.stop = "theme_dialog_open = false"
-                  class       = "fas fa-times"
-                  style       = "border: medium;line-height: 1;font-weight: 700;font-size: 15px;background: none;width: 40px;height: 40px;"
-                ></button>
-              </div>
-              <form @submit.prevent = "saveTheme">
-                <label for = "add-theme">{{ $t('Name of new map theme') }} *</label>
-                <input id = "add-theme" type = "text" required class = "form-control" ref = "add_map_theme_input" v-model = "custom_theme_input" />
-                <p v-if="custom_theme_invalid" class="g3w-long-text error-input-message" style = "margin: 0">{{ $t('Invalid or exiting name') }}</p>
-                <button type = "submit" class = "btn btn-block btn-success" style = "margin-top: 20px;">{{ $t('add') }}</button>
-              </form>
-            </dialog>
-          </template>
-        </li>
-
-        <li id="catalog" class="sidebar-item">
-          <a
-            href             = "#"
-            @click.prevent   = "showSidebar"
-            :data-i18n-title = "ApplicationState.sidebar.open ? '' : 'Layers'"
-            data-placement   = "right"
-          >
-            <i aria-hidden="true" class="far fa-map" style="color: rgb(1, 154, 76);"></i>
-            <span class="treeview-label"> {{ $t('Layers') }}</span>
-          </a>
-
-          <!-- LAYER TREES -->
-          <ul
-            v-for = "root in ApplicationState.catalog.layerstrees"
-            :key  = "root.storeid"
-            class = "tree-root root"
-            style = "margin: 5px 3px 0 3px;"
-          >
-            <catalog-tree
-              v-for                      = "tree in root.tree"
-              :key                       = "tree.id"
-              :layerstree                = "tree"
-              class                      = "item"
-              :parentFolder              = "false"
-              :root                      = "true"
-              :legendplace               = "ApplicationState.project.state.legend_position || 'tab'"
-              :parent_mutually_exclusive = "false"
-              :storeid                   = "root.storeid"
-            />
-          </ul>
-
-          <!-- EXTERNAL LAYERS -->
-          <ul
-            v-if  = "ApplicationState.catalog.external.wms.length || ApplicationState.catalog.external.tms.length || ApplicationState.catalog.external.vector.length"
-            class = "tree-root g3w-external_layers-group"
-            style = "margin: 5px 3px 0 3px;"
-          >
-            <li>
-              <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
-                <span
-                  style       = "padding-right: 2px; padding-left: 4px; width: 20px; font-size: 1.1em; cursor: pointer;"
-                  :class      = "externalayers.collapsed ? 'fas fa-caret-right' : 'fas fa-caret-down'"
-                  @click.stop = "expandCollapseExternaLayers"
-                  class       = "tree-toggler"
-                ></span>
-                <span
-                  @click.stop = "toggleExternalLayers"
-                  style       = "padding-right: 5px; cursor: pointer;"
-                  :class      = "externalayers.checked ? 'far fa-check-square': 'far fa-square'"
-                ></span>
-                <span style = "font-weight: bold">{{ $t('EXTERNAL LAYERS') }}</span>
-                <span 
-                  style       = "color: red; padding-right: 3px; margin-left: auto; margin-right: 8px; cursor: pointer;"
-                  class       = "fas fa-trash"
-                  @click.stop = "removeExternalLayers"
-                ></span>
-              </div>
+                  </div>
+                </li>
+              </ul>
             </li>
-            <catalog-tree
-              v-show          = "!externalayers.collapsed"
-              v-for           = "wms in ApplicationState.catalog.external.wms"
-              :key            = "wms.id"
-              :externallayers = "ApplicationState.catalog.external.wms"
-              :layerstree     = "wms"
-              @layerchecked   = "updateExternalLayersChecked"
-              class           = "item"
-            />
-            <!-- @since 4.1.0 add tms layers -->
-            <catalog-tree
-              v-show          = "!externalayers.collapsed"
-              v-for           = "tms in ApplicationState.catalog.external.tms"
-              :key            = "tms.id"
-              :externallayers = "ApplicationState.catalog.external.tms"
-              :layerstree     = "tms"
-              @layerchecked   = "updateExternalLayersChecked"
-              class           = "item"
-            />
-            <catalog-tree
-              v-show          = "!externalayers.collapsed"
-              v-for           = "vector in ApplicationState.catalog.external.vector"
-              :key            = "vector.id"
-              :externallayers = "ApplicationState.catalog.external.vector"
-              @layerchecked   = "updateExternalLayersChecked"
-              :layerstree     = "vector"
-              class           = "item"
-            />
           </ul>
 
-        </li>
+          <!-- ADD NEW MAP THEME (FORM) -->
+          <dialog ref = "add_map_theme" @beforetoggle = "onBeforetoggleThemeDialog">
+            <div style="display: flex; justify-content: end; padding-top: 5px;">
+              <button
+                type        = "button"
+                title       = "close"
+                @click.stop = "theme_dialog_open = false"
+                class       = "fas fa-times"
+                style       = "border: medium;line-height: 1;font-weight: 700;font-size: 15px;background: none;width: 40px;height: 40px;"
+              ></button>
+            </div>
+            <form @submit.prevent = "saveTheme">
+              <label for = "add-theme">{{ $t('Name of new map theme') }} *</label>
+              <input id = "add-theme" type = "text" required class = "form-control" ref = "add_map_theme_input" v-model = "custom_theme_input" />
+              <p v-if="custom_theme_invalid" class="g3w-long-text error-input-message" style = "margin: 0">{{ $t('Invalid or exiting name') }}</p>
+              <button type = "submit" class = "btn btn-block btn-success" style = "margin-top: 20px;">{{ $t('add') }}</button>
+            </form>
+          </dialog>
+        </template>
+      </li>
 
-        <li
-          v-if   = "has_related_maps && ApplicationState.sidebar.open"
-          class  = "sidebar-footer"
-          style  = "
-            position: sticky;
-            bottom: 0;
-            background-color: var(--bgcolor);
-            display: flex;
-            text-align: center;
-            color: #fff;
-            border-top: 2px solid var(--skin-color);
-            margin: 12px 3px 0 3px;
-            justify-content: space-around;
-          "
+      <li id="catalog" class="sidebar-item">
+        <a
+          href             = "#"
+          @click.prevent   = "showSidebar"
+          :data-i18n-title = "ApplicationState.sidebar.open ? '' : 'Layers'"
+          data-placement   = "right"
         >
-          <a
-            href        = "#"
-            @click.stop = "showaddLayerModal"
-            style       = "border:none;"
-          >
-            <i class = "fas fa-layer-group" aria-hidden = "true"></i> <b>{{ $t('Add Layer') }}</b>
-          </a>
-          <a
-            v-if        = "has_related_maps && !ApplicationState.iframe"
-            href        = "#"
-            @click.stop = "openChangeMapMenu"
-            style       = "border:none;"
-          >
-            <i class = "fas fa-sync-alt" aria-hidden = "true"></i> <b>{{ $t('changemap') }}</b>
-          </a>
-        </li>
+          <i aria-hidden="true" class="far fa-map" style="color: rgb(1, 154, 76);"></i>
+          <span class="treeview-label"> {{ $t('Layers') }}</span>
+        </a>
 
-      </ul>
+        <!-- LAYER TREES -->
+        <ul
+          v-for = "root in ApplicationState.catalog.layerstrees"
+          :key  = "root.storeid"
+          class = "tree-root root"
+          style = "margin: 5px 3px 0 3px;"
+        >
+          <catalog-tree
+            v-for                      = "tree in root.tree"
+            :key                       = "tree.id"
+            :layerstree                = "tree"
+            class                      = "item"
+            :parentFolder              = "false"
+            :root                      = "true"
+            :legendplace               = "ApplicationState.project.state.legend_position || 'tab'"
+            :parent_mutually_exclusive = "false"
+            :storeid                   = "root.storeid"
+          />
+        </ul>
 
-      </div>
+        <!-- EXTERNAL LAYERS -->
+        <ul
+          v-if  = "ApplicationState.catalog.external.wms.length || ApplicationState.catalog.external.tms.length || ApplicationState.catalog.external.vector.length"
+          class = "tree-root g3w-external_layers-group"
+          style = "margin: 5px 3px 0 3px;"
+        >
+          <li>
+            <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
+              <span
+                style       = "padding-right: 2px; padding-left: 4px; width: 20px; font-size: 1.1em; cursor: pointer;"
+                :class      = "externalayers.collapsed ? 'fas fa-caret-right' : 'fas fa-caret-down'"
+                @click.stop = "expandCollapseExternaLayers"
+                class       = "tree-toggler"
+              ></span>
+              <span
+                @click.stop = "toggleExternalLayers"
+                style       = "padding-right: 5px; cursor: pointer;"
+                :class      = "externalayers.checked ? 'far fa-check-square': 'far fa-square'"
+              ></span>
+              <span style = "font-weight: bold">{{ $t('EXTERNAL LAYERS') }}</span>
+              <span 
+                style       = "color: red; padding-right: 3px; margin-left: auto; margin-right: 8px; cursor: pointer;"
+                class       = "fas fa-trash"
+                @click.stop = "removeExternalLayers"
+              ></span>
+            </div>
+          </li>
+          <catalog-tree
+            v-show          = "!externalayers.collapsed"
+            v-for           = "wms in ApplicationState.catalog.external.wms"
+            :key            = "wms.id"
+            :externallayers = "ApplicationState.catalog.external.wms"
+            :layerstree     = "wms"
+            @layerchecked   = "updateExternalLayersChecked"
+            class           = "item"
+          />
+          <!-- @since 4.1.0 add tms layers -->
+          <catalog-tree
+            v-show          = "!externalayers.collapsed"
+            v-for           = "tms in ApplicationState.catalog.external.tms"
+            :key            = "tms.id"
+            :externallayers = "ApplicationState.catalog.external.tms"
+            :layerstree     = "tms"
+            @layerchecked   = "updateExternalLayersChecked"
+            class           = "item"
+          />
+          <catalog-tree
+            v-show          = "!externalayers.collapsed"
+            v-for           = "vector in ApplicationState.catalog.external.vector"
+            :key            = "vector.id"
+            :externallayers = "ApplicationState.catalog.external.vector"
+            @layerchecked   = "updateExternalLayersChecked"
+            :layerstree     = "vector"
+            class           = "item"
+          />
+        </ul>
+
+      </li>
+
+      <li
+        v-if   = "has_related_maps && ApplicationState.sidebar.open"
+        class  = "sidebar-footer"
+        style  = "
+          position: sticky;
+          bottom: 0;
+          background-color: var(--bgcolor);
+          display: flex;
+          text-align: center;
+          color: #fff;
+          border-top: 2px solid var(--skin-color);
+          margin: 12px 3px 0 3px;
+          justify-content: space-around;
+        "
+      >
+        <a
+          href        = "#"
+          @click.stop = "showaddLayerModal"
+          style       = "border:none;"
+        >
+          <i class = "fas fa-layer-group" aria-hidden = "true"></i> <b>{{ $t('Add Layer') }}</b>
+        </a>
+        <a
+          v-if        = "has_related_maps && !ApplicationState.iframe"
+          href        = "#"
+          @click.stop = "openChangeMapMenu"
+          style       = "border:none;"
+        >
+          <i class = "fas fa-sync-alt" aria-hidden = "true"></i> <b>{{ $t('changemap') }}</b>
+        </a>
+      </li>
+
+    </ul>
 
       <!-- TOGGLE BUTTON (sidebar menu) -->
       <a
