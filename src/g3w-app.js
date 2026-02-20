@@ -533,11 +533,7 @@ export default new (class GUI extends Emitter {
           searches: (ApplicationState.project.state.search || []).sort((a, b) => `${a.name}`.localeCompare(b.name)),
           tools: [],
           /** Retrieve saved searches from local storage */
-          get querybuildersearches() {
-            const id = ApplicationState.project.getId();
-            ApplicationState.querybuilder.searches[id] = ApplicationState.querybuilder.searches[id] || [];
-            return ApplicationState.querybuilder.searches[id];
-          }
+          querybuildersearches:  ApplicationState.querybuilder?.searches?.[ApplicationState.project.getId()] ?? []
         },
         title:                    ApplicationState.project.state.search_title || "search",
         addTool(t)                { this.state.tools.push(t); },

@@ -260,6 +260,7 @@ export default {
       const id      = this.projectId || ApplicationState.project.getId();
       const edit_id = this.edit && this.$options.options.id;
       const item    = window.localStorage.getItem('QUERYBUILDERSEARCHES');
+      //get stored query builder searches
       let searches  = item ? JSON.parse(item) : undefined;
 
       let query;
