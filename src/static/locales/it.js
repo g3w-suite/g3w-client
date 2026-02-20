@@ -215,7 +215,6 @@ export default {
   'Print Atlas': "Stampa Atlas",
   'Editing': "Modifica",
   'Advanced search': 'Ricerca avanzata',
-  'Create a new search': 'Crea una nuova ricerca',
   'Run': "Esegui",
   'Delete': "Rimuovi",
   'Saved': 'Salvato correttamente',
