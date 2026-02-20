@@ -23,12 +23,6 @@
       <g3w-tool :tool = "searchtool" />
     </li>
 
-    <!-- QUERY BUILDER -->
-    <li class = "menu-item" @click.stop = "showQueyBuilderPanel">
-       <i aria-hidden = "true" class = "fas fa-calculator"></i>
-      <span v-t = "'Advanced search'"></span>
-    </li>
-
     <!-- ORIGINAL SOURCE: src/components/QueryBuilderSearch.vue@v3.9.3 -->
     <li
       v-for = "(search, i) in state.querybuildersearches"
@@ -56,6 +50,12 @@
           ></button>
         </div>
       </div>
+    </li>
+
+    <!-- QUERY BUILDER -->
+    <li class = "menu-item" @click.stop = "showQueyBuilderPanel">
+       <i aria-hidden = "true" class = "fas fa-calculator"></i>
+      <span v-t = "'Advanced search'"></span>
     </li>
 
   </ul>
