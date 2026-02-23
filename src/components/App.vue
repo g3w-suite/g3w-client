@@ -485,7 +485,6 @@
             :externallayers = "ApplicationState.catalog.external.wms"
             :layerstree     = "wms"
             @layerchecked   = "updateExternalLayersChecked"
-            class           = "item"
           />
           <!-- @since 4.1.0 add tms layers -->
           <catalog-tree
@@ -495,7 +494,6 @@
             :externallayers = "ApplicationState.catalog.external.tms"
             :layerstree     = "tms"
             @layerchecked   = "updateExternalLayersChecked"
-            class           = "item"
           />
           <catalog-tree
             v-show          = "!externalayers.collapsed"
@@ -504,7 +502,6 @@
             :externallayers = "ApplicationState.catalog.external.vector"
             @layerchecked   = "updateExternalLayersChecked"
             :layerstree     = "vector"
-            class           = "item"
           />
         </ul>
 

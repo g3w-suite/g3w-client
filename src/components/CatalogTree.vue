@@ -15,6 +15,7 @@
       disabled: isDisabled,
       group:    isGroup,
       table:    isTable,
+      external: layerstree.external,
     }"
   >
     <!-- GROUP LAYER -->
@@ -36,14 +37,13 @@
     <span
       v-if   = "isTable"
       v-show = "!layerstree.hidden"
-      style  = "padding-left: 18px"
       class  = "fas fa-table"
     ></span>
 
     <!-- EXTERNAL LAYER (REMOVABLE NODE) -->
     <span 
       v-if        = "!isTable && !isGroup && layerstree.external && layerstree.removable"
-      style       = "color: red; padding-left: 1px;"
+      style       = "color: red;"
       class       = "fas fa-trash"
       @click.stop = "removeExternalLayer(layerstree.name, layerstree._type)"
     ></span>
@@ -52,7 +52,7 @@
     <span
       v-if   = "!isTable && !isGroup"
       v-show = "!layerstree.hidden"
-      class  = "checkbox-layer"
+      class  = "tree-checkbox"
     >
       <span
         v-if             = "!isTable && !isGroup && ('toc' === legendlayerposition || !isGroup && layerstree.categories)"
@@ -72,7 +72,7 @@
     <!-- EXTERNAL LAYER  -->
     <span
       v-if   = "!isTable && !isGroup && layerstree.external"
-      style  = "color: #ffff; padding-left: 5px;"
+      style  = "color: #fff; padding-left: 5px;"
       :class = "'vector' === layerstree._type ? 'fas fa-draw-polygon' : 'far fa-image'"
     ></span>
 
@@ -163,7 +163,7 @@
     <figure
       v-if                = "has_legend"
       v-show              = "show_legend"
-      class               = "layer-legend"
+      class               = "tree-legend"
       v-disabled          = "!is_external_wms && loading_legend"
       @click.stop.prevent = ""
     >
