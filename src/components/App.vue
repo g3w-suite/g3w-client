@@ -460,12 +460,11 @@
           v-if  = "ApplicationState.catalog.external.wms.length || ApplicationState.catalog.external.tms.length || ApplicationState.catalog.external.vector.length"
           class = "tree-root tree-root-external"
         >
-          <li>
+          <li @click.stop = "expandCollapseExternaLayers" style = "cursor: pointer;">
             <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
               <span
                 style       = "padding-right: 2px; padding-left: 4px; width: 20px; font-size: 1.1em; cursor: pointer;"
                 :class      = "externalayers.collapsed ? 'fas fa-caret-right' : 'fas fa-caret-down'"
-                @click.stop = "expandCollapseExternaLayers"
                 class       = "tree-toggler"
               ></span>
               <span
