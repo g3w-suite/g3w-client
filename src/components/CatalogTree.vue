@@ -689,7 +689,6 @@ export default {
       this.handleClick({
         '1': () => { if (!this.isTable && !this.isGroup) { this.select(); } if (this.isGroup) { this.expandCollapse() } },
         '2': () => !this.isTable && this.maybeZoomToLayer(this.layerstree),
-        '3': () => this.isGroup() && this.expandCollapse(),
       }, this);
     },
 

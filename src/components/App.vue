@@ -441,7 +441,6 @@
           v-for = "root in ApplicationState.catalog.layerstrees"
           :key  = "root.storeid"
           class = "tree-root root"
-          style = "margin: 5px 3px 0 3px;"
         >
           <catalog-tree
             v-for                      = "tree in root.tree"
@@ -459,8 +458,7 @@
         <!-- EXTERNAL LAYERS -->
         <ul
           v-if  = "ApplicationState.catalog.external.wms.length || ApplicationState.catalog.external.tms.length || ApplicationState.catalog.external.vector.length"
-          class = "tree-root g3w-external_layers-group"
-          style = "margin: 5px 3px 0 3px;"
+          class = "tree-root tree-root-external"
         >
           <li>
             <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
