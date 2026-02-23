@@ -102,7 +102,7 @@
         v-if                = "canOpenAttributeTable(layer)"
         @click.prevent.stop = "showAttributeTable(layer.id)"
       >
-        <i aria-hidden = "true" class = "fas fa-link"></i> {{ $t('Open Attribute Table') }}
+        <i aria-hidden = "true" class = "fas fa-list-alt"></i> {{ $t('Open Attribute Table') }}
       </li>
 
       <!-- Change z-index of ol layer. On top or button -->
