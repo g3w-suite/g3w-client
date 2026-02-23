@@ -187,7 +187,7 @@
       >
         <i class = "fas fa-sliders-h"></i>
         {{ $t('Opacity') }} ({{ layer.opacity }})
-        <span class = "fas fa-chevron-right" style = "position: absolute; right: 0; margin-top: 3px"></span>
+        <i class = "fas fa-chevron-right" style = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul class = "sub-contex-menu">
           <li style = "display: list-item;">
             <input
