@@ -314,7 +314,7 @@ export default new (class GUI extends Emitter {
    * @TODO find out how to get rid of `GUI.getService('catalog')`
    * BACKOMP
    */
-  #catalog_service = new Emitter({
+  #CATALOG = new Emitter({
     setters: {
       addExternalLayer({ layer, type = 'vector' } = {}) {
         layer.removable = true;
@@ -738,7 +738,7 @@ export default new (class GUI extends Emitter {
       return this;
     }
     if ('catalog' === componentId) {
-      return this.#catalog_service;
+      return this.#CATALOG;
     }
     const component = this.getComponent(componentId);
     return component && component.getService();
