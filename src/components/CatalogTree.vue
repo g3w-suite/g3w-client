@@ -38,7 +38,7 @@
       v-if   = "isTable"
       v-show = "!layerstree.hidden"
       style  = "padding-left: 18px"
-      :class = "['fas fa-table', parentFolder ? 'child' : 'root']"
+      :class = "['fas fa-table', parentFolder ? '' : 'root']"
     ></span>
 
     <!-- EXTERNAL LAYER (REMOVABLE NODE) -->
@@ -54,7 +54,7 @@
       v-if   = "!isTable && !isGroup"
       v-show = "!layerstree.hidden"
       class  = "checkbox-layer"
-      :class = "parentFolder ? 'child' : 'root'"
+      :class = "parentFolder ? '' : 'root'"
     >
       <span
         v-if             = "!isTable && !isGroup && ('toc' === legendlayerposition || !isGroup && layerstree.categories)"
@@ -234,7 +234,6 @@
       <catalog-tree
         v-for                      = "_layerstree in layerstree.nodes" :key = "_layerstree.id || _layerstree.groupId"
         :root                      = "false"
-        :legendConfig              = "legend"
         :legendplace               = "legendplace"
         :parentFolder              = "isGroup"
         :layerstree                = "_layerstree"
@@ -685,9 +684,14 @@ export default {
      * @since v3.8
      */
     onTreeItemClick() {
-    
       this.handleClick({
-        '1': () => { if (!this.isTable && !this.isGroup) { this.select(); } if (this.isGroup) { this.expandCollapse() } },
+        '1': () => {
+          if (!this.isTable && !this.isGroup) {
+            this.select();
+          } else {
+            this.expandCollapse();
+          }
+        },
         '2': () => !this.isTable && this.maybeZoomToLayer(this.layerstree),
       }, this);
     },
