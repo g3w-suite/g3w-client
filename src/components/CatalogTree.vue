@@ -40,6 +40,12 @@
       class  = "fas fa-table"
     ></span>
 
+    <span
+      v-if   = "isGroup && !layerstree.root"
+      v-show = "!layerstree.hidden"
+      class  = "fas fa-layer-group"
+    ></span>
+
     <!-- EXTERNAL LAYER (REMOVABLE NODE) -->
     <span 
       v-if        = "!isTable && !isGroup && layerstree.external && layerstree.removable"
