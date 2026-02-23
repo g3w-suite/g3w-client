@@ -250,22 +250,17 @@ g3w.app.once('after:setupControls', async () => {
 
   // add tms layer
   const setTMS = async (tms) => {
-    const pid = initConfig.projects.find(p => initConfig.initproject === p.gid).id;
-    const layers = JSON.parse(localStorage.getItem('externallayers') || '{}');
-    //Check if already tms url is stored
-    if (!layers[pid]?.tms?.[tms.url]) {
-      await waitFor(() => !q('#add-layer-type').value, 5000);
-      await setOption('#add-layer-type', 'tms');
-      await setOption('#add_tms_url', tms.url);
-      await setOption('#add_tms_name', tms.name);
-      await waitFor(() => q('#modal-addlayer menu .btn.btn-success') && !q('#modal-addlayer menu .btn.btn-success').disabled, 1000);
-      await setOption('#position-layer-tms', 'bottom');
-      await setOption('#g3w-tms-visible', false);
-      await setOption('#g3w-tms-opacity', 0.85);
-      await waitFor(() => q('#modal-addlayer menu .btn.btn-success') && !q('#modal-addlayer menu .btn.btn-success').disabled, 1000);
-      q('#modal-addlayer menu .btn.btn-success').click();
-      window.addEventListener("beforeunload", () => { g3w.app.getLayerByName(tms.name) && g3w.app.removeExternalLayer(tms.name); });
-    }
+    await waitFor(() => !q('#add-layer-type').value, 5000);
+    await setOption('#add-layer-type', 'tms');
+    await setOption('#add_tms_url', tms.url);
+    await setOption('#add_tms_name', tms.name);
+    await waitFor(() => q('#modal-addlayer menu .btn.btn-success') && !q('#modal-addlayer menu .btn.btn-success').disabled, 1000);
+    await setOption('#position-layer-tms', 'bottom');
+    await setOption('#g3w-tms-visible', false);
+    await setOption('#g3w-tms-opacity', 0.85);
+    await waitFor(() => q('#modal-addlayer menu .btn.btn-success') && !q('#modal-addlayer menu .btn.btn-success').disabled, 1000);
+    q('#modal-addlayer menu .btn.btn-success').click();
+    window.addEventListener("beforeunload", () => { g3w.app.getLayerByName(tms.name) && g3w.app.removeExternalLayer(tms.name); });
   };
 
   // export layer to zip
