@@ -20,8 +20,7 @@
     <!-- GROUP LAYER -->
     <span
       v-if        = "isGroup"
-      style       = "padding-right: 2px;"
-      :class      = "['root tree-toggler', layerstree.expanded ? 'fas fa-caret-down' : 'fas fa-caret-right']"
+      :class      = "['tree-toggler', layerstree.expanded ? 'fas fa-caret-down' : 'fas fa-caret-right']"
       @click.stop = "expandCollapse"
     ></span>
 
@@ -38,7 +37,7 @@
       v-if   = "isTable"
       v-show = "!layerstree.hidden"
       style  = "padding-left: 18px"
-      :class = "['fas fa-table', parentFolder ? '' : 'root']"
+      class  = "fas fa-table"
     ></span>
 
     <!-- EXTERNAL LAYER (REMOVABLE NODE) -->
@@ -54,7 +53,6 @@
       v-if   = "!isTable && !isGroup"
       v-show = "!layerstree.hidden"
       class  = "checkbox-layer"
-      :class = "parentFolder ? '' : 'root'"
     >
       <span
         v-if             = "!isTable && !isGroup && ('toc' === legendlayerposition || !isGroup && layerstree.categories)"
@@ -67,16 +65,6 @@
         type        = "checkbox"
         @click.stop = "toggle()"
         v-model     = "layerstree.checked"
-        :style      = "{
-          marginLeft: ('toc' === legendlayerposition)
-            ? '5px'
-            : !isGroup && layerstree.categories
-              ? '5px'
-              : (!layerstree.legend && layerstree.external)
-                ? '1px'
-                : '18px'
-        }"
-        :class      = "[{ 'toc-added-external-layer': (!layerstree.legend && layerstree.external) }]"
       />
 
     </span>
@@ -235,7 +223,6 @@
         v-for                      = "_layerstree in layerstree.nodes" :key = "_layerstree.id || _layerstree.groupId"
         :root                      = "false"
         :legendplace               = "legendplace"
-        :parentFolder              = "isGroup"
         :layerstree                = "_layerstree"
         :storeid                   = "storeid"
         :parent                    = "layerstree"
@@ -296,7 +283,6 @@ export default {
     'legend',
     'legendplace',
     'parent_mutually_exclusive',
-    'parentFolder',
     'externallayers',
     'root',
     'parent'

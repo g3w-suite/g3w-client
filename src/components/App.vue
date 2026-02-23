@@ -440,14 +440,13 @@
         <ul
           v-for = "root in ApplicationState.catalog.layerstrees"
           :key  = "root.storeid"
-          class = "tree-root root"
+          class = "tree-root"
         >
           <catalog-tree
             v-for                      = "tree in root.tree"
             :key                       = "tree.id"
             :layerstree                = "tree"
             class                      = "item"
-            :parentFolder              = "false"
             :root                      = "true"
             :legendplace               = "ApplicationState.project.state.legend_position || 'tab'"
             :parent_mutually_exclusive = "false"
@@ -463,13 +462,12 @@
           <li @click.stop = "expandCollapseExternaLayers" style = "cursor: pointer;">
             <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
               <span
-                style       = "padding-right: 2px; padding-left: 4px; width: 20px; font-size: 1.1em; cursor: pointer;"
                 :class      = "externalayers.collapsed ? 'fas fa-caret-right' : 'fas fa-caret-down'"
                 class       = "tree-toggler"
               ></span>
               <span
                 @click.stop = "toggleExternalLayers"
-                style       = "padding-right: 5px; cursor: pointer;"
+                style       = "padding: 0 5px 0 3px; cursor: pointer;"
                 :class      = "externalayers.checked ? 'far fa-check-square': 'far fa-square'"
               ></span>
               <span style = "font-weight: bold">{{ $t('EXTERNAL LAYERS') }}</span>

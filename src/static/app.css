@@ -1221,22 +1221,17 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 .tree-node-title                                    { padding-left: 3px; cursor: pointer; width: 80%; display: inline-flex; justify-content: space-between; user-select: none; }
 .tree-node-title.disabled                           { color: #999; }
 .tree-item.disabled > span                          { color: #999; }
-.root                                               { padding: 2px 1px 1px 5px; }
-.root.fa-chevron-right                              { padding-right: 5px; padding-left: 0; }
 .bold                                               { font-weight: bold; color: #fff; }
 .highlightlayer                                     { border-bottom: 2px dashed; border-color: #ffb516; }
 .tree-root                                          { padding-left: 0; margin: 13px 3px; }
-.tree-root li > .root                               { padding-left: 5px; }
 .tree-root li.tree-item.group > ul.group            { padding-left: 17px; padding-top: 2px; }
-.tree-toggler                                       { width: 10px; margin-left: 5px; }
-.tree-toggler.root                                  { width: 19px; }
+.tree-toggler                                       { width: 10px; margin: 0 5px; }
 .layer-legend                                       { padding: 3px 0 0 35px; background-color: var(--bgcolor); }
 .tree-root-external                                 { border-top: 2px solid var(--skin-color); padding-top: 12px; }
 .tree-root-external li.tree-item                    { margin-left: 23px; }
 
 #catalog .tree-item > .toggle-context-menu                   { opacity: 0; position: absolute; inset: 0 4px auto auto; padding: 0; border: 1px solid; border-radius: 3px; }
 #catalog .tree-item > .toggle-context-menu > i               { padding: 4px 8px; }
-#catalog .tree-item > .toggle-context-menu.root              { opacity: 1; border: none; }
 #catalog .tree-item:not(.group):hover > .toggle-context-menu { opacity: 1; }
 .tree-item input[type="checkbox"]                   { appearance: none; width: unset; margin: unset; vertical-align: unset; }
 .tree-item input[type="checkbox"]::before           { font-family: "Font Awesome 5 Free"; font-weight: 400; content: "\f0c8"; }
