@@ -323,7 +323,7 @@ C,"POINT (11.2474811 43.7910709)"`],
 
   // OpenStreetMap
   await setTMS({
-    name: 'OSM',
+    name: 'OpenStreetMap',
     url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'
   });
 
