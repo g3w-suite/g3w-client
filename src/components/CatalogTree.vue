@@ -10,10 +10,6 @@
     class                     = "tree-item"
     @contextmenu.prevent.stop = "showContextMenu"
     @click.stop               = "onTreeItemClick"
-    :style                    = "{
-      paddingLeft: !isGroup ? '5px' : '0',
-      position: 'relative',
-    }"
     :class                    = "{
       selected: layerstree.selected,
       disabled: isDisabled,

@@ -1215,21 +1215,20 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 #catalog button[type="button"].active               { box-shadow: none; background-color: #384247; }
 #catalog > a                                        { display: none !important; }
 
-.tree-item                                          { cursor: pointer; margin-bottom: 3px; }
+.tree-item                                          { cursor: pointer; margin-bottom: 3px; position: relative; }
 .tree-item.selected                                 { background-color: var(--skin-color); }
 .tree-item.selected ul.layer-categories             { background-color: var(--bgcolor); }
 .tree-node-title                                    { padding-left: 3px; cursor: pointer; width: 80%; display: inline-flex; justify-content: space-between; user-select: none; }
 .tree-node-title.disabled                           { color: #999; }
 .tree-item.disabled > span                          { color: #999; }
 .root                                               { padding: 2px 1px 1px 5px; }
-.root .tree-item.group                              { padding-left: 1px; }
 .root.fa-chevron-right                              { padding-right: 5px; padding-left: 0; }
 .bold                                               { font-weight: bold; color: #fff; }
 .highlightlayer                                     { border-bottom: 2px dashed; border-color: #ffb516; }
 .tree-root                                          { padding-left: 0; }
 .tree-root li > .root                               { padding-left: 5px; }
 .tree-root li.tree-item.group > ul.group            { padding-left: 17px; padding-top: 2px; }
-.tree-toggler                                       { width: 10px; }
+.tree-toggler                                       { width: 10px; margin-left: 5px; }
 .tree-toggler.root                                  { width: 19px; }
 .layer-legend                                       { padding: 3px 0 0 35px; background-color: var(--bgcolor); }
 ul.g3w-external_layers-group                        { padding-left: 0 !important; background: var(--bgcolor); border-top: 2px solid var(--skin-color); padding-top: 12px; }
