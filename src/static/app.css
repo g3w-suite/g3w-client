@@ -1243,7 +1243,8 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 #g3w-themes.menu-open                  { display: block; }
 .current_map_theme                     { overflow: hidden; white-space: normal; text-overflow: ellipsis; }
 .project_map_theme                     { font-weight: bold; padding: 3px; border-bottom: 1px solid #fff; }
-.user_map_theme                        { font-weight: bold; padding: 5px 3px; display: flex; justify-content: space-between; align-self: baseline; border-bottom: 1px solid #fff; }
+.user_map_theme                        { font-weight: bold; padding: 5px 3px; display: flex; justify-content: space-between; border-bottom: 1px solid #fff; }
+.user_map_theme > span                 { align-self: center; }
 .project_title                         { display: inline-flex; flex-direction: column; justify-content: center; height: 100%; font-weight: bold; color: white; max-height: 50px; overflow: hidden; max-width: calc(100% - 150px); }
 .project_title > *                     { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; margin: 0; }
 .project_title .h2                     { font-size: 1.5em; }
