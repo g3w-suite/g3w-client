@@ -89,7 +89,7 @@
 
     <!-- Layer Legend -->
     <li
-      v-if                = "['project', 'layer'].includes(context)"
+      v-if                = "['project', 'layer'].includes(context) && layerstree.geolayer"
       @click.prevent.stop = "showLegend"
     >
       <i class = "fas fa-list"></i> {{ $t('legend') }}
