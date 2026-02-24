@@ -1219,7 +1219,7 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 .tree-item.selected                                 { background-color: var(--skin-color); }
 .tree-item.selected ul.layer-categories             { background-color: var(--bgcolor); }
 .tree-item.group > .tree-node-title                 { font-weight: bold; }
-.tree-node-title                                    { padding-left: 3px; cursor: pointer; width: 80%; display: inline-flex; justify-content: space-between; user-select: none; }
+.tree-node-title                                    { padding-left: 3px; cursor: pointer; width: 75%; display: inline-flex; justify-content: space-between; user-select: none; }
 .tree-node-title.disabled                           { color: #999; }
 .tree-item.disabled > span                          { color: #999; }
 .tree-item .fa-table                                { margin-left: 24px; }
