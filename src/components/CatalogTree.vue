@@ -48,7 +48,7 @@
 
     <!-- NODE TOGGLER -->
     <button
-      v-if        = "!isTable && !isGroup && ('toc' === legendlayerposition || !isGroup && layerstree.categories)"
+      v-if        = "!isTable && !isGroup && ('toc' === legend_position || !isGroup && layerstree.categories)"
       type        = "button"
       @click.stop = "expandCollapse"
       v-show      = "!layerstree.hidden"
@@ -80,11 +80,10 @@
     >
 
       <span
-        :class           = "{ scalevisibility: showscalevisibilityclass }"
         class            = "g3w-long-text"
-        :data-i18n-title = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
+        :data-i18n-title = "has_scale_visibility_toolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
         data-placement   = "top"
-        data-i18n-raw     = ""
+        data-i18n-raw    = ""
       >
         <!-- REMOVE CURRENT FILTER  -->
         <button
@@ -95,14 +94,14 @@
           data-i18n-raw    = ""
           class            = "action-button"
           style            = "box-shadow: unset;"
-          @click.stop      = "removeCurrentFilter"
+          @click.stop      = "removeFilter"
         >
           <i aria-hidden = "true" class = "fas fa-filter" style = "color: red"></i>
         </button>
         <!-- VISIBLE NODE TITLE (LAYER or GROUP) -->
         <span>{{ layerstree.title }}</span>
         <!-- LAYER FEATURES COUNT-->
-        <b v-if = "!isGroup && showfeaturecount"> [{{ getFeatureCount }}] </b>
+        <b v-if = "!isGroup && has_feature_count"> [{{ getFeatureCount }}] </b>
       </span>
 
       <!-- VISIBLE NODE SELECTED (LAYER) -->
@@ -167,10 +166,10 @@
       >
       <template v-else>
         <div
-          v-for                     = "(category, index) in legend_categories"
-          @contextmenu.prevent.stop = "showCategoryMenu"
-          style                     = "display: flex; align-items: center; width: 100%"
-          v-disabled                = "category.disabled"
+          v-for      = "(category, index) in legend_categories"
+          style      = "display: flex; align-items: center; width: 100%"
+          v-disabled = "category.disabled"
+          @contextmenu.prevent.stop
         >
 
           <input
@@ -192,10 +191,10 @@
             v-if        = "('tab' === legendplace && category.ruleKey) || ('toc' === legendplace)"
             class       = "g3w-long-text"
             style       = "padding-left: 3px;"
-            @click.stop = "onCategoryClick"
+            @click.stop
           >
             <span>{{category.title}}</span>
-            <b v-if = "showfeaturecount && undefined !== category.ruleKey"> [{{layerstree.featurecount[category.ruleKey]}}] </b>
+            <b v-if = "has_feature_count && undefined !== category.ruleKey"> [{{layerstree.featurecount[category.ruleKey]}}] </b>
           </span>
 
         </div>
@@ -298,7 +297,7 @@ export default {
      *
      * @since 3.8.0
      */
-    showfeaturecount() {
+    has_feature_count() {
       return undefined !== this.layerstree.featurecount;
     },
 
@@ -314,16 +313,12 @@ export default {
       return !this.isGroup && !this.layerstree.geolayer && !this.layerstree.external;
     },
 
-    legendlayerposition() {
+    legend_position() {
       return (!this.layerstree.exclude_from_legend && this.layerstree.legend) ? this.legendplace : 'tab';
     },
 
-    showscalevisibilityclass() {
-      return !this.isGroup && this.layerstree.scalebasedvisibility;
-    },
-
-    showScaleVisibilityToolip() {
-      return this.showscalevisibilityclass && this.layerstree.disabled && this.layerstree.checked;
+    has_scale_visibility_toolip() {
+      return !this.isGroup && this.layerstree.scalebasedvisibility && this.layerstree.disabled && this.layerstree.checked;
     },
 
     isHidden() {
@@ -335,7 +330,7 @@ export default {
     },
 
     isDisabled() {
-      return (!this.isGroup && !this.isTable && !this.layerstree.external && (!this.layerstree.visible || this.layerstree.disabled));
+      return !this.isGroup && !this.isTable && !this.layerstree.external && (!this.layerstree.visible || this.layerstree.disabled);
     },
 
     /**
@@ -382,9 +377,9 @@ export default {
 
     'layerstree.checked'() {
       if (this.isGroup) {
-        this.handleGroupChecked(this.layerstree);
+        this.onGroupChecked(this.layerstree);
       } else {
-        this.handleLayerChecked(this.layerstree);
+        this.onLayerChecked(this.layerstree);
       }
       //@since 4.0.7 In case of map theme change and layers tree is not root, reset map theme
       if (!this.layerstree.root && !ApplicationState.map_theme.change) {
@@ -429,10 +424,9 @@ export default {
           // listen to layer change style event
           getCatalogLayerById(this.layerstree.id).onafter('change', this.onLayerChange);
 
-          // Get all legend graphics of a layer when start
-          // need to exclude wms source
+          // Get all legend graphics of a layer when start (exclude wms source)
           if (!this.is_external_wms && true === this.layerstree.visible) {
-            await this.runInitLayerVisibleAction();
+            await this.initLegend();
           }
 
           if (this.layerstree.visible && this.is_external_wms) {
@@ -460,7 +454,7 @@ export default {
       const enabled = visible && !this.is_external_wms;
       // initialize if it is the first time that is visible.
       if (enabled && false === this.initialize) {
-        await this.runInitLayerVisibleAction();
+        await this.initLegend();
       }
       // otherwise show categories base on if is dynamic legend or not
       if (enabled && false !== this.initialize) {
@@ -480,7 +474,7 @@ export default {
      *
      * @since 3.9.0
      */
-    removeCurrentFilter() {
+    removeFilter() {
       return getCatalogLayerById(this.layerstree.id).deleteToken();
     },
 
@@ -491,7 +485,7 @@ export default {
      * @param {uknown}  group.parentGroup
      * @param {uknown}  group.nodes
      */
-    handleGroupChecked(group) {
+    onGroupChecked(group) {
 
       if (!group.checked) {
         group.nodes.forEach(n => {
@@ -539,7 +533,7 @@ export default {
      * 
      * @fires GUI~treenodevisible since 4.1.0
      */
-    handleLayerChecked(layer) {
+    onLayerChecked(layer) {
 
       // external layer (eg. temporary layer through `addlayerscontrol`)
       if (!layer.projectLayer) {
@@ -700,24 +694,6 @@ export default {
     },
 
     /**
-     * @since 4.1.0
-     */
-    onCategoryClick() {
-      console.log('TODO: handle click on category');
-    },
-
-    /**
-     * Show category contextual menu
-     * 
-     * @fires showmenucategory
-     * 
-     * @since 4.1.0
-     */
-    showCategoryMenu() {
-      this.$emit('showmenucategory');
-    },
-
-    /**
      * set external legend url
      * 
      * @since 4.1.0
@@ -862,7 +838,7 @@ export default {
     /**
      * @since 4.1.0
      */
-    async onChangeMapLegendParams() {
+    async onLegendChange() {
       this.mapReady = true;
       if (
         this.layerstree.visible
@@ -880,21 +856,13 @@ export default {
      *
      * @since 4.1.0
      */
-    async runInitLayerVisibleAction() {
+    async initLegend() {
       await this.setCategories(true);
       if (this.dynamic) {
         await this.setCategories(false);
-        GUI.on('change-map-legend-params', this.onChangeMapLegendParams);
+        GUI.on('change-map-legend-params', this.onLegendChange);
       }
       this.initialize = true;
-    },
-
-    /**
-     * @param {{ '1': () => {}, '2': () => {}}} callbacks hashmap of click event handlers ('1' = click, '2' = double click)
-     * @param context
-     */
-    handleClick(callbacks = {}, context) {
-
     },
 
   },
@@ -907,7 +875,7 @@ export default {
     this.CLICK_TIMER = null; // timeoutID return by setTimeout Function
 
     if (this.isGroup && !this.layerstree.checked) {
-      this.handleGroupChecked(this.layerstree);
+      this.onGroupChecked(this.layerstree);
     }
     if (this.isGroup && !this.root && this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive) {
       this.layerstree.nodes.forEach(node => { node.id && (node.uncheckable = true); })
