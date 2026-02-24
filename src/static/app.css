@@ -1224,7 +1224,6 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 .tree-item.disabled > span                          { color: #999; }
 .tree-item .fa-table                                { margin-left: 24px; }
 .tree-item .fa-layer-group                          { margin-left: 5px; }
-.tree-item.group > ul.group                         { margin-left: 5px } 
 .bold                                               { font-weight: bold; color: #fff; }
 .highlightlayer                                     { border-bottom: 2px dashed; border-color: #ffb516; }
 .tree-root                                          { padding-left: 0; margin: 13px 3px; }
