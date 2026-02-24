@@ -673,7 +673,7 @@ export default {
         if (1 === this.CLICK_COUNT && !this.isTable && !this.isGroup) {
           this.select();
         }
-        if (1 === this.CLICK_COUNT) {
+        if (1 === this.CLICK_COUNT && this.isGroup) {
           this.expandCollapse();
         }
         if (2 === this.CLICK_COUNT && !this.isTable) {
