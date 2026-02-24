@@ -467,7 +467,6 @@
             <input
               type        = "checkbox"
               @click.stop = "toggleExternalLayers"
-              style       = "padding: 0 5px 0 3px; cursor: pointer;"
               v-model     = "externalayers.checked"
             />
             <span class="tree-node-title">{{ $t('EXTERNAL LAYERS') }}</span>
