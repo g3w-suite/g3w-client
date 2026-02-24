@@ -1218,21 +1218,20 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 .tree-item                                          { cursor: pointer; margin-bottom: 3px; position: relative; }
 .tree-item.selected                                 { background-color: var(--skin-color); }
 .tree-item.selected ul.layer-categories             { background-color: var(--bgcolor); }
+.tree-item.group > .tree-node-title                 { font-weight: bold; }
 .tree-node-title                                    { padding-left: 3px; cursor: pointer; width: 80%; display: inline-flex; justify-content: space-between; user-select: none; }
 .tree-node-title.disabled                           { color: #999; }
 .tree-item.disabled > span                          { color: #999; }
 .tree-item .fa-table                                { margin-left: 22px; }
 .tree-item .fa-layer-group                          { margin-left: 5px; }
 .tree-item.group > ul.group                         { margin-left: 5px } 
-.tree-item.external .tree-checkbox                  { padding-left: 5px; }
 .bold                                               { font-weight: bold; color: #fff; }
 .highlightlayer                                     { border-bottom: 2px dashed; border-color: #ffb516; }
 .tree-root                                          { padding-left: 0; margin: 13px 3px; }
 .tree-root li.tree-item.group > ul.group            { padding-left: 17px; padding-top: 2px; }
-.tree-toggler                                       { width: 10px; margin: 0 5px; }
+.tree-toggler                                       { box-shadow: none !important; background: none; width: 15px; }
 .tree-legend                                        { padding: 3px 0 0 43px; background-color: var(--bgcolor); }
-.tree-root-external                                 { border-top: 2px solid var(--skin-color); padding-top: 12px; }
-.tree-root-external li.tree-item                    { margin-left: 23px; }
+.tree-root + .tree-root                             { border-top: 2px solid var(--skin-color); padding-top: 12px; }
 
 #catalog .tree-item > .toggle-context-menu                   { opacity: 0; position: absolute; inset: 0 4px auto auto; padding: 0; border: 1px solid; border-radius: 3px; }
 #catalog .tree-item > .toggle-context-menu > i               { padding: 4px 8px; }

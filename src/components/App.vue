@@ -446,7 +446,6 @@
             v-for                      = "tree in root.tree"
             :key                       = "tree.id"
             :layerstree                = "tree"
-            class                      = "item"
             :root                      = "true"
             :legendplace               = "ApplicationState.project.state.legend_position || 'tab'"
             :parent_mutually_exclusive = "false"
@@ -457,54 +456,57 @@
         <!-- EXTERNAL LAYERS -->
         <ul
           v-if  = "ApplicationState.catalog.external.wms.length || ApplicationState.catalog.external.tms.length || ApplicationState.catalog.external.vector.length"
-          class = "tree-root tree-root-external"
+          class = "tree-root"
         >
-          <li @click.stop = "expandCollapseExternaLayers" style = "cursor: pointer;">
-            <div style = "display: flex; align-items: baseline; margin-bottom: 5px;">
-              <span
-                :class      = "externalayers.collapsed ? 'fas fa-caret-right' : 'fas fa-caret-down'"
-                class       = "tree-toggler"
-              ></span>
-              <span
-                @click.stop = "toggleExternalLayers"
-                style       = "padding: 0 5px 0 3px; cursor: pointer;"
-                :class      = "externalayers.checked ? 'far fa-check-square': 'far fa-square'"
-              ></span>
-              <span style = "font-weight: bold">{{ $t('EXTERNAL LAYERS') }}</span>
-              <span 
-                style       = "color: red; padding-right: 3px; margin-left: auto; margin-right: 8px; cursor: pointer;"
-                class       = "fas fa-trash"
-                @click.stop = "removeExternalLayers"
-              ></span>
-            </div>
+          <li class="tree-item group" @click.stop = "expandCollapseExternaLayers">
+            <button
+              type        = "button"
+              :class      = "externalayers.collapsed ? 'fas fa-caret-right' : 'fas fa-caret-down'"
+              class       = "tree-toggler"
+            ></button>
+            <input
+              type        = "checkbox"
+              @click.stop = "toggleExternalLayers"
+              style       = "padding: 0 5px 0 3px; cursor: pointer;"
+              v-model     = "externalayers.checked"
+            />
+            <span class="tree-node-title">{{ $t('EXTERNAL LAYERS') }}</span>
+            <button
+              type        = "button"
+              @click.stop = "removeExternalLayers"
+              style       = "position: absolute; inset: 0 4px auto auto;"
+            >
+              <i aria-hidden = "true" class = "fas fa-trash" style = "color: red;"></i>
+            </button>
+            <ul class="group">
+              <catalog-tree
+                v-show          = "!externalayers.collapsed"
+                v-for           = "wms in ApplicationState.catalog.external.wms"
+                :key            = "wms.id"
+                :externallayers = "ApplicationState.catalog.external.wms"
+                :layerstree     = "wms"
+                @layerchecked   = "updateExternalLayersChecked"
+              />
+              <!-- @since 4.1.0 add tms layers -->
+              <catalog-tree
+                v-show          = "!externalayers.collapsed"
+                v-for           = "tms in ApplicationState.catalog.external.tms"
+                :key            = "tms.id"
+                :externallayers = "ApplicationState.catalog.external.tms"
+                :layerstree     = "tms"
+                @layerchecked   = "updateExternalLayersChecked"
+              />
+              <catalog-tree
+                v-show          = "!externalayers.collapsed"
+                v-for           = "vector in ApplicationState.catalog.external.vector"
+                :key            = "vector.id"
+                :externallayers = "ApplicationState.catalog.external.vector"
+                @layerchecked   = "updateExternalLayersChecked"
+                :layerstree     = "vector"
+              />
+            </ul>
           </li>
-          <catalog-tree
-            v-show          = "!externalayers.collapsed"
-            v-for           = "wms in ApplicationState.catalog.external.wms"
-            :key            = "wms.id"
-            :externallayers = "ApplicationState.catalog.external.wms"
-            :layerstree     = "wms"
-            @layerchecked   = "updateExternalLayersChecked"
-          />
-          <!-- @since 4.1.0 add tms layers -->
-          <catalog-tree
-            v-show          = "!externalayers.collapsed"
-            v-for           = "tms in ApplicationState.catalog.external.tms"
-            :key            = "tms.id"
-            :externallayers = "ApplicationState.catalog.external.tms"
-            :layerstree     = "tms"
-            @layerchecked   = "updateExternalLayersChecked"
-          />
-          <catalog-tree
-            v-show          = "!externalayers.collapsed"
-            v-for           = "vector in ApplicationState.catalog.external.vector"
-            :key            = "vector.id"
-            :externallayers = "ApplicationState.catalog.external.vector"
-            @layerchecked   = "updateExternalLayersChecked"
-            :layerstree     = "vector"
-          />
         </ul>
-
       </li>
 
       <li

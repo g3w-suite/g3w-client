@@ -18,14 +18,17 @@
       external: layerstree.external,
     }"
   >
-    <!-- GROUP LAYER -->
-    <span
+    <!-- NODE TOGGLER -->
+    <button
       v-if        = "isGroup"
-      :class      = "['tree-toggler', layerstree.expanded ? 'fas fa-caret-down' : 'fas fa-caret-right']"
+      type        = "button"
       @click.stop = "expandCollapse"
-    ></span>
+      class       = "tree-toggler"
+    >
+      <i aria-hidden = "true" :class = "layerstree.expanded ? 'fas fa-caret-down' : 'fas fa-caret-right'"></i>
+    </button>
 
-    <!-- GROUP LAYER -->
+    <!-- NODE VISIBILITY -->
     <input
       v-if        = "isGroup"
       type        = "checkbox"
@@ -33,63 +36,46 @@
       v-model     = "layerstree.checked"
     />
 
-    <!-- TABLE LAYER -->
-    <span
-      v-if   = "isTable"
-      v-show = "!layerstree.hidden"
-      class  = "fas fa-table"
-    ></span>
-
-    <span
-      v-if   = "isGroup && !layerstree.root"
-      v-show = "!layerstree.hidden"
-      class  = "fas fa-layer-group"
-    ></span>
-
-    <!-- EXTERNAL LAYER (REMOVABLE NODE) -->
-    <span 
+    <!-- NODE REMOVE -->
+    <button 
       v-if        = "!isTable && !isGroup && layerstree.external && layerstree.removable"
-      style       = "color: red;"
-      class       = "fas fa-trash"
+      type        = "button"
       @click.stop = "removeExternalLayer(layerstree.name, layerstree._type)"
-    ></span>
-
-    <!-- HIDDEN NODE (LAYER) -->
-    <span
-      v-if   = "!isTable && !isGroup"
-      v-show = "!layerstree.hidden"
-      class  = "tree-checkbox"
     >
-      <span
-        v-if             = "!isTable && !isGroup && ('toc' === legendlayerposition || !isGroup && layerstree.categories)"
-        @click.self.stop = "expandCollapse"
-        class            = "tree-toggler"
-        :class           = "layerstree.visible && layerstree.expanded ? 'fas fa-caret-down' : 'fas fa-caret-right'"
-      ></span>
+      <i aria-hidden = "true" class = "fas fa-trash" style = "color: red;"></i>
+    </button>
 
-      <input
-        type        = "checkbox"
-        @click.stop = "toggle()"
-        v-model     = "layerstree.checked"
-      />
+    <!-- NODE TOGGLER -->
+    <button
+      v-if        = "!isTable && !isGroup && ('toc' === legendlayerposition || !isGroup && layerstree.categories)"
+      type        = "button"
+      @click.stop = "expandCollapse"
+      v-show      = "!layerstree.hidden"
+      class       = "tree-toggler"
+    >
+      <i aria-hidden = "true" :class = "layerstree.visible && layerstree.expanded ? 'fas fa-caret-down' : 'fas fa-caret-right'"></i>
+    </button>
 
-    </span>
+    <!-- NODE VISIBILITY -->
+    <input
+      v-if        = "!isTable && !isGroup"
+      v-show      = "!layerstree.hidden"
+      type        = "checkbox"
+      @click.stop = "toggle()"
+      v-model     = "layerstree.checked"
+    />
 
-    <!-- EXTERNAL LAYER  -->
-    <span
-      v-if   = "!isTable && !isGroup && layerstree.external"
-      style  = "color: #fff; padding-left: 5px;"
-      :class = "'vector' === layerstree._type ? 'fas fa-draw-polygon' : 'far fa-image'"
-    ></span>
+    <!-- NODE TYPE -->
+    <i v-if = "isTable"                                                                      v-show = "!layerstree.hidden" aria-hidden = "true" class = "fas fa-table"></i>
+    <i v-if = "isGroup && !layerstree.root"                                                  v-show = "!layerstree.hidden" aria-hidden = "true" class = "fas fa-layer-group"></i>
+    <i v-if = "!isTable && !isGroup && layerstree.external && 'vector' === layerstree._type" v-show = "!layerstree.hidden" aria-hidden = "true" class = "fas fa-draw-polygon" style = "color: #fff; padding-left: 5px;"></i>
+    <i v-if = "!isTable && !isGroup && layerstree.external && 'vector' !== layerstree._type" v-show = "!layerstree.hidden" aria-hidden = "true" class = "far fa-image"        style = "color: #fff; padding-left: 5px;"></i>
 
     <!-- VISIBLE NODE (LAYER or GROUP) -->
-    <div
+    <span
       v-show = "!layerstree.hidden || isGroup"
       class  = "tree-node-title"
-      :class = "{
-        disabled: !layerstree.external && (layerstree.disabled || (layerstree.id && !layerstree.visible)),
-        bold: isGroup
-      }"
+      :class = "{ disabled: !layerstree.external && (layerstree.disabled || (layerstree.id && !layerstree.visible)) }"
     >
 
       <span
@@ -122,7 +108,7 @@
       </span>
 
       <!-- VISIBLE NODE SELECTED (LAYER) -->
-      <div v-if = "(!isGroup && layerstree.selection)">
+      <span v-if = "(!isGroup && layerstree.selection)">
 
         <!-- CLEAR SELECTION -->
         <button
@@ -161,9 +147,9 @@
           <i aria-hidden = "true" class = "far fa-save"></i>
         </button>
 
-      </div>
+      </span>
 
-    </div>
+    </span>
 
     <!-- NODE LEGEND (LAYER) -->
     <figure
@@ -676,16 +662,26 @@ export default {
      * @since v3.8
      */
     onTreeItemClick() {
-      this.handleClick({
-        '1': () => {
-          if (!this.isTable && !this.isGroup) {
-            this.select();
-          } else {
-            this.expandCollapse();
-          }
-        },
-        '2': () => !this.isTable && this.maybeZoomToLayer(this.layerstree),
-      }, this);
+      this.CLICK_COUNT += 1; // increment click count
+
+      // skip and wait for timeout in order to detect double click
+      if (this.CLICK_TIMER) {
+        return;
+      }
+
+      this.CLICK_TIMER = setTimeout(() => {
+        if (1 === this.CLICK_COUNT && !this.isTable && !this.isGroup) {
+          this.select();
+        }
+        if (1 === this.CLICK_COUNT) {
+          this.expandCollapse();
+        }
+        if (2 === this.CLICK_COUNT && !this.isTable) {
+          this.maybeZoomToLayer(this.layerstree)
+        }
+        this.CLICK_COUNT = 0;
+        this.CLICK_TIMER = null;
+      }, 300);
     },
 
     removeExternalLayer(name) {
@@ -905,29 +901,7 @@ export default {
      * @param context
      */
     handleClick(callbacks = {}, context) {
-      if (!this.__CLICK_EVENT) {
-        console.warn('click mixin not initialized on context:', context);
-        return;
-      }
-      this.__CLICK_EVENT.count += 1;                   // increment click count
-      if (!this.__CLICK_EVENT.timeoutID) {             // skip and wait for timeout in order to detect double click
-        this.__CLICK_EVENT.timeoutID = setTimeout(() => {
-          if (undefined !== callbacks[this.__CLICK_EVENT.count]) {
-            callbacks[this.__CLICK_EVENT.count].call(context);
-          }
-          this.__resetClickMixin();
-        }, 300);
-      }
-    },
 
-    __resetClickMixin() {
-      this.__CLICK_EVENT.count     = 0;
-      this.__CLICK_EVENT.timeoutID = null;
-    },
-
-    __clearClickMixin() {
-      this.__resetClickMixin();
-      this.__CLICK_EVENT = null;
     },
 
   },
@@ -936,15 +910,8 @@ export default {
    * Inizialize layer (disable, visible etc..)
    */
   created() {
-    /**
-     * Store `click` and `doubleclick` events on a single vue element.
-     *
-     * @see https://stackoverflow.com/q/41303982
-     */
-    this.__CLICK_EVENT = {
-      count:     0,                                   // count click events
-      timeoutID: null                             // timeoutID return by setTimeout Function
-    };
+    this.CLICK_COUNT = 0;    // count click events
+    this.CLICK_TIMER = null; // timeoutID return by setTimeout Function
 
     if (this.isGroup && !this.layerstree.checked) {
       this.handleGroupChecked(this.layerstree);
@@ -955,7 +922,8 @@ export default {
   },
 
   beforeDestroy() {
-    this.__clearClickMixin();
+    this.CLICK_COUNT = 0;
+    this.CLICK_TIMER = null;
   },
 
 };
