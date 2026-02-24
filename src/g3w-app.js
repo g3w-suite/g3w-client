@@ -5190,8 +5190,6 @@ export default new (class GUI extends Emitter {
         color:            color || 'blue',
         filter:           vectorLayer.filter,
         selection:        vectorLayer.selection,
-        /** @since 3.8.0 */
-        tochighlightable: false,
         download:         options.download || false,
         /**
          * An alternate (external) server url where to perfom download.
@@ -5268,8 +5266,6 @@ export default new (class GUI extends Emitter {
     externalLayer.getId               = externalLayer.getId               || (() => externalLayer.id);
     externalLayer.getName             = externalLayer.getName             || (() => externalLayer.name);
     externalLayer.getGeometryType     = externalLayer.getGeometryType     || (() => externalLayer.geometryType);
-    externalLayer.setTocHighlightable = externalLayer.setTocHighlightable || (h => externalLayer.tochighlightable = h);
-    externalLayer.getTocHighlightable = externalLayer.getTocHighlightable || (() => externalLayer.tochighlightable);
     externalLayer.isSelected          = externalLayer.isSelected          || (() => externalLayer.selected);
     externalLayer.setSelected         = externalLayer.setSelected         || (s => externalLayer.selected = s);
     externalLayer.isQueryable         = externalLayer.isQueryable         || (() => !!vectorLayer);

@@ -80,14 +80,11 @@
     >
 
       <span
-        :class           = "{
-          highlightlayer:  isHighLight,
-          scalevisibility: showscalevisibilityclass,
-        }"
-        class                = "g3w-long-text"
-        :data-i18n-title     = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
-        data-placement       = "top"
-        data-i18n-raw        = ""
+        :class           = "{ scalevisibility: showscalevisibilityclass }"
+        class            = "g3w-long-text"
+        :data-i18n-title = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
+        data-placement   = "top"
+        data-i18n-raw     = ""
       >
         <!-- REMOVE CURRENT FILTER  -->
         <button
@@ -335,11 +332,6 @@ export default {
 
     selected() {
       this.layerstree.selected = (this.layerstree.disabled && this.layerstree.selected) ? false : this.layerstree.selected;
-    },
-
-    isHighLight() {
-      const layer = getCatalogLayerById(this.layerstree.id) || this.layerstree;
-      return !this.isGroup && ApplicationState.highlightlayers && layer && layer.isVisible() && layer.getTocHighlightable();
     },
 
     isDisabled() {

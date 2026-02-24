@@ -289,7 +289,6 @@ export class Layer extends Emitter {
       geolayer:           "NoGeometry" !== config.geometrytype,
       attributetable:     { pageLength: null },
       visible:            !!config.visible,
-      tochighlightable:   false,
 
       /** state of if is in editing (setted by editing plugin) */
       inediting:          false,
@@ -1604,7 +1603,7 @@ export class Layer extends Emitter {
   /**
    * Get state layer
    *
-   * @returns {*|{metadata, downloadable: *, attributetable: {pageLength: null}, defaultstyle: *, source, title: *, infoformats: ((function(): *)|*|*[]), tochighlightable: boolean, featurecount: number, stylesfeaturecount: (number|string|*|{[p: number]: *}), projectLayer: boolean, infoformat: (string|default.watch.infoformat|*), geolayer: boolean, inediting: boolean, disabled: boolean, id: (*|string), selected: boolean, openattributetable: (boolean|boolean), visible: boolean, filters: *[], filter: {current: null, active: boolean}, selection: {active: boolean}, removable: (boolean|*), styles}}
+   * @returns {*|{metadata, downloadable: *, attributetable: {pageLength: null}, defaultstyle: *, source, title: *, infoformats: ((function(): *)|*|*[]), featurecount: number, stylesfeaturecount: (number|string|*|{[p: number]: *}), projectLayer: boolean, infoformat: (string|default.watch.infoformat|*), geolayer: boolean, inediting: boolean, disabled: boolean, id: (*|string), selected: boolean, openattributetable: (boolean|boolean), visible: boolean, filters: *[], filter: {current: null, active: boolean}, selection: {active: boolean}, removable: (boolean|*), styles}}
    */
   getState() {
     return this.state;
@@ -1719,24 +1718,6 @@ export class Layer extends Emitter {
    */
   isQueryable() {
     return !!(this.state?.capabilities & 1);
-  }
-
-  /**
-   * @TODO Description
-   *
-   * @returns {boolean}
-   */
-  getTocHighlightable() {
-    return this.state.tochighlightable;
-  }
-
-  /**
-   * @TODO Description
-   *
-   * @param bool
-   */
-  setTocHighlightable(bool = false) {
-    this.state.tochighlightable = bool;
   }
 
   /**
@@ -2559,10 +2540,6 @@ export class Layer extends Emitter {
       }
       if (setVisible) {
         this.setVisible(!this.state.disabled);
-      }
-      // change toc highlight property based on disabled otr not
-      if (this.isFilterable()) {
-        this.setTocHighlightable(!this.state.disabled);
       }
     } else {
       this.state.disabled = false;

@@ -443,9 +443,6 @@ const STATE = {
     },
   }),
 
-  /** @since 3.11.0 */
-  highlightlayers: false,
-
   /** @since 4.1.0 */
   projections: {
     get(crs = {}) {
