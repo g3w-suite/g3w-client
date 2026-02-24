@@ -276,7 +276,7 @@
         @click.prevent.stop = "showDownloadMenu(layer)"
       >
         <i aria-hidden = "true" class = "fas fa-download"></i>
-        {{ $t('Download') }}
+        {{ $t('Export') }}
       </li>
 
     </template>
