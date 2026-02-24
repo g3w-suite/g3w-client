@@ -44,15 +44,6 @@
       </div>
     </li>
 
-    <!-- Share Link -->
-    <li
-      v-if                = "'project' === context && layerstree.root"
-      @click.prevent.stop = "getPermalink"
-    >
-      <i class = "fa fa-share-alt"></i> {{ $t('Copy share URL') }}
-    </li>
-
-
     <!-- Layer Metadata -->
     <li
       v-if                = "'project' === context || hasMetadata(layer)"
@@ -93,6 +84,14 @@
       @click.prevent.stop = "showLegend"
     >
       <i class = "fas fa-list"></i> {{ $t('legend') }}
+    </li>
+
+    <!-- Embed map -->
+    <li
+      v-if                = "'project' === context && layerstree.root"
+      @click.prevent.stop = "showEmbedModal"
+    >
+      <i class = "fa fa-share-alt"></i> {{ $t('Embed map') }}
     </li>
 
     <!-- LAYER MENU -->
@@ -421,11 +420,6 @@
     },
 
     methods: {
-
-      /**@since 4.1.0 */
-      async getPermalink() {
-        await GUI.getPermalink(new URL(window.location.href), {});
-      },
 
       /**
        * @since 3.10.0
