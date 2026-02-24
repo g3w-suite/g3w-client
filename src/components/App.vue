@@ -474,6 +474,7 @@
               type        = "button"
               @click.stop = "removeExternalLayers"
               style       = "position: absolute; inset: 0 4px auto auto;"
+              title       = "Remove"
             >
               <i aria-hidden = "true" class = "fas fa-trash" style = "color: red;"></i>
             </button>

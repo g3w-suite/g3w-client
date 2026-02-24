@@ -41,6 +41,7 @@
       v-if        = "!isTable && !isGroup && layerstree.external && layerstree.removable"
       type        = "button"
       @click.stop = "removeExternalLayer(layerstree.name, layerstree._type)"
+      title       = "Remove"
     >
       <i aria-hidden = "true" class = "fas fa-trash" style = "color: red;"></i>
     </button>
