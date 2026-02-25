@@ -10,6 +10,8 @@
     class                     = "tree-item"
     @contextmenu.prevent.stop = "showContextMenu"
     @click.stop               = "onTreeItemClick"
+    tabindex                  = "0"
+    role                      = "button"
     :class                    = "{
       selected: layerstree.selected,
       disabled: isDisabled,
@@ -35,6 +37,8 @@
       type        = "checkbox"
       @click.stop = "toggle()"
       v-model     = "layerstree.checked"
+      role        = "button"
+      aria-label  = "Show/Hide"
     />
 
     <!-- NODE REMOVE -->
@@ -66,6 +70,8 @@
       type        = "checkbox"
       @click.stop = "toggle()"
       v-model     = "layerstree.checked"
+      role        = "button"
+      aria-label  = "Show/Hide"
     />
 
     <!-- NODE TYPE -->
@@ -157,6 +163,7 @@
       class               = "tree-legend"
       v-disabled          = "!is_external_wms && loading_legend"
       @click.stop.prevent = ""
+      role                = "presentation"
     >
       <div  v-show = "loading_legend || legend_tree.loading" class = "bar-loader"></div>
       <img
@@ -181,6 +188,8 @@
             @click.stop = "toggleCategory(index)"
             style       = "margin-right: 3px;"
             v-model     = "category.checked"
+            role        = "button"
+            aria-label  = "Show/Hide"
           />
 
           <img
@@ -188,13 +197,13 @@
             :src   = "category.icon && `data:image/png;base64,${category.icon}`"
             @error = "setError()"
             @load  = "urlLoaded()"
+            alt    = ""
           >
 
           <span
             v-if        = "('tab' === legendplace && category.ruleKey) || ('toc' === legendplace)"
             class       = "g3w-long-text"
             style       = "padding-left: 3px;"
-            @click.stop
           >
             <span>{{category.title}}</span>
             <b v-if = "has_feature_count && undefined !== category.ruleKey"> [{{layerstree.featurecount[category.ruleKey]}}] </b>

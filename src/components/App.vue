@@ -254,10 +254,12 @@
       </div>
 
       <ul
-        id      = "g3w-menu"
-        :hidden = "!showmainpanel"
-        class   = "sidebar-menu"
-        @click  = "toggleSidebarItem"
+        id       = "g3w-menu"
+        :hidden  = "!showmainpanel"
+        class    = "sidebar-menu"
+        @click   = "toggleSidebarItem"
+        role     = "menu"
+        tabindex = "0"
       >
 
       <li id = "legend" class = "sidebar-item">
@@ -458,7 +460,7 @@
           v-if  = "ApplicationState.catalog.external.wms.length || ApplicationState.catalog.external.tms.length || ApplicationState.catalog.external.vector.length"
           class = "tree-root"
         >
-          <li class="tree-item group" @click.stop = "expandCollapseExternaLayers">
+          <li class="tree-item group" @click.stop = "expandCollapseExternaLayers" tabindex = "0" role = "button">
             <button
               type        = "button"
               class       = "tree-toggler"
@@ -470,6 +472,8 @@
               type        = "checkbox"
               @click.stop = "toggleExternalLayers"
               v-model     = "externalayers.checked"
+              role        = "button"
+              aria-label  = "Show/Hide"
             />
             <span class="tree-node-title">{{ $t('EXTERNAL LAYERS') }}</span>
             <button
@@ -679,6 +683,7 @@
                   src    = "/static/client/images/g3wsuite_logo.png"
                   alt    = ""
                 />
+                <span hidden>{{ version }}</span>
               </a>
             </div>
 
