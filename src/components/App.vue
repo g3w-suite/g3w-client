@@ -56,7 +56,7 @@
             data-placement = "bottom"
           >
             <i v-if     = "item.icon"  :class = "item.icon" aria-hidden="true"></i>
-            <img v-if   = "item.img"   height = "20" :src  = "item.img" :title="item.img_title" :alt="item.img_title" />
+            <img v-if   = "item.img"   height = "20" :src  = "item.img" :title="item.img_title" :alt="item.img_title || ''" />
             <span v-if  = "item.i18n"  v-t    = "item.text || item.title || item.img_title" :hidden="item.text ? undefined : ''"></span>
             <span v-if  = "!item.i18n" v-html = "item.text || item.title || item.img_title" :hidden="item.text ? undefined : ''"></span>
           </a>
@@ -461,9 +461,11 @@
           <li class="tree-item group" @click.stop = "expandCollapseExternaLayers">
             <button
               type        = "button"
-              :class      = "externalayers.collapsed ? 'fas fa-caret-right' : 'fas fa-caret-down'"
               class       = "tree-toggler"
-            ></button>
+            >
+              <i aria-hidden = "true" :class = "externalayers.collapsed ? 'fas fa-caret-right' : 'fas fa-caret-down'"></i>
+              <span hidden>{{ $t('Enlarge / Reduce') }}</span>
+            </button>
             <input
               type        = "checkbox"
               @click.stop = "toggleExternalLayers"

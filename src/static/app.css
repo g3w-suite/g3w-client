@@ -430,7 +430,7 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
 
 .img-responsive                           { display: block; max-width: 100%; height: auto; }
 .img-thumbnail                            { padding: 4px; line-height: 1.42857143; background-color: #fff; border: 1px solid #ddd; border-radius: 4px; transition: all 0.2s ease-in-out; display: inline-block; max-width: 100%; height: auto; }
-.sr-only                                  { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+.sr-only, a [hidden], button [hidden]     { display: inline-block; position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
 
 .list-unstyled                            { list-style: none; margin: 0; padding: 0; }
 .chart                                    { position: relative; overflow: hidden; width: 100%; }
@@ -522,7 +522,7 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
 @media (max-width: 767px) {
   .nav-links a                                               { color: inherit; background: transparent; }
   .nav-links > li                                            { color: inherit; border: 0; }
-  .nav-links > li > a:not(.nav-user) [hidden]                { display: inline-block; }
+  .nav-links > li > a:not(.nav-user) [hidden]                { display: inline-block; position: static; width: auto; height: auto; margin: 0; overflow: visible; clip-path: none; white-space: normal; }
   .nav-links > li > a:not(.nav-user)                         { margin: 5px 8px; padding: 10px; border: 1px dashed #fff; display: flex; flex-direction: row; justify-content: left; align-items: center; gap: 8px; }
   .nav-lang button                                           { width: 100%; }
   .navbar .dropdown-menu li.divider                          { background-color: rgba(255, 255, 255, 0.1); }
@@ -630,7 +630,7 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
   .sidebar-open :is(.main-sidebar, .content-wrapper)          { height: auto !important; }
   .sidebar-open .navbar                                       { display: block !important; height: auto !important; }
   .sidebar-open .nav-links :is(.nav-changemap, .nav-addlayer),
-  .sidebar-open:has(#g3w-menu[hidden]) .nav-links { display: none !important; }
+  .sidebar-open:has(#g3w-menu[hidden]) .nav-links             { display: none !important; }
 }
 
 /** handle scrollbars width (desktop small) */

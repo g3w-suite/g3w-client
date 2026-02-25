@@ -26,6 +26,7 @@
       class       = "tree-toggler"
     >
       <i aria-hidden = "true" :class = "layerstree.expanded ? 'fas fa-caret-down' : 'fas fa-caret-right'"></i>
+      <span hidden>{{ $t('Enlarge / Reduce') }}</span>
     </button>
 
     <!-- NODE VISIBILITY -->
@@ -55,6 +56,7 @@
       class       = "tree-toggler"
     >
       <i aria-hidden = "true" :class = "layerstree.visible && layerstree.expanded ? 'fas fa-caret-down' : 'fas fa-caret-right'"></i>
+      <span hidden>{{ $t('Enlarge / Reduce') }}</span>
     </button>
 
     <!-- NODE VISIBILITY -->
@@ -163,6 +165,7 @@
         :src       = "legend_tree.url" 
         @loaderror = "setError()"
         @load      = "urlLoaded()"
+        alt        = ""
       >
       <template v-else>
         <div
