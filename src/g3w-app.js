@@ -1899,7 +1899,7 @@ export default new (class GUI extends Emitter {
 
     const contents        = document.querySelector('#contents');
     const content_wrapper = document.querySelector('.content-wrapper');
-    const viewW           = document.querySelector('#app').getBoundingClientRect().width - document.querySelector(".main-sidebar").getBoundingClientRect().width - document.querySelector('.main-sidebar').getBoundingClientRect().left - window.scrollX;
+    const viewW           = document.body.getBoundingClientRect().width - document.querySelector(".main-sidebar").getBoundingClientRect().width - document.querySelector('.main-sidebar').getBoundingClientRect().left - window.scrollX;
     const viewH           = window.innerHeight - document.querySelector('.navbar').offsetHeight;
     const panel           = layout[layout.__current].rightpanel;
 

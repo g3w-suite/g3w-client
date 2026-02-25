@@ -77,7 +77,7 @@ const tooltip = Object.assign(document.createElement('template'), {
   `.trim()
 }).content.firstChild;
 
-document.querySelector('#app').insertAdjacentElement('afterend', tooltip);
+document.body.insertAdjacentElement('beforeend', tooltip);
 document.addEventListener('mousemove', showTooltip);
 document.addEventListener('mousedown', showTooltip);
 document.addEventListener('focusin', showTooltip);
