@@ -4,7 +4,10 @@
 -->
 
 <template>
-  <div id = "app">
+  <div
+    id         = "app"
+    v-disabled = "ApplicationState.disabled"
+  >
 
     <!-- NAVBAR TOP (MAIN MENU) -->
     <nav
@@ -1207,7 +1210,7 @@ export default {
           Math.round(((rect.height -dy) / wrapper.clientHeight) * 100),
         ), 90);
 
-        const viewW = document.body.getBoundingClientRect().width - document.querySelector('.main-sidebar').getBoundingClientRect().width - document.querySelector('.main-sidebar').getBoundingClientRect().left - window.scrollX;
+        const viewW = document.querySelector('#app').getBoundingClientRect().width - document.querySelector('.main-sidebar').getBoundingClientRect().width - document.querySelector('.main-sidebar').getBoundingClientRect().left - window.scrollX;
         const viewH = window.innerHeight - document.querySelector('.navbar').offsetHeight;
 
         const h_split = 'h' === this.state.split;
@@ -1826,13 +1829,6 @@ export default {
       },
     },
 
-    'ApplicationState.disabled': {
-      immediate: true,
-      handler(disabled) {
-        document.body.classList.toggle('g3w-disabled', disabled);
-      },
-    },
-
     /**
      * @since 4.1.0
      */
@@ -1936,19 +1932,6 @@ export default {
     if ('legend' === ApplicationState.project.state.catalog_tab) {
       GUI.showLegendPanel();
     }
-
-    await this.$nextTick();
-
-    // move all child nodes from #app to <body>
-    Array.from(this.$el.childNodes).reverse().forEach(child => {
-      document.body.insertBefore(child, this.$el.nextSibling);
-    });
-
-    await this.$nextTick();
-
-    // removes #app wrapper
-    this.$el.remove();
-
   },
 
 };
