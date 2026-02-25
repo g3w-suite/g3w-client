@@ -219,7 +219,7 @@ button.close                { padding: 0; cursor: pointer; background: transpare
  * 2. Core
  **************************************************************************************/
 
-.wrapper         { height: 100%; width: 100%; overflow: hidden; }
+#app             { height: 100%; width: 100%; overflow: hidden; }
 .content-wrapper { display: flex; transition: transform .3s ease-in-out, margin .3s ease-in-out; margin-left: var(--sidebar-width); background-color: #ecf0f5; position: relative; overflow: hidden; }
 
 .cookie-banner       { position:fixed; overflow:hidden; box-sizing:border-box; z-index:9999; width:100%; display:flex; justify-content:space-between; background:#424851; color:#fff; padding:1.250em; bottom:0; left:0; right:0; gap: 1em;}
@@ -506,7 +506,7 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
 .navbar .sidebar-toggle:hover                                { background-color: hsl(from var(--skin-color) h s calc(l - 5)); }
 .is-iframe .navbar                                           { display: none !important; }
 
-.wrapper,
+#app,
 .main-sidebar                                                { background-color: var(--bgcolor); }
 
 /*Navbar toggle button*/
@@ -625,7 +625,7 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
   .sidebar-open .nav-links                                    { --bgcolor: #212c31; background-color: var(--bgcolor)!important; flex-direction: column !important; }
   .sidebar-open .project_title                                { position: fixed !important; inset: 0 !important; background-color: var(--skin-color); padding-left: 4px; max-width: unset !important; z-index: 2; }
   .sidebar-open .main-sidebar                                 { position: relative !important; inset: 0 !important; }
-  .sidebar-open, .sidebar-open .wrapper                       { overflow-y: visible; }
+  .sidebar-open, .sidebar-open #app                           { overflow-y: visible; }
   .sidebar-open:has(#g3w-menu:not([hidden])) .sidebar-panel:not([hidden]),
   .sidebar-open :is(.main-sidebar, .content-wrapper)          { height: auto !important; }
   .sidebar-open .navbar                                       { display: block !important; height: auto !important; }

@@ -6,7 +6,6 @@
 <template>
   <div
     id         = "app"
-    class      = "wrapper"
     v-disabled = "ApplicationState.disabled"
   >
 
