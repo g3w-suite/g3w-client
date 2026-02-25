@@ -694,22 +694,30 @@
               ></div>
 
               <!-- SWITCH COORDINATES  -->
-              <div
-                v-if                = "mouse.visible && mouse.switch_icon && !isMobile()"
-                :title              = "mouse.tooltip"
-                data-placement      = "top"
-                @click.stop.prevent = "switchMapsCoordinateTo4326"
-                style               = "caret-color: transparent; padding: 0 5px 0 0; display: flex; height: 100%; align-items: center; cursor: pointer;"
-                class               = "fas fa-mouse"
-              ></div>
+              <button
+                v-if           = "mouse.visible && mouse.switch_icon && !isMobile()"
+                type           = "button"
+                class          = "btn"
+                :title         = "mouse.tooltip"
+                data-placement = "top"
+                @click.stop    = "switchMapsCoordinateTo4326"
+                style          = "border-radius: 0;"
+              >
+                <i aria-hidden="true" class = "fas fa-mouse"></i>
+                <span hidden>{{ $t(mouse.tooltip) }}</span>
+              </button>
 
-              <div
-                id             = "permalink"
+              <button
+                type           = "button"
+                class          = "btn"
                 title          = "Copy share URL"
                 data-placement = "top"
-                class          = "fa fa-share-alt"
                 @click.stop    = "showEmbedModal"
-              ></div>
+                style          = "border-radius: 0;"
+              >
+                <i aria-hidden="true" class = "fa fa-share-alt"></i>
+                <span hidden>{{ $t('Copy share URL') }}</span>
+              </button>
 
               <!-- SCALE CONTROL -->
               <div id = "scale-control"></div>

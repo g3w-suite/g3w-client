@@ -1290,7 +1290,6 @@ i.triangle                             { border-color: #fff transparent transpar
 .g3w-map.show                 { display: block; }
 .g3w-map.hide                 { display: none; }
 #map_footer                   { position:absolute; bottom:0; height: 30px; width:100%; display: flex; justify-content: space-between; background-color: rgba(255, 255, 255, 0.7); }
-#permalink                    { font-weight: bold; font-size: 1.2em; padding: 8px 5px 0 5px; cursor: pointer; }
 #map_footer_right             { flex-shrink: 0; }
 .drop-area:not([hidden])      { display: flex; }
 .drop-area                    { justify-content: center; align-items: center; width: 100%; height: 100%; color: #fff; font-size: 4em; position: absolute; z-index: 100; background-color: var(--bgcolor); pointer-events: none; }
