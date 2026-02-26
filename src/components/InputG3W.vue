@@ -64,6 +64,7 @@
     'texthtml_input':            Vue.extend(InputTextHtml),
     'textarea_input':            Vue.extend(InputTextArea),
     'integer_input':             Vue.extend(InputInteger),
+    'bigint_input':              Vue.extend(InputInteger),
     'string_input':              Vue.extend(InputText), //temporary
     'float_input':               Vue.extend(InputFloat),
     'radio_input':               Vue.extend(InputRadio),
@@ -104,13 +105,9 @@
     },
     computed: {
       type() {
-        /**@since 4.0.7 set integer and bigint as integer input (numeric) */
-        if (['integer', 'bigint'].includes(this.state.type)) {
-          return 'integer_input';
-        }
-        //In case of float, use float input (numeric)
-        if (['float'].includes(this.state.type)) {
-          return 'float_input';
+        /** @since 4.0.8 set integer,bigint, float and  'text' === this.state.input.type set (numeric) input dom type */
+        if (['integer', 'bigint', 'float'].includes(this.state.type) && 'text' === this.state.input.type) {
+          return `${this.state.type}_input`;
         }
         return this.state.input.type ? `${this.state.input.type}_input`: `${this.state.type}_input`;
       }
