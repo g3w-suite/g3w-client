@@ -77,84 +77,92 @@
     <!-- NODE TYPE -->
     <i v-if = "isTable"                                                                      v-show = "!layerstree.hidden" aria-hidden = "true" class = "fas fa-table"></i>
     <i v-if = "isGroup && !layerstree.root"                                                  v-show = "!layerstree.hidden" aria-hidden = "true" class = "fas fa-layer-group"></i>
-    <i v-if = "!isTable && !isGroup && layerstree.external && 'vector' === layerstree._type" v-show = "!layerstree.hidden" aria-hidden = "true" class = "fas fa-draw-polygon" style = "color: #fff; padding-left: 5px;"></i>
-    <i v-if = "!isTable && !isGroup && layerstree.external && 'vector' !== layerstree._type" v-show = "!layerstree.hidden" aria-hidden = "true" class = "far fa-image"        style = "color: #fff; padding-left: 5px;"></i>
+    <i v-if = "!isTable && !isGroup && layerstree.external && 'vector' === layerstree._type" v-show = "!layerstree.hidden" aria-hidden = "true" class = "fas fa-draw-polygon" style = "color: #fff;"></i>
+    <i v-if = "!isTable && !isGroup && layerstree.external && 'vector' !== layerstree._type" v-show = "!layerstree.hidden" aria-hidden = "true" class = "far fa-image"        style = "color: #fff;"></i>
 
-    <!-- VISIBLE NODE (LAYER or GROUP) -->
-    <span
-      v-show = "!layerstree.hidden || isGroup"
-      class  = "tree-node-title"
-      :class = "{ disabled: !layerstree.external && (layerstree.disabled || (layerstree.id && !layerstree.visible)) }"
+    <!-- REMOVE CURRENT FILTER  -->
+    <button
+      v-if             = "(!layerstree.hidden || isGroup) && !isGroup && !layerstree.external && null !== layerstree.filter.current"
+      type             = "button"
+      :data-i18n-title = "layerstree.filter.current.name"
+      data-placement   = "top"
+      data-i18n-raw    = ""
+      class            = "action-button"
+      style            = "box-shadow: unset;"
+      @click.stop      = "removeFilter"
     >
+      <i aria-hidden = "true" class = "fas fa-filter" style = "color: red"></i>
+    </button>
 
-      <span
-        class            = "g3w-long-text"
-        :data-i18n-title = "has_scale_visibility_toolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
-        data-placement   = "top"
-        data-i18n-raw    = ""
-      >
-        <!-- REMOVE CURRENT FILTER  -->
-        <button
-          v-if             = "!isGroup && !layerstree.external && null !== layerstree.filter.current"
-          type             = "button"
-          :data-i18n-title = "layerstree.filter.current.name"
-          data-placement   = "top"
-          data-i18n-raw    = ""
-          class            = "action-button"
-          style            = "box-shadow: unset;"
-          @click.stop      = "removeFilter"
-        >
-          <i aria-hidden = "true" class = "fas fa-filter" style = "color: red"></i>
-        </button>
-        <!-- VISIBLE NODE TITLE (LAYER or GROUP) -->
-        <span>{{ layerstree.title }}</span>
-        <!-- LAYER FEATURES COUNT-->
-        <b v-if = "!isGroup && has_feature_count"> [{{ getFeatureCount }}] </b>
-      </span>
-
-      <!-- VISIBLE NODE SELECTED (LAYER) -->
-      <span v-if = "(!isGroup && layerstree.selection)">
-
-        <!-- CLEAR SELECTION -->
-        <button
-          v-if           = "layerstree.selection.active"
-          type           = "button"
-          class          = "action-button"
-          title          = "Clear Selection"
-          data-placement = "left"
-          @click.stop    = "clearSelection"
-        >
-          <i aria-hidden = "true" class = "fas fa-broom"></i>
-        </button>
-
-        <!-- TOGGLE FILTER  -->
-        <button
-          v-if           = "!layerstree.external && (layerstree.selection.active || layerstree.filter.active) && !layerstree.filter.pagination"
-          type           = "button"
-          class          = "action-button"
-          title          = "Enable/Disable filter"
-          data-placement = "left"
-          :class         = "layerstree.filter.active ? 'active' : ''"
-          @click.stop    = "toggleFilterLayer"
-        >
-          <i aria-hidden = "true" class = "fas fa-filter"></i>
-        </button>
-
-        <!-- SAVE FILTER  -->
-        <button
-          v-if           = "logged && !layerstree.external && (layerstree.selection.active && layerstree.filter.active)"
-          type           = "button"
-          class          = "action-button"
-          title          = "Save Filter"
-          data-placement = "left"
-          @click.stop    = "saveFilter(layerstree)"
-        >
-          <i aria-hidden = "true" class = "far fa-save"></i>
-        </button>
-
-      </span>
-
+    <!-- NODE TITLE -->
+    <span
+      v-show           = "!layerstree.hidden || isGroup"
+      class            = "tree-node-title g3w-long-text"
+      :data-i18n-title = "has_scale_visibility_toolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
+      data-placement   = "top"
+      data-i18n-raw    = ""
+    >
+      {{ layerstree.title }} <b v-if = "!isGroup && has_feature_count"> [{{ getFeatureCount }}] </b>
     </span>
+
+    <!-- CLEAR SELECTION -->
+    <button
+      v-if           = "(!layerstree.hidden || isGroup) && !isGroup && layerstree.selection && layerstree.selection.active"
+      type           = "button"
+      class          = "action-button"
+      title          = "Clear Selection"
+      data-placement = "left"
+      @click.stop    = "clearSelection"
+    >
+      <i aria-hidden = "true" class = "fas fa-broom"></i>
+    </button>
+
+    <!-- TOGGLE FILTER  -->
+    <button
+      v-if           = "(!layerstree.hidden || isGroup) && !isGroup && layerstree.selection && !layerstree.external && (layerstree.selection.active || layerstree.filter.active) && !layerstree.filter.pagination"
+      type           = "button"
+      class          = "action-button"
+      title          = "Enable/Disable filter"
+      data-placement = "left"
+      :class         = "layerstree.filter.active ? 'active' : ''"
+      @click.stop    = "toggleFilterLayer"
+    >
+      <i aria-hidden = "true" class = "fas fa-filter"></i>
+    </button>
+
+    <!-- SAVE FILTER  -->
+    <button
+      v-if           = "(!layerstree.hidden || isGroup) && !isGroup && layerstree.selection && logged && !layerstree.external && layerstree.selection.active && layerstree.filter.active"
+      type           = "button"
+      class          = "action-button"
+      title          = "Save Filter"
+      data-placement = "left"
+      @click.stop    = "saveFilter(layerstree)"
+    >
+      <i aria-hidden = "true" class = "far fa-save"></i>
+    </button>
+
+    <button
+      v-if           = "layerstree.root"
+      type           = "button"
+      data-placement = "left"
+      title          = "legend"
+      @click.stop    = "showLegendPanel"
+      style          = "position: absolute;inset: 0 4px auto auto;border-radius: 3px;"
+    >
+      <i aria-hidden = "true" class = "fas fa-list"></i>
+    </button>
+
+    <button
+      v-if           = "!isGroup"
+      type           = "button"
+      class          = "toggle-context-menu"
+      data-placement = "left"
+      title         = "Open menu"
+      @click.stop    = "showContextMenu"
+    >
+      <i aria-hidden = "true" class = "fas fa-ellipsis-v"></i>
+    </button>
 
     <!-- NODE LEGEND (LAYER) -->
     <figure
@@ -230,28 +238,6 @@
         :parent_mutually_exclusive = "!!layerstree.mutually_exclusive"
       />
     </ul>
-
-    <button
-      v-if           = "layerstree.root"
-      type           = "button"
-      data-placement = "left"
-      title          = "legend"
-      @click.stop    = "showLegendPanel"
-      style          = "position: absolute;inset: 0 4px auto auto;border-radius: 3px;"
-    >
-      <i aria-hidden = "true" class = "fas fa-list"></i>
-    </button>
-
-    <button
-      v-if           = "!isGroup"
-      type           = "button"
-      class          = "toggle-context-menu"
-      data-placement = "left"
-      title         = "Open menu"
-      @click.stop    = "showContextMenu"
-    >
-      <i aria-hidden = "true" class = "fas fa-ellipsis-v"></i>
-    </button>
 
   </li>
 
