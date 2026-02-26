@@ -1209,7 +1209,7 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 /* hide caret icon when there is no saved searches for current project */
 #search:has(ul.g3w-search > li:only-child) .fas.fa-angle-left { display: none; }
 
-#catalog ul                                         { line-height: 1.75em; list-style-type: none; }
+#catalog ul                                         { line-height: 1.75em; list-style-type: none; display: flex; flex-direction: column; width: 100%; }
 #catalog > a                                        { display: none !important; }
 
 .tree-item                                          { cursor: pointer; margin-bottom: 3px; position: relative; display: flex; flex-wrap: wrap; gap: 1ch; align-items: flex-start; }
@@ -1222,7 +1222,7 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 .tree-item > i                                      { margin-top: 5px; }
 .tree-item .fa-table                                { margin-left: 24px; }
 .bold                                               { font-weight: bold; color: #fff; }
-.tree-root                                          { padding-left: 0; margin: 13px 3px; }
+.tree-root                                          { padding-left: 0; padding: 13px 3px; }
 .tree-root li.tree-item.group > ul.group            { padding-left: 17px; margin-top: -.5ch; }
 .tree-toggler                                       { box-shadow: none !important; background: none; width: 15px; }
 .tree-legend                                        { padding: 0 0 0 43px; width:100%; background-color: var(--bgcolor); margin-top: -1ch; }
