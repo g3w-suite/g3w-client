@@ -1223,7 +1223,7 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 .tree-item .fa-table                                { margin-left: 28px; }
 .bold                                               { font-weight: bold; color: #fff; }
 .tree-root                                          { padding-left: 0; padding: 13px 3px; }
-.tree-root li.tree-item.group > ul.group            { padding-left: 17px; margin-top: -.5ch; }
+.tree-root li.tree-item.group > ul.group            { padding-left: 21px; margin-top: -.5ch; }
 .tree-toggler                                       { box-shadow: none !important; background: none; width: 15px; }
 .tree-legend                                        { padding: 0 0 0 43px; width:100%; background-color: var(--bgcolor); margin-top: -1ch; }
 .tree-root + .tree-root                             { border-top: 2px solid var(--skin-color); padding-top: 12px; }
