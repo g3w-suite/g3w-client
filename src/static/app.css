@@ -1199,12 +1199,6 @@ body .tooltip .tooltip-inner                                              { max-
 /**************************************************************************************
  * 16. Various
  **************************************************************************************/
-.usermessage-success   { background-color: #62ac62; }
-.usermessage-info      { background-color: #44a0bb; }
-.usermessage-warning   { background-color: #f29e1d; }
-.usermessage-alert     { background-color: #c34943; }
-
-dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermessage-alert)::backdrop { opacity: 0; }
 
 /* hide caret icon when there is no saved searches for current project */
 #search:has(ul.g3w-search > li:only-child) .fas.fa-angle-left { display: none; }
@@ -1294,3 +1288,65 @@ i.triangle                             { border-color: #fff transparent transpar
 .drop-area:not([hidden])      { display: flex; }
 .drop-area                    { justify-content: center; align-items: center; width: 100%; height: 100%; color: #fff; font-size: 4em; position: absolute; z-index: 100; background-color: var(--bgcolor); pointer-events: none; }
 .drop-area::before            { border: 5px dashed #fff; content: ""; bottom: 60px; left: 60px;  position: absolute; right: 60px; top: 60px; }
+
+.context-menu                               { background: #FAFAFA; border: 1px solid #BDBDBD; border-radius: 3px; display: block; list-style: none; margin: 0; padding: 0; position: fixed; min-width: 150px; z-index: 2; color: #000; outline: none; display: flex; flex-direction: column; }
+.context-menu li ul                         { position: absolute; width: max-content; order: 1; padding-left: 0; background-color: #FFF; color:#000; }
+.context-menu li:not(:hover) ul             { display: none; }
+.context-menu li                            { border-bottom: 1px solid #E0E0E0; margin: 0; padding: 8px 25px 8px 15px; display: flex; flex-direction: row; }
+.context-menu li:not(.title)                { align-items: center; }
+.context-menu li i                          { padding-right: 3px; margin-right: 6px; color: hsl(from var(--skin-color) h s calc(l - 20)) !important; }
+.context-menu li .click-to-copy             { color: #000; opacity: 1; margin-left: 1ch; margin-right: -15px; margin-top: 8px; }
+.context-menu li .click-to-copy:hover       { color: #FFF !important; transform: scale(1.1); }
+.context-menu .click-to-copy .tooltip-inner { min-width: 200px; }
+.context-menu li.title                      { background: transparent !important; font-size: 1.1em; font-weight: bold; border-bottom-width: 3px !important; flex-direction: column; max-width: 250px; cursor: move !important; color: #000 !important; border-bottom-color: var(--skin-color) !important; }
+.context-menu li:last-child                 { border-bottom: none; }
+.context-menu li:hover                      { color: #fafafa; cursor: pointer; background: hsl(from var(--skin-color) h s calc(l + 10)); }
+.context-menu li .layer-menu-metadata-info  { background-color: #FFF; color:#000; padding: 5px; max-width: 200px; white-space: normal; overflow-y: auto; max-height: 150px; }
+.context-menu .tooltip-inner                { word-break: break-all; font-weight: bold; }
+.context-menu .item-text                    { margin-left: 3px; }
+.context-menu :is(ul, li)                   { list-style-type: none; }
+.context-menu li.inline-submenu             { display: list-item; padding: 0; text-indent: 100%; line-height: 0; overflow: hidden; }
+.context-menu li.inline-submenu > *         { display: none; }
+.context-menu li.inline-submenu > ul        { display: block; position: relative; left: 0 !important; width: 100%; text-indent: 0; line-height: initial; }
+.context-menu li,
+.context-menu li.inline-submenu > ul > li   { font-weight: bold; }
+.context-menu li li                         { font-weight: normal; }
+.context-menu .sub-contex-menu              { border: 1px solid #eee; border-left: 0; }
+
+dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermessage-alert)::backdrop { opacity: 0; }
+
+.usermessage-success           { background-color: #62ac62; }
+.usermessage-info              { background-color: #44a0bb; }
+.usermessage-warning           { background-color: #f29e1d; }
+.usermessage-alert             { background-color: #c34943; }
+
+.usermessage-content           { color: #FFF; line-height: normal; padding: 3px; min-width: 250px; border: unset; inset: unset; margin: unset; }
+.usermessage-tool              { background-color: #FFF; color: #222d32; cursor: move; border: thin solid #ccc; }
+.usermessage-header-content    { display: flex; align-items: baseline; justify-content: space-between; width: 100%; border-bottom: 2px solid #eee; }
+.usermessage-header-icontype   { padding: 10px 0 0 5px; font-weight: bold; font-size: 1.3em; }
+.usermessage-header-title,
+.usermessage-header-title h4   { font-weight: bold; text-align: center; }
+.usermessage-header-subtitle   { font-weight: bold; margin: 5px; }
+.usermessage-header-right      { padding: 5px; }
+.usermessage-header-right-item { font-weight: bold !important; font-size: 1.2em; cursor: pointer; }
+.usermessage-message           { width: 100%; padding: 10px; max-height: 100px; font-size: 1.1em; align-self: flex-start; overflow-y: auto; }
+
+#attribute_table .geometry                                     { cursor: pointer }
+#attribute_table #noheaders                                    { background-color: #fff; font-weight: bold; margin-top: 10px; }
+#attribute_table input.form-control.column-search::placeholder { font-weight: normal; font-style: italic; }
+#attribute_table input.form-control.column-search              { height: 25px; min-width: 40px; padding: 2px; }
+#attribute_table                                               { margin-top: 5px; }
+#attribute_table .action-button                                { padding: 5px !important; }
+#attribute_table button.toggled                                { color: #FFF !important; background-color: var(--skin-color); }
+#attribute_table table                                         { width: 100%; user-select: none; display: block; height: calc(100% - 25px); overflow: auto; border-collapse: separate }
+#attribute_table thead                                         { position: sticky; top: 0; background-color: #fff; }
+#attribute_table tbody > tr.selected                           { box-shadow: inset 0 0 0 9999px rgb(13, 110, 253, .9); color: #fff; }
+#attribute_table tbody > tr:not(.selected):hover               { background-color: rgb(255, 255, 0, 0.15); }
+#attribute_table th,
+#attribute_table td                                            { white-space: nowrap; }
+#attribute_table th                                            { cursor: pointer; }
+#attribute_table td                                            { border-top: 1px solid rgba(0,0,0,.15); }
+#attribute_table th.asc,
+#attribute_table th.desc                                       { border-top: var(--skin-color) medium solid; }
+#attribute_table th.asc::after                                 { content: "▴"; }
+#attribute_table th.desc::after                                { content: "▾"; }
