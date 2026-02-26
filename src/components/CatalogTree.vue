@@ -126,7 +126,7 @@
       title          = "Enable/Disable filter"
       data-placement = "left"
       :class         = "layerstree.filter.active ? 'active' : ''"
-      @click.stop    = "toggleFilterLayer"
+      @click.stop    = "toggleFilter"
     >
       <i aria-hidden = "true" class = "fas fa-filter"></i>
     </button>
@@ -521,17 +521,13 @@ export default {
     },
 
     /**
-     * Handle changing checked property of layer
+     * Handle visibilty change (layer.checked property)
      *
      * @param {boolean} layer.checked
      * @param {string}  layer.id
      * @param {boolean} layer.disabled
      * @param {boolean} layer.projectLayer
      * @param {uknown}  layer.parentGroup
-     * 
-     * @fires GUI~before:treenodevisible since 4.1.0
-     * @fires GUI~cataloglayervisible since 4.1.0
-     * @fires GUI~after:treenodevisible since 4.1.0
      */
     onLayerChecked(layer) {
 
@@ -559,11 +555,6 @@ export default {
         g.checked = true;
         g         = g.parentGroup;
       }
-
-      // Handle visibilty change on legend item
-      GUI.emit('before:treenodevisible', qlayer);
-      GUI.emit('cataloglayervisible', qlayer);
-      GUI.emit('after:treenodevisible', qlayer);
     },
 
     /**
@@ -575,30 +566,14 @@ export default {
       getCatalogLayerById(layerstree.id).saveFilter();
     },
 
-    /**
-     * @fires GUI~before:activefiltertokenlayer since 4.1.0
-     * @fires GUI~after:activefiltertokenlayer since 4.1.0
-     */
-    async toggleFilterLayer() {
-      GUI.emit('before:activefiltertokenlayer', this.storeid, this.layerstree);
-
-      const storeid    = this.storeid;
-      const layerstree = this.layerstree;
-
-      layerstree.filter.active = await ApplicationState.layers[storeid].getLayerById(layerstree.id).toggleToken();
-
-      GUI.emit('after:activefiltertokenlayer', this.storeid, this.layerstree);
+    async toggleFilter() {
+      this.layerstree.filter.active = await ApplicationState.layers[this.storeid].getLayerById(this.layerstree.id).toggleToken();
     },
 
     /**
      * Remove layer from queryresults selection
-     * 
-     * @fires GUI~before:unselectionlayer since 4.1.0
-     * @fires GUI~after:unselectionlayer since 4.1.0
      */
     async clearSelection() {
-      GUI.emit('before:unselectionlayer', this.storeid, this.layerstree);
-
       const storeid = this.storeid;
       const layer = this.layerstree;
 
@@ -632,8 +607,6 @@ export default {
       if (!layer.external) {
         (GUI.state.queried_layers.find(l => layer.id === l.id)?.features || []).forEach(f => f.selected = false);
       }
-
-      GUI.emit('after:unselectionlayer', this.storeid, this.layerstree);
     },
 
     toggle() {
@@ -648,9 +621,6 @@ export default {
 
     /**
      * Select legend item
-     *
-     * @fires GUI~before:treenodeselected since 4.1.0
-     * @fires GUI~after:treenodeselected since 4.1.0
      */
     select() {
       // `undefined === selected` means unselectable layer (eg. external/temporary  WMS)
@@ -658,10 +628,7 @@ export default {
         undefined !== this.layerstree.selected 
         && ((!this.isGroup && !this.isTable) || (this.layerstree.external && false === this.layerstree.projectLayer))
       ) {
-        GUI.emit('before:treenodeselected', this.layerstree);
-        const node = this.layerstree;
-        GUI.selectLayer(node.id);
-        GUI.emit('after:treenodeselected', this.layerstree);
+        GUI.selectLayer(this.layerstree.id);
       }
     },
 
