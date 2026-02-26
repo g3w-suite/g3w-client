@@ -32,6 +32,7 @@
             <li v-for = "node in bookmark.nodes"
               @click.stop = "gotoSpatialBookmark(node)"
               class       = "spatial-bookmark"
+              tabindex    = "0"
             >
               <i class = "fas fa-bookmark" aria-hidden = "true" style = "margin-right: 5px; font-size: 0.7em;"></i>
               <span class = "g3w-long-text">{{ node.name }}</span>
@@ -52,6 +53,7 @@
       <li v-else
         @click.stop = "gotoSpatialBookmark(bookmark)"
         class       = "spatial-bookmark"
+        tabindex    = "0"
       >
         <i class = "fas fa-bookmark" aria-hidden = "true" style = "margin-right: 5px; font-size: 0.7em;"></i>
         <span class  = "g3w-long-text">{{ bookmark.name }}</span>
@@ -107,6 +109,7 @@
       v-for       = "bookmark in user_bookmarks"
       @click.stop = "gotoSpatialBookmark(bookmark)"
       class       = "spatial-bookmark"
+      tabindex    = "0"
     >
       <i class = "fas fa-bookmark" aria-hidden = "true" style = "margin-right: 5px; font-size: 0.7em;"></i>
       <span class = "g3w-long-text">{{ bookmark.name }}</span>
