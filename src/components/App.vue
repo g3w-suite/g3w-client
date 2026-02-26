@@ -136,7 +136,7 @@
 
               <!-- CHANGE MAP -->
               <a
-                v-if   = "hasRelatedMaps"
+                v-if   = "has_related_maps"
                 href   = "#"
                 @click = "openChangeMapMenu"
                 class  = "nav-changemap btn btn-default btn-flat"
@@ -949,10 +949,6 @@ export default {
       return languages.length > 1 && languages;
     },
 
-    dropdownParent() {
-      return window.innerWidth >= 768;
-    },
-
     initConfig() {
       return window.initConfig;
     },
@@ -982,15 +978,6 @@ export default {
      */
     has_iframe_login() {
       return this.login_url && ('/' === this.login_url[0] || sameOrigin(this.login_url, window.location.href));
-    },
-
-    /**
-     * @returns {boolean} whether it should list any related projects or maps.
-     *
-     * @since 3.8.0
-     */
-    hasRelatedMaps() {
-      return this.initConfig.macrogroups.length + this.initConfig.groups.length + this.initConfig.projects.length > 1;
     },
 
     /**
