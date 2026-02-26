@@ -169,8 +169,6 @@ export default new (class GUI extends Emitter {
    */
   #controls = [];
 
-  #controls_ = {};
-
   /**
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    * 
@@ -659,10 +657,10 @@ export default new (class GUI extends Emitter {
     });
 
     /** @since 3.8.0 */
-    this.onbefore('offline', () => this.#offlineids.forEach(c => { c.enable = this.#controls_[c.id].getEnable(); this.#controls_[c.id].setEnable(false); }));
+    this.onbefore('offline', () => this.#offlineids.forEach(c => { c.enable = this.#controls.find(control => c.id === control.type)?.control?.getEnable(); this.#controls.find(control => c.id === control.type)?.control?.setEnable(false); }));
 
     /** @since 3.8.0 */
-    this.onbefore('online', () => this.#offlineids.forEach(({ id, enable }) => this.#controls_[id].setEnable(enable)));
+    this.onbefore('online', () => this.#offlineids.forEach(({ id, enable }) => this.#controls.find(control => id === control.type)?.control?.setEnable(enable)));
 
     this.getComponent('contents').mount('#g3w-view-content', true);
 
@@ -3846,8 +3844,6 @@ export default new (class GUI extends Emitter {
       document.querySelector('.g3w-map-controls').append(control.element);
     }
 
-    this.#controls_[type] = control;
-
     if (false === control.offline) {
       this.#offlineids.push({ id: type, enable: control.getEnable() });
     }
@@ -5310,7 +5306,7 @@ export default new (class GUI extends Emitter {
     if ('vector' === type) {
       this.registerVectorLayer(layer);
       this.#events.unwatches[externalLayer.name] = [];
-      Object.values(this.#controls_).forEach(c => c?.onAddExternalLayer?.({ layer: externalLayer, unWatches: this.#events.unwatches[externalLayer.name] }));
+      this.#controls.forEach(({ control }) => control?.onAddExternalLayer?.({ layer: externalLayer, unWatches: this.#events.unwatches[externalLayer.name] }));
     }
 
     if (extent && options.zoomToExtent) {
@@ -5376,7 +5372,7 @@ export default new (class GUI extends Emitter {
       }
       // vector
       if (type === l._externalLayerType && name === l._externalLayer.name) {
-        Object.values(this.#controls_).forEach(c => c?.onRemoveExternalLayer?.(l._externalLayer));
+        this.#controls.forEach(({ control }) => control?.onRemoveExternalLayer?.(l._externalLayer));
         return false;
       }
       // wms
@@ -5436,7 +5432,8 @@ export default new (class GUI extends Emitter {
 
     this.#selectedLayer = layer && layer.isSelected() ? layer : null;
 
-    Object.values(this.#controls_).forEach(c => c.onSelectLayer && c.onSelectLayer(this.#selectedLayer));
+
+    this.#controls.forEach(({ control }) => control.onSelectLayer && control.onSelectLayer(this.#selectedLayer));
   }
 
   /**
