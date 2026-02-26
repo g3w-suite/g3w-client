@@ -246,7 +246,7 @@
           <div id = "metadata_layers" class = "tab-pane">
             <details v-for = "layer in layers" :hidden="layer.isBaseLayer()">
               <summary>
-                <i :class ="('NoGeometry' === layer.getGeometryType() ? 'fas fa-table' : 'far fa-image')" style="margin-right: 10px; color: #999;" aria-hidden = "true"></i>
+                <i :class ="('NoGeometry' === layer.getGeometryType() ? 'fas fa-table' : 'fas fa-draw-polygon')" style="margin-right: 10px; color: #999;" aria-hidden = "true"></i>
                 <b>{{ layer.getName() }}</b>
               </summary>
 
