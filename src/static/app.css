@@ -1210,9 +1210,6 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 #search:has(ul.g3w-search > li:only-child) .fas.fa-angle-left { display: none; }
 
 #catalog ul                                         { line-height: 1.75em; list-style-type: none; }
-#catalog button[type="button"]                      { border: unset; background-color: unset; box-shadow: rgba(0,0,0,0.3) 0 2px 5px; padding: 0; border-radius: 3px; margin: 0 3px; font-weight: bold; color: #fff !important; }
-#catalog button[type="button"] > i                  { padding: 5px; }
-#catalog button[type="button"].active               { box-shadow: none; background-color: #384247; }
 #catalog > a                                        { display: none !important; }
 
 .tree-item                                          { cursor: pointer; margin-bottom: 3px; position: relative; display: flex; flex-wrap: wrap; gap: 1ch; align-items: flex-start; }
@@ -1231,9 +1228,13 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 .tree-legend                                        { padding: 0 0 0 43px; width:100%; background-color: var(--bgcolor); margin-top: -1ch; }
 .tree-root + .tree-root                             { border-top: 2px solid var(--skin-color); padding-top: 12px; }
 
-#catalog .tree-item > .toggle-context-menu                   { opacity: 0; padding: 0; border: 1px solid; border-radius: 3px; }
-#catalog .tree-item > .toggle-context-menu > i               { padding: 4px 8px; }
-#catalog .tree-item:not(.group):hover > .toggle-context-menu { opacity: 1; }
+.tree-item button.toggle-context-menu             { opacity: 0; padding: 0; border: 1px solid; border-radius: 3px; }
+.tree-item button.toggle-context-menu > i         { padding: 4px 8px; }
+.tree-item:not(.group):hover > button.toggle-context-menu,
+.tree-item:not(.group) > button.toggle-context-menu:focus-visible { opacity: 1; }
+.tree-item button                                   { border: unset; background-color: unset; box-shadow: rgba(0,0,0,0.3) 0 2px 5px; padding: 0; border-radius: 3px; margin: 0 3px; font-weight: bold; color: #fff !important; }
+.tree-item button > i                               { padding: 5px; }
+.tree-item button.active                            { box-shadow: none; background-color: #384247; }
 .tree-item input[type="checkbox"]                   { appearance: none; width: unset; margin: unset; margin-top: 2px; }
 .tree-item input[type="checkbox"]::before           { font-family: "Font Awesome 5 Free"; font-weight: 400; content: "\f0c8"; }
 .tree-item input[type="checkbox"]:checked::before   { content: "\f14a"; }
