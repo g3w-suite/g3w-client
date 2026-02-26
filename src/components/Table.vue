@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <div id = "attribute_table">
+  <div id = "open_attribute_table">
 
     <!-- TABLE METADATA -->
     <button
@@ -674,3 +674,87 @@ export default {
 
 };
 </script>
+
+<style scoped>
+  .geometry {
+    cursor: pointer
+  }
+
+  #noheaders {
+    background-color: #fff;
+    font-weight: bold;
+    margin-top: 10px;
+  }
+
+  input.form-control.column-search::placeholder {
+    font-weight: normal;
+    font-style: italic;
+  }
+
+  input.form-control.column-search {
+    height: 25px;
+    min-width: 40px;
+    padding: 2px;
+  }
+
+  #open_attribute_table {
+    margin-top: 5px;
+  }
+
+  .action-button {
+    padding: 5px !important;
+  }
+
+  button.toggled {
+    color: #FFF !important;
+    background-color: var(--skin-color);
+  }
+
+  table {
+    width: 100%;
+    user-select: none;
+    display: block;
+    height: calc(100% - 25px);
+    overflow: auto;
+    border-collapse: separate
+  }
+
+  thead {
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+  }
+
+  tbody > tr.selected {
+    box-shadow: inset 0 0 0 9999px rgb(13, 110, 253, .9);
+    color: #fff;
+  }
+
+  tbody > tr:not(.selected):hover {
+    background-color: rgb(255, 255, 0, 0.15);
+  }
+
+  th, td {
+    white-space: nowrap;
+  }
+
+  th {
+    cursor: pointer;
+  }
+
+  td {
+    border-top: 1px solid rgba(0,0,0,.15);
+  }
+
+  th.asc, th.desc { 
+    border-top: var(--skin-color) medium solid;
+  }
+
+  th.asc::after {
+    content: "▴";
+  }
+
+  th.desc::after {
+    content: "▾";
+  }
+</style>
