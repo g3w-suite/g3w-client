@@ -543,7 +543,9 @@ export default {
      * @param {boolean} layer.projectLayer
      * @param {uknown}  layer.parentGroup
      * 
-     * @fires GUI~treenodevisible since 4.1.0
+     * @fires GUI~before:treenodevisible since 4.1.0
+     * @fires GUI~cataloglayervisible since 4.1.0
+     * @fires GUI~after:treenodevisible since 4.1.0
      */
     onLayerChecked(layer) {
 
@@ -572,7 +574,10 @@ export default {
         g         = g.parentGroup;
       }
 
-      GUI.emit('treenodevisible', qlayer);
+      // Handle visibilty change on legend item
+      GUI.emit('before:treenodevisible', qlayer);
+      GUI.emit('cataloglayervisible', qlayer);
+      GUI.emit('after:treenodevisible', qlayer);
     },
 
     /**
@@ -585,17 +590,64 @@ export default {
     },
 
     /**
-     * @fires GUI~activefiltertokenlayer since 4.1.0
+     * @fires GUI~before:activefiltertokenlayer since 4.1.0
+     * @fires GUI~after:activefiltertokenlayer since 4.1.0
      */
-    toggleFilterLayer() {
-      GUI.emit('activefiltertokenlayer', this.storeid, this.layerstree);
+    async toggleFilterLayer() {
+      GUI.emit('before:activefiltertokenlayer', this.storeid, this.layerstree);
+
+      const storeid    = this.storeid;
+      const layerstree = this.layerstree;
+
+      layerstree.filter.active = await ApplicationState.layers[storeid].getLayerById(layerstree.id).toggleToken();
+
+      GUI.emit('after:activefiltertokenlayer', this.storeid, this.layerstree);
     },
 
     /**
-     * @fires GUI~unselectionlayer since 4.1.0
+     * Remove layer from queryresults selection
+     * 
+     * @fires GUI~before:unselectionlayer since 4.1.0
+     * @fires GUI~after:unselectionlayer since 4.1.0
      */
-    clearSelection() {
-      GUI.emit('unselectionlayer', this.storeid, this.layerstree);
+    async clearSelection() {
+      GUI.emit('before:unselectionlayer', this.storeid, this.layerstree);
+
+      const storeid = this.storeid;
+      const layer = this.layerstree;
+
+      if (!layer) {
+        return console.warn('undefined layer');
+      }
+
+      const action = layer.external && GUI.getActionLayerById({ layer, id: 'selection' });
+
+      // PROJECT LAYER
+      if (!layer.external && storeid) {
+        await ApplicationState.layers[storeid].getLayerById(layer.id).clearSelectionFids();
+      }
+
+      // EXTERNAL LAYER
+      if (layer.external) {
+        layer.selection.active = false;
+        layer.selection.features.forEach((feature, i) => {
+          // skip when ..
+          if (!feature.selected) {
+            return;
+          }
+          feature.selected = false;
+          if (action) {
+            action.state.toggled[i] = false;
+          }
+          GUI.defaultsLayers.selectionLayer.getSource().removeFeature(feature);
+        });
+      }
+      //@since 4.0.4 Need to set to false eventually features of layer in queryresults service
+      if (!layer.external) {
+        (GUI.state.queried_layers.find(l => layer.id === l.id)?.features || []).forEach(f => f.selected = false);
+      }
+
+      GUI.emit('after:unselectionlayer', this.storeid, this.layerstree);
     },
 
     toggle() {
@@ -611,7 +663,8 @@ export default {
     /**
      * Select legend item
      *
-     * @fires GUI~treenodeselected since 4.1.0
+     * @fires GUI~before:treenodeselected since 4.1.0
+     * @fires GUI~after:treenodeselected since 4.1.0
      */
     select() {
       // `undefined === selected` means unselectable layer (eg. external/temporary  WMS)
@@ -619,7 +672,10 @@ export default {
         undefined !== this.layerstree.selected 
         && ((!this.isGroup && !this.isTable) || (this.layerstree.external && false === this.layerstree.projectLayer))
       ) {
-        GUI.emit('treenodeselected', this.layerstree);
+        GUI.emit('before:treenodeselected', this.layerstree);
+        const node = this.layerstree;
+        GUI.selectLayer(node.id);
+        GUI.emit('after:treenodeselected', this.layerstree);
       }
     },
 

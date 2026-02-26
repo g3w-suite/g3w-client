@@ -1406,71 +1406,6 @@ export default {
     },
 
     /**
-     * Remove layer from queryresults selection
-     *
-     * @since 4.1.0
-     */
-   async onUnSelectionLayer(storeid, layer) {
-      if (!layer) {
-        return console.warn('undefined layer');;
-      }
-
-      const action = layer.external && GUI.getActionLayerById({ layer, id: 'selection' });
-
-      // PROJECT LAYER
-      if (!layer.external && storeid) {
-        await ApplicationState.layers[storeid].getLayerById(layer.id).clearSelectionFids();
-      }
-
-      // EXTERNAL LAYER
-      if (layer.external) {
-        layer.selection.active = false;
-        layer.selection.features.forEach((feature, i) => {
-          // skip when ..
-          if (!feature.selected) {
-            return;
-          }
-          feature.selected = false;
-          if (action) {
-            action.state.toggled[i] = false;
-          }
-          GUI.defaultsLayers.selectionLayer.getSource().removeFeature(feature);
-        });
-      }
-      //@since 4.0.4 Need to set to false eventually features of layer in queryresults service
-      if (!layer.external) {
-        (GUI.state.queried_layers.find(l => layer.id === l.id)?.features || []).forEach(f => f.selected = false);
-      }
-    },
-
-    /**
-     * @since 4.1.0
-     */
-    async onActiveToken(storeid, layerstree) {
-      layerstree.filter.active = await ApplicationState.layers[storeid].getLayerById(layerstree.id).toggleToken();
-    },
-
-    /**
-     * Handle visibilty change on legend item
-     *
-     * @fires GUI~cataloglayervisible
-     *
-     * @since 4.1.0
-     */
-    onTreeNodeVisible(layer) {
-      GUI.emit('cataloglayervisible', layer);
-    },
-
-    /**
-     * Handle legend item select (single mouse click ?)
-     *
-     * @since 4.1.0
-     */
-    onTreeNodeSelected(node) {
-      GUI.selectLayer(node.id);
-    },
-
-    /**
      * @since 4.1.0
      */
     updateExternalLayersChecked() {
@@ -1486,18 +1421,17 @@ export default {
      * @since 4.1.0
      */
     async getThemeConfig(theme_name) {
-      const project = ApplicationState.project;
       // get map theme configuration from map_themes project config
-      const config  = Object.values(project.state.map_themes).flat().find(c => theme_name === c.theme );
-      if (config && undefined === config.layerstree) {
-        try {
-          const response = await XHR.get({ url: `${project.urls.map_themes}${theme_name}/` });
+      const config  = Object.values(ApplicationState.project.state.map_themes).flat().find(c => theme_name === c.theme);
+      try {
+        if (config && undefined === config.layerstree) {
+          const response = await XHR.get({ url: `${ApplicationState.project.urls.map_themes}${theme_name}/` });
           if (response.result) {
             config.layerstree = response.data;
           }
-        } catch(e) {
-          console.warn('Error while retreiving map theme configuration', e);
         }
+      } catch(e) {
+        console.warn('Error while retreiving map theme configuration', e);
       }
       return config;
     },
@@ -1631,7 +1565,7 @@ export default {
      * 
      * @private
      */
-    _getMapThemeParams() {
+    getThemeParams() {
       const params   = { layerstree: [], styles: {} };
       const traverse = (nodes, tree) => {
         nodes.forEach(node => {
@@ -1682,7 +1616,7 @@ export default {
         return;
       }
       try {
-        const params   = this._getMapThemeParams();
+        const params   = this.getThemeParams();
         const response = await XHR.post({
           url:         `${ApplicationState.project.urls.map_themes}${encodeURIComponent(theme)}/`,
           contentType: 'application/json',
@@ -1718,7 +1652,7 @@ export default {
         return;
       }
       try {
-        const params   = this._getMapThemeParams();
+        const params   = this.getThemeParams();
         const response = await XHR.post({
           url:         `${ApplicationState.project.urls.map_themes}${encodeURIComponent(theme)}/`,
           contentType: 'application/json',
@@ -1873,20 +1807,8 @@ export default {
 
   },
 
-  /**
-   * @listens GUI~unselectionlayer
-   * @listens GUI~activefiltertokenlayer
-   * @listens GUI~treenodevisible
-   * @listens GUI~treenodeselected
-   * @listens GUI~layer-change-style
-   */
   created() {
     this.language = this.initConfig.user.i18n;
-
-    GUI.on('unselectionlayer',       this.onUnSelectionLayer);
-    GUI.on('activefiltertokenlayer', this.onActiveToken);
-    GUI.on('treenodevisible',        this.onTreeNodeVisible);
-    GUI.on('treenodeselected',       this.onTreeNodeSelected);
   },
 
   async mounted() {
