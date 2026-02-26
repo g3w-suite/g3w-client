@@ -432,17 +432,18 @@ export default new (class GUI extends Emitter {
                   :title = "info.tooltip"
                 >{{ info.state }}</span>
                 <span
-                  v-for          = "action in actions"
-                  :key           = "action.id"
-                  @click.stop    = "action.fnc(component.internalComponent)"
-                  :title         = "action.tooltip"
-                  data-placement = "left"
-                  style          = "font-weight: bold; padding:3px;"
-                  :class         = "action.class"
-                  class          = "action"
-                  :style         = "action.style"
-                  tabindex       = "0"
-                  role           = "button"
+                  v-for               = "action in actions"
+                  :key                = "action.id"
+                  @click.stop         = "action.fnc(component.internalComponent)"
+                  @keydown.enter.stop = "action.fnc(component.internalComponent)"
+                  :title              = "action.tooltip"
+                  data-placement      = "left"
+                  style               = "font-weight: bold; padding:3px;"
+                  :class              = "action.class"
+                  class               = "action"
+                  :style              = "action.style"
+                  tabindex            = "0"
+                  role                = "button"
                 ></span>
                 <i v-if = "false !== component.collapsible" :class = "(!!component.state.open ? 'fas fa-angle-down' : 'fas fa-angle-left')" style="margin-right: 10px;" aria-hidden="true"></i>
               </div>

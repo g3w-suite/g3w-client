@@ -10,6 +10,7 @@
     class                     = "tree-item"
     @contextmenu.prevent.stop = "showContextMenu"
     @click.stop               = "onTreeItemClick"
+    @keydown.enter.stop       = "onTreeItemClick"
     tabindex                  = "0"
     role                      = "button"
     :class                    = "{

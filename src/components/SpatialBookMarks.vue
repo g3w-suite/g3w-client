@@ -30,9 +30,11 @@
           <summary>{{ bookmark.name }}</summary>
           <ul style = "margin-left: 10px;">
             <li v-for = "node in bookmark.nodes"
-              @click.stop = "gotoSpatialBookmark(node)"
-              class       = "spatial-bookmark"
-              tabindex    = "0"
+              @click.stop         = "gotoSpatialBookmark(node)"
+              @keydown.enter.stop = "gotoSpatialBookmark(node)"
+              class               = "spatial-bookmark"
+              role                = "button"
+              tabindex            = "0"
             >
               <i class = "fas fa-bookmark" aria-hidden = "true" style = "margin-right: 5px; font-size: 0.7em;"></i>
               <span class = "g3w-long-text">{{ node.name }}</span>
@@ -51,9 +53,11 @@
         </details>
       </li>
       <li v-else
-        @click.stop = "gotoSpatialBookmark(bookmark)"
-        class       = "spatial-bookmark"
-        tabindex    = "0"
+        @click.stop         = "gotoSpatialBookmark(bookmark)"
+        @keydown.enter.stop = "gotoSpatialBookmark(bookmark)"
+        class               = "spatial-bookmark"
+        role                = "button"
+        tabindex            = "0"
       >
         <i class = "fas fa-bookmark" aria-hidden = "true" style = "margin-right: 5px; font-size: 0.7em;"></i>
         <span class  = "g3w-long-text">{{ bookmark.name }}</span>
@@ -106,10 +110,12 @@
     </li>
 
     <li
-      v-for       = "bookmark in user_bookmarks"
-      @click.stop = "gotoSpatialBookmark(bookmark)"
-      class       = "spatial-bookmark"
-      tabindex    = "0"
+      v-for               = "bookmark in user_bookmarks"
+      @click.stop         = "gotoSpatialBookmark(bookmark)"
+      @keydown.enter.stop = "gotoSpatialBookmark(bookmark)"
+      class               = "spatial-bookmark"
+      role                = "button"
+      tabindex            = "0"
     >
       <i class = "fas fa-bookmark" aria-hidden = "true" style = "margin-right: 5px; font-size: 0.7em;"></i>
       <span class = "g3w-long-text">{{ bookmark.name }}</span>

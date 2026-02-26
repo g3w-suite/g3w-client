@@ -11,9 +11,13 @@
 
     <!-- SAVED SEARCHES (from g3w-admin) -->
     <li
-      v-for  = "search in state.searches"
-      class  = "menu-item"
-      @click = "showPanel(search)"
+      v-for    = "search in state.searches"
+      class               = "menu-item"
+      @click              = "showPanel(search)"
+      @keydown.enter.stop = "showPanel(search)"
+      role                = "button"
+      tabindex            = "0"
+      
     >
       <i aria-hidden = "true" class = "far fa-circle"></i>
       <span>{{ search.name }}</span>
@@ -53,8 +57,14 @@
     </li>
 
     <!-- QUERY BUILDER -->
-    <li class = "menu-item" @click.stop = "showQueyBuilderPanel">
-       <i aria-hidden = "true" class = "fas fa-calculator"></i>
+    <li
+      class               = "menu-item"
+      @click.stop         = "showQueyBuilderPanel"
+      @keydown.enter.stop = "showQueyBuilderPanel"
+      role                = "button"
+      tabindex            = "0"
+    >
+      <i aria-hidden = "true" class = "fas fa-calculator"></i>
       <span v-t = "'Advanced search'"></span>
     </li>
 

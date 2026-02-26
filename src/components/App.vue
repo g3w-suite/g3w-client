@@ -459,7 +459,13 @@
           v-if  = "ApplicationState.catalog.external.wms.length || ApplicationState.catalog.external.tms.length || ApplicationState.catalog.external.vector.length"
           class = "tree-root"
         >
-          <li class="tree-item group" @click.stop = "expandCollapseExternaLayers" tabindex = "0" role = "button">
+          <li
+            class               = "tree-item group"
+            @click.stop         = "expandCollapseExternaLayers"
+            @keydown.enter.stop = "expandCollapseExternaLayers"
+            tabindex            = "0"
+            role                = "button"
+          >
             <button
               type        = "button"
               class       = "tree-toggler"
