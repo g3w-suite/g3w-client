@@ -1401,10 +1401,12 @@ export default {
      * @since 4.1.0
      */
     updateExternalLayersChecked() {
-      this.externalayers.checked = [
+      const checked = [
         ...(ApplicationState.catalog.external?.vector || []),
         ...(ApplicationState.catalog.external?.wms || []),
-      ].every(l => l.checked)
+        ...(ApplicationState.catalog.external?.tms || []),
+      ];
+      this.externalayers.checked = checked.length && checked.every(l => l.checked);
     },
 
     /**
