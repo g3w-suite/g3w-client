@@ -12,6 +12,7 @@ let conf = {
   admin_overrides_folder: '../g3w-suite-docker/config/g3w-suite/overrides', // path to G3W-SUITE overrides folder
   docker_plugins_folder:  '../g3w-suite-docker/shared-volume/plugins',      // path to G3W-SUITE plugins folder
   plugins:                G3W_PLUGINS,
+  proxy_server_url:       '', //@since 4.1.0 server url to proxy 
   devConfig() {
     g3wsdk.core.ApplicationService.once('ready', () => { });
     g3wsdk.core.ApplicationService.once('initconfig', () => {

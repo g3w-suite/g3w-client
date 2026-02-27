@@ -444,52 +444,59 @@ async function start_proxy_server() {
   const mime      = require('mime-types');
   const modifyResponse = require('http-proxy-response-rewrite');
 
-  const SERVER_URL = 'https://dev.g3wsuite.it/';
+  //check if valid url
+  try {
+    const SERVER_URL = new URL(g3w.proxy_server_url);
+    console.log(SERVER_URL)
 
-  const proxy      = httpProxy.createProxyServer({
-    secure: false,
-    changeOrigin: true,
-  });
+    const proxy      = httpProxy.createProxyServer({
+      secure: false,
+      changeOrigin: true,
+    });
 
-  const server = http.createServer((req, res) => {
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    let localPath;
-    // proxy core and static plugins
-    for (const pluginName of ['client', 'editing', 'openrouteservice', 'qplotly', 'qtimeseries']) {
-      if ('client' === pluginName) {
-        localPath = path.join(g3w.admin_overrides_folder, url.pathname)
-      } else {
-        localPath = path.join(`${g3w.pluginsFolder}/g3w-admin-${pluginName}`, url.pathname);
+    const server = http.createServer((req, res) => {
+      const url = new URL(req.url, `http://${req.headers.host}`);
+      let localPath;
+      // proxy core and static plugins
+      for (const pluginName of ['client', 'editing', 'openrouteservice', 'qplotly', 'qtimeseries']) {
+        if ('client' === pluginName) {
+          localPath = path.join(g3w.admin_overrides_folder, url.pathname)
+        } else {
+          localPath = path.join(`${g3w.pluginsFolder}/g3w-admin-${pluginName}`, url.pathname);
+        }
+        if (url.pathname.startsWith(`/static/${pluginName}`) && fs.existsSync(localPath)) {
+          console.log(true, '→', localPath);
+          const contentType = mime.lookup(localPath) || 'application/octet-stream'; // Determine MIME type
+          res.setHeader('Content-Type', contentType);                               // Set the Content-Type header
+          res.end(require('fs').readFileSync(localPath));
+          return;
+        }
       }
-      if (url.pathname.startsWith(`/static/${pluginName}`) && fs.existsSync(localPath)) {
-        console.log(true, '→', localPath);
-        const contentType = mime.lookup(localPath) || 'application/octet-stream'; // Determine MIME type
-        res.setHeader('Content-Type', contentType);                               // Set the Content-Type header
-        res.end(require('fs').readFileSync(localPath));
+      console.log(false, '→', `${SERVER_URL.origin.replace(/\/$/g, '')}${url.pathname}`);
+      proxy.web(req, res, { target: SERVER_URL.origin });
+    });
+
+    // replace `https://dev.g3wsuite.it` → `http://localhost:3000` within text/html responses
+    proxy.on('proxyRes', function (proxyRes, req, res) {
+      if (!proxyRes.headers['content-type'] || !proxyRes.headers['content-type'].includes('text') || req.url.startsWith('/media')) {
         return;
       }
-    }
-    console.log(false, '→', `${SERVER_URL.replace(/\/$/g, '')}${url.pathname}`);
-    proxy.web(req, res, { target: SERVER_URL });
+      modifyResponse(res, proxyRes.headers['content-encoding'], function (body) {
+        if (body) {
+            const modifiedBody  = body.replaceAll(SERVER_URL.origin, 'http://localhost:3000');
+            res.setHeader('Content-Length', Buffer.byteLength(modifiedBody));
+            return modifiedBody;
+        }
+        return body;
+    });
   });
 
-  // replace `https://dev.g3wsuite.it` → `http://localhost:3000` within text/html responses
-  proxy.on('proxyRes', function (proxyRes, req, res) {
-    if (!proxyRes.headers['content-type'] || !proxyRes.headers['content-type'].includes('text') || req.url.startsWith('/media')) {
-      return;
-    }
-    modifyResponse(res, proxyRes.headers['content-encoding'], function (body) {
-      if (body) {
-          const modifiedBody  = body.replace(/https:\/\/dev\.g3wsuite\.it/g, 'http://localhost:3000');
-          res.setHeader('Content-Length', Buffer.byteLength(modifiedBody));
-          return modifiedBody;
-      }
-      return body;
-  });
-});
-
-  server.listen(3000, () => {
-    console.log( '\n'+ GREEN__  + 'Proxy server running at: http://localhost:3000' + __RESET);
-  });
+    server.listen(3000, () => {
+      console.log( '\n'+ GREEN__  + 'Proxy server running at: http://localhost:3000' + __RESET);
+    });
+  } catch(e) {
+    console.warn(e);
+  }
+ 
 }
 
