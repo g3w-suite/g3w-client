@@ -141,7 +141,7 @@
                 </tr>
 
                 <!-- PROJECT KEYWORDS -->
-                <tr v-if  = "project.metadata.keywords">
+                <tr v-if  = "project.metadata.keywords && project.metadata.keywords.length">
                   <td class = "col-sm-2 label">{{ $t('KEYWORDS') }}</td>
                   <td class = "col-sm-10 value">
                     <i style = "margin-right: 3px;" class = "fas fa-tags" aria-hidden = "true"></i>
