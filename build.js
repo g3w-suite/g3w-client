@@ -446,8 +446,7 @@ async function start_proxy_server() {
 
   //check if valid url
   try {
-    const SERVER_URL = new URL(g3w.proxy_server_url);
-    console.log(SERVER_URL)
+    const SERVER_URL = new URL(g3w.proxy);
 
     const proxy      = httpProxy.createProxyServer({
       secure: false,
@@ -476,7 +475,7 @@ async function start_proxy_server() {
       proxy.web(req, res, { target: SERVER_URL.origin });
     });
 
-    // replace `https://dev.g3wsuite.it` → `http://localhost:3000` within text/html responses
+    // replace `SERVER_URL` → `http://localhost:3000` within text/html responses
     proxy.on('proxyRes', function (proxyRes, req, res) {
       if (!proxyRes.headers['content-type'] || !proxyRes.headers['content-type'].includes('text') || req.url.startsWith('/media')) {
         return;
@@ -492,7 +491,8 @@ async function start_proxy_server() {
   });
 
     server.listen(3000, () => {
-      console.log( '\n'+ GREEN__  + 'Proxy server running at: http://localhost:3000' + __RESET);
+      console.log('\n' + GREEN__ + 'Proxy server running at: http://localhost:3000' + __RESET);
+      console.log('\n' + 'Remote server: ' + SERVER_URL.origin);
     });
   } catch(e) {
     console.warn(e);
