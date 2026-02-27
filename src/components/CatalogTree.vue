@@ -14,11 +14,11 @@
     tabindex                  = "0"
     role                      = "button"
     :class                    = "{
-      selected: layerstree.selected,
-      disabled: isDisabled,
-      group:    isGroup,
-      table:    isTable,
-      external: layerstree.external,
+      selected:             layerstree.selected,
+      disabled:             isDisabled,
+      group:                isGroup,
+      table:                isTable,
+      external:             layerstree.external,
       'mutually-exclusive': parent_mutually_exclusive
     }"
   >
