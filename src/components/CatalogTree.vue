@@ -41,11 +41,7 @@
       v-show      = "!layerstree.hidden"
       class       = "tree-toggler"
     >
-      <i aria-hidden = "true" :class = "
-        isGroup
-          ? (layerstree.expanded ? 'fas fa-caret-down' : 'fas fa-caret-right')
-          : (layerstree.visible && layerstree.expanded ? 'fas fa-caret-down' : 'fas fa-caret-right')
-      "></i>
+      <i aria-hidden = "true" :class = "layerstree.expanded && (isGroup || layerstree.visible) ? 'fas fa-caret-down' : 'fas fa-caret-right'"></i>
       <span hidden>{{ $t('Enlarge / Reduce') }}</span>
     </button>
 
