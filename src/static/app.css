@@ -1235,8 +1235,6 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 .tree-item button                                   { border: unset; background-color: unset; box-shadow: rgba(0,0,0,0.3) 0 2px 5px; padding: 0; border-radius: 3px; margin: 0 3px; font-weight: bold; color: #fff !important; }
 .tree-item button > i                               { padding: 5px; }
 .tree-item button.active                            { box-shadow: none; background-color: #384247; }
-.tree-item input[type="checkbox"]                   { appearance: none; width: unset; margin: unset; margin-top: 2px; }
-.tree-item input[type="checkbox"]::before           { font-family: "Font Awesome 5 Free"; font-weight: 400; content: "\f0c8"; }
 .tree-item input[type="checkbox"]                   { accent-color: currentColor; width: unset; margin: unset; margin-top: 3px; }
 
 #g3w-themes                            { display: none; padding: 0; }
