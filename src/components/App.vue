@@ -1406,7 +1406,7 @@ export default {
         ...(ApplicationState.catalog.external?.wms || []),
         ...(ApplicationState.catalog.external?.tms || []),
       ];
-      this.externalayers.checked = checked.length && checked.every(l => l.checked);
+      this.externalayers.checked = !!(checked.length && checked.every(l => l.checked));
     },
 
     /**
