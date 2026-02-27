@@ -311,11 +311,7 @@ export default {
     },
 
     isDisabled() {
-      if (this.layerstree.external) {
-        return this.layerstree.checked;
-      } else {
-        return !this.isGroup && !this.isTable && (!this.layerstree.visible || this.layerstree.disabled);
-      }
+      return !this.isGroup && !this.isTable && !this.layerstree.checked && (!this.layerstree.visible || this.layerstree.disabled);
     },
 
     /**
