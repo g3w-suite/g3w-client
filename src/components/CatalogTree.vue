@@ -99,7 +99,7 @@
     <!-- NODE TITLE -->
     <span
       v-show           = "!layerstree.hidden || isGroup"
-      class            = "tree-node-title g3w-long-text"
+      class            = "tree-node-title"
       :data-i18n-title = "has_scale_visibility_toolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
       data-placement   = "top"
       data-i18n-raw    = ""
