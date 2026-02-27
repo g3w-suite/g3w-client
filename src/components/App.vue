@@ -234,7 +234,7 @@
           <button
             type           = "button"
             @click         = "ApplicationState.sidebar.btn_close && closeAllPanels()"
-            :title         = "ApplicationState.sidebar.tooltip_close || 'close'"
+            v-t-tooltip    = "ApplicationState.sidebar.tooltip_close || 'close'"
             data-placement = "right"
             class          = "btn btn-outline"
           >
