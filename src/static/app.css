@@ -1217,7 +1217,7 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 .tree-item.selected ul.layer-categories             { background-color: var(--bgcolor); }
 .tree-item.group > .tree-node-title                 { font-weight: bold; }
 .tree-node-title                                    { flex: 1; user-select: none; white-space: normal; word-break: break-all; }
-.tree-item.disabled .tree-toggler > i               { opacity: .7; }
+.tree-item.disabled .tree-toggler > i               { opacity: .5; }
 .tree-item.disabled > span                          { opacity: .7; font-style: italic; }
 .tree-item > i                                      { margin-top: 5px; }
 .tree-item .fa-table                                { margin-left: 28px; }
