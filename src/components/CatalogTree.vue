@@ -22,26 +22,6 @@
       'mutually-exclusive': parent_mutually_exclusive
     }"
   >
-    <!-- NODE TOGGLER -->
-    <button
-      v-if        = "isGroup"
-      type        = "button"
-      @click.stop = "expandCollapse"
-      class       = "tree-toggler"
-    >
-      <i aria-hidden = "true" :class = "layerstree.expanded ? 'fas fa-caret-down' : 'fas fa-caret-right'"></i>
-      <span hidden>{{ $t('Enlarge / Reduce') }}</span>
-    </button>
-
-    <!-- NODE VISIBILITY -->
-    <input
-      v-if        = "isGroup"
-      type        = "checkbox"
-      @click.stop = "toggle()"
-      v-model     = "layerstree.checked"
-      role        = "button"
-      aria-label  = "Show/Hide"
-    />
 
     <!-- NODE REMOVE -->
     <button 
@@ -55,20 +35,24 @@
 
     <!-- NODE TOGGLER -->
     <button
-      v-if        = "!isTable && !isGroup && ('toc' === legend_position || !isGroup && layerstree.categories)"
+      v-if        = "isGroup || (!isTable && ('toc' === legend_position || layerstree.categories))"
       type        = "button"
       @click.stop = "expandCollapse"
       v-show      = "!layerstree.hidden"
       class       = "tree-toggler"
     >
-      <i aria-hidden = "true" :class = "layerstree.visible && layerstree.expanded ? 'fas fa-caret-down' : 'fas fa-caret-right'"></i>
+      <i aria-hidden = "true" :class = "
+        isGroup
+          ? (layerstree.expanded ? 'fas fa-caret-down' : 'fas fa-caret-right')
+          : (layerstree.visible && layerstree.expanded ? 'fas fa-caret-down' : 'fas fa-caret-right')
+      "></i>
       <span hidden>{{ $t('Enlarge / Reduce') }}</span>
     </button>
 
     <!-- NODE VISIBILITY -->
     <input
-      v-if        = "!isTable && !isGroup"
-      v-show      = "!layerstree.hidden"
+      v-if        = "isGroup || !isTable"
+      v-show      = "isGroup || !layerstree.hidden"
       type        = "checkbox"
       @click.stop = "toggle()"
       v-model     = "layerstree.checked"
@@ -144,6 +128,7 @@
       <i aria-hidden = "true" class = "far fa-save"></i>
     </button>
 
+    <!-- TOGGLE LEGEND PANEL -->
     <button
       v-if           = "layerstree.root"
       type           = "button"
@@ -154,6 +139,7 @@
       <i aria-hidden = "true" class = "fas fa-list"></i>
     </button>
 
+    <!-- TOGGLE CONTEXT MENU -->
     <button
       v-if           = "!isGroup"
       type           = "button"
@@ -329,7 +315,11 @@ export default {
     },
 
     isDisabled() {
-      return !this.isGroup && !this.isTable && !this.layerstree.external && (!this.layerstree.visible || this.layerstree.disabled);
+      if (this.layerstree.external) {
+        return this.layerstree.checked;
+      } else {
+        return !this.isGroup && !this.isTable && (!this.layerstree.visible || this.layerstree.disabled);
+      }
     },
 
     /**
