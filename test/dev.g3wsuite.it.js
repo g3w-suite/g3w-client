@@ -34,7 +34,7 @@ console.log(
     }
   });
 
-  await page.goto(SERVER_URL + '/it/map/demo-310/');
+  await page.goto(SERVER_URL + '/it/map/demo-311/');
 
   // check for JS erros
   const errors = [];
