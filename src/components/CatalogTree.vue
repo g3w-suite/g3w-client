@@ -35,11 +35,10 @@
 
     <!-- NODE TOGGLER -->
     <button
-      v-if        = "isGroup || (!isTable && ('toc' === legend_position || layerstree.categories))"
       type        = "button"
       @click.stop = "expandCollapse"
-      v-show      = "!layerstree.hidden"
       class       = "tree-toggler"
+      :hidden = "!(isGroup || (!isTable && ('toc' === legend_position || layerstree.categories)) && !layerstree.hidden)"
     >
       <i aria-hidden = "true" :class = "layerstree.expanded && (isGroup || layerstree.visible) ? 'fas fa-caret-down' : 'fas fa-caret-right'"></i>
       <span hidden>{{ $t('Enlarge / Reduce') }}</span>
