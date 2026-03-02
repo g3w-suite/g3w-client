@@ -168,7 +168,7 @@
       <template v-else>
         <div
           v-for      = "(category, index) in legend_categories"
-          style      = "display: flex; align-items: center; width: 100%"
+          style      = "display: flex; align-items: flex-start; width: 100%"
           v-disabled = "category.disabled"
           @contextmenu.prevent.stop
         >
@@ -177,7 +177,6 @@
             v-if        = "category.ruleKey"
             type        = "checkbox"
             @click.stop = "toggleCategory(index)"
-            style       = "margin-right: 3px;"
             v-model     = "category.checked"
             role        = "button"
             aria-label  = "Show/Hide"
@@ -189,6 +188,7 @@
             @error = "setError()"
             @load  = "urlLoaded()"
             alt    = ""
+            style  = "margin: 4px 4px 0 5px;"
           >
 
           <span
