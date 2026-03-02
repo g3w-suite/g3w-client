@@ -7,17 +7,13 @@
   <div id = "search-results" class = "queryresults-wrapper">
 
     <!-- QUERY RESULTS INFO -->
-    <div
+    <p
       v-if  = "info.message"
-      class = "skin-color"
-      style = "font-weight: bold; margin-bottom: 3px; font-size: 1.1em;"
+      style = "font-size: 1.1em;"
     >
-      <span
-        v-if   = "info.icon"
-        :class = "$fa(info.icon)">
-      </span>
-      <span> {{ info.message }} </span>
-    </div>
+      <i v-if = "info.icon" aria-hidden="true" :class = "$fa(info.icon)"></i>
+      <b> {{ info.message }} </b>
+    </p>
 
     <div class = "queryresults-container">
       <ul
@@ -55,10 +51,12 @@
                   v-if           = "!layer.external"
                   type           = "button"
                   @click.stop    = "openAttributeTable(layer)"
-                  class          = "action-button fas fa-list-alt""
+                  class          = "action-button"
                   title          = "Open Attribute Table"
                   data-placement = "left"
-                ></button>
+                >
+                  <i aria-hidden="true" class="fas fa-list-alt"></i>
+                </button>
                 {{ layer.title }}
                 <span v-if = "!layer.rawdata">
                   ({{
@@ -93,55 +91,65 @@
                   v-if           = "layer.hasgeometry"
                   type           = "button"
                   @click.stop    = "zoomToLayer(layer)"
-                  class          = "action-button fas fa-map-marker-alt"
+                  class          = "action-button"
                   title          = "Zoom to features extent"
                   data-placement = "top"
-                ></button>
+                >
+                  <i aria-hidden="true" class="fas fa-map-marker-alt"></i>
+                </button>
 
                 <!-- PRINT LAYER -->
                 <button
                   v-if           = "layer.atlas.length"
                   type           = "button"
                   @click.stop    = "printAtlas(layer)"
-                  class          = "action-button fas fa-print"
+                  class          = "action-button"
                   title          = "Print Atlas"
                   data-placement = "top"
                   v-disabled     = "state.download"
-                ></button>
+                >
+                  <i aria-hidden="true" class="fas fa-print"></i>
+                </button>
 
                 <!-- DOWNLOAD LAYER -->
                 <button
                   v-if           = "(layer.downloads || []).filter(d => 'pdf' !== d).length > 0"
                   type           = "button"
                   @click.stop    = "showDownloadModal(layer)"
-                  class          = "action-button fas fa-download"
+                  class          = "action-button"
                   :class         = "{ 'toggled': layer.downloadformats.active }"
                   title          = "Downloads"
                   data-placement = "top"
                   v-disabled     = "state.download"
-                ></button>
+                >
+                  <i aria-hidden="true" class="fas fa-download"></i>
+                </button>
 
                 <!-- TOGGLE LAYER FEATURES -->
                 <button
                   v-if           = "layer.external || (!layer.filter.active && layer.source && 'wms' !== layer.source.type && !(state.query && state.query.pagination))"
                   type           = "button"
                   @click.stop    = "addLayerFeaturesToResults(layer)"
-                  class          = "action-button fas fa-plus-square"
+                  class          = "action-button"
                   :class         = "{ 'toggled': layer.addfeaturesresults.active }"
                   title          = "Add/Remove features to results"
                   data-placement = "top"
-                ></button>
+                >
+                  <i aria-hidden="true" class="fas fa-plus-square"></i>
+                </button>
 
                 <!-- TOGGLE LAYER SELECTION -->
                 <button
                   v-if           = "canSelect(layer)"
                   type           = "button"
                   @click.stop    = "toggleSelection(layer)"
-                  class          = "action-button fas fa-check-circle"
+                  class          = "action-button"
                   title          = "Add/Remove Selection"
                   data-placement = "top"
                   :class         = "{ 'toggled': layer.selection.active && layer.features.every(f => f.selected) }"
-                ></button>
+                >
+                  <i aria-hidden="true" class="fas fa-check-circle"></i>
+                </button>
 
                 <!-- TOGGLE LAYER FILTER -->
                 <button
@@ -153,11 +161,13 @@
                   "
                   type           = "button"
                   @click.stop    = "toggleFilter(layer)"
-                  class          = "action-button fas fa-filter"
+                  class          = "action-button"
                   :class         = "{'toggled': layer.filter.active }"
                   title          = "Enable/Disable filter"
                   data-placement = "top"
-                ></button>
+                >
+                  <i aria-hidden="true" class="fas fa-filter"></i>
+                </button>
 
                 <!-- SAVE LAYER FILTER -->
                 <button
@@ -170,10 +180,12 @@
                   "
                   type           = "button"
                   @click.stop    = "saveFilter(layer)"
-                  class          = "action-button fas fa-save"
+                  class          = "action-button"
                   title          = "Save Filter"
                   data-placement = "top"
-                ></button>
+                >
+                  <i aria-hidden="true" class="fas fa-save"></i>
+                </button>
 
               </div>
             </div>
@@ -334,12 +346,12 @@
                         :title                    = "action.hint"
                         data-placement            = "top"
                       >
-                        <b
+                        <i
                           aria-hidden = "true"
                           style       = "padding: 2px;"
                           :style      = "action.style"
                           :class      = "(action.class || '')"
-                        ></b>
+                        ></i>
                       </button>
                     </td>
                   </tr>
