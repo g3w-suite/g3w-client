@@ -6,24 +6,6 @@
 //@ts-check
 
 /**
- * @TODO we can safely import "version" from "package.json" when we will use native ES Modules
- */
-export { version as APP_VERSION } from '../package.json';
-
-/**
- * Default editing capabilities
- * @deprecated  Will be removed in 4.x. Moved to g3w-client-plugin-editing
- * 
- * @type {string[]}
- */
-export const DEFAULT_EDITING_CAPABILITIES = [
-  'add_feature',
-  'change_feature',
-  'change_attr_feature',
-  'delete_feature'
-];
-
-/**
  * fid name field referred to fid feature
  * 
  * @type {string}
@@ -34,30 +16,21 @@ export const G3W_FID = 'g3w_fid';
  * @type {Object<string, string>}
  * @since v3.5
  */
-export const FILTER_OPERATORS = {
-  gte:      '>=',
-  lte:      '<=',
-  NOT:      '!=',
-  eq:       '=',
-  gt:       '>',
-  lt:       '<',
-  in:        'IN',
-  LIKE:     'LIKE',
-  ILIKE:    'ILIKE',
-  AND:      'AND',
-  OR:       'OR',
-};
-
-/**
- * @type {Object<string, string>}
- * @since v3.5
- */
 export const FILTER_EXPRESSION_OPERATORS = {
-  lte:   '<=',
   ltgt:  '!=',
   ilike: 'ILIKE',
   like:  'LIKE',
-  ...FILTER_OPERATORS,
+  gte:   '>=',
+  lte:   '<=',
+  NOT:   '!=',
+  eq:    '=',
+  gt:    '>',
+  lt:    '<',
+  in:    'IN',
+  LIKE:  'LIKE',
+  ILIKE: 'ILIKE',
+  AND:   'AND',
+  OR:    'OR',
 };
 
 /**
@@ -65,7 +38,7 @@ export const FILTER_EXPRESSION_OPERATORS = {
  * 
  * @type {string[]}
  */
- export const GEOMETRY_FIELDS = [
+export const GEOMETRY_FIELDS = [
   'geometryProperty',
   'boundedBy',
   'geom',
@@ -339,19 +312,6 @@ export const FONT_AWESOME_ICONS = {
 };
 
 /**
- * @typedef LocalItem
- * @property {string} id unique identifier
- * @property {any} value initial value
- */
-
-/**
- * List of Open Layers spatial methods used to find features
- * 
- * @since 3.9.0
- */
-export const SPATIAL_METHODS = ['intersects', 'within'];
-
-/**
  * DPI96
  * 
  * DOTS_PER_INCH = ol.has.DEVICE_PIXEL_RATIO * 96;
@@ -369,16 +329,6 @@ export const INCHES_PER_UNIT = {
 };
 
 /**
- * Selection state 
- * 
- * @since 3.11.0
- */
-export const SELECTION = {
-  ALL:     '__ALL__',
-  EXCLUDE: '__EXCLUDE__'
-};
-
-/**
  * @since 3.11.0
  * Page length for pagination
  * @type {number[]}
@@ -386,9 +336,7 @@ export const SELECTION = {
 export const PAGELENGTHS = [10, 25, 50, 100];
 
 export default {
-  DEFAULT_EDITING_CAPABILITIES,
   DOTS_PER_INCH,
-  FILTER_OPERATORS,
   FILTER_EXPRESSION_OPERATORS,
   FONT_AWESOME_ICONS,
   G3W_FID,
@@ -398,7 +346,6 @@ export default {
   PRINT_SCALES,
   QUERY_POINT_TOLERANCE,
   SEARCH_ALLVALUE,
-  SPATIAL_METHODS,
   TIMEOUT,
   PAGELENGTHS,
 };

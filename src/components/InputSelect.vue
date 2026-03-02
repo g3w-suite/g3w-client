@@ -60,7 +60,6 @@
 
         <option
           v-for  = "({ key, value }) in state.input.options.values"
-          :key   = "getValue(value)"
           :value = "getValue(value)">
             {{ key }}
         </option>
@@ -76,17 +75,15 @@
 </template>
 
 <script>
-  import GUI                            from 'services/gui';
-  import ApplicationState               from 'store/application'
+  import GUI                            from 'g3w-app';
+  import ApplicationState               from 'g3w-state'
   import {
     selectMixin,
     select2Mixin
   }                                     from 'mixins';
   import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
 
-  const PickLayerInputService           = require('gui/inputs/picklayer/service');
-  const { Layer }                       = require('map/layers/layer');
-  const InputMixin                      = require('gui/inputs/input');
+  import Input, { PickLayerService }    from 'components/g3w-input';
 
   const G3W_SELECT2_NULL_VALUE = null; // need to set nul value instead of empty string
 
@@ -99,7 +96,7 @@
     /** @since 3.8.6 */
     name: 'input-select',
 
-    mixins: [InputMixin, selectMixin, select2Mixin],
+    mixins: [ Input, selectMixin, select2Mixin ],
     data() {
       return {
         showPickLayer :       false,
@@ -159,16 +156,27 @@
                   value:  values[this.state.input.options.key]
                 });
               }
-              //need to sort values
-              this.service.sortValues();
-                //set new value to this.state.value
+              //if autocpomplete is not set,just simple select check if value is not in current values
+              //Case Bonifica Renana https://github.com/orgs/g3w-suite/projects/12/views/1?pane=issue&itemId=123189761&issue=g3w-suite%7Cg3w-admin%7C1180
+              //use not strict equality to avoid issues with numbers and strings
+              if (!this.autocomplete && !this.state.input.options.values.find(v => v.value == value)) {
+                //set null value if no in values
+                value = null;
+              }
+              //set new value to this.state.value
               await this.changeSelect(value);
               //trigger change value on select2
               this.select2.val(this.multiple ? this.getMultiValues() : value).trigger('change');
             }
 
             //show a success message
-            GUI.showUserMessage({ type: 'success', autoclose: true });
+            if (value) {
+              GUI.showUserMessage({ type: 'success', autoclose: true });
+            }
+            //In case of value is null, no value inside values, show warning message
+            if (null === value) {
+              GUI.showUserMessage({ type: 'warning', message: 'sdk.form.inputs.messages.warning.picklayer', autoclose: false });
+            }
 
             this.picked = false;
           }
@@ -293,6 +301,10 @@
     },
 
     async created() {
+
+      //@since 4.0.1 Force to set usecompleter false if filter_expression is set
+      //to avoid to handle filter_expression list results values with search text on autocomplete
+      //this.state.input.options.usecompleter = this.state.input.options.usecompleter && !this.state.input.options.filter_expression;
 
       //unwatch attributes
       this.unwatch;
@@ -515,25 +527,23 @@
         const dependencyLayerId = this.state.input.options.layer_id;
         if (dependencyLayerId) {
           try {
-            const dependencyLayer = GUI.getService('map')
-              .getProjectLayer(dependencyLayerId)
-              .getEditingLayer() || getCatalogLayerById(dependencyLayerId);
+            const dependencyLayer = getCatalogLayerById(dependencyLayerId);
             // in case layer is on project, check if is non an alphanumeric layer
-            this.showPickLayer = dependencyLayer && Layer.LayerTypes.TABLE !== dependencyLayer.getType();
+            //@since 4.0.1 if not autocompleter with filter_expression
+            this.showPickLayer = dependencyLayer && 'table' !== dependencyLayer.getType() && !(this.autocomplete && this.state.input.options.filter_expression);
             if (this.showPickLayer) {
               const {
                 key,
                 value,
                 layer_id
               } = this.state.input.options;
-
+              
               //create pick layer service
-              this.pickLayerInputService = new PickLayerInputService({
+              this.pickLayerInputService = new PickLayerService({
                 layer_id,
                 fields :    [value, key], //fields are key, and values
-                //need to check if dependency layer is on editing,
                 // so we can pick vector map layer, otherwise wms request is done
-                pick_type : dependencyLayer.isStarted && dependencyLayer.isStarted() ? 'map' : null
+                pick_type : 'wms'
               });
             }
 
@@ -547,8 +557,8 @@
       await this.$nextTick();
 
       const selectElement  = $(this.$refs.select);
-      const language       =  this.getLanguage();
-      const dropdownParent = undefined === this.state.dropdownParent && $('#g3w-view-content');
+      const language       = window.initConfig.user.i18n || "en";
+      const dropdownParent = undefined === this.state.dropdownParent && document.querySelector('#g3w-view-content');
       if (this.autocomplete) {
         this.select2 = selectElement.select2({
           minimumInputLength: 1,
@@ -557,12 +567,24 @@
           allowClear:         this.showNullOption,
           placeholder:        '', // need to set placeholder in case of allowClear, otherwise doesn't work
           language,
-          ajax: {
+          // @since 4.0.1 In case of autocomplete with filter_expression, need to tranform data from feilter espression values
+          data: this.state.input.options.filter_expression ? this.state.input.options.values.map(({key, value }) =>({
+            text:   key,
+            id:     value,
+            $value: value, 
+          })): null,
+          // @since 4.0.1 In case of autocomplete with filter_expression, get dat from already loaded filter expression without ajax request (data attribute above)
+          ajax: this.state.input.options.filter_expression ? null : {
             delay: 250,
             transport: (params, success, failure) => {
               const search = params.data.term;
-              // hide a previous result if present
-              $('.select2-results__option.loading-results').siblings().hide();
+              // hide siblings (previous result if present)
+              const el = document.querySelector('.select2-results__option.loading-results');
+              [...(el?.parentNode?.children || {})].filter(sibling => {
+                if (sibling !== el) {
+                  sibling.style.display = 'none';
+                }
+              });
               this.service.getData({
                 key:   this.state.input.options.value,
                 value: this.state.input.options.key,
@@ -579,7 +601,8 @@
                   more: false
                 }
               }
-            }},
+            }
+          },
         });
         //check if input has a value
         if (this.state.value) {
@@ -589,7 +612,10 @@
             search: this.multiple ? this.getMultiValues(): this.state.value
           });
         }
-      } else {
+      }
+
+      //In case is not autocomplete (simple select)
+      if (!this.autocomplete){
         this.select2 = selectElement.select2({
           language,
           dropdownParent,
@@ -597,6 +623,7 @@
           minimumResultsForSearch: this.isMobile() ? - 1 : null
         });
       }
+
       this.setAndListenSelect2Change();
       //in the case of multiple selection, need to set array values as select2
       if (this.multiple && this.getMultiValues().length > 0) {

@@ -1,9 +1,9 @@
 /**
  * @TODO move all of these utils within "annotation" or "measure" map control
  */
-import ApplicationState from 'store/application';
+import ApplicationState from 'g3w-state';
 
-const round = val      => (Math.round(val * 100) / 100).toFixed(2);
+const round = val => (Math.round(val * 100) / 100).toFixed(2);
 
 /**
  * create and add measure tooltip 
@@ -17,7 +17,7 @@ export function createMeasureTooltip({ map, feature } = {}) {
     element,
     offset:      [0, -15],
     positioning: 'bottom-center',
-    stopEvent:   false // disable pointer events
+    stopEvent:   false, // disable pointer events
   });
 
   map.addOverlay(tooltip);
@@ -68,26 +68,7 @@ export function createMeasureTooltip({ map, feature } = {}) {
   };
 }
 
-/**
- * @deprecated use `remove` from `createMeasureTooltip` instead
- * 
- * Remove mesure tootltip
- * 
- * @param { Object } opts
- * @param opts.map
- * @param opts.tooltip
- * @param opts.unByKey 
- */
-export function removeMeasureTooltip({
-  map,
-  tooltip,
-  unbyKey,
-}) {
-  map.removeOverlay(tooltip);
-  ol.Observable.unByKey(unbyKey);
-}
-
-export function get_formatted_area(geom, epsg = ApplicationState.map.epsg, unit = ApplicationState.map.unit) {
+export function get_formatted_area(geom, epsg = ApplicationState.map_epsg, unit = ApplicationState.map_unit) {
   if (!/^Polygon|^MultiPolygon/.test(geom.getType())) {
     return;
   }
@@ -101,7 +82,7 @@ export function get_formatted_area(geom, epsg = ApplicationState.map.epsg, unit 
   return area > 10000 ? `${round(area / 1000000)} km²` : `${round(area)} m²`;
 }
 
-export function get_formatted_length(geom, epsg = ApplicationState.map.epsg, unit = ApplicationState.map.unit) {
+export function get_formatted_length(geom, epsg = ApplicationState.map_epsg, unit = ApplicationState.map_unit) {
 
   const segments = (/^Polygon|^MultiPolygon/.test(geom.getType()) && (geom?.getPolygons?.() || [geom]).flatMap(p => p.getLinearRing().getCoordinates())) || [];
 
@@ -118,14 +99,14 @@ export function get_formatted_length(geom, epsg = ApplicationState.map.epsg, uni
     return `${length * 0.0005399568} nm`;
   }
 
-  return length > 100 ? `${round(length / 1000)} km` : `${round(length)} m`
+  return length > 100 ? `${round(length / 1000)} km` : `${round(length)} m`;
 }
 
 export function get_formatted_angle(c1, c2) {
   return parseInt(Math.atan2(c1[0] - c2[0], c1[1] - c2[1]) * 180 / Math.PI) + '°';
 }
 
-export function get_formatted_radius(geom, epsg = ApplicationState.map.epsg, unit = ApplicationState.map.unit) {
+export function get_formatted_radius(geom, epsg = ApplicationState.map_epsg, unit = ApplicationState.map_unit) {
   if ('Circle' !== geom.getType()) {
     return;
   }

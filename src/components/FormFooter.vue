@@ -51,10 +51,11 @@ export default Vue.extend({
 
   props: {
     state: {
-      type: Object
+      type:     Object,
+      required: true,
     },
     backToRoot: {
-      type: Function,
+      type:    Function,
       default: () => {}
     },
     isRootComponent: {
@@ -86,7 +87,7 @@ export default Vue.extend({
     },
     btnEnabled(button) {
       const { enabled = true, type } = button;
-      return enabled && (type !== 'save' ||  (type === 'save' && this.enableSave));
+      return enabled && ('save' !== type || ('save' === type && this.enableSave));
     },
     isValid() {
       return this.state.valid;
@@ -94,7 +95,7 @@ export default Vue.extend({
   },
   watch: {
     'state.component'(component) {
-      this.show = this.isRootComponent(component)
+      this.show = this.isRootComponent(component);
     },
     'state.update': {
       immediate: true,

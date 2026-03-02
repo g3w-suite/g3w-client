@@ -11,7 +11,8 @@
 </template>
 
 <script>
-  const Input = require('gui/inputs/input');
+  import Input from 'components/g3w-input';
+
   const Quill = require('quill').default;
 
   export default {

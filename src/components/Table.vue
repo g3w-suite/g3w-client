@@ -6,92 +6,74 @@
 <template>
   <div id = "open_attribute_table">
 
-    <!-- TABLE TOOLBAR -->
-    <!-- ORIGINAL SOURCE: src/components/TableToolBar.vue@3.9.7 -->
-    <div
-      ref   = "table_toolbar"
-      style = "display: flex; justify-content: space-between; padding: 1px;"
+    <!-- TABLE METADATA -->
+    <button
+      ref            = "table_metadata"
+      type           = "button"
+      style          = "margin-right: 8px; font-size: 1.5rem;order:-1;"
+      class          = "btn btn-default"
+      @click         = "showMetadata"
+      data-placement = "top"
+      title          = "Metadata"
     >
+      <i data-v-5685d65c = "" aria-hidden = "true" class = "fas fa-info-circle"></i>
+    </button>
 
-      <!-- FETCH DATA FROM BBOX -->
-      <div
-        v-if           = "layer.isGeoLayer()"
-        class          = "skin-color action-button"
-        v-disabled     = "state.geolayer.active && current_layout.rightpanel.height_100"
-        :class         = "[ $fa('map'), state.geolayer.active ? 'toggled' : '' ]"
-        v-t-tooltip    = "'Update results when map moves'"
-        data-placement = "right"
-        @click.stop    = "getDataFromBBOX"
-      ></div>
+    <!-- TOTAL ELEMENTS -->
+    <span
+      ref   = "table_info"
+      style = "margin-left: .5ch;"
+    >{{ state.allfeatures }} {{ $t('entries') }}</span>
 
-      <!-- CLEAR SELECTION -->
-      <div
-        v-show         = "state.show_tools"
-        class          = "skin-color action-button"
-        :class         = "$fa('clear')"
-        v-t-tooltip    = "'Invert Selection'"
-        data-placement = "right"
-        @click.stop    = "layer.clearSelectionFids()"
-      ></div>
-
-      <!-- INVERSE SELECTION -->
-      <div
-        v-show         = "state.show_tools"
-        class          = "skin-color action-button"
-        :class         = "[ $fa('invert'), layer.state.filter.active ? 'g3w-disabled': '' ]"
-        v-t-tooltip    = "'Invert Selection'"
-        data-placement = "right"
-        @click.stop    = "inverseSelection"
-      ></div>
-
-      <!-- TOGGLE FILTER -->
-      <div
-        v-show         = "state.show_tools && show_on_active_filter"
-        class          = "skin-color action-button"
-        :class         = "[ $fa('filter'), layer.state.filter.active ? 'toggled' : '' ]"
-        v-t-tooltip    = "'Enable/Disable filter'"
-        data-placement = "right"
-        @click.stop    = "toggleFilterToken(layer)"
-      ></div>
-
-    </div>
+    <!-- GLOBAL SEARCH -->
+    <input
+      ref          = "table_search"
+      type         = "search"
+      class        = "form-control search"
+      :placeholder = "$t('dosearch')"
+      style        = "margin-left: auto !important; margin-right: 1ch;"
+      @keyup       = "globalSearch"
+    />
 
     <!-- TABLE CONTENT -->
     <table
       v-if   = "state.headers.length"
       ref    = "attribute_table"
       id     = "layer_attribute_table"
-      class  = "table table-striped row-border compact nowrap"
     >
       <thead>
         <tr>
-          <th></th>
-          <th v-for = "(header, i) in state.headers" v-if = "i > 0">{{ header.label }}</th>
+          <th style="pointer-events: none;"></th>
+          <th
+            v-for          = "(header, i) in state.headers"
+            @click.stop    = "sortColumn(i)"
+            :class         = "[i === ordering[0] ? ordering[1] : '' ]"
+            :title         = "$t('sort by:') + ' ' + header.name"
+            data-placement = "top"
+            :style         = "{'width': `${100 / state.headers.length }%`}"
+          >{{ header.label }}</th>
         </tr>
         <tr>
-          <th v-disabled = "disableSelectAll">
-            <label @click = "selectAllRows">
-              <input type = "checkbox" :checked = "state.selectAll && state.features.length > 0" />
+          <th v-disabled       = "disableSelectAll">
+            <label @click.stop = "setSelection('all')">
+              <input type = "checkbox" :checked = "all " />
             </label>
           </th>
-          <th v-for = "(header, i) in state.headers" v-if = "i > 0">
+          <th v-for = "(header, i) in state.headers">
             <input
-              type         = "text"
-              class        = "form-control column-search"
-              @keyup       = "changeColumn($event, i)"
-              :placeholder = "header.name"
-              :title       = "'search by ' + header.name"
+              type           = "text"
+              class          = "form-control column-search"
+              @keyup         = "changeColumn($event, i)"
+              :placeholder   = "header.name"
+              :title         = "$t('search by:') + ' ' + header.name"
+              data-placement = "bottom"
             />
           </th>
         </tr>
       </thead>
-
-      <!-- ORIGINAL SOURCE: src/components/TableBody.vue@3.9.3 -->
-      <tbody id = "table_body_attributes" hidden></tbody>
-      <tbody ref = "table_body" @mouseleave = "highlight()">
+      <tbody @mouseleave = "highlight()">
         <tr
           v-for       = "(feature, i) in state.features" :key = "feature.id"
-          role        = "row"
           @mouseover  = "highlight(feature, false)"
           @click.stop = "highlight(feature, true)"
           :class      = "[
@@ -104,34 +86,49 @@
           <td>
             <div style = "display: flex">
               <label
-                v-if   = "show_on_active_filter"
+                v-if   = "!layer.state.filter.active"
                 @click = "select(feature)"
               >
                 <input type = "checkbox" :checked = "feature.selected" />
               </label>
-               <i
-                @click.stop     = "openForm(feature)"
-                v-t-tooltip:top = "'Form View'"
-                :class          = "'action-button skin-color ' + $fa('table')"
+              <i
+                v-if           = "layer.isEditable() && (layer.config.editing || {}).visible"
+                @click.stop    = "editFeature(feature)"
+                title          = "Editing"
+                data-placement = "top"
+                class          = "action-button skin-color fas fa-pencil-alt"
               ></i>
               <i
-                v-if            = "layer.state.geolayer && !feature.geometry"
-                v-t-tooltip:top = "'This item has no geometry'"
-                style           = "color: currentColor !important;"
-                :class          = "'action-button ' + $fa('alert')"
+                @click.stop    = "openForm(feature)"
+                title          = "Form View"
+                data-placement = "top"
+                class          = "action-button skin-color fas fa-table"
               ></i>
               <i
-                v-if            = "layer.isEditable() && layer.config.editing.visible"
-                @click.stop     = "editFeature(feature)"
-                v-t-tooltip:top = "'Editing'"
-                :class          = "'action-button skin-color ' + $fa('pencil')"
+                v-if           = "layer.hasRelations()"
+                @click.stop    = "showRelations(feature)"
+                title          = "Show Relations"
+                data-placement = "top"
+                class          = "action-button skin-color fas fa-sitemap"
+              ></i>
+              <i
+                v-if           = "layer.state.geolayer && !feature.geometry"
+                title          = "This item has no geometry"
+                data-placement = "top"
+                style          = "color: currentColor !important;"
+                class          = "action-button fas fa-exclamation-triangle"
               ></i>
             </div>
           </td>
-          <td v-for = "(header, j) in state.headers" v-if="j > 0">
+          <td v-for = "header in state.headers">
             <field
               :feature = "feature"
-              :state   = "({ label: undefined, value: feature.attributes[header.name] })"
+              :state   = "({ 
+                label: undefined,
+                //@since 4.1.0 support array value in attribute table https://github.com/g3w-suite/g3w-client-plugin-editing/issues/186
+                value: Array.isArray(feature.attributes[header.name]) ? feature.attributes[header.name].join(',') : feature.attributes[header.name],
+                name: header.name 
+              })"
             />
           </td>
         </tr>
@@ -139,45 +136,83 @@
 
     </table>
     <div v-else id = "noheaders" v-t = "'No data'"></div>
+
+    <!-- TABLE TOOLBAR -->
+    <div class = "table-toolbar" style = "display: flex; gap: 1ch; margin-top: 1ch;">
+
+      <!-- FETCH DATA FROM BBOX -->
+      <button
+        v-if            = "layer.isGeoLayer()"
+        v-disabled      = "state.geolayer.active && current_layout.rightpanel.height_100"
+        :class          = "['btn', state.geolayer.active ? 'toggled' : '' ]"
+        title           = "Update results when map moves"
+        data-placement  = "top"
+        @click.stop     = "getDataFromBBOX"
+      ><i class = "far fa-map"></i></button>
+
+      <!-- CLEAR SELECTION -->
+      <button
+        v-show          = "layer.state.selection.active"
+        class           = "btn"
+        title           = "Clear Selection"
+        data-placement  = "top"
+        @click.stop     = "layer.clearSelectionFids()"
+      ><i class = "fas fa-broom"></i></button>
+
+      <!-- INVERSE SELECTION -->
+      <button
+        v-show          = "!layer.state.filter.active && layer.state.selection.active"
+        :class          = "[ 'btn', layer.state.filter.active ? 'g3w-disabled': '' ]"
+        title           = "Invert Selection"
+        data-placement  = "top"
+        @click.stop     = "setSelection('inverse')"
+      ><i class = "fas fa-exchange-alt"></i></button>
+
+      <!-- TOGGLE FILTER -->
+      <button
+        v-show          = "layer.state.selection.active && !layer.state.filter.pagination"
+        :class          = "[ 'btn', layer.state.filter.active ? 'toggled' : '' ]"
+        title           = "Enable/Disable filter"
+        data-placement  = "top"
+        @click.stop     = "layer.toggleToken()"
+      ><i class = "fas fa-filter"></i></button>
+
+      <!-- PAGE SIZE -->
+      <label style = "margin-top: 5px;">
+        <select style = "border: 1px solid #aaa;" v-model = "search.page_size">
+          <option v-for = "l in PAGELENGTHS" :value = "l">{{ l }}</option>
+        </select> {{ $t('values per page') }}
+      </label>
+
+      <!-- PAGINATION BUTTONS -->
+      <div style="margin-left: auto;">
+        <select
+          v-model         = "search.page"
+          style           = "padding: 5px 12px; appearance: none; border: 0; text-align: center; border-radius: 3px; cursor: pointer;"
+          :title          = "search.page + $t(' of ') + pages"
+          data-placement  = "top"
+        >
+          <option v-for = "p in pages" :selected = "p == search.page">{{ p }}</option>
+        </select>
+        {{ $t(' of ') + pages }}
+        <button v-if="pages > 1" title="Backward" data-placement="top" @click.stop = "search.page = Number(search.page) - 1" class = "btn" v-disabled = "1 == search.page">🞀</button>
+        <button v-if="pages > 1" title="Forward"  data-placement="top" @click.stop = "search.page = Number(search.page) + 1" class = "btn" v-disabled = "pages == search.page">🞂</button>
+      </div>
+
+    </div>
+
   </div>
 </template>
 
 <script>
-import {
-  SELECTION,
-  PAGELENGTHS
-}                                  from 'g3w-constants';
-import Component                   from 'g3w-component';
-import ApplicationState            from 'store/application';
-import Field                       from 'components/FieldG3W.vue';
-import GUI                         from 'services/gui';
-import DataRouterService           from 'services/data';
-import { debounce }                from 'utils/debounce';
-import { promisify }               from 'utils/promisify';
-import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
-import { gettext as _ }            from 'g3w-i18n';
-
-function toOLGeom(geom) {
-  return new (Object.entries({
-    'MultiPolygon': ol.geom.MultiPolygon,
-    'MultiLine':    ol.geom.MultiLineString,
-    'MultiPoint':   ol.geom.MultiPoint,
-    'Polygon':      ol.geom.Polygon,
-    'Line':         ol.geom.LineString,
-    'Point':        ol.geom.Point,
-    '':             ol.geom.Point, // fallback
-  }).find(o => geom.type.startsWith(o[0])))[1](geom.coordinates);
-}
-
-function _createFeatureForSelection(f) {
-  return {
-    id: f.id,
-    feature: {
-      attributes: f.attributes || f.properties,
-      geometry:   f.geometry ? toOLGeom(f.geometry) : f.geometry,
-    },
-  }
-}
+import { PAGELENGTHS }         from 'g3w-constants';
+import Component               from 'g3w-component';
+import ApplicationState        from 'g3w-state';
+import Field                   from 'components/FieldG3W.vue';
+import GUI                     from 'g3w-app';
+import { debounce }            from 'utils/debounce';
+import { getCatalogLayerById } from 'utils/getCatalogLayerById';
+import { gettext as _ }        from 'g3w-i18n';
 
 export default {
 
@@ -188,18 +223,18 @@ export default {
   },
 
   data() {
-    const layer = getCatalogLayerById(this.$options.layerId);
-
+    const layer   = getCatalogLayerById(this.$options.layerId);
+    const headers = layer.getTableHeaders();
     return {
       layer,
       state: {
+        id:            layer.getId(),         // @since 4.1.0 aligned with query state layer
+        selection:     layer.state.selection, // @since 4.1.0 aligned with query state layer
+        filter:        layer.state.filter,    // @since 4.1.0 aligned with query state layer
         features:      [],
-        headers:       [null, ...layer.getTableHeaders()], // first value is `null` for DataTable purpose (used to add a custom input selector)
+        headers,      
         geometry:      true,
         allfeatures:   0,
-        selectAll:     false,
-        nofilteredrow: false,
-        show_tools:    false,
         geolayer: {
           active:    false,
           in_bbox:   undefined,
@@ -218,45 +253,46 @@ export default {
       filter:              [],
       has_map:             true,
       async_highlight:     () => {},
-      getAll:              false,
-      search:              {},
-      firstCall:           true,
-      map_bbox:            { key: null, cb: null },
       disableSelectAll:    false,
+      all:                 false,  // whehter all loaded features are selected
+      PAGELENGTHS,
+      ordering:            [0, 'asc'],
+      search: {
+        field:     undefined,
+        page:      1,              // current page
+        page_size: PAGELENGTHS[1],
+        search:    null,
+        in_bbox:   undefined,
+        ordering:  headers[0].name,
+        formatter: 1,
+      }
     };
   },
   
   computed: {
 
     /**
-     * @returns { Boolean } In case of filter without pagination active
-     * 
-     * @since 4.0.0
+     * @since 4.1.0
      */
-    show_on_active_filter() {
-      return !this.layer.state.filter.pagination && (this.layer.state.filter.active || !this.layer.state.selectionFids.has('__ALL__'));
+    pages() {
+      return Math.ceil(this.state.allfeatures / this.search.page_size);
     },
-
     current_layout() {
-      return ApplicationState.gui.layout[ApplicationState.gui.layout.__current];
+      return ApplicationState.layout[ApplicationState.layout.__current];
     }
 
   },
 
-  methods: {
-
-    /**
-     * @param layer
-     * 
-     * @since 3.11.0
-     */
-    toggleFilterToken(layer) {
-      // get selection features in case of autofilter + pagination
-      if (layer.state.filter.active && !layer.state.selectionFids.has('__ALL__')) {
-        this.state.selectAll = false;
-      }
-      layer.toggleFilterToken();
+  watch: {
+    async 'search.page_size'(length) {
+      this.reload({ length });
     },
+    async 'search.page'(page) {
+      this.reload({ page });
+    },
+  },
+
+  methods: {
 
     /**
      * @param feature
@@ -264,10 +300,7 @@ export default {
      * @since 3.10.0
      */
     editFeature(feature) {
-      $('.tooltip').remove();
-      GUI
-        .getService('queryresults')
-        .editFeature({ layer: { id: this.layer.getId() }, feature })
+      GUI.editFeature({ layer: { id: this.layer.getId() }, feature });
     },
 
     /**
@@ -276,148 +309,88 @@ export default {
      * @since 3.10.0
      */
      async openForm(feature) {
-      $('.tooltip').remove();
       try {
-        await promisify(
-          DataRouterService.getData('search:fids', {
-            inputs: {
-              layer:     this.layer,
-              fids:      [feature.id],
-              formatter: 1
-            }
-          })
-        );
+        await GUI.getData('search:fids', {
+          inputs: {
+            layer:     this.layer,
+            fids:      [feature.id],
+            formatter: 1
+          }
+        });
         // zoom to feature
         if (feature.geometry) {
-          GUI.getService('map').zoomToGeometry(toOLGeom(feature.geometry));
+          GUI.zoomToExtent((new (Object.entries({
+            'MultiPolygon': ol.geom.MultiPolygon,
+            'MultiLine':    ol.geom.MultiLineString,
+            'MultiPoint':   ol.geom.MultiPoint,
+            'Polygon':      ol.geom.Polygon,
+            'Line':         ol.geom.LineString,
+            'Point':        ol.geom.Point,
+            '':             ol.geom.Point, // fallback
+          }).find(o => feature.geometry.type.startsWith(o[0])))[1](feature.geometry.coordinates))?.getExtent());
         }
-      } catch (e) {
+      } catch(e) {
        console.warn(e); 
       }
     },
 
-    async getDataFromBBOX() {
-      const map = GUI.getService('map');
+    /**
+     * @param feature
+     * 
+     * @since 4.1.0
+     */
+    showRelations(feature) {
+      GUI.showRelations({ feature, layerId: this.layer.getId(), push: false });
+    },
 
+    /**
+     * @since 4.1.0
+     */
+    showMetadata() {
+      $('#modal-metadata').modal('show');
+      setTimeout(() => document.querySelector('#modal-metadata [href="#metadata_layers"]').click());
+    },
+
+    async getDataFromBBOX() {
       this.state.geolayer.active = !this.state.geolayer.active;
 
       const is_active = this.state.geolayer.active;
 
       if (is_active) {
-        this.map_bbox.cb = () => {
-          this.state.geolayer.in_bbox = this.state.geolayer.active ? map.getMapBBOX().join(',') : undefined;
-          $(this.$refs.attribute_table).DataTable().ajax.reload();
+        this.onMoveEnd = () => {
+          this.state.geolayer.in_bbox = this.state.geolayer.active ? GUI.getMapBBOX().join(',') : undefined;
+          this.reload();
         };
       }
 
       if (is_active) {
-        this.map_bbox.key = map.getMap().on('moveend', this.map_bbox.cb);
+        GUI.getMap().on('moveend', this.onMoveEnd);
       }
 
-      if (this.map_bbox.cb) {
-        this.map_bbox.cb();
-      }
+      this?.onMoveEnd?.();
 
       // reset bbox event handler
       if (!is_active) {
-        ol.Observable.unByKey(this.map_bbox.key);
-        this.map_bbox.key = null;
-        this.map_bbox.cb  = null;
+        GUI.getMap().un('moveend', this.onMoveEnd);
+        this.onMoveEnd = null;
       }
-    },
-
-    async inverseSelection() {
-      // get all features
-      if (!this.getAll) {
-        await this.getFeatures()
-      }
-      this.state.features.forEach(f => f.selected = !f.selected);
-      this.layer.invertSelectionFids();
-      this.state.selectAll = this.layer.getSelectionFids().has(SELECTION.ALL) || this.state.features.every(f => f.selected);
-    },
-
-    async selectAllRows() {
-
-      // inverse selection (all)
-      this.state.selectAll = !this.state.selectAll;
-
-      // wait for DOM changes
-      await this.$nextTick();
-
-      // check if has columns filter
-      const filter = this.filter.length > 0;
-
-      // get all features when any kind of filter is unset
-      if (!filter && this.state.selectAll && !this.getAll) {
-        await this.getFeatures(); 
-      }
-
-      // no filter
-      if (!filter) {
-        this.state.features.forEach(f => f.selected = this.state.selectAll)                      // select each feature
-        await this.layer[this.state.selectAll ? 'setSelectionFidsAll' : 'clearSelectionFids'](); // toggle selection (filter token)
-      }
-
-      // column filter
-      if (filter && this.state.selectAll && this.state.allfeatures > this.state.featurescount) {
-        await this.layer.clearSelectionFids();                                                   // clear selection ids
-        this.state.selectAll = true;                                                             // force selectAll
-        this.state.features.splice(0);                                                           // reset features
-        await this.$nextTick();                                                                  // wait for DOM changes
-        (await this.getFeatures({ field: this.search.field }) || [])
-          .forEach(f => {
-            const geometry = (this.layer.isGeoLayer() && f.geometry) || undefined;
-            f.selected = this.state.selectAll;
-            if (geometry) {
-              this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
-            }
-            this.layer.includeSelectionFid(f.id);
-            this.state.features.push({
-              id:         f.id,
-              selected:   f.selected,                                                            // whether filter token comes from a pagination
-              attributes: f.attributes || f.properties,
-              geometry
-          });
-        })
-      }
-
-      /** @FIXME add description */
-      if (filter && this.state.selectAll && this.state.allfeatures <= this.state.featurescount) {
-        this.state
-          .features
-          .filter(f => this.filter.includes(f.id))
-          .forEach(f => {
-            f.selected = true;
-            this.layer.includeSelectionFid(f.id);
-          });
-      }
-
-      /** @FIXME add description */
-      if (filter && !this.state.selectAll) {
-        this.state.features.forEach(f => f.selected = false);
-        await this.layer.clearSelectionFids();
-      }
-
-      this.state.show_tools = this.state.features.some(f => f.selected);
     },
 
     /**
      * Highlight or zoom to feature
      * 
      * @param {*} feature
-     * @param {*} zoom    - whether zoom to feature
+     * @param { boolean } zoom    - whether zoom to feature
      */
     async highlight(feature, zoom = true) {
-      const map = GUI.getService('map');
-
       // no feature or no feature geometry → clear highlight
       if (!feature || !feature.geometry) {
-        return map.clearHighlightGeometry();
+        return GUI.highlight(false);
       }
 
       this.async_highlight = () => {
-        map.clearHighlightGeometry();
-        map.highlightGeometry(feature.geometry, { zoom, duration: Infinity })
+        GUI.highlight(false);
+        GUI.highlight(feature.geometry, { zoom, duration: Infinity });
       };
 
       // sync highlight
@@ -438,7 +411,7 @@ export default {
         const values = fields.map(f => feature.attributes[f]);
         field_values.push(values);
         return zoom
-          ? DataRouterService.getData('search:features', {
+          ? GUI.getData('search:features', {
               inputs: {
                 layer,
                 formatter: 1,
@@ -459,9 +432,25 @@ export default {
             features.push(...relation.features[k]);
           }
           if (zoom) {
-            map.zoomToFeatures(features, { highlight: true });
+            GUI.zoomToFeatures(features, { highlight: true });
           } else {
-            map.highlightFeatures(features);
+            let type, geometry;
+            const coordinates = features
+              .map(f => f.getGeometry ? f.getGeometry() : f.geometry)
+              .map(geom => {
+                type = type ? type : (geom instanceof ol.geom.Geometry) ? geom.getType() : geom.type;
+                return geom?.getCoordinates?.() ?? geom.coordinates;
+              });
+
+            //check if features have geometry
+            if (coordinates.length > 0) {
+              try {
+                geometry = new ol.geom[type.includes('Multi') ? type : `Multi${type}`](type.includes('Multi') ? coordinates.flat(): coordinates);
+              } catch(e) {
+                console.warn(e);
+              }
+            }
+            GUI.highlight(geometry, { zoom: false });
           }
         });
     },
@@ -470,163 +459,115 @@ export default {
      * Add or Remove feature to selection
      */
     select(feature) {
-      feature.selected      = !feature.selected;                                                // inverse selected feature
-      this.state.selectAll  = this.state.features.every(f => f.selected);                       // check if all rows are selected
-      this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
-      this.state.show_tools = this.layer.getSelectionFids().size > 0;                           // show tools based on selected state
-    },
-
-    async resize() {
-      await this.$nextTick();
-      const table = this.$el.querySelector('div.dataTables_scrollBody');
-      if (table) {
-        table.style.height = GUI.isMobile() ? '100%' : (
-            (ApplicationState.viewport.content.sizes.height)                              // table height
-          - (this.$el.querySelector('div.dataTables_scrollHeadInner')?.clientHeight || 0) // table header height
-          - 100
-        ) + 'px';
-      }
-      // adjust columns when resize
-      $(this.$refs.attribute_table).DataTable().columns.adjust();
-    },
-
-    async getFeatures(params) {
-      try {
-        GUI.disableContent(true);
-        GUI.setLoadingContent(true);
-
-        const data     = await promisify(this.layer.getDataTable(params || {}));
-        const is_valid = this.layer.isGeoLayer() && data.features;
-
-        if (is_valid && !params) {
-          const loaded_features = this.state.features.map(f => f.id);
-          data.features
-            .filter(f => f.geometry && !loaded_features.includes(f.id))
-            .forEach(f => this.layer.addOlSelectionFeature(_createFeatureForSelection(f)));
-          this.getAll = true;
-        }
-
-        if (is_valid) {
-          return data.features;
-        }
-      } catch(e) {
-        console.warn(e);
-        return Promise.reject();
-      } finally {
-        GUI.setLoadingContent(false);
-        GUI.disableContent(false);
-      }
+      GUI.toggleSelection(this.state, feature);
     },
 
     /**
-     * Get DataTable layer
+     * @param { number } index column index
+     */
+    sortColumn(index) {
+      if (index === this.ordering[0]) {
+        this.ordering[1] = 'asc' === this.ordering[1] ? 'desc' : 'asc';
+      } else {
+        this.ordering[0] = index;
+        this.ordering[1] = 'asc';
+      }
+      this.reload({ ordering: index });
+    },
+
+    /**
+     * @param {'all' | 'inverse' } status whether to select all/inverse features
+     */
+    async setSelection(status) {
+      GUI.disableContent(true);
+      GUI.setLoadingContent(true);
+      try {        
+        const features = [
+          ...this.state.features,
+          ...((await this.layer.getDataTable({ formatter: 1, field: this.search.field }))?.features || [])
+            .filter(f => !this.state.features.find(({ id }) => id === f.id)).map(f => ({
+              id:         f.id,
+              selected:   this.layer.state.filter.active || this.all,
+              attributes: f.attributes || f.properties,
+              geometry:   f.geometry
+            }))
+        ]
+        await GUI.toggleSelection({ ...this.state, features }, status);
+        this.all = features.every(f => f.selected);
+      } catch(e) {
+        console.warn(e);
+      }
+      GUI.setLoadingContent(false);
+      GUI.disableContent(false);
+    },
+
+    /**
+     * Fetch data from server
      * 
-     * @param data.start
-     * @param data.order
-     * @param data.length
-     * @param data.columns
-     * @param data.search
-     * 
-     * @returns {Promise<{{ data: [], recordsTotal: number, recordsFiltered: number }}>}
+     * @param { Object } opts
+     * @param { number } opts.ordering
+     * @param { number } opts.length
+     * @param opts.columns
+     * @param { string } opts.search
+     * @param { number } opts.page current page
      */
     async getData({
-      start     = 0,
-      order     = [],
+      ordering  = 0,
       length    = this.layer.getAttributeTablePageLength() || PAGELENGTHS[1],
-      columns   = [],
-      search    = { value: null },
+      columns   = {},
+      search    = null,
+      page      = 1,
     } = {}) {
+      // no headers are set
+      if (0 === this.state.headers.length) {
+        return;
+      }
+
       GUI.setLoadingContent(true);
       GUI.disableContent(true);
 
       this.layer.setAttributeTablePageLength(length);
 
-      // no headers are set
-      if (0 === this.state.headers.length) {
-        return {
-          data:            [],
-          recordsTotal:    0,
-          recordsFiltered: 0
-        };
-      }
-
-      // reset features
-      this.state.features.splice(0);
-
-      await this.$nextTick();
-
-
-      if (0 === order.length) {
-        order.push({ column: 1, dir: 'asc', });
-      }
-
       this.search = {
-        field:     columns.filter(c => c.search && c.search.value).map((c, i, arr) => `${c.name}|ilike|${c.search.value}${i < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined,
-        page:      (start === 0 || this.layer.state.filter.active) ? 1 : (start/length) + 1, // get current page
+        field:     Object.entries(columns).filter(([_, v]) => v).map(([i, v], index, arr) => `${this.state.headers[i].name}|ilike|${v}${index < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined,
+        page,
         page_size: length,
-        search:    search.value && search.value.length > 0 ? search.value : null,
+        search:    search || null,
         in_bbox:   this.state.geolayer.in_bbox,
-        ordering:  ('asc' === order[0].dir ? '' : '-') + this.state.headers[order[0].column].name,
+        ordering:  ('asc' === this.ordering[1] ? '' : '-') + this.state.headers[ordering].name,
         formatter: 1,
       };
 
       try {
-        const data = await promisify(
-          this.layer.getDataTable(this.search)
-        );
+        const data     = await this.layer.getDataTable(this.search);
+        const features = (data.features || []).map(f => ({
+          id:         f.id,
+          selected:   this.layer.state.filter.active || this.layer.isSelected(f.id),
+          attributes: f.attributes || f.properties,
+          geometry:   f.geometry || undefined,
+        }));
 
         this.state.allfeatures   = data.count;
-        this.state.featurescount = (data.features || []).length;
+        this.state.featurescount = (features || []).length;
 
-        // add features
-        this.state.features.push(
-          ...(data.features || []).map(f => {
-            const has_geometry = this.layer.isGeoLayer() && f.geometry;
-            
-            if (has_geometry && !this.layer.getOlSelectionFeature(f.id)) {
-              f.selected = this.state.selectAll;
-              this.layer.addOlSelectionFeature(_createFeatureForSelection(f));
-              if (f.selected) {
-                this.layer.includeSelectionFid(f.id)
-              };
-            }
-
-            if (has_geometry && this.layer.getOlSelectionFeature(f.id)) {
-              f.selected = true;
-            }
-
-            return {
-              id:         f.id,
-              selected:   this.layer.getFilterToken() || this.layer.hasSelectionFid(f.id),
-              attributes: f.attributes || f.properties,
-              geometry:   this.layer.isGeoLayer() && f.geometry || undefined
-            };
-          })
-        );
-
-        this.state.show_tools = this.layer.state.filter.active || this.layer.getSelectionFids().size > 0;
-        this.state.selectAll  = this.layer.state.filter.active || this.state.selectAll && this.state.features.every(f => f.selected);
-
-        return {
-          data:            this.state.features.map(f => [null].concat(this.state.headers.filter(h => h).map(h => { h.value = (f.attributes || f.properties)[h.name]; return h.value; }))),
-          recordsFiltered: data.count,
-          recordsTotal:    data.count,
-          filter:          this.state.features.map(f => f.id),
-        };
+        // reset features
+        this.state.features.splice(0);
+        this.state.features.push(...features);
+        
+        this.all = this.layer.state.filter.active || this.layer.state.selection.fids.has('__ALL__') || (this.state.selectAll && this.state.features.every(f => f.selected));
+        
       } catch(e) {
         console.warn(e);
-        GUI.notify.error(_("info.server_error"));
-        return Promise.reject(e);
-      } finally {
-        GUI.setLoadingContent(false);
-        GUI.disableContent(false);
+        GUI.showUserMessage({ type: 'alert', message: _("info.server_error") });
       }
+
+      GUI.setLoadingContent(false);
+      GUI.disableContent(false);
     },
 
     unSelectAll() {
       this.state.features.forEach(f => f.selected = false);
-      this.state.show_tools = false;
-      this.state.selectAll  = false;
+      this.state.selection.active  = false;
     },
 
     onGUIContent(opts = {}) {
@@ -636,31 +577,24 @@ export default {
     /**
      * Reload data from server
      * 
-     * @since 3.10.0
+     * @since 4.1.0
      */
-    filterChangeHandler() {
-      $(this.$refs.attribute_table).DataTable().ajax.reload();
+    async reload(opts = {}) {
+      this.getData(opts).then(() => this.disableSelectAll = 0 === this.state.features.length);
     },
 
   },
 
-  /**
-   * TableService Class
-   * 
-   * ORIGINAL SOURCE: src/app/gui/table/tableservice.js@v3.9.3
-   */
   async created() {
-
-    GUI.on('resize', this.resize);
-
-    this.currentFilter = null
 
     this.unSelectAll  = this.unSelectAll.bind(this);
     this.onGUIContent = this.onGUIContent.bind(this)
 
     GUI.onbefore('setContent',         this.onGUIContent);
     this.layer.on('unselectionall',    this.unSelectAll);
-    this.layer.on('filtertokenchange', this.filterChangeHandler);
+    this.layer.on('filtertokenchange', this.reload);
+
+    this.globalSearch = debounce(e => this.getData({ search: e.target.value }));
 
     GUI.closeSideBar();
 
@@ -683,96 +617,45 @@ export default {
 
   async mounted() {
   
+    console.log(this.state.features)
     // un-toggle map controls
-    this.last_map_control = GUI.getService('map').getMapControls().find(c => c.control.isToggled && c.control.isToggled());
+    this.last_map_control = GUI.getMapControls().find(c => c?.control?.isToggled?.());
     if (this.last_map_control) {
-        this.last_map_control.control.toggle();
+      this.last_map_control.control.toggle();
     }
 
-    await this.$nextTick();
+    this.reload();
 
-    // resolve data from server
-    let resolve;
-    // store columns index value search
-    const filterColumns = {};
-
-    // set data table
-    const table = $(this.$refs.attribute_table).DataTable({
-      ajax: debounce(async (opts, cb) => {
-        GUI.disableContent(true);
-        try {
-          const data = await this.getData(opts);
-          cb(data);
-          this.disableSelectAll = 0 === this.state.features.length;
-          if (resolve) {
-            resolve(data.filter);
-          }
-          await this.$nextTick();
-          table.columns.adjust();
-        } catch(e) {
-          console.warn(e);
-        }
-        this.resize()
-      }, 800),
-      bSortCellsTop:  true,
-      columns:        this.state.headers,
-      columnDefs:     [{ orderable: false, searchable: false, targets: 0, width: '1%' }],
-      deferLoading:   this.state.allfeatures,
-      dom:            'frt<"#g3w-table-toolbar">lip',
-      lengthMenu:     PAGELENGTHS,
-      order:          [ 1, 'asc' ],
-      pageLength:     this.layer.getAttributeTablePageLength() || PAGELENGTHS[1],
-      processing:     false,
-      responsive:     true,
-      scrollCollapse: true,
-      scrollX:        true,
-      serverSide:     true,
-      sSearch:        false,
-    });
+    const columns = {}; // store columns index value search
 
     this.changeColumn = debounce(async (e, i) => {
-      const value = e.target.value.trim();
-      table.one('draw', async() => {
-        filterColumns[i]      = value;
-        this.disableSelectAll = 0 === this.state.features.length;
-        this.filter           = Object.values(filterColumns).find(f => f)
-          ? await (new Promise(res => resolve = res))
-          : [];
-      })
-      table.columns(i).search(value).draw();
+      columns[i] = e.target.value.trim();
+      this.getData({ columns });
     });
 
-    // move "table_toolbar" DOM element under datatable 
-    const fragment = document.createDocumentFragment();
-    fragment.appendChild(this.$refs.table_toolbar);
-    document.getElementById('g3w-table-toolbar').appendChild(fragment);
-
-    // move "dataTables_info" and "dataTables_filter" before header action tools
-    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', document.querySelector('.dataTables_info'));
-    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', document.querySelector('.dataTables_filter'));
-
-    // hide datatable rows → show only our custom "table_body"
-    document.getElementById('table_body_attributes').remove();
-
-    table.ajax.reload();
+    // move "table_metadata", "table_info" and "table_search" before header action tools
+    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', this.$refs['table_metadata']);
+    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', this.$refs['table_info']);
+    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', this.$refs['table_search']);
   },
 
   async beforeDestroy() {
 
     // restore any previous active map control
-    if (this.last_map_control && !this.last_map_control.control.isToggled()) {
+    if (false === this?.last_map_control?.control?.isToggled()) {
      this.last_map_control.control.toggle();
     }
 
     this.last_map_control = null;
 
     this.layer.off('unselectionall',    this.unSelectAll);
-    this.layer.off('filtertokenchange', this.filterChangeHandler);
+    this.layer.off('filtertokenchange', this.reload);
 
     // reset bbox event handler
-    ol.Observable.unByKey(this.map_bbox.key);
-    this.map_bbox.key = null;
-    this.map_bbox.cb  = null;
+    if (this.onMoveEnd) {
+      GUI.getMap().un('moveend', this.onMoveEnd);
+      this.onMoveEnd = null;
+    }
 
     this.highlight();
 
@@ -784,87 +667,94 @@ export default {
       });
     }
 
-    GUI.off('resize', this.resize);
-
-    document.querySelector('#g3w-view-content .dataTables_info').remove();
-    document.querySelector('#g3w-view-content .dataTables_filter').remove();
-    $(this.$refs.attribute_table).DataTable().destroy(true);
+    this.$refs['table_metadata'].remove();
+    this.$refs['table_info'].remove();
+    this.$refs['table_search'].remove();
   },
 
 };
 </script>
 
-<style>
-#open_attribute_table {
-  margin-top: 5px;
-}
-
-#g3w-table-toolbar {
-  margin: 0.755em 1ch 0 0;
-  position: relative;
-  bottom: 3px;
-  display: inline-flex;
-  border: 1px solid #d2d6de;
-  background-color: #fff;
-  float: left;
-}
-</style>
-
 <style scoped>
   .geometry {
     cursor: pointer
   }
+
   #noheaders {
-    background-color: #ffffff;
+    background-color: #fff;
     font-weight: bold;
     margin-top: 10px;
   }
-  input.form-control.column-search::placeholder{
+
+  input.form-control.column-search::placeholder {
     font-weight: normal;
     font-style: italic;
   }
+
   input.form-control.column-search {
     height: 25px;
     min-width: 40px;
     padding: 2px;
   }
-  #open_attribute_table .action-button {
-    padding: 5px;
+
+  #open_attribute_table {
+    margin-top: 5px;
   }
-  #g3w-table-toolbar .action-button {
-    padding: 4px;
+
+  .action-button {
+    padding: 5px !important;
   }
-  #g3w-table-toolbar .action-button.toggled {
-    color: #FFFFFF !important;
+
+  button.toggled {
+    color: #FFF !important;
     background-color: var(--skin-color);
   }
-  #layer_attribute_table {
+
+  table {
     width: 100%;
     user-select: none;
+    display: block;
+    height: calc(100% - 25px);
+    overflow: auto;
+    border-collapse: separate
   }
-  #layer_attribute_table > tbody > tr:not(.selected):hover {
+
+  thead {
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+  }
+
+  tbody > tr.selected {
+    box-shadow: inset 0 0 0 9999px rgb(13, 110, 253, .9);
+    color: #fff;
+  }
+
+  tbody > tr:not(.selected):hover {
     background-color: rgb(255, 255, 0, 0.15);
   }
-</style>
 
-<style>
-  #g3w-view-content .dataTables_filter {
-    margin-left: auto;
-    margin-right: 1ch;
+  th, td {
+    white-space: nowrap;
   }
-  #g3w-view-content .dataTables_info {
-    padding-left: .5ch;
-    font-weight: lighter;
+
+  th {
+    cursor: pointer;
   }
-  #open_attribute_table .paginate_button {
-    background: transparent;
-    color: currentColor !important;
-    box-shadow: none;
+
+  td {
+    border-top: 1px solid rgba(0,0,0,.15);
   }
-  #open_attribute_table .paginate_button.disabled {
-    opacity: 0.25;
-  }  
-  #open_attribute_table #layer_attribute_table_length {
-    padding-top: 5px;
+
+  th.asc, th.desc { 
+    border-top: var(--skin-color) medium solid;
+  }
+
+  th.asc::after {
+    content: "▴";
+  }
+
+  th.desc::after {
+    content: "▾";
   }
 </style>

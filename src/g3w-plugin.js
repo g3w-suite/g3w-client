@@ -3,39 +3,56 @@
  * @since 3.11.0
  */
 
-import G3WObject          from 'g3w-object';
-import Component          from 'g3w-component';
-import ApplicationState   from 'store/application';
-import PluginsRegistry    from 'store/plugins';
-import GUI                from 'services/gui';
-import { toRawType }      from 'utils/toRawType';
-import { gettext as _ }   from 'g3w-i18n';
-
-/** @deprecated */
-import _cloneDeep         from 'lodash.clonedeep';
+import Emitter          from 'g3w-emitter';
+import Component        from 'g3w-component';
+import ApplicationState from 'g3w-state';
+import GUI              from 'g3w-app';
+import { toRawType }    from 'utils/toRawType';
+import { cloneDeep }    from 'utils/cloneDeep';
+import { waitFor }      from 'utils/waitFor';
+import { gettext as _ } from 'g3w-i18n';
 
 const TIMEOUT = 10000;
 
 /**
  * ORIGINAL SOURCE: src/app/core/plugin/plugin.js@v3.10.2
  */
-export class Plugin extends G3WObject {
+export class Plugin extends Emitter {
   
   constructor({
     name         = null,
-    config       = ApplicationState.pluginsConfigs[name],
+    config       = window.initConfig.plugins[name],
     service      = null,
     dependencies = [],
+    /** @type { Object | string } a i18n object or a path to i18n folder (lazy loading) */
     i18n         = null,
     fontClasses  = [],
     api          = {},
+    /** @since 4.1.0 */
+    layersStore  = false,
   } = {}) {
   
     super();
 
     this.setName(name);
     this.setConfig(config);
-    this.setLocale(i18n);
+
+    // i18n object
+    if ('object' === typeof i18n) {
+      this.setLocale(i18n);
+    }
+
+    // lazy load i18n
+    if ('string' === typeof i18n) {
+      Vue.watch(() => ApplicationState.language, async lang => {
+        try {
+          this.setLocale({ [lang]: (await import(`${i18n.replace(/\/+$/, '')}/${lang}.js`)).default });
+        } catch(e) {
+          console.warn(e);
+        }
+      }, { immediate: true });
+    }
+
     this.setService(service);
     this.setDependencies(dependencies);
     this.addFontClasses(fontClasses);
@@ -55,10 +72,13 @@ export class Plugin extends G3WObject {
       ApplicationState.plugins = ApplicationState.plugins.filter(p => this.name !== p); // remove loading plugin
       // remove layout
       if (this.name) {
-        delete ApplicationState.gui.layout[this.name]
+        delete ApplicationState.layout[this.name];
       }
     }, TIMEOUT);
 
+    if (layersStore && name) {
+      ApplicationState.layers[name] = layersStore;
+    }
   }
 
   /**
@@ -88,7 +108,7 @@ export class Plugin extends G3WObject {
    * @param { String } name
    */
   getConfig(name) {
-    return this.config || ApplicationState.pluginsConfigs[name || this.name];
+    return this.config || window.initConfig.plugins[name || this.name];
   }
 
   /**
@@ -130,7 +150,7 @@ export class Plugin extends G3WObject {
    * @FIXME add description
    */
   getService() {
-    return this.service
+    return this.service;
   }
 
   /**
@@ -176,10 +196,10 @@ export class Plugin extends G3WObject {
   /**
    * Override plugin's content default layout (eg. default panel width, height, ...)
    * 
-   * @see g3wsdk.core.ApplicationState.gui.layout
+   * @see g3wsdk.core.ApplicationState.layout
    */
   setLayout(config) {
-    config = undefined !== config ? config : _cloneDeep(ApplicationState.gui.layout.app);
+    config = config ?? cloneDeep(ApplicationState.layout.app);
 
     const default_config = config.rightpanel || {
       width:          50, // ie. width == 50%
@@ -198,17 +218,17 @@ export class Plugin extends G3WObject {
       }
     );
 
-    ApplicationState.gui.layout[this.name] = config;
+    ApplicationState.layout[this.name] = config;
 
   }
 
   /**
    * @FIXME add description
    * 
-   * @see g3wsdk.core.ApplicationState.gui.layout.__current
+   * @see g3wsdk.core.ApplicationState.layout.__current
    */
   setCurrentLayout() {
-    ApplicationState.gui.layout.__current = this.name;
+    ApplicationState.layout.__current = this.name;
   }
 
   /**
@@ -250,7 +270,7 @@ export class Plugin extends G3WObject {
   registerPlugin(gid) {
     const iscompatible  = this.isCurrentProjectCompatible(gid);
     if (iscompatible) {
-      PluginsRegistry.registerPlugin(this);
+      GUI.registerPlugin(this);
     } else {
       ApplicationState.plugins = ApplicationState.plugins.filter(p => this.name !== p); // remove loading plugin
       clearTimeout(this._timeout);
@@ -259,7 +279,7 @@ export class Plugin extends G3WObject {
   }
 
   /**
-   * @FIXME explain better what it does
+   * Used by the following plugins: "archiweb"
    * 
    * Get plugin dependencies
    */
@@ -269,9 +289,7 @@ export class Plugin extends G3WObject {
   }
 
   /**
-   * @FIXME explain better what it does
-   * 
-   * Create to not replace above plugin method used by non changed old plugin
+   * Used by the following plugins: "iframe", "sispi-worksite", "simplereporting"
    */
   async getDependencyPluginsObject(pluginsName) {
     const api      = {};
@@ -281,24 +299,13 @@ export class Plugin extends G3WObject {
   }
 
   /**
-   * @FIXME explain better what it does
-   * 
-   * Get plugin dependency
+   * @deprecated plugin APIs are deprecated, use `GUI.getPlugin(name)` instead.
    */
-  getDependencyPlugin(pluginName) {
+  async getDependencyPlugin(pluginName) {
     // is there a plugin
-    if (ApplicationState.pluginsConfigs[pluginName]) {
-      return new Promise((resolve) => {
-        const plugin = PluginsRegistry.getPlugin(pluginName);
-        /**
-         * @TODO refactor weird shortcircuiting logic
-         */
-        plugin
-        && plugin.isReady().then(() => resolve(plugin.getApi()))
-        || PluginsRegistry.onafter('registerPlugin', plugin => {
-          (pluginName === plugin.name) && plugin.isReady().then(() => resolve(plugin.getApi()))
-        });
-      })
+    if (window.initConfig.plugins[pluginName]) {
+      await waitFor(() => GUI.getPlugin(pluginName)?.isReady?.());
+      return GUI.getPlugin(pluginName).getApi();
     }
     return Promise.reject({ error: 'no plugin' });
   }
@@ -340,14 +347,14 @@ export class Plugin extends G3WObject {
           return {
           icon:     tool.icon,
           type:     tool.type,
-          name:     config.name || tool.name,
+          name:     config?.name ?? tool.name,
           html:     tool.html,
           options:  tool.options || {},
-          action:   tool.action && tool.action.bind(this, config),
-          loading:  undefined !== tool.loading  ? tool.loading  : false,
-          disabled: undefined !== tool.disabled ? tool.disabled : false,
-          offline:  undefined !== tool.offline  ? tool.offline  : true,
-          state:    undefined !== tool.state    ? tool.state    : ({ type: null, message: null })
+          action:   tool?.action?.bind?.(this, config),
+          loading:  tool?.loading ?? false,
+          disabled: tool?.disabled ?? false,
+          offline:  tool?.offline ?? true,
+          state:    tool?.state ?? ({ type: null, message: null })
         };
       });
       this.getHookService(hook).addTools(tools, group);
@@ -406,34 +413,15 @@ export class Plugin extends G3WObject {
     opts.mobile             = opts.mobile         ?? true;
     opts.sidebarOptions     = opts.sidebarOptions ?? { position: 1 };
 
-    GUI.addComponent(new Component(opts), 'sidebar', opts.sidebarOptions);
-
-    this.once('unload', () => GUI.removeComponent(opts.id, 'sidebar', opts.sidebarOptions));
+    GUI.addComponent(new Component(opts), opts.sidebarOptions);
 
     return GUI.getComponent(opts.id) ;
   }
 
   /**
-   * @deprecated since v3.4.
+   * @TODO depecrate?
    * 
-   * @virtual method need to be implemented by subclasses
-   */
-  unload() {
-    if (this.service) {
-      this.service.clearAllEvents();
-    }
-    this.emit('unload');
-  }
-
-  /**
-   * @deprecated since v3.4.
-   * 
-   * @virtual method need to be implemented by subclasses
-   */
-  load() { }
-
-  /**
-   * @TODO it could be depecrated after v3.4 ?
+   * used by the following plugins: "processing"
    */
   getProject() {
     return ApplicationState.project;
@@ -464,8 +452,34 @@ export class Plugin extends G3WObject {
 
 /**
  * ORIGINAL SOURCE: src/app/core/plugin/pluginservice.js@v3.10.2
+ * 
+ * Used by the following plugins:
+ * - "bforest",
+ * - "fsimulator",
+ * - "gsk",
+ * - "ws-trento",
+ * - "br-service",
+ * - "cdu",
+ * - "iternet",
+ * - "geonotes",
+ * - "billboards",
+ * - "politowps",
+ * - "law",
+ * - "cadastre",
+ * - "simplereporting"
+ * - "sispi-worksite",
+ * - "stress",
+ * - "archiweb",
+ * - "datasinc",
+ * - "arpalombardia-charts",
+ * - "innovapuglia",
+ * - "iframe",
+ * - "openrouteservice",
+ * - "qtimeseries",
+ * 
+ * @deprecated use `new (class extends Plugin {})` instead
  */
-export class PluginService extends G3WObject {
+export class PluginService extends Emitter {
 
   constructor(opts = {}) {
     super(opts);
@@ -476,10 +490,10 @@ export class PluginService extends G3WObject {
     };
     this._pluginEvents = {};
     this._appEvents    = [];
-    this.currentLayout = ApplicationState.gui.layout.__current;
+    this.currentLayout = ApplicationState.layout.__current;
     this.vm = new Vue();
     this.unwatch = this.vm.$watch(
-      () => ApplicationState.gui.layout.__current,
+      () =>         ApplicationState.layout.__current,
       layoutName => this.currentLayout = layoutName === this.name ? this.currentLayout : layoutName
     )
   }
@@ -494,7 +508,7 @@ export class PluginService extends G3WObject {
   }
 
   resetCurrentLayout() {
-    ApplicationState.gui.layout.__current = this.currentLayout;
+    ApplicationState.layout.__current = this.currentLayout;
   }
 
   // set owner plugin of the service
@@ -516,7 +530,7 @@ export class PluginService extends G3WObject {
   }
 
   getGid() {
-    return this.config.gid && this.config.gid.split(':')[1];
+    return this.config?.gid?.split?.(':')[1];
   }
 
   getConfig() {

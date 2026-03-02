@@ -24,8 +24,7 @@
 <script>
 import { selectMixin }    from 'mixins';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
-
-const Input              = require('gui/inputs/input');
+import Input              from 'components/g3w-input';
 
 export default {
 
@@ -39,9 +38,9 @@ export default {
   async mounted() {
     await this.$nextTick();
     this.select2 = $(`#${this.id}`).select2({
-      dropdownParent: $('#g3w-view-content'),
-      tags: this.state.input.options.editable,
-      language: this.getLanguage()
+      dropdownParent: document.querySelector('#g3w-view-content'),
+      tags:           this.state.input.options.editable,
+      language:       window.initConfig.user.i18n || "en"
     });
     if (null !== this.state.value) {
       this.select2.val(this.state.value).trigger('change');

@@ -5,18 +5,21 @@
 
 <template>
   <ul
-    v-if  = "show"
     id    = "g3w-search"
-    class ="treeview-menu g3w-search g3w-tools menu-items"
+    class = "treeview-menu g3w-search g3w-tools menu-items"
   >
 
     <!-- SAVED SEARCHES (from g3w-admin) -->
     <li
-      v-for  = "search in state.searches"
-      class  = "menu-item"
-      @click = "showPanel(search)"
+      v-for    = "search in state.searches"
+      class               = "menu-item"
+      @click              = "showPanel(search)"
+      @keydown.enter.stop = "showPanel(search)"
+      role                = "button"
+      tabindex            = "0"
+      
     >
-      <i :class = "$fa('empty-circle')"></i>
+      <i aria-hidden = "true" class = "far fa-circle"></i>
       <span>{{ search.name }}</span>
     </li>
 
@@ -32,26 +35,37 @@
       <div style = "position:relative" @click = "edit(search)">
         <bar-loader :loading = "search.qbloading"/>
         <div class = "search-tools">
-          <span
-            class          = "search-action"
-            :class         = "$fa('trash')"
+          <button
+            type           = "button"
+            class          = "fas fa-trash"
+            title          = "Delete"
             data-placement = "bottom"
-            v-t-tooltip    = "'Delete'"
             @click.stop    = "remove(search, i)"
             style          = "color: red;margin-right: 5px;"
-          ></span>
+          ></button>
           <span>{{ search.name }}</span>
-          <div>
-            <span
-            class              = "search-action"
-            :class             = "$fa('run')"
-            v-t-tooltip:bottom = "'Run'"
-            @click.stop        = "run(search)"
-            style              = "color: green;"
-          ></span>
-          </div>
+          <button
+            type           = "button"
+            class          = "fas fa-play"
+            title          = "Run"
+            data-placement = "bottom"
+            @click.stop    = "run(search)"
+            style          = "color: green;margin-left: auto;"
+          ></button>
         </div>
       </div>
+    </li>
+
+    <!-- QUERY BUILDER -->
+    <li
+      class               = "menu-item"
+      @click.stop         = "showQueyBuilderPanel"
+      @keydown.enter.stop = "showQueyBuilderPanel"
+      role                = "button"
+      tabindex            = "0"
+    >
+      <i aria-hidden = "true" class = "fas fa-calculator"></i>
+      <span v-t = "'Advanced search'"></span>
     </li>
 
   </ul>
@@ -59,9 +73,8 @@
 
 <script>
 import Panel                       from 'g3w-panel';
-import ApplicationState            from 'store/application'
-import DataRouterService           from 'services/data';
-import GUI                         from 'services/gui';
+import ApplicationState            from 'g3w-state'
+import GUI                         from 'g3w-app';
 import { createFilterFromString }  from 'utils/createFilterFromString';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
@@ -84,13 +97,17 @@ export default {
     'g3w-tool': G3WTool,
   },
 
-  computed: {
-    show() {
-      return this.state.searches.length + this.state.tools.length + this.state.querybuildersearches.length > 0;
-    }
-  },
-
   methods: {
+    /**@since 4.1.0  ORIGINAL SOURCE: src/g3w-app.js@v4.0.0*/
+    showQueyBuilderPanel() {
+      GUI.closeContent();
+      GUI.closeSideBar();
+      return new Panel({
+        title: _('Advanced search'),
+        show: true,
+        vueComponentObject: vueComp
+      });
+    },
 
     showPanel(config = {}) {
       this.$options.service.showPanel(config);
@@ -100,33 +117,34 @@ export default {
      * ORIGINAL SOURCE: src/services/querybuilder.js@v3.9.3
      */
     async remove(search, index) {
+      const ok = await GUI.confirm(_('Do you want delete it?'));
+
+      if (!ok) {
+        return;
+      }
+
+      const item     = window.localStorage.getItem('QUERYBUILDERSEARCHES');
+      const items    = item ? JSON.parse(item) : undefined;
+      const pid      = ApplicationState.project.getId();
+      const searches = (items ? items[pid] || [] : []).filter(item => search.id !== item.id);
+
+      if (searches.length) {
+        items[pid] = searches;
+      } else {
+        delete items[pid];
+      }
+
       try {
-        await (new Promise((res, rej) => { GUI.dialog.confirm(_('Do you want delete it?'), d => d ? res() : rej()) }));
-        const item = window.localStorage.getItem('QUERYBUILDERSEARCHES');
-        const items = item ? JSON.parse(item) : undefined;
-        const projectId = ApplicationState.project.getId();
-        const searches  = (items ? items[projectId] || [] : []).filter(item => item.id !== search.id);
-
-        if (searches.length) {
-          items[projectId] = searches;
+        if (Object.keys(items).length) {
+          window.localStorage.setItem('QUERYBUILDERSEARCHES', JSON.stringify(items));
         } else {
-          delete items[projectId];
+          window.localStorage.removeItem('QUERYBUILDERSEARCHES');
         }
-
-        try {
-          if (Object.keys(items).length) {
-            window.localStorage.setItem('QUERYBUILDERSEARCHES', JSON.stringify(items));
-          } else {
-            window.localStorage.removeItem('QUERYBUILDERSEARCHES');
-          }
-        } catch(e) {
-          console.warn(e);
-        }
-
-        this.state.querybuildersearches.splice(index, 1); // remove item
       } catch(e) {
         console.warn(e);
       }
+
+      this.state.querybuildersearches.splice(index, 1); // remove item
     },
 
     edit(search) {
@@ -149,7 +167,7 @@ export default {
       search.qbloading = true;
       try {
         const layer = getCatalogLayerById(search.layerId);
-        await DataRouterService.getData('search:features', {
+        await GUI.getData('search:features', {
           inputs: {
             layer,
             filter: createFilterFromString({ layer, filter: search.filter }),
@@ -177,10 +195,6 @@ li.menu-item span {
   display: inline-flex;
   white-space: pre-wrap;
 }
-.search-action {
-  text-shadow: 0 2px 5px rgba(0,0,0,.3);
-  padding: 0 4px;
-}
 #g3w-search li i {
   width: 20px;
 }
@@ -191,7 +205,10 @@ li.menu-item span {
 .search-tools > span {
   white-space: pre-wrap;
 }
-.search-tools > div {
-  margin-left: auto;
+.search-tools > button {
+  text-shadow: 0 2px 5px rgba(0,0,0,.3);
+  padding: 0 4px;
+  border: none;
+  background-color: unset;
 }
 </style>

@@ -1,25 +1,11 @@
 *~
 .idea
 .vscode
-package-lock.json
-/build
+# package-lock.json
 /config.js
-/cypress.env.json
-/deploy/
 /dist
-/documento.odt
-/g3w-admin/
 /node_modules
 /npm-debug.log
-/test/
-/test/config/
-/src/app/__dev__/
-/src/app/core/iframe/test/
-/src/app/dev/
-/src/config/
-/src/assets/style/less/g3w-skins-custom/
-/src/libs/sdk/config/dev/
-/src/libs/sdk/g3w-ol3/config/config.js
 /src/plugins/**
 !/src/plugins/README.md
 !/src/plugins/_version.js

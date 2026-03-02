@@ -3,15 +3,183 @@
  * @since 3.10.0
  */
 
-import G3WObject                   from 'g3w-object';
-import Component                   from 'g3w-component';
-import GUI                         from 'services/gui';
+import ApplicationState from 'g3w-state';
+import Emitter          from 'g3w-emitter';
+import Component        from 'g3w-component';
+import GUI              from 'g3w-app';
 
-import vueComp                     from 'components/Form.vue';
-import BodyFormComp                from 'components/FormBody.vue';
+import vueComp          from 'components/Form.vue';
+import BodyFormComp     from 'components/FormBody.vue';
 
-import { getDefaultExpression }    from 'utils/getDefaultExpression';
-import { getFilterExpression }     from "utils/getFilterExpression";
+import { XHR }          from 'utils/XHR';
+
+/**
+ * ORIGINAL SOURCE: src/utils/getDefaultExpression.js@4.0.0
+ *
+ * @param expr.field        related field
+ * @param expr.feature      feature to transform in form_data
+ * @param expr.qgs_layer_id layer id owner of the feature data
+ * @param expr.parentData
+ */
+async function getDefaultExpression({
+  field,
+  feature,
+  qgs_layer_id,
+  parentData,
+} = {}) {
+
+  const {
+    layer_id = qgs_layer_id,
+    default_expression,
+    loading,
+    default: default_value,
+  } = field.input.options;
+
+  /**
+   * @FIXME should return Promise.reject('some error message') ?
+   */
+  if (!default_expression) {
+    return;
+  }
+
+  loading.state = 'loading';
+
+  // Call `expression:expression_eval` to get value from expression and set it to field
+  try {
+    const response = await XHR.post({
+      url:         `/api/expression_eval/${ApplicationState.project.getId()}/`,
+      contentType: 'application/json',
+      data:        JSON.stringify({
+        field_name: field.name, // since 3.8.0
+        layer_id, //
+        qgs_layer_id, //layer id owner of the data
+        form_data:  (new ol.format.GeoJSON()).writeFeatureObject(feature),
+        formatter:  0,
+        expression: default_expression.expression,
+        parent: parentData && {
+          form_data:    (new ol.format.GeoJSON()).writeFeatureObject(parentData.feature),
+          qgs_layer_id: parentData.qgs_layer_id,
+          formatter:    0
+        }
+      }),
+    });
+    if (response.result) {
+      field.value = response.value;
+    } else {
+      throw JSON.stringify(response.error);
+    }
+    return response.value;
+  } catch(e) {
+    if (undefined !== default_value) {
+      field.value = default_value;
+    }
+    console.warn(e);
+    return Promise.reject(e);
+  } finally {
+    loading.state = 'ready';
+  }
+
+}
+
+/**
+ * ORIGINAL SOURCE: src/utils/getFilterExpression.js@4.0.0
+ *
+ * @param expr.field        related field
+ * @param expr.feature      feature to transform in form_data
+ * @param expr.qgs_layer_id layer id owner of the feature data
+ * @param expr.parentData
+ */
+async function getFilterExpression({
+  field,
+  feature,
+  qgs_layer_id,
+  parentData,
+} = {}) {
+  let {
+    key,
+    value,
+    layer_id = qgs_layer_id,
+    filter_expression,
+    loading,
+    orderbyvalue
+  } = field.input.options;
+
+  /**
+   * @FIXME should return Promise.reject('some error message') ?
+   */
+  if (!filter_expression) {
+    return;
+  }
+
+  loading.state = 'loading';
+
+  try {
+
+    let features;
+
+    const response = await XHR.post({
+      url:         `${ApplicationState.project.getUrl('vector_data')}${layer_id}/`,
+      contentType: 'application/json',
+      data:        JSON.stringify({
+      field_name:  field.name,
+      layer_id,
+      qgs_layer_id,
+      form_data: (new ol.format.GeoJSON()).writeFeatureObject(feature),
+      parent: parentData && ({
+        form_data:    (new ol.format.GeoJSON()).writeFeatureObject(parentData.feature),
+        qgs_layer_id: parentData.qgs_layer_id,
+        formatter:    0,
+      }),
+      formatter:  0,
+      expression: filter_expression.expression,
+      ordering:   [undefined, false].includes(orderbyvalue) ? key : value, //@since 3.11.0
+    }),
+    });
+    if (response.result) {
+      features = response.vector?.data?.features ?? [];
+    } else {
+      throw JSON.stringify(response.error);
+    }
+
+    if ('select_autocomplete' === field.input.type) {
+      field.input.options.values = [];
+      // temporary array to sort the keys
+      const values = [];
+      for (let i = 0; i < features.length; i++) {
+        values.push({
+          key:   features[i].properties[value],
+          value: features[i].properties[key]
+        })
+      }
+
+      // see: https://github.com/g3w-suite/g3w-client/pull/856
+      if (parentData && null !== field.value) {
+        field.value = values.find(({ key }) => key == field.value)?.value ?? field.value;
+      }
+
+      // see: https://github.com/g3w-suite/g3w-client/pull/843
+      if (field.value && !values.find(({ value }) => value == field.value)) {
+        values.unshift({ key: `(${field.value})`, value: field.value, });
+      }
+
+      field.input.options.values = values;
+
+      // see: https://github.com/g3w-suite/g3w-client/pull/856
+      if (parentData) {
+        ApplicationState.project.getLayerById(qgs_layer_id).config.editing.fields.find(f => f.name === field.name ).input.options.values = values;
+      }
+    }
+
+    return features;
+
+  } catch(e) {
+    console.warn(e);
+    return Promise.reject(e);
+  } finally {
+    loading.state = 'ready';
+  }
+
+}
 
 /**
  * ORIGINAL SOURCE: src/app/gui/form/vue/form.js@v3.9.3 
@@ -23,7 +191,7 @@ export class FormComponent extends Component {
     super({
       ...opts,
       id:                 opts.id || 'form',
-      perc:               null !== opts.layer.getFormPercentage() ? opts.layer.getFormPercentage() : opts.perc,
+      perc:               opts.layer?.config?.editing?.form?.perc ?? opts.perc,
       service:            new (opts.service || FormService)(),
       vueComponentObject: opts.vueComponentObject || vueComp,
     });
@@ -57,7 +225,7 @@ export class FormComponent extends Component {
  * @file ORIGINAL SOURCE: src/app/gui/form/formservice.js@v3.10.2
  * @since 3.11.0
  */
-export class FormService extends G3WObject {
+export class FormService extends Emitter {
   constructor(opts = {}) {
     super(opts);
 
@@ -448,7 +616,7 @@ export class FormService extends G3WObject {
   };
 
   setCurrentFormPercentage(perc) {
-    this.layer.setFormPercentage(perc)
+    this.layer.config.editing.form.perc = perc;
   };
 
   setLoading(bool = false) {

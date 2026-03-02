@@ -3,7 +3,7 @@
  * @since v3.7
  */
 
-import GUI from 'services/gui';
+import GUI from 'g3w-app';
 
 export default {
   methods: {
@@ -14,7 +14,7 @@ export default {
   },
   created() {
     const data          = this.data;
-    const mapProjection = GUI.getService('map').getProjection().getCode();
+    const mapProjection = GUI.getProjection().getCode();
     let style;
     switch (data.type) {
       case 'Point':
@@ -51,9 +51,9 @@ export default {
       visible: !!this.visible,
       style:   style
     });
-    GUI.getService('map').getMap().addLayer(this.layer);
+    GUI.getMap().addLayer(this.layer);
   },
   beforeDestroy() {
-    GUI.getService('map').getMap().removeLayer(this.layer);
+    GUI.getMap().removeLayer(this.layer);
   }
 };

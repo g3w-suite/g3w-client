@@ -30,17 +30,20 @@
       @click            = "!disabled ? tool.action(tool) : null"
       :class            = "{ tool_disabled: disabled }"
       style             = "position:relative"
-      :data-i18n-title  = "sidebarOpen ? null : tool.html ?  tool.html.text || tool.name : tool.name"
+      :data-i18n-title  = "sidebarOpen ? null : tool.html ? tool.html.text || tool.name : tool.name"
       data-placement    = "right"
     >
       <bar-loader :loading = "tool.loading"/>
       <i :class = "$fa(tool.icon || 'caret-right')"></i>
-      <span class="tool-label" v-if = "tool.html" >
-      <i :class = "tool.html.icon"></i>
-      {{ tool.html.text || tool.name}}
+      <span 
+        v-if  = "tool.html" 
+        class = "tool-label"
+      >
+        <i :class = "tool.html.icon"></i>
+        {{ tool.html.text || tool.name}}
       </span>
 
-      <span class="tool-label" v-else v-t = "tool.name"></span>
+      <span v-else class = "tool-label" v-t = "tool.name"></span>
 
       <span
         v-if        = "tool.state.type"  
@@ -56,15 +59,23 @@
 </template>
 
 <script>
-import ApplicationState   from 'store/application';
-import GUI                from 'services/gui';
+import ApplicationState from 'g3w-state';
+import GUI              from 'g3w-app';
 
 export default {
   name: "g3w-tool",
-  props: ['tool'],
+  props: {
+    tool: {
+      required: true,
+      type:     Object,
+    }
+  },
   methods: {
     showToolStateMessage() {
-      GUI.showModalDialog({ title: this.tool.state.type.toUpperCase(), message: this.tool.state.message });
+      GUI.dialog({
+        title:   this.tool.state.type.toUpperCase(),
+        message: this.tool.state.message,
+      });
     },
   },
   computed: {
@@ -72,7 +83,7 @@ export default {
       return (!this.tool.offline && !ApplicationState.online) || (this.tool.loading || this.tool.disabled);
     },
     sidebarOpen() {
-      return ApplicationState.gui.sidebar.open;
+      return ApplicationState.sidebar.open;
     }
   }
 };

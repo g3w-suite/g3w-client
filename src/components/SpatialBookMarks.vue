@@ -6,152 +6,154 @@
 <template>
   <ul
     id     = "g3w-spatial-bookmarks"
-    class  = "treeview-menu g3w-spatial-bookmarks menu-items"
-    :class = "{'g3w-tools': !showaddform}"
+    class  = "treeview-menu menu-items"
   >
 
-    <!-- ADD NEW BOOKMARK (FORM) -->
-    <li v-if = "showaddform">
-      <div style = "display: flex; justify-content: end">
-        <span
-          v-t-tooltip:left = "'close'"
-          @click.stop      = "showaddform = false"
-          :class           = "$fa('close')"
-          class            = "sidebar-button sidebar-button-icon"
-          style            = "padding: 5px; margin: 3px;"
-        ></span>
-      </div>
-      
-
-      <!-- HELP DIV -->
-      <div style = " color: #FFF; text-align: justify; position: relative; border-radius: 3px; margin: 5px 2px 5px 2px; white-space: pre-line; background-color: #384246 !important;">
-        <span style = "text-align: center; font-size: 0.7em; margin-top: -4px; margin-left: -4px; background-color: var(--bgcolor); font-weight: bold; color: #fff; position: absolute; top: 0; left: 0; width: 15px; height: 15px; border: 1px solid #fff; border-radius: 50%;">i</span>
-        <div v-t = "'Move on map extent, insert name and click Add'" style = "max-height: 200px; padding: 10px; overflow-y: auto;"></div>
-      </div>
-
-      <div
-        class = "container add-bookmark-input"
-        style = "padding: 5px; width: 100%"
+    <!-- BOOKMARS LIST -->
+    <li v-if = "is_staff" class = "content-bookmarks" style = "display: flex; justify-content: space-between; background: transparent; border-radius: 0;cursor: unset;">
+      <span :hidden = "is_mobile">{{ $t('Project Bookmarks') }}</span>
+      <a
+        :hidden         = "is_mobile"
+        :href           = "`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`"
+        target          = "_blank"
+        data-i18n-title = "QGIS Docs"
+        data-placement  = "right"
+        style           = "padding: 5px 0;"
       >
-        <input-text ref="add_bookmark_input" :state="addbookmarkinput" />
-      </div>
-      <div style = "margin-top: 5px;">
-        <button
-          @click.stop = "addBookMark"
-          class       = "sidebar-button-run btn btn-block"
-          v-t         = "'add'"
-          v-disabled  = "!addbookmarkinput.validate.valid"
-        ></button>
-      </div>
+        <i aria-hidden = "true" class = "fa fa-external-link-alt"></i>
+      </a>
     </li>
 
-    <!-- BOOKMARS LIST -->
-    <template v-else>
-
-      <div v-if = "is_staff" class = "content-bookmarks">
-        <span :hidden = "is_mobile" v-t = "'Project Bookmarks'"></span>
-        <a
-          :hidden          = "is_mobile"
-          :href            = "`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`"
-          target           = "_blank"
-          style            = "float: right;"
-          data-i18n-title  = "QGIS Docs"
-          data-placement   = "right"
-        >
-          <i :class = "$fa('external-link')"></i>
-        </a>
-      </div>
-
-      <template v-for = "bookmark in project.bookmarks">
-        <li v-if = "bookmark.nodes">
-          <div
-            style       = "font-weight: bold; width: 100%;"
-            :style      = "{ borderBottom: bookmark.expanded ? '2px solid #2c3b41' : 'none' }"
-            @click.stop = "bookmark.expanded = !bookmark.expanded"
-          >
-            <span
-              :class = "$fa(bookmark.expanded ? 'caret-down' : 'caret-right')"
-              style  = "margin-right: 5px;">
-            </span>
-            <span>{{ bookmark.name }}</span>
-          </div>
-          <ul v-show = "bookmark.expanded" style = "margin-left: 10px;">
-            <li v-for="node in bookmark.nodes"
-              @click.stop = "gotoSpatialBookmark(node)"
-              class       = "spatial-bookmark"
+    <template v-for = "bookmark in project_bookmarks">
+      <li v-if = "bookmark.nodes">
+        <details>
+          <summary>{{ bookmark.name }}</summary>
+          <ul style = "margin-left: 10px;">
+            <li v-for = "node in bookmark.nodes"
+              @click.stop         = "gotoSpatialBookmark(node)"
+              @keydown.enter.stop = "gotoSpatialBookmark(node)"
+              class               = "spatial-bookmark"
+              role                = "button"
+              tabindex            = "0"
             >
-              <div>
-                <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
-                <span class = "g3w-long-text">{{ node.name }}</span>
-              </div>
+              <i class = "fas fa-bookmark" aria-hidden = "true" style = "margin-right: 5px; font-size: 0.7em;"></i>
+              <span class = "g3w-long-text">{{ node.name }}</span>
+              <button
+                type           = "button"
+                @click.stop    = "shareBookmark(node)" 
+                title          = "Share via link"
+                data-placement = "top"
+                style          = "margin-left: auto; padding: 5px;"
+                class          = "sidebar-button"
+              >
+                <i aria-hidden="true" class = "fa fa-share-alt"></i>
+              </button>
             </li>
           </ul>
-        </li>
-        <li v-else
-          @click.stop = "gotoSpatialBookmark(bookmark)"
-          class       = "spatial-bookmark"
-        >
-          <div>
-            <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
-            <span class = "g3w-long-text">{{ bookmark.name }}</span>
-          </div>
-        </li>
-        <spatial-book-mark-item  v-else :bookmark="bookmark" />
-      </template>
-
-      <div
-        class = "content-bookmarks"
-        style = "display: flex; justify-content: space-between; align-items: center; margin-top: 10px;"
+        </details>
+      </li>
+      <li v-else
+        @click.stop         = "gotoSpatialBookmark(bookmark)"
+        @keydown.enter.stop = "gotoSpatialBookmark(bookmark)"
+        class               = "spatial-bookmark"
+        role                = "button"
+        tabindex            = "0"
       >
-        <span :hidden = "is_mobile" v-t="'User Bookmarks'"></span>
-        <span
-          :hidden          = "is_mobile"
-          v-t-tooltip:left = "'add'"
-          @click.stop      = "showAddForm"
-          style            = "padding: 5px; cursor: pointer;"
-          class            = "sidebar-button sidebar-button-icon"
-          :class           = "$fa('plus')"
-        ></span>
-      </div>
-
-      <li
-        v-for       = "bookmark in user.bookmarks"
-        @click.stop = "gotoSpatialBookmark(bookmark)"
-        class       = "spatial-bookmark"
-      >
-        <div>
-          <span :class = "$fa('bookmark')" style = "margin-right: 5px; font-size: 0.7em;"></span>
-          <span class = "g3w-long-text">{{bookmark.name}}</span>
-        </div>
-        <span
-          @click.stop = "removeBookMark(bookmark.id)"
-          class       = "sidebar-button sidebar-button-icon"
-          style       = "color: red; margin: 5px; cursor: pointer"
+        <i class = "fas fa-bookmark" aria-hidden = "true" style = "margin-right: 5px; font-size: 0.7em;"></i>
+        <span class  = "g3w-long-text">{{ bookmark.name }}</span>
+        <button
+          type           = "button"
+          @click.stop    = "shareBookmark(bookmark)" 
+          title          = "Share via link"
+          data-placement = "top"
+          class          = "sidebar-button"
+          style          = "margin-left: auto; padding: 5px;"
         >
-          <i :class = "$fa('trash')"></i>
-        </span>
+          <i aria-hidden="true" class = "fa fa-share-alt"></i>
+        </button>
       </li>
     </template>
+
+    <li
+      class = "content-bookmarks"
+      style = "display: flex; justify-content: space-between; align-items: center; margin-top: 10px;background: transparent; border-radius: 0;cursor: unset;"
+    >
+      <span :hidden = "is_mobile">{{ $t('User Bookmarks') }}</span>
+      <button
+        type        = "button"
+        :hidden     = "is_mobile"
+        title       = "add"
+        @click.stop = "showAddForm"
+        class       = "sidebar-button"
+        style       = "padding: 5px; font-size: 1.2em;"
+      >
+        <i aria-hidden="true" class = "fas fa-plus-square"></i>
+      </button>
+      <!-- ADD NEW BOOKMARK (FORM) -->
+      <dialog ref = "add_bookmark" @beforetoggle = "onBeforetoggle">
+        <div style = "display: flex; justify-content: end">
+          <button
+            type        = "button"
+            title       = "close"
+            @click.stop = "showaddform = false"
+            class       = "fas fa-times"
+            style       = "border: medium;line-height: 1;font-weight: 700;font-size: 15px;background: none;width: 40px;height: 40px;"
+          ></button>
+        </div>
+        <form @submit.prevent = "addBookMark">
+          <label for = "add-bokmark">{{ $t('Name of new spatial bookmark') }} *</label>
+          <input id = "add-bookmark" type = "text" required class = "form-control" ref="add_bookmark_input" v-model = "addbookmarkinput" />
+          <button type = "submit" class = "btn btn-block btn-success" style = "margin-top: 20px;">{{ $t('add') }}</button>
+        </form>
+        
+      </dialog>
+    </li>
+
+    <li
+      v-for               = "bookmark in user_bookmarks"
+      @click.stop         = "gotoSpatialBookmark(bookmark)"
+      @keydown.enter.stop = "gotoSpatialBookmark(bookmark)"
+      class               = "spatial-bookmark"
+      role                = "button"
+      tabindex            = "0"
+    >
+      <i class = "fas fa-bookmark" aria-hidden = "true" style = "margin-right: 5px; font-size: 0.7em;"></i>
+      <span class = "g3w-long-text">{{ bookmark.name }}</span>
+      <button
+        type           = "button"
+        @click.stop    = "shareBookmark(bookmark)"
+        title          = "Share via link"
+        data-placement = "top"
+        style          = "margin-left: auto; margin-right: 5px; padding: 5px;"
+        class          = "sidebar-button"
+      >
+        <i aria-hidden="true" class = "fa fa-share-alt"></i>
+      </button>
+
+      <button
+        @click.stop     = "removeBookMark(bookmark.id)" 
+        title           = "Delete"
+        data-placement  = "top"
+        class           = "sidebar-button"
+        style           = "color: red; padding: 5px;"
+      >
+        <i aria-hidden="true" class = "fas fa-trash"></i>
+      </button>
+    </li>
 
   </ul>
 </template>
 
 <script>
-  import ApplicationState     from 'store/application'
-  import GUI                  from 'services/gui';
-  import Projections          from 'store/projections';
-  import InputText            from "components/InputText.vue";
-  import { getUniqueDomId }   from 'utils/getUniqueDomId';
-  import { gettext as _ }     from 'g3w-i18n';
+  import ApplicationState   from 'g3w-state'
+  import GUI                from 'g3w-app';
+  import { getUniqueDomId } from 'utils/getUniqueDomId';
+  import { gettext as _ }   from 'g3w-i18n';
 
     export default {
 
     /** @since 3.8.6 */
     name: 'spatial-bookmarks',
-
-    components: {
-      InputText,
-    },
 
     data() {
       const gid             = ApplicationState.project.getId();
@@ -177,25 +179,11 @@
          * }
          */
 
-        project: {
-          bookmarks: ApplicationState.project.state.bookmarks || []
-        },
+        project_bookmarks: ApplicationState.project.state.bookmarks || [],
 
-        user: {
-          bookmarks: SAVED_BOOKMARKS[gid]
-        },
+        user_bookmarks: SAVED_BOOKMARKS[gid],
 
-        addbookmarkinput: {
-          name:     'add-bookmark',
-          label:    _('Name'),
-          i18nLabel:true,
-          value:    null,
-          editable: true,
-          type:     'varchar',
-          input:    { type: 'text', options: {} },
-          visible:  true,
-          validate: { valid:    false, required: true }
-        }
+        addbookmarkinput: null,
       }
     },
 
@@ -218,15 +206,34 @@
 
     },
 
+    watch: {
+      async showaddform(bool) {
+        // remove all "col-sm-12" classes so input is adapted to 100% width
+        if (bool) {
+          this.$refs.add_bookmark.showModal();
+        } else {
+          this.$refs.add_bookmark.close();
+        }
+      },
+    },
+
     methods: {
 
+      /**
+       * @param bookmark @since 4.1.0
+       */
+      async shareBookmark({ extent, crs }) {
+        await this.gotoSpatialBookmark({ extent, crs });
+        GUI.getPermalink(new URL(window.location.href), {});
+      },
+
       addBookMark() {
-        this.user.bookmarks.push({
+        this.user_bookmarks.push({
           id:        getUniqueDomId(),
-          name:      this.addbookmarkinput.value,
-          extent:    GUI.getService('map').getMapExtent(),
+          name:      this.addbookmarkinput,
+          extent:    GUI.getMapExtent(),
           removable: true,
-          crs:       { epsg: 1*GUI.getService('map').getCrs().split('EPSG:')[1] }
+          crs:       { epsg: 1 * GUI.getCrs().split('EPSG:')[1] }
         });
 
         this.saveUserBookMarks();
@@ -234,20 +241,20 @@
       },
 
       removeBookMark(id) {
-        this.user.bookmarks = this.user.bookmarks.filter(b => id !== b.id);
+        this.user_bookmarks = this.user_bookmarks.filter(b => id !== b.id);
         this.saveUserBookMarks();
       },
 
       saveUserBookMarks() {
         const gid             = ApplicationState.project.getId();
         const SAVED_BOOKMARKS = JSON.parse(window.localStorage.getItem('SPATIALBOOKMARKS') || '{}');
-        SAVED_BOOKMARKS[gid]  = this.user.bookmarks || [];
+        SAVED_BOOKMARKS[gid]  = this.user_bookmarks || [];
         window.localStorage.setItem('SPATIALBOOKMARKS', JSON.stringify(SAVED_BOOKMARKS || '{}'));
       },
 
       showAddForm() {
-        this.addbookmarkinput.value = null;
-        this.showaddform            = true;
+        this.addbookmarkinput = null;
+        this.showaddform      = true;
       },
 
       async gotoSpatialBookmark({ extent, crs }) {
@@ -255,26 +262,23 @@
         if (window.innerWidth < 767) {
           GUI.hideSidebar();
         }
-        if (crs.epsg !== GUI.getService('map').getEpsg().split('EPSG:')[1]) {
-          const projection = await Projections.registerProjection(`EPSG:${crs.epsg}`);
-          extent = ol.proj.transformExtent(extent, projection, GUI.getService('map').getProjection())
+        if (crs.epsg !== GUI.getEpsg().split('EPSG:')[1]) {
+          const projection = await ApplicationState.projections.set(`EPSG:${crs.epsg}`);
+          extent = ol.proj.transformExtent(extent, projection, GUI.getProjection())
         }
         // make use of `force: true` parameter to get resolution from computed `extent`
-        GUI.getService('map').zoomToExtent(extent, { force: true });
+        await GUI.zoomToExtent(extent, { force: true });
       },
 
-    },
-
-    watch: {
-      async showaddform(bool) {
-        if (bool) {
-          await this.$nextTick();
-          //need to remove all class so input is adapted to 100% width
-          for (let i = 0; i < this.$refs.add_bookmark_input.$el.children.length; i++) {
-            this.$refs.add_bookmark_input.$el.children[i].classList.remove('col-sm-12')
-          }
+      /**
+       * @since 4.1.0
+       */
+      onBeforetoggle(e) {
+        if ('closed' === e.newState) {
+          this.showaddform = false;
         }
-      }
+      },
+
     },
 
     created() {
@@ -299,4 +303,18 @@
     justify-content: space-between;
     padding: 5px !important;
   }
+
+  .spatial-bookmark:hover {
+    background-color: var(--bgcolor) !important;
+  }
+
+  #add-bookmark:user-invalid {
+    outline: 2px solid red;
+  }
+
+  ul#g3w-spatial-bookmarks > li > details > *                     { padding: 5px; }
+  ul#g3w-spatial-bookmarks > li > details > summary               { user-select: none; }
+  ul#g3w-spatial-bookmarks > li > details       > summary::marker { content: "\f0da\a0\a0"; font-family: "Font Awesome 5 Free"; font-weight: 900; }
+  ul#g3w-spatial-bookmarks > li > details[open] > summary::marker { content: "\f0d7\a0\a0"; }
+  ul#g3w-spatial-bookmarks > li > details[open] > summary         { border-bottom: 2px solid #2c3b41; }
 </style>

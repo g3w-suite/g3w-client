@@ -13,17 +13,18 @@
 
     <section v-if = "filterlayers.length > 0" id = "g3w-search-filter-layers" style = "display: flex; justify-content: space-between">
       <!-- HELP DIV -->
-      <div style = " color: #FFF; text-align: justify; position: relative; border-radius: 3px; margin: 5px 2px 5px 2px; white-space: pre-line; background-color: #384246 !important;">
+      <div style = "color: #FFF; text-align: justify; position: relative; border-radius: 3px; margin: 5px 2px 5px 2px; white-space: pre-line; background-color: #384246 !important;">
         <span style = "text-align: center; font-size: 0.7em; margin-top: -4px; margin-left: -4px; background-color: var(--bgcolor); font-weight: bold; color: #fff; position: absolute; top: 0; left: 0; width: 15px; height: 15px; border: 1px solid #fff; border-radius: 50%;">i</span>
         <div v-t = "'Search values are limited based on the active filter. Remove the filter to search all data.'" style = "max-height: 200px; padding: 10px; overflow-y: auto;"></div>
       </div>
       <button
-        v-t-tooltip:left = "'Remove Filter'"
-        @click.stop      = "clearFilters"
-        class            = "btn skin-border-color"
-        style            = "background-color: transparent; margin: 5px 0"
+        title          = "Remove Filter"
+        data-placement = "left"
+        @click.stop    = "clearFilters"
+        class          = "btn skin-border-color"
+        style          = "background-color: transparent; margin: 5px 0"
       >
-        <i class = "skin-color" :class="$fa('clear')"></i>
+        <i aria-hidden = "true" class = "fas fa-broom skin-color"></i>
       </button>
     </section>
     <!-- SEARCH TOOLS -->
@@ -90,7 +91,7 @@
               <span class = "skin-color">{{ getLabelOperator(input.operator)}}</span>
             </label>
 
-              <bar-loader
+            <bar-loader
               v-if     = "input.dependance"
               :loading = "state.loading[input.dependance] || input.loading"
             />
@@ -124,7 +125,7 @@
             <div :ref = "'date_' + input.id" class = "input-group date">
               <input :id = "input.id" type = 'text' class = "form-control" />
               <span class = "input-group-addon skin-color">
-                <span :class = "$fa(input.options.format.time ? 'time': 'calendar')"></span>
+                <span :class = "input.options.format.time ? 'far fa-clock': 'fas fa-calendar-alt'"></span>
               </span>
             </div>
           </div>
@@ -132,8 +133,8 @@
           <sub>{{ input.options.description }}</sub>
 
           <!-- DEBUG INFO -->
-          <details v-if = "is_staff" style="cursor: pointer; user-select: none; margin-top: .5em;">
-            <ul style="font-size: 80%;padding-left: 15px; font-family: monospace; white-space: nowrap; overflow-x: auto; scrollbar-width: thin;">
+          <details v-if = "is_staff" style = "cursor: pointer; user-select: none; margin-top: .5em;">
+            <ul style = "font-size: 80%;padding-left: 15px; font-family: monospace; white-space: nowrap; overflow-x: auto; scrollbar-width: thin;">
               <li><b class = "skin-color">{{ input.type }}</b></li>
               <li><b class = "skin-color">{{ input.widget_type }}</b><span v-if = "input.options.value">: {<br>  key: "{{ input.options.key }}",<br>  value: "{{ input.options.value }}"<br>}</span></li>
               <li v-if = "input.options.layer_id"><b class = "skin-color">layer_id:</b> "{{ input.options.layer_id }}"</li>
@@ -154,10 +155,10 @@
 
         <!-- "AUTOFILTER" -->
         <div class = "form-group" v-disabled = "'data' !== state.return">
-          <label v-t-tooltip:right = "'Whether automatically filter geometries displayed within the map<br>in order to show only those related to current search results.'" style="display: block;">
-            <input type = "checkbox" v-model = "autofilter" style="margin:0;" />
-            <span v-t="'Filter results'"></span>
-            <i class = "fa fa-filter fa-pull-right" :style="{ opacity: state.autofilter.value ? 1 : .5 }"></i>
+          <label title = "Whether automatically filter geometries displayed within the map<br>in order to show only those related to current search results." data-placement = "right" style = "display: block;">
+            <input type = "checkbox" v-model = "autofilter" style = "margin:0;" />
+            <span v-t = "'Filter results'"></span>
+            <i class = "fa fa-filter fa-pull-right" :style = "{ opacity: state.autofilter.value ? 1 : .5 }"></i>
           </label>
         </div>
 
@@ -165,10 +166,9 @@
         <div class = "form-group">
           <button
             id          = "dosearch"
-            class       = "sidebar-button-run btn btn-block pull-right"
+            class       = "btn btn-block pull-right"
             @click.stop = "doSearch"
-            v-t         = "'dosearch'"
-          ></button>
+          >{{ $t('dosearch') }}</button>
         </div>
 
       </form>
@@ -188,8 +188,8 @@
     FILTER_EXPRESSION_OPERATORS,
     SEARCH_ALLVALUE,
   }                                            from 'g3w-constants';
-  import ApplicationState                      from 'store/application';
-  import GUI                                   from 'services/gui';    
+  import ApplicationState                      from 'g3w-state';
+  import GUI                                   from 'g3w-app';    
   import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
   import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
   import { getRelationLayerById }              from 'utils/getRelationLayerById';
@@ -239,7 +239,7 @@
       },
 
       filterlayers() {
-        return ApplicationState.tokens.filtertoken && this.search_layers.filter(l => l.getFilterToken()) || [];
+        return ApplicationState.tokens.filtertoken && this.search_layers.filter(l => l.getToken()) || [];
       },
 
     },
@@ -249,7 +249,7 @@
       * @since 3.11.0
       */
       clearFilters() {
-        this.filterlayers.forEach(l => l.getFilterToken() && l.clearSelectionFids());
+        this.filterlayers.forEach(l => l.getToken() && l.clearSelectionFids());
         //@since v4.0 reset all form values after clear
         this.state.forminputs.forEach(i => {
           if (['selectfield','autocompletefield'].includes(i.type)) {
@@ -263,14 +263,14 @@
         GUI.closeContent();
       },
       resize() {
-        SELECTS.forEach(select2 => !ApplicationState.ismobile && select2.select2('close'));
+        SELECTS.forEach(s2 => !ApplicationState.ismobile && s2.select2('close'));
       },
 
       /**
        * ORIGINAL SOURCE: src/components/SearchPanelLabel.vue@v3.9.3
        */
       getLabelOperator(operator) {
-        return `[${FILTER_EXPRESSION_OPERATORS[operator]}]`
+        return `[${FILTER_EXPRESSION_OPERATORS[operator]}]`;
       },
 
       async onFocus(e) {
@@ -349,7 +349,7 @@
             d.disabled = is_empty(value) ? d.dependance_strict : false;
 
             // update nested dependencies
-            if (this.state.forminputs.find(i => i.dependance === d.attribute)) {
+            if (this.state.forminputs.find(i => d.attribute === i.dependance)) {
               this.changeInput(d);
             }
 
@@ -391,7 +391,7 @@
         } catch(e) {
           console.warn(e);
         } finally {
-          this.state.searching            = false;
+          this.state.searching = false;
         }
       },
 
@@ -433,7 +433,7 @@
         });
 
         if (ApplicationState.ismobile) {
-          setTimeout(() => { $('#' + input.id).blur(); });
+          setTimeout(() => document.getElementById(input.id)?.blur());
         }
       },
 
@@ -471,7 +471,7 @@
         const select2 = $(`#${input.id}`).select2({
           ajax,
           width:              '100%',
-          dropdownParent:     $('.g3w-search-form:visible'),
+          dropdownParent:     this.$el.querySelector('.g3w-search-form'),
           minimumInputLength: has_autocomplete && (numdigaut && !Number.isNaN(1 * numdigaut) && 1 * numdigaut > 0 && 1 * numdigaut || 2) || 0, // get numdigaut and validate it
           allowClear:         has_autocomplete,
           placeholder:        has_autocomplete ? '' : null,
@@ -483,7 +483,7 @@
            * @param data.text the text that is displayed for the data object
            */
           matcher: (params, data) => {
-            const search = params.term ? params.term.toLowerCase() : params.term;
+            const search = params?.term?.toLowerCase();
             if ('' === (search || '').toString().trim())                             { return data }        // no search terms → get all of the data
             if (data.text.toLowerCase().includes(search) && undefined !== data.text) { return { ...data } } // the searched term
             return null;                                                                                    // hide the term

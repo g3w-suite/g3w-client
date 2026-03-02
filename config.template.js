@@ -1,4 +1,4 @@
-const { version }      = require('./package.json');
+const { version } = require('./package.json');
 
 const G3W_PLUGINS = [                 // override "initConfig->group->plugins" attribute for custom plugin development
   // "your-plugin-folder-name-1",
@@ -6,22 +6,17 @@ const G3W_PLUGINS = [                 // override "initConfig->group->plugins" a
   // "your-plugin-folder-name-3",
 ];
 
-const G3W_KEYS = {
-  // google: '<INSERT HERE YOUR GOOGLE API KEY>',
-  // bing: '<INSERT HERE YOUR BING API KEY>'
-};
-
 let conf = {
   pluginsFolder:          './src/plugins',                                  // path to G3W-CLIENT plugins folder
   admin_plugins_folder:   '../g3w-admin/g3w-admin',                         // path to G3W-ADMIN plugins folder
   admin_overrides_folder: '../g3w-suite-docker/config/g3w-suite/overrides', // path to G3W-SUITE overrides folder
   docker_plugins_folder:  '../g3w-suite-docker/shared-volume/plugins',      // path to G3W-SUITE plugins folder
   plugins:                G3W_PLUGINS,
+  proxy:                  'https://dev.g3wsuite.it/',                       // remote server url to be proxied
   devConfig() {
     g3wsdk.core.ApplicationService.once('ready', () => { });
     g3wsdk.core.ApplicationService.once('initconfig', () => {
-      initConfig.group.vendorkeys = Object.assign(initConfig.group.vendorkeys || {}, G3W_KEYS);
-      initConfig.group.plugins    = Object.assign(initConfig.group.plugins || {}, G3W_PLUGINS.reduce((a, v) => ({ ...a, [v]: { ...initConfig.group.plugins[v], gid: initConfig.group.initproject, baseUrl: initConfig.staticurl }}), {}));
+      initConfig.group.plugins = Object.assign(initConfig.group.plugins || {}, G3W_PLUGINS.reduce((a, v) => ({ ...a, [v]: { ...initConfig.group.plugins[v], gid: initConfig.group.initproject, baseUrl: initConfig.staticurl }}), {}));
     });
     //Every time a new iframe is created, listen for messages
     g3wsdk.gui.GUI.on('iframe:message', (w, e) => { 
@@ -35,6 +30,11 @@ let conf = {
       }
     });
     g3wsdk.gui.GUI.once('ready', () => { console.log('ready'); });
+    // dark mode
+    g3wsdk.gui.GUI.isReady().then(() => {
+      document.querySelector('nav').style.setProperty('--skin-color', '#212c31');
+    });
+    document.body.style.setProperty('--bgcolor', '#212c31');
   }
 };
 

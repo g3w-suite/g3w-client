@@ -1,0 +1,47 @@
+name: Test deploy (dev.g3wsuite.it)
+on:
+  push:
+    branches:
+      - '**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup config.js
+        run: |
+          cp config.template.js config.js
+          sed -i "s|\.\./g3w-admin/g3w-admin|./build|g" config.js
+          sed -i "s|\.\./g3w-suite-docker/config/g3w-suite/overrides|./build/client|g" config.js
+          sed -i "s|\.\./g3w-suite-docker/shared-volume/plugins||g" config.js
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-browsers-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright browser
+        run: npx playwright install chromium
+
+      - name: Build app
+        run: npm run build:ci
+
+      - name: Run tests
+        run: node test/dev.g3wsuite.it.js

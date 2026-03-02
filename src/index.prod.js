@@ -3,7 +3,7 @@
  * @since v3.8
  */
 
-import 'assets/app.css';
+import 'static/app.css';
 
 // expose global variables
 import './g3w-globals';
@@ -12,82 +12,220 @@ import './g3w-globals';
 import {
   FONT_AWESOME_ICONS,
   TIMEOUT,
-}                                  from 'g3w-constants';
+  QUERY_POINT_TOLERANCE,
+}                         from 'g3w-constants';
 
 // core
-import ApplicationState            from 'store/application';
-import G3WObject                   from 'g3w-object';
-import Panel                       from 'g3w-panel';
-import Component                   from 'g3w-component';
-
-// services
-import ApplicationService          from 'services/application';
-import GUI                         from 'services/gui';
-import { MapLayersStoresRegistry } from 'services/map';
-import IframePluginService         from 'services/iframe';
+import ApplicationState   from 'g3w-state';
+import Emitter            from 'g3w-emitter';
+import Panel              from 'g3w-panel';
+import Component          from 'g3w-component';
+import GUI                from 'g3w-app';
 
 // components
-import App                         from 'components/App.vue';
-import BarLoader                   from 'components/GlobalBarLoader.vue';
-import Progressbar                 from 'components/GlobalProgressBar.vue';
-import HelpDiv                     from 'components/GlobalHelpDiv.vue';
-import DateTime                    from 'components/GlobalDateTime.vue';
-import Range                       from 'components/GlobalRange.vue';
-import Tabs                        from 'components/GlobalTabs.vue';
-import Divider                     from 'components/GlobalDivider.vue';
+import App                from 'components/App.vue';
+import Tabs               from 'components/GlobalTabs.vue';
 
 // directives
-import vDisabled                   from 'directives/v-disabled';
-import vSelect2                    from 'directives/v-select2';
-import vTToltip                    from 'directives/v-t-tooltip';
-import vT                          from "directives/v-t";
+import vDisabled          from 'directives/v-disabled';
+import vSelect2           from 'directives/v-select2';
+import vTToltip           from 'directives/v-t-tooltip';
+import vT                 from 'directives/v-t';
 
 // utils
-import { noop }                    from 'utils/noop';
-import { XHR }                     from 'utils/XHR';
-import { $promisify }              from 'utils/promisify';
-import { getProject }              from 'utils/getProject';
+import { XHR }            from 'utils/XHR';
+import { normalizeEpsg }  from 'utils/normalizeEpsg';
+import { getUniqueDomId } from 'utils/getUniqueDomId';
+import { debounce }       from 'utils/debounce';
 
+import { Layer }          from 'g3w-layer';
 
 // Internationalization
-import { gettext as _ } from 'g3w-i18n';
+import { gettext as _ }   from 'g3w-i18n';
 
 import 'components/g3w-alerts';
 
 Object
   .entries({
     ApplicationState,
-    G3WObject,
+    Emitter,
     Panel,
     Component,
-    ApplicationService,
     GUI,
-    MapLayersStoresRegistry,
-    IframePluginService,
     App,
-    BarLoader,
-    Progressbar,
-    HelpDiv,
-    DateTime,
-    Range,
     Tabs,
-    Divider,
-    getProject
+    Layer
   })
   .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
 
 /**
- * Install global components
- *
- * ORIGINAL SOURCE: src/app/gui/vue/vue.globalcomponents.js@3.6
+ * @deprecated global `<divider>` component
  */
-Vue.component(BarLoader.name, BarLoader);
-Vue.component(Progressbar.name, Progressbar);
-Vue.component(HelpDiv.name, HelpDiv);
-Vue.component(DateTime.name, DateTime);
-Vue.component(Range.name, Range);
+Vue.component('divider', { template: /* html */`<span class = "divider"></span>` });
+
+/**
+ * @deprecated global `<bar-loader>` component
+ */
+Vue.component('bar-loader', {
+  template: /* html */`
+    <div
+      v-if   = "loading"
+      class  = "bar-loader"
+      style  = "border: 0"
+      :class = "{ color: color ? 'skin-background-color' : null }"
+      :style = "{ backgroundColor: color }">
+    </div>
+  `,
+  props: {
+    loading: { type: Boolean | String, default: false },
+    color:   { type: String, default: null }
+  },
+});
+
+/**
+ * @deprecated global `<progressbar>` component
+ */
+Vue.component('progressbar', {
+  template: /* html */`
+    <div
+      v-if  = "(null !== progress && undefined !== progress)"
+      style = "margin: 5px 0 5px 0; width: 100%; background-color: #FFF; border: 0; border-radius: 3px;"
+    >
+      <div
+        class  = "skin-background-color"
+        style  = "display: flex; justify-content: center; font-weight: bold;"
+        :style = "{ width: (progress < 10 ? 10 : progress) }"
+      >
+        <span>{{ progress }}</span>
+      </div>
+    </div>
+  `,
+  props: ['progress'],
+});
+
+/**
+ * @deprecated global `<datetime>` component
+ */
+Vue.component('datetime', {
+  template: /* html */`
+    <div ref = "datimecontainer">
+      <label :for = "id" style = "display: block" v-t = "label"></label>
+      <div class = "form-group">
+        <div class = 'input-group date' ref = "iddatetimepicker">
+          <input :id = "id" ref = "idinputdatetimepiker" type = 'text' @change = "changeInput" class = "form-control" />
+          <span class = "input-group-addon caret">
+            <span class  = "datetimeinput" :class = "g3wtemplate.getFontClass('time' === type ? 'time': 'calendar')"></span>
+          </span>
+        </div>
+      </div>
+    </div>`,
+  props: {
+    type:         { type: String, default: 'date' }, // time
+    format:       { type: String, default: 'YYYY-MM-DD' },
+    minDate:      { default: false },
+    maxDate:      { default: false },
+    enabledDates: { default: false },
+    value:        {},
+    label:        { default:'Date' }
+  },
+  data() {
+    return { datetimevalue: this.value }
+  },
+  methods: {
+    changeInput(e) {},
+    change(value) { this.$emit('change', moment(value).format(this.format)) }
+  },
+  async mounted() {
+    await this.$nextTick();
+    this.datetimeinputelement = $(this.$refs.iddatetimepicker);
+    this.datetimeinputelement.datetimepicker({
+      minDate:           this.minDate,
+      maxDate:           this.maxDate,
+      defaultDate:       this.datetimevalue,
+      useCurrent:        false,
+      allowInputToggle:  true,
+      enabledDates:      this.enabledDates,
+      showClose:         true,
+      format:            this.format,
+      locale:            ApplicationState.language,
+      toolbarPlacement:  'top',
+      widgetPositioning: { horizontal: 'right' },
+    });
+    this.datetimeinputelement.on("dp.change", ({date}) => { this.change(date); });
+    if (ApplicationState.ismobile) { setTimeout(() => datetimeinputelement.blur()) }
+  },
+  watch: {
+    value(datetime)            { this.datetimevalue = datetime; this.datetimeinputelement.data("DateTimePicker").date(datetime) },
+    async minDate(mindatetime) { this.datetimeinputelement.data("DateTimePicker").minDate(mindatetime); },
+    async maxDate(maxdatetime) { this.datetimeinputelement.data("DateTimePicker").maxDate(maxdatetime); },
+    enabledDates(dates)        { this.datetimeinputelement.data("DateTimePicker").enabledDates(dates); }
+  },
+  created() { this.id = getUniqueDomId(); }
+});
+
+/**
+ * @deprecated global `<range>` component
+ */
+Vue.component('range', {
+  template: /* html */`<template>
+    <div>
+      <section style = "display: flex; justify-content: space-between; font-weight: bold;">
+        <section style = "align-self: flex-end">
+          <span class = "min-max-label">{{min}}</span>
+          <span style = "font-weight: bold;">{{unit}}</span>
+        </section>
+        <div style = "display: flex; flex-direction: column; margin: 0 3px">
+          <label :for = "id" style = "display: block" class = "skin-color" v-t = "label"></label>
+          <input type = "range" ref = "range-input" @change = "change" v-model = "state.value" :id = "id" :min = "min" :max = "max" :step = "step" >
+        </div>
+        <section style = "align-self: flex-end">
+          <span style = " align-self: end; font-weight: bold;">{{max}}</span>
+          <span style = "font-weight: bold;">{{unit}}</span>
+        </section>
+      </section>
+      <template v-if="showValue">
+        <span>{{state.value}}</span>
+        <span style = "font-weight: bold;">{{unit}}</span>
+      </template>
+    </div>`,
+  props: {
+    id:        { default: undefined },            // ID value for label.
+    label:     { type: String, default: '' },     // @TODO find out what changes from the `unit` props
+    min:       { type: Number, default: 0 },      // Min range slider value.
+    max:       { type: Number, default: 10 },     // Max range slider value.
+    step:      { type: Number, default: 1 },      // Range slider step.
+    value:     { default: 0 },                    // Current range value.
+    sync:      { type: Boolean, default: false }, // Whether to emit the `changed` event.
+    showValue: { type: Boolean, default: false }, // Whether display current range value.
+    unit:      { type: String, default: '' }      // Range unit.
+  },
+  data() {
+    return { state: { value: this.value } };
+  },
+  methods: {
+    changeBackGround(value) { this.$refs['range-input'].style.backgroundSize = `${value ? (value - this.min) * 100 / (this.max - this.min): 0}% 100%`; },
+    setValue(value)         { this.changedValue(value); },
+    change(e)               { this.changedValue(1*e.target.value); },
+    emitChangeValue(value)  { this.state.value = value; this.$emit('change-range', { id: this.id, value }); }
+  },
+  watch: {
+    /**@since 3.8.0 need to watch changes of prop value and reflect it to state.value*/
+    'value'(value)       { this.state.value = value; },
+    'state.value'(value) { this.changeBackGround(value); if (this.sync) { this.emitChangeValue(value) } }
+  },
+  created() {
+    this.changedValue = this.sync ? () => this.$emit('changed') : debounce(value => { this.emitChangeValue(value) });
+  },
+  async mounted() {
+    await this.$nextTick();
+    this.changeBackGround(this.value);
+  },
+});
+
+/**
+ * @deprecated global `<tabs>` component
+ */
 Vue.component(Tabs.name, Tabs);
-Vue.component(Divider.name, Divider);
 
 /**
  * Install global directives
@@ -101,11 +239,6 @@ Vue.directive("t", vT);
 Vue.directive("t-plugin", vT);
 
 /**
- * Install global plugins
- */
-Vue.use(require('vue-cookie'));
-
-/**
  * Vue 2 Plugin used to add global-level functionality to Vue
  *
  * @link https://v2.vuejs.org/v2/guide/plugins.html
@@ -114,6 +247,9 @@ Vue.use(require('vue-cookie'));
  */
 Vue.use({
   install(Vue) {
+    // based on vue-cookie v1.1.4
+    Vue.prototype.$cookie = { get: GUI.getCookie };
+
     /** @since 3.11.0 */
     Vue.prototype.$t = _;
     // hold a list of registered fontawsome classes for current project
@@ -146,19 +282,6 @@ Vue.use({
 
 Vue.mixin({ inheritAttrs: false });  // set mixins inheriAttrs to avoid tha unused props are setted as attrs
 
-/** @TODO check if deprecated */
-const ACTIONS = {};
-
-/**
- * Retrieve from local storage
- */
-function _getSavedSearches() {
-  const ITEMS = ApplicationState.querybuilder.searches;
-  const id = ApplicationState.project.getId();
-  ITEMS[id] = ITEMS[id] || [];
-  return ITEMS[id];
-}
-
 /**
  * Load an external script
  */
@@ -189,7 +312,7 @@ const initConfig = window.initConfig;
 // set application user
 ApplicationState.user = initConfig.user
 
-ApplicationService.emit('initconfig', initConfig);
+GUI.emit('initconfig', initConfig);
 
 const vendorkeys = initConfig.vendorkeys || {};
 initConfig.baselayers.forEach(l => {
@@ -197,7 +320,7 @@ initConfig.baselayers.forEach(l => {
     vendorkeys[l.servertype ? l.servertype.toLowerCase() : null] = l.apikey
   }
 });
-Object.keys(vendorkeys).forEach(k => ApplicationState.keys.vendorkeys[k] = vendorkeys[k])
+Object.keys(vendorkeys).forEach(k => ApplicationState.vendorkeys[k] = vendorkeys[k])
 
 /**
  * create application configuration
@@ -246,13 +369,13 @@ $.ajaxSetup({
 
 /**
  * Application starting point
- *
- * create the ApplicationTemplate instance passing template interface configuration
- * and the applicationService instance that is useful to work with project API
  */
 (async () => { try {
 
   ApplicationState.language = initConfig.user.i18n;
+
+  _.register('en', (await import(`${initConfig.urls.clienturl}locales/en.js`)).default);
+  _.register(initConfig.user.i18n, (await import(`${initConfig.urls.clienturl}locales/${initConfig.user.i18n}.js`)).default);
 
   /** @since 3.8.0 */
   try {
@@ -279,7 +402,7 @@ $.ajaxSetup({
     }
   );
 
-  ApplicationState.gui.layout.app = initConfig.layout;
+  ApplicationState.layout.app = initConfig.layout;
 
   // setup projects
   initConfig.projects.forEach(project => Object.assign(project, {
@@ -291,360 +414,464 @@ $.ajaxSetup({
     rasterurl:          initConfig.rasterurl,
   }));
 
-  // get current project configuration
-  const project = await Promise.race([
+  // holds current project configuration
+  let PROJECT;
+
+  const gid    = initConfig.initproject;
+  const CONFIG = window.initConfig.projects.find(p => gid === p.gid);
+
+  if (!CONFIG) {
+    throw `Project doesn't exist ${gid}`;
+  }
+
+  // fetch project configuration from remote server
+
+  // { Array } config.layers - The order of layers follows layer rendering order set on QGIS project.Can be different to TOC layer order
+  const config    = await Promise.race([
     new Promise(res => setTimeout(() => res("Timeout"), TIMEOUT)),
-    getProject(initConfig.initproject, { map_theme: (new URLSearchParams(location.search)).get('map_theme') } )
+    await XHR.get({ url:
+      `${window.initConfig.urls.baseurl}${window.initConfig.urls.config}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}?_t=${CONFIG.modified}`
+    })
   ]);
+
+  const THEME     = (new URLSearchParams(location.search)).get('map_theme');
+  const map_theme = config && THEME && Object.values(config.map_themes).flat().find(({ theme }) => theme === THEME);
+
+  /** In the case of url param set map_theme, need to get map theme configuration from server */
+  if (map_theme) {
+    const { result, data } = await Promise.race([
+      new Promise(res => setTimeout(() => res("Timeout"), TIMEOUT)),
+      await XHR.get({url: `/${CONFIG.type}/api/prjtheme/${CONFIG.id}/${THEME}` })
+    ]);
+    if (result) {
+      config.layerstree    = data;
+      map_theme.layetstree = data;
+      map_theme.default    = true;
+    }
+  }
+
+  PROJECT = Object.assign(CONFIG, config);
+  PROJECT = Object.assign(PROJECT, {
+    WMSUrl: `${window.initConfig.urls.baseurl}${window.initConfig.urls.ows}/${window.initConfig.id}/${PROJECT.type}/${PROJECT.id}/`,
+    /** @since 3.8.0 */
+    relations: (PROJECT.relations || []).map(r => {
+      if ("ONE" === r.type) {
+        PROJECT.layers.find(l => {
+          if (l.id === r.referencingLayer) {
+            r.name     = l.name;
+            r.origname = l.origname;
+            return true;
+          }
+        });
+      }
+      return r;
+    }),
+    /** actived catalog tab */
+    catalog_tab:            PROJECT.toc_tab_default        || PROJECT._catalog_tab || 'layers',
+    ows_method:             PROJECT.ows_method             || 'GET',
+    toc_layers_init_status: PROJECT.toc_layers_init_status || 'not_collapsed',
+    toc_themes_init_status: PROJECT.toc_themes_init_status || 'collapsed',
+    query_point_tolerance:  PROJECT.query_point_tolerance  || QUERY_POINT_TOLERANCE,
+    crs:                    normalizeEpsg(PROJECT.crs, false),
+    baselayers:             PROJECT.baselayers
+      // Remove bing base layer when no vendor API Key is provided
+      .filter(l => ('Bing' === l.servertype ? ApplicationState.vendorkeys.bing : true))
+      .map(l => Object.assign(l, {
+        visible:   l.id && (l.id === (null !== ApplicationState.baseLayerId ? ApplicationState.baseLayerId : PROJECT.initbaselayer)) || !!l.fixed,
+        baselayer: true,
+      })),
+  });
+
+  const _projection = ApplicationState.projections.get(normalizeEpsg(PROJECT.crs, false));
+
+  const project = Object.assign(new Emitter, {
+    _layers: {},
+    _isQueryable: true,
+    state: PROJECT,
+    _projection,
+    urls: {
+      map_themes:          `/${PROJECT.type}/api/prjtheme/${PROJECT.id}/`,
+      vector_data:         `${PROJECT.vectorurl}data/${PROJECT.type}/${PROJECT.id}/`,
+      featurecount:        `${PROJECT.vectorurl}featurecount/${PROJECT.type}/${PROJECT.id}/`,
+      editorformstructure: `${PROJECT.vectorurl}editorformstructure/${PROJECT.type}/${PROJECT.id}/`, //@since 4.0.0 get configuration from a specific style for a layer (Ex. featurecount, editor_form_structure, ..)
+    },
+    setters: {
+      setBaseLayer(id) {
+        window.initConfig.baselayers.forEach(l => {
+          this.getLayersStore().getLayerById(l.id)?.setVisible(id === l.id);
+          l.visible = (id === l.id);
+        })
+      },
+    },
+    _layersStore:           Object.assign(new Emitter, {
+      config: {
+        id:         PROJECT.gid,
+        projection: _projection,
+        extent:     PROJECT.extent,
+        initextent: PROJECT.initextent,
+        wmsUrl:     PROJECT.WMSUrl,
+        catalog:    true
+      },
+      state: { layerstree: [], relations:  null },
+      setters: {
+        setLayerSelected:       (id, selected) => { project.getLayersStore().getLayers().forEach(l => l.state.selected = (id === l.getId()) ? selected : false); },
+        addLayers:               (layers = []) => { layers.forEach(l => project.getLayersStore().addLayer(l)) },
+        addLayer:                        layer => { project._layers[layer.getId()] = layer; },
+        removeLayer:                     layer => { delete project._layers[layer.getId()]; },
+      },
+      isQueryable:                         () => project._isQueryable,
+      setQueryable:                      bool => project._isQueryable = !!bool,
+      showOnCatalog:                       () => project.getLayersStore().config.catalog,
+      setOptions:               (config = {}) => project.getLayersStore().config = config,
+      getId:                               () => project.getLayersStore().config.id,
+      removeLayers:                        () => { Object.entries(project._layers).forEach(([_, layer]) => project.getLayersStore().removeLayer(layer)) },
+      getLayers:  (filter = {}, options = {}) => Object.values(project.getLayersStore().getLayersDict(filter, options)),
+      getBaseLayers:                       () => project.getLayersStore().getLayersDict({ BASELAYER: true }),
+      getLayerById:                        id => project.getLayersStore().getLayersDict()[id],
+      getLayerByName:                    name => project._layers.find(l => name === l.getName()),
+      getLayerAttributes:                  id => project.getLayersStore().getLayerById(id).getAttributes(),
+      getLayerAttributeLabel:      (id, name) => project.getLayersStore().getLayerById(id).getAttributeLabel(name),
+      getGeoLayers:                        () => project.getLayersStore().getLayers({ GEOLAYER: true }),
+      selectLayer:             (id, selected) => project.getLayersStore().setLayerSelected(id, selected),
+      getProjection:                       () => project.getLayersStore().config.projection,
+      getExtent:                           () => project.getLayersStore().config.extent,
+      getInitExtent:                       () => project.getLayersStore().config.initextent,
+      getWmsUrl:                           () => project.getLayersStore().config.wmsUrl,
+      removeLayersTree:                    () => project.getLayersStore().state.layerstree.splice(0, project.getLayersStore().state.layerstree.length),
+      getLayersTree:                       () => project.getLayersStore().state.layerstree,
+      getLayersDict: (filter = {}, options = {}) => {
+    
+        // skip when no filter is provided (eg. `filter = null`)
+        if (
+          !filter ||
+          [
+            filter.PRINTABLE,
+            filter.QUERYABLE,
+            filter.FILTERABLE,
+            filter.EDITABLE,
+            filter.VISIBLE,
+            filter.SELECTED,
+            filter.CACHED,
+            filter.SELECTED_OR_ALL,
+            filter.SERVERTYPE,
+            filter.BASELAYER,
+            filter.GEOLAYER,
+            filter.VECTORLAYER,
+            filter.HIDDEN,
+            filter.DISABLED,
+            filter.IDS,
+          ].every(f => undefined === f)
+        ) {
+          return project._layers;
+        }
+    
+        let layers = Object.values(project._layers);
+    
+        if (filter.IDS) {
+          const ids = [].concat(filter.IDS);
+          layers = layers.filter(l => ids.includes(l.getId()));
+        }
+    
+        // check if there are `selected` layers otherwise get all `layers`
+        if (filter.SELECTED_OR_ALL) {
+          const selected = layers.filter(l => l.isSelected());
+          layers         = selected.length > 0 ? selected : layers;
+        }
+    
+        // checks if a boolean filter is setted
+        const has = f => 'boolean' === typeof f;
+    
+        if (has(filter.SELECTED) && !filter.SELECTED_OR_ALL)                    layers = layers.filter(l => filter.SELECTED    === l.isSelected());
+        if (has(filter.QUERYABLE))                                              layers = layers.filter(l => filter.QUERYABLE   === l.isQueryable());
+        if (has(filter.FILTERABLE))                                             layers = layers.filter(l => filter.FILTERABLE  === l.isFilterable(options.filtrable || null));
+        if (has(filter.EDITABLE))                                               layers = layers.filter(l => filter.EDITABLE    === l.isEditable());
+        if (has(filter.VISIBLE))                                                layers = layers.filter(l => filter.VISIBLE     === l.isVisible());
+        if (has(filter.CACHED))                                                 layers = layers.filter(l => filter.CACHED      === l.isCached());
+        if (has(filter.BASELAYER))                                              layers = layers.filter(l => filter.BASELAYER   === l.isBaseLayer());
+        if (has(filter.GEOLAYER))                                               layers = layers.filter(l => filter.GEOLAYER    === l.isGeoLayer());
+        if (has(filter.VECTORLAYER))                                            layers = layers.filter(l => filter.VECTORLAYER === l.isType('vector'));
+        if (has(filter.HIDDEN))                                                 layers = layers.filter(l => filter.HIDDEN      === l.isHidden());
+        if (has(filter.DISABLED))                                               layers = layers.filter(l => filter.DISABLED    === l.isDisabled());
+        if ('string'  === typeof filter.SERVERTYPE && filter.SERVERTYPE.length) layers = layers.filter(l => filter.SERVERTYPE  === l.getServerType());
+        if (filter.PRINTABLE)                                                   layers = layers.filter(l => l.isGeoLayer() && l.isPrintable({ scale: filter.PRINTABLE.scale }));
+    
+        /**@since v3.10.3 order TOC */
+        if (options.TOC_ORDER && project.getLayersStore().state.layerstree) {
+          // get all siblings children layers id
+          let nodes = [];
+          let traverse = tree => {
+            tree.nodes.forEach(n => {
+              if (n.id) { nodes.push(n.id) }
+              else { traverse(n) }
+            });
+          };
+          traverse(project.getLayersStore().state.layerstree[0]);
+          return nodes.map(id => layers.find(l => id === l.getId())).filter(id => id);
+        }
+    
+        return layers;
+      },
+    }
+    
+    ),
+    getQueryPointTolerance: () => project.state.query_point_tolerance,
+    getRelations:           () => project.state.relations,
+    getRelationById:        id => project.state.relations.find(r => id === r.id),
+    getLayerById:           id => project.getLayersStore().getLayerById(id),
+    getLayers:              () => [...project.state.layers, ...project.state.baselayers],
+    getState:               () => project.state,
+    getPrint:               () => project.state.print || [],
+    getId:                  () => project.state.id,
+    getType:                () => project.state.type,
+    getGid:                 () => project.state.gid,
+    getName:                () => project.state.name,
+    getCrs:                 () => project._projection.getCode(),
+    getProjection:          () => project._projection,
+    getLayersStore:         () => project._layersStore,
+    getUrl:                 type => project.urls[type],
+    /**
+     * @param filter property layer config to filter
+     * 
+     * @returns { Array } configuration layers (from server config)
+     */
+    getConfigLayers:        ({ key } = {}) => key ? project.state.layers.filter(l => undefined !== l[key] ) : project.state.layers,
+  });
+
+  // Process layerstree and baselayers of the project (useful info for catalog)
+  const traverse = nodes => {
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i];
+      //check if layer (node) of folder
+      if (undefined !== node.id) {
+        project.state.layers
+          .forEach(l => {
+            if (node.id === l.id) {
+              node.name = l.name;
+              l.wmsUrl  = project.state.WMSUrl;
+              l.project = project;
+              node[i]   = Object.assign(l, node);
+              return false
+            }
+          });
+      }
+      if (Array.isArray(node.nodes)) {
+        //add title to tree
+        node.title = node.name;
+        traverse(node.nodes);
+      }
+    }
+  };
+
+  traverse(project.state.layerstree);
+
+  /** ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2 */
+
+  // Layer factory: instance each layer and add to layersstore
+  project.getLayersStore().addLayers(project.getLayers().flatMap(l => {
+    const config = Object.assign({}, l, {
+      crs:               normalizeEpsg(l.crs || project.state.crs, false), // @v4.0 Fix In case of missing layer crs, set project crs
+      projection:        l.crs ? ApplicationState.projections.get(l.crs) : project._projection,
+      ows_method:        project.state.ows_method,
+      wms_use_layer_ids: project.state.wms_use_layer_ids,
+      //@since v4.0.0 - original config to maintain
+      styles:            l.styles && l.styles.map(s => ({...s})), // v4.0.0 pass a copy of styles
+    });
+    try {
+      return new Layer(config, { project });
+    } catch (e) {
+      console.warn(e);
+      return []
+    }
+  }));
+  
+  // create layerstree
+  let layerstree = [];
+  if (!project.state.layerstree) {
+    // retrieve all project layers that have geometry
+    layerstree = project.getLayersStore().getLayers({ GEOLAYER: true }).map(l => ({
+      id:      l.getId(),
+      name:    l.getName(),
+      title:   l.getTitle(),
+      visible: l.isVisible() || false
+    }));
+  } else {
+    const _traverse = (nodes, layerstree, tocLayersId) => {
+      nodes.forEach(n => {
+        let lightlayer = null;
+        // case TOC has layer ID
+        if (null !== n.id && undefined !== n.id && tocLayersId.find(id => n.id === id)) {
+          lightlayer = ({ ...lightlayer, ...n });
+        }
+        // case group
+        if (null !== n.nodes && undefined !== n.nodes) {
+          lightlayer = ({
+            ...lightlayer,
+            name:                 n.name, /** @since 3.10.0 **/
+            title:                n.name,
+            groupId:              getUniqueDomId(),
+            root:                 false,
+            nodes:                [],
+            checked:              n.checked,
+            mutually_exclusive:   n["mutually-exclusive"],
+            'mutually-exclusive': n["mutually-exclusive"], /** @since 3.10.0 */
+          });
+          _traverse(n.nodes, lightlayer.nodes, tocLayersId); // recursion step
+        }
+        // check if lightlayer is not null
+        if (null !== lightlayer) {
+          lightlayer.expanded = n.expanded; // expand legend item (TOC)
+          layerstree.push(lightlayer);
+        }
+      });
+    };
+    // compare all layer ids from server config with all layer nodes on layerstree server property
+    _traverse(
+      project.state.layerstree,
+      layerstree,
+      project.getLayersStore().getLayers({ BASELAYER: false }).map(l => l.getId())
+    );
+  }
+
+  // setLayerstree
+  if (layerstree.length) {
+    const rootGroup = {
+      title:       project.state.name || project.state.gid,
+      root:        true,
+      toc:         true, //@since 4.1.0
+      parentGroup: null,
+      expanded:    'not_collapsed' === project.state.toc_layers_init_status,
+      disabled:    false,
+      checked:     true,
+      bbox:        {
+        minx: project.state.initextent.at(0),
+        miny: project.state.initextent.at(1),
+        maxx: project.state.initextent.at(2),
+        maxy: project.state.initextent.at(3)
+      },
+      nodes:       layerstree,
+    };
+    const _traverseBBox =(group, { bbox, epsg } = {}) => {
+      const project_epsg = project._projection.getCode();
+
+      // translate bbox epsg to project epsg code (when they differ)
+      if ((epsg !== project_epsg)) {
+        const [minx, miny, maxx, maxy] = ol.proj.transformExtent([ bbox.minx, bbox.miny, bbox.maxx, bbox.maxy ], epsg, project_epsg);
+        bbox = { minx, miny, maxx, maxy }
+      }
+      // get current bbox or compute bbox from an ol extent
+      if (undefined === group.bbox) {
+        group.bbox = bbox
+      } else {
+        group.bbox = ol.extent
+          .extend(
+            [ group.bbox.minx, group.bbox.miny, group.bbox.maxx, group.bbox.maxy ],
+            [ bbox.minx, bbox.miny, bbox.maxx, bbox.maxy ]
+          )
+          .reduce(
+            (bbox, extentCoordinate, index) => {
+              switch(index){
+                case 0: bbox.minx = extentCoordinate; break;
+                case 1: bbox.miny = extentCoordinate; break;
+                case 2: bbox.maxx = extentCoordinate; break;
+                case 3: bbox.maxy = extentCoordinate; break;
+              }
+              return bbox;
+            },
+            { minxx:null, miny: null, maxx: null, maxy: null }
+          );
+      }
+      // Recursion
+      if (group.parentGroup && false === group.parentGroup.root) {
+        _traverseBBox(group.parentGroup, { bbox: group.bbox, epsg: project_epsg });
+      }
+    };
+    const _traverse = (nodes, parentGroup) => {
+      return nodes.reduce((toc, node, index) => {
+        // substitute node layer with layer state
+        if (undefined !== node.id) {
+          nodes[index] = project.getLayersStore().getLayerById(node.id).getState();
+          // pass bbox and epsg of layer
+          if (nodes[index].bbox) {
+            _traverseBBox(parentGroup, { bbox: nodes[index].bbox, epsg: nodes[index].epsg });
+          }
+        }
+
+        if (Array.isArray(node.nodes)) {
+          node.nodes.forEach(n => n.parentGroup = parentGroup);
+          node.toc = _traverse(node.nodes, node);
+        }
+
+        toc = toc || node.toc;
+        //SET PARENT GROUP
+        nodes[index].parentGroup = parentGroup;
+        return toc;
+      }, false);
+    }
+    //set root group visibility based on children nodes
+    rootGroup.toc = _traverse(layerstree, rootGroup);
+    
+    project.getLayersStore().state.layerstree.splice(0, 0, rootGroup); // at the end
+  }
 
   Object.assign(ApplicationState.project, project);
 
-  // set in first position (map and catalog)
-  const store = project.getLayersStore();
-  ApplicationState.catalog[store.getId()] = store;
+  /**@since 4.0.7 set map_theme of application */
+  ApplicationState.map_theme.theme = Object.values(project.state.map_themes).flat().find(mt => mt.default)?.theme || null;
 
-  MapLayersStoresRegistry.addLayersStore(store);
+  // set in first position
+  ApplicationState.layers[project.getGid()] = project.getLayersStore();
 
-  // BACKCOMP v3.x
-  g3wsdk.core.project.ProjectsRegistry.setCurrentProject(project);
+  window.addEventListener('online',  () => { GUI.online(); } );
+  window.addEventListener('offline', () => { GUI.offline(); });
 
-  window.addEventListener('online', () => {
-    ApplicationState.online = true;
-    ApplicationService.online();
-  });
+  /** @since 4.1.0 */
+  GUI.emit('app-ready');
 
-  window.addEventListener('offline', () => {
-    ApplicationState.online = false;
-    ApplicationService.offline();
-  });
-
-  ApplicationService.emit('ready');
-
-  if (ApplicationState.iframe) {
-    IframePluginService.init({ project })
-  }
-
-  if (isMobile.any || (window.initConfig.layout || {}).iframe) {
-    $('body').addClass('sidebar-collapse');
+  if (isMobile.any || window.initConfig?.layout?.iframe || window.innerWidth <= 767) {
+    document.body.classList.add('sidebar-collapse');
   }
 
   Vue.component('app', App);
 
   await new Promise(resolve => new Vue({ el: '#app', mounted: resolve }));
 
-  // add component to the sidebar
-  [
-
-      /**
-       * ORIGINAL SOURCE: src/components/g3w-spatialbookmarks.js@v3.10.2
-       */
-      new Component({
-        id:                 'spatialbookmarks',
-        icon:               'far fa-bookmark',
-        iconColor:          '#00bcd4',
-        title:              'Bookmarks',
-        vueComponentObject: require('components/SpatialBookMarks.vue').default,
-      }),
-
-      /**
-       * ORIGINAL SOURCE: src/components/g3w-print.js@v3.10.2 
-       */
-      Object.assign(new Component({
-        id:                'print',
-        visible:           window.initConfig.user.is_staff || (ApplicationState.project.getPrint() || []).length > 0, /** @since 3.10.0 Check if the project has print layout*/
-        icon:              GUI.getFontClass('print'),
-        iconColor:         '#FF9B21',
-        title:             'print',
-        service:           {},
-        internalComponent: new (Vue.extend(require('components/Print.vue').default)),
-      }), {
-        //@since 3.11.0 use internal methods called by component setters if declared
-        _setOpen(bool) { this.getInternalComponent().showPrintArea(bool) },
-      }),
-
-      /**
-       * ORIGINAL SOURCE: src/components/g3w-search.js@v3.10.2 
-       */
-      new Component({
-        id:         'search',
-        visible:     true,
-        icon:        GUI.getFontClass('search'),
-        iconColor:   '#8dc3e3',
-        title:       ApplicationState.project.state.search_title || 'search',
-        service: Object.assign(new G3WObject, {
-          state: {
-            searches: (ApplicationState.project.state.search || []).sort((a, b) => `${a.name}`.localeCompare(b.name)),
-            tools: [],
-            querybuildersearches: _getSavedSearches()
-          },
-          title:                    ApplicationState.project.state.search_title || "search",
-          addTool(t)                { this.state.tools.push(t); },
-          addTools(tt)              { for (const t of tt) this.addTool(t); },
-          showPanel(o)              { return new (require('components/g3w-search')).SearchPanel(o, true) },
-          getTitle()                { return this.title },
-          removeTools()             { this.state.tools.splice(0) },
-          stop(d)                   { return $promisify(Promise.resolve(d)) },
-          removeTool()              {},
-        }),
-        actions:     [
-          {
-            id:      "querybuilder",
-            class:   `${GUI.getFontClass('calculator')} sidebar-button sidebar-button-icon`,
-            tooltip: _('Advanced search'),
-            fnc:     () => {
-              GUI.closeContent();
-              GUI.closeSideBar();
-              return new Panel({
-                title: _('Advanced search'),
-                show: true,
-                vueComponentObject: require('components/QueryBuilder.vue').default
-              });
-            },
-            style: {
-              color:        '#8DC3E3',
-              padding:      '6px',
-              fontSize:     '1.2em',
-              borderRadius: '3px',
-              marginRight:  '5px'
-            }
-        }],
-        vueComponentObject: require('components/Search.vue').default,
-      }),
-
-      /**
-       * ORIGINAL SOURCE: src/components/g3w-tools.js@v3.10.2 
-       */
-      new (function() {
-
-        const state   = {
-          id:          'tools',
-          icon:        GUI.getFontClass('tools'),
-          iconColor:   '#FFE721',
-          toolsGroups: [],
-          visible: false,
-          loading: false
-        };
-      
-        const service = new G3WObject({ setters: {
-          addTool(tool, { title, position }) {
-            let group = state.toolsGroups.find(g => g.name === title);
-            if (!group) { group = { name: title, tools: [] }; state.toolsGroups.splice(position, 0, group); }
-            return group.tools.push(Object.assign(tool, {
-              state:  tool.state || ({ type: null, message: null }),
-              action: tool.action || (ACTIONS[tool.type] || noop).bind(null, tool.options)
-            }));
-          },
-          addToolGroup(position, name) {
-            let group = state.toolsGroups.find(g => g.name === name);
-            if (!group) { group = { name, tools: [] }; state.toolsGroups.splice(position, 0, group); }
-            return group;  
-          },
-          addTools(tools, groupName)   { tools.forEach(t => this.addTool(t, groupName)); },
-          removeToolGroup(name)        { state.toolsGroups = state.toolsGroups.filter(g => g.name !== name); },
-          removeTools()                { state.toolsGroups.splice(0); },
-        }});
-      
-        service.state            = state;
-        service.config           = null;
-        service.getState         = () => state;
-        service.reload           = () => { service.removeTools(); };
-        service.setLoading       = (bool = false) => { state.loading = bool; }
-      
-        // static class field
-        service.ACTIONS = ACTIONS;
-      
-        const tools = ApplicationState.project.getState().tools || {};
-      
-        for (let t in tools) {
-          service.addToolGroup(0, t.toUpperCase());
-          service.addTools(
-            tools[t].map(tool => ({ name: tool.name, action: ACTIONS[t].bind(null, tool) })),
-            { position: 0, title: t.toUpperCase() }
-          );
-        }
-      
-        const comp = new Component({
-          id:          'tools',
-          icon:        GUI.getFontClass('tools'),
-          iconColor:   '#FFE721',
-          title: "tools",
-          service,
-          internalComponent: new (Vue.extend({
-            template: /* html */ `
-              <ul class="g3w-tools treeview-menu">
-                <bar-loader :loading="state.loading"/>
-                <li v-for="g in state.toolsGroups" :key="g.name">
-                  <div class="tool-header"><i :class="g3wtemplate.getFontClass('tool')"></i><span>{{ g.name }}</span></div>
-                  <div :id="g.name + '-tools'" class="tool-box"><g3w-tool v-for="t in g.tools" :key="t.name" :tool="t" /></div>
-                </li>
-              </ul>`,
-            components: { G3wTool: require('components/Tool.vue').default },
-            data: () => ({ state: null }),
-            watch: {
-              async 'state.toolsGroups'(g) {
-                comp.setVisible(g.length > 0);
-                this.$emit('visible', g.length > 0);
-                await GUI.isReady();
-                document.querySelector('#g3w-sidebarcomponents #tools').classList.toggle('single', 1 === g.length && 'EDITING' === g[0].name);
-              }
-            },
-          }))(),
-        });
-      
-        comp._setOpen = (b = false) => {
-          comp.internalComponent.state.open = b;
-          if (b) {
-            GUI.closeContent();
-          }
-        };
-      
-        return comp;
-      }),
-
-      /**
-       * ORIGINAL SOURCE: src/components/g3w-catalog.js@v3.10.2 
-       */
-      new (function() {
-
-        const state = {
-          external: {   // external layers
-            wms:    [], // added by wms sidebar component
-            vector: []  // added to map controls for the moment
-          },
-          layerstrees:  Object.values(ApplicationState.catalog).map(s => ({ tree: s.getLayersTree(), storeid: s.getId() })),
-          layersgroups: [],
-        };
-      
-        const service = new G3WObject({
-          setters: {
-            /**
-             * @param {{ layer: unknown, type: 'vector' }}
-             *
-             * @fires CatalogService~addExternalLayer
-             *
-             * @since 3.8.0
-             */
-            addExternalLayer({ layer, type='vector' } = {}) {
-              layer.removable = true;
-              state.external[type].push(layer);
-            },
-            /**
-             * @param {{ name: string, type: 'vector' }}
-             *
-             * @fires CatalogService~removeExternalLayer
-             *
-             * @since 3.8.0
-             */
-            removeExternalLayer({ name, type='vector' } = {}) {
-              state.external[type].filter((l, i) => {
-                if (name === l.name) {
-                  state.external[type].splice(i, 1);
-                  return true;
-                }
-              });
-            },
-          }
-        });
-      
-        service.state             = state;
-      
-        /** used by the following plugins: "stress" */
-        service.createLayersGroup = ({ title = 'Layers Group', layers = [] } = {}) => ({ title, nodes: layers.map(l => l) });
-        /** used by the following plugins: "stress" */
-        service.addLayersGroup    = g => { state.layersgroups.push(g); };
-        /** used by the following plugins: "processing" */
-        service.getExternalLayers = ({ type = 'vector' })     => state.external[type];
-
-        const comp = new Component({
-          id:                 'catalog',
-          icon:               GUI.getFontClass('map'),
-          iconColor:          '#019A4C',
-          title:              'catalog',
-          resizable:          true,
-          vueComponentObject: require('components/Catalog.vue').default,
-          service,
-        });
-      
-        return comp;
-      }),
-
-    ].forEach(comp => GUI.addComponent(comp, 'sidebar'));
-
-  // register other components
-  GUI.setComponent(new Component({
-    id:                 'queryresults',
-    service:            require('services/queryresults').default,
-    vueComponentObject: require('components/QueryResults.vue').default,
-  }));
-
-  GUI.setComponent(new Component({
-    id:                 'map',
-    service:            new (require('services/map').default).MapService(),
-    vueComponentObject: require('components/Map.vue').default,
-  }));
-
-  GUI.setComponent(Object.assign(new Component({
-    id:                 'contents',
-    vueComponentObject: { template: `<div id="contents" class="contents"></div>` },
-  }), {
-    /** DOM element where insert the component/panel  */
-    parent:                 null,
-    contentsdata:           ApplicationState.contentsdata,
-    getComponentById: id => (ApplicationState.contentsdata.find(d => id == d.content.id) || {}).content,
-  }));
-
-  GUI.getComponent('map').mount('#g3w-view-map', true);
-  GUI.getComponent('contents').mount('#g3w-view-content', true);
-
-  ApplicationState.sizes.sidebar.width = $('.main-sidebar').width();
-
   GUI.ready();
 
   // init plugins
   try {
-    const gidProject = ApplicationState.project.getGid(); // current project
+    Object.keys(window.initConfig.plugins).forEach(p => ApplicationState.plugins.push(p));
 
-    // set plugin config filtered by gid
-    const enabledPlugins = {};
-    Object.entries(window.initConfig.plugins).filter(([,p]) => p.gid === gidProject).forEach(([name, config]) => enabledPlugins[name] = config);
-    Object.assign(ApplicationState.pluginsConfigs, enabledPlugins);
-
-    Object.keys(ApplicationState.pluginsConfigs).forEach(p => ApplicationState.configurationPlugins.push(p)); // filter
-    Object.keys(ApplicationState.pluginsConfigs).forEach(p => ApplicationState.plugins.push(p));
-
-    // set plugins that aren't within server configuration  but in project (law for example)
-    const otherPluginsConfig = ApplicationState.project.getState() || {};
-    if (otherPluginsConfig && otherPluginsConfig.law && otherPluginsConfig.law.length) {
-      // law plugin
-      ApplicationState.pluginsConfigs.law     = otherPluginsConfig.law;
-      ApplicationState.pluginsConfigs.law.gid = otherPluginsConfig.gid;
+    /** @TODO move this stuff within the "law" plugin */
+    if (ApplicationState.project?.getState()?.law?.length) {
+      window.initConfig.plugins.law     = ApplicationState.project.getState().law;
+      window.initConfig.plugins.law.gid = ApplicationState.project.getState().gid;
     } else {
-      delete ApplicationState.pluginsConfigs.law;
+      delete window.initConfig.plugins.law;
     }
 
     /** @TODO check if deprecated */
-    for (const p in ApplicationState.pluginsConfigs) {
+    for (const p in window.initConfig.plugins) {
       Object
-        .entries(ApplicationState.pluginsConfigs[p].plugins || {})
-        .forEach(([name, config]) => ApplicationState.pluginsConfigs[name] = {
-          ...ApplicationState.pluginsConfigs[name],
+        .entries(window.initConfig.plugins[p].plugins || {})
+        .forEach(([name, config]) => window.initConfig.plugins[name] = {
+          ...window.initConfig.plugins[name],
           ...config
         });
     }
 
     // load plugins
     await Promise
-      .allSettled(Object.entries(ApplicationState.pluginsConfigs)
+      .allSettled(Object.entries(window.initConfig.plugins)
       .map(async ([name, config]) => {
         if (!config) {
           return;
         }
-        config.baseUrl = window.initConfig.urls.staticurl;
+        config.baseUrl = window.initConfig.staticurl;
         try {
+          const modified = ApplicationState.project.state.modified + '+' + new Date().toISOString().slice(0, 13);
           // wait plugin dependencies before loading plugin
-          await Promise.all((config.jsscripts || []).map(s => _loadScript(s, false)));
-          const modified = g3wsdk.core.project.ProjectsRegistry.getCurrentProject().getState().modified + '+' + new Date().toISOString().slice(0, 13);
-          await _loadScript(`${window.initConfig.urls.staticurl}${name}/js/plugin.js?${modified}`, false);
+          await Promise.all((config.jsscripts || []).map(s => _loadScript(s)));
+          await _loadScript(`${window.initConfig.staticurl}${name}/js/plugin.js?${modified}`);
         } catch(e) {
           console.warn('[G3W-PLUGIN]', e);
           // remove loading plugin in case of error of dependencies
@@ -656,14 +883,12 @@ $.ajaxSetup({
     console.warn(e);
   }
 
-  // trigger 'complete' event
-  ApplicationService.complete = true;
-  ApplicationService.emit('complete');
-
+  /** @since 4.1.0 */
+  GUI.emit('app-complete');
 } catch(error) {
   console.error(error);
   error = error.responseJSON?.error?.data ?? error?.statusText ?? error
-  $('#startingspinner').remove();
+  document.getElementById('startingspinner')?.remove();
   const wrapper = document.querySelector('.error-page');
   if (!wrapper) {
     document.body.insertAdjacentHTML('beforeend', /* html */`

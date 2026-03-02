@@ -25,7 +25,7 @@
                   :style      = "{fontSize: isMobile() ? '1.0em': `${group ? '1.1': '1.2'}em`}"
                   @click      = "group && toggleGroup($event)"
                 >
-                 {{tab.name}} <span style = "padding-left: 3px; font-size: 1.1em;" v-if = "contenttype === 'editing' && tab.required">*</span>
+                 {{ tab.name }} <span style = "padding-left: 3px; font-size: 1.1em;" v-if = "contenttype === 'editing' && tab.required">*</span>
                 </a>
             </li>
 
@@ -39,8 +39,8 @@
             <div
               v-if   = "undefined === tab.visible || tab.visible"
               :id    = "ids[index]"
-              class  = "tab-pane fade"
-              :class = "{'in active': index === 0}"
+              class  = "tab-pane"
+              :class = "{'active': index === 0}"
             >
               <node
                 :showRelationByField = "showRelationByField"
@@ -58,6 +58,7 @@
           </template>
         </div>
       </template>
+
       <node v-else
         :class               = "[(i % 2 ) ? 'odd': 'even']"
         :showRelationByField = "showRelationByField"
@@ -71,19 +72,21 @@
         :fields              = "fields"
         :showTitle           = "false"
         :node                = "root_tab"/>
+        
     </template>
   </div>
 </template>
 
 <script>
 
-  import { G3W_FID }                                 from 'g3w-constants';
-  import DataRouterService                           from 'services/data';
-  import Node                                        from 'components/GlobalTabsNode.vue';
-  import GUI                                         from 'services/gui';
-  import { getAlphanumericPropertiesFromFeature }    from 'utils/getAlphanumericPropertiesFromFeature';
-  import { getUniqueDomId }                          from 'utils/getUniqueDomId';
-  import { noop }                                    from 'utils/noop';
+  import ApplicationState         from 'g3w-state';
+  import { G3W_FID }              from 'g3w-constants';
+  import Node                     from 'components/GlobalTabsNode.vue';
+  import GUI                      from 'g3w-app';
+  import { getAlphanumericProps } from 'utils/getAlphanumericProps';
+  import { getUniqueDomId }       from 'utils/getUniqueDomId';
+  import { noop }                 from 'utils/noop';
+  import { XHR }                  from 'utils/XHR';
 
   /**
    * Convert feature to form Data for expression/expression_eval request
@@ -97,7 +100,7 @@
       _feature   = new ol.Feature(feature.geometry);
       const properties = {};
 
-      getAlphanumericPropertiesFromFeature(feature.attributes)
+      getAlphanumericProps(feature.attributes)
         .filter(p => G3W_FID !== p)
         .forEach(p => properties[p] = feature.attributes[p]);
       _feature.setProperties(properties);
@@ -147,7 +150,7 @@
       },
       handleRelation: {
         type:     Function,
-        default: ({ relation, layerId, feature } = {}) => GUI.getService('queryresults').showRelation({relation, layerId, feature})
+        default: ({ relation, layerId, feature } = {}) => GUI.showRelations({ relation, layerId, feature })
       }
     },
     data() {
@@ -157,7 +160,7 @@
     },
     computed: {
       required_fields() {
-        return 'editing' ===  this.contenttype && this.fields.filter(f => f.validate.required).map(f => f.name);
+        return 'editing' === this.contenttype && this.fields.filter(f => f.validate.required).map(f => f.name);
       },
       show() {
         return this.tabs.reduce((a, t) => a || (t.visible === undefined || !!t.visible), false);
@@ -168,30 +171,32 @@
        * ORIGINAL SOURCE: src/app/core/expression/tabservice.js@3.8.6
        */
       async setVisibility(tab) {
-        tab.visible = await DataRouterService
-          .getData(
-            'expression:expression_eval',
-              {
-              inputs: {
-                qgs_layer_id: this.layerid,
-                form_data:    getFormData(this.feature || {}, this.contenttype),
-                expression:   tab.visibility_expression.expression,
-                formatter:    ('query' === this.contenttype ? 1 : 0),
-              },
-              outputs: false,
-            }
-          );
+        const response = await XHR.post({
+          url:         `/api/expression_eval/${ApplicationState.project.getId()}/`,
+          contentType: 'application/json',
+          data:        JSON.stringify({
+            qgs_layer_id: this.layerid,
+            form_data:    getFormData(this.feature || {}, this.contenttype),
+            expression:   tab.visibility_expression.expression,
+            formatter:    ('query' === this.contenttype ? 1 : 0),
+          }),
+        });
+        if (response.result) {
+          tab.visible = response.value;
+        } else {
+          throw JSON.stringify(response.error);
+        }
       },
       // method to set required tab for editing
-      setEditingRequireTab(obj) {
+      setEditingRequireTab(obj = {}) {
         if (undefined === obj.nodes) {
           return this.required_fields.includes(obj.field_name);
         } else {
           return !!obj.nodes.find(n => this.setEditingRequireTab(n));
         }
       },
-      getField(fieldName) {
-        return this.fields.find(f => fieldName === f.name);
+      getField(name) {
+        return this.fields.find(f => name === f.name);
       },
 
       /**
@@ -252,14 +257,14 @@
           }
         });
         if (nodes.length) {
-          this.root_tabs.push(nodes)
+          this.root_tabs.push(nodes);
         }
       } else {
         this.root_tabs = [this.tabs];
       }
     },
     beforeDestroy() {
-      this.unwatch.forEach(unwatch => unwatch());
+      this.unwatch.forEach(u => u());
       this.unwatch = null;
     }
   }

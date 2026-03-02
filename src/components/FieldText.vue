@@ -13,13 +13,16 @@ export default {
   /** @since 3.8.6 */
   name: "field-text",
 
-  props: ['state'],
-
+  props: {
+    state: { 
+      required: true, 
+      type:     Object 
+    }
+  },
+  
   components: {
     Field
   },
-
-  created() {},
 
 };
 </script>

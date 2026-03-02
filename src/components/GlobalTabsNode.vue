@@ -47,7 +47,7 @@
                 @click.stop = "handleRelation({ relation: getNode(row, column), feature:feature, layerId: layerid })"
                 :style      = "{cursor: showRelationByField && 'pointer'}"
               >
-                <bar-loader :loading="loadingRelation(getNode(row, column)).loading"/>
+                <bar-loader :loading = "loadingRelation(getNode(row, column)).loading"/>
                 <div style = "display: flex; align-items: center">
                   <div  class = "query_relation_field">
                     <i :class = "g3wtemplate.font[`${context === 'query' ? 'relation' : 'pencil'}`]"></i>
@@ -66,10 +66,9 @@
 </template>
 
 <script>
+  import ApplicationState from 'g3w-state'
   import G3wInput         from 'components/InputG3W.vue';
-  import ApplicationState from 'store/application'
-
-  const Fields = require('gui/fields/fields');
+  import Fields           from 'components/g3w-fields';
 
   export default {
     name: "node",
@@ -102,15 +101,13 @@
        * @returns {*|*[]}
        */
       filterNodes() {
-        const filterNodes = this.node.nodes && this.node.nodes.filter(node => {
+        const filterNodes = this.node?.nodes?.filter(node => {
           if ('group' === this.getNodeType(node) ) { return true }
           else if (!node.nodes && node.name && 'group' != this.getNodeType(node)) {
             node.relation = true;
-            return true
+            return true;
           } else {
-            return !!this.fields.find(field => {
-              return (node.field_name ? node.field_name.replace(/ /g,"_") : node.field_name) === field.name  || node.relation;
-            })
+            return !!this.fields.find(f => node.field_name === (f.name || node.relation));
           }
         });
         return filterNodes || [];
@@ -148,7 +145,7 @@
        * @returns {*}
        */
       showGroupTile() {
-        return this.showTitle && this.node.showlabel && this.node.groupbox
+        return this.showTitle && this.node.showlabel && this.node.groupbox;
       }
     },
     methods: {
@@ -158,9 +155,8 @@
        * @returns {*|{loading: boolean}}
        */
       loadingRelation(relation) {
-        const layer = ApplicationState.project.getLayerById(this.layerid);
         // FIXME: prevent a fatal error when creating a relation Tab (even if the project has no relations)
-        return (layer.getRelationById(relation.name) || { state: { loading: false } }).state;
+        return (ApplicationState.project.getLayerById(this.layerid)?.getRelationById(relation.name) || { state: { loading: false } }).state;
       },
       /**
        *
@@ -219,7 +215,7 @@
       getField(node) {
         if (node.relation) { return node }
         //get field of layer
-        const field = this.fields.find(f => (node.field_name ? node.field_name.replace(/ /g,"_") : node.field_name) === f.name);
+        const field = this.fields.find(f => node.field_name === f.name);
         //set showlabel
         field.showlabel = node.showlabel;
         return field;

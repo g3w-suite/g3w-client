@@ -3,13 +3,11 @@
  * @since 3.11.0
  */
 
-import G3WObject      from 'g3w-object';
+import Emitter        from 'g3w-emitter';
 import { noop }       from 'utils/noop';
-import { $promisify } from 'utils/promisify';
-import GUI            from 'services/gui';
+import { cloneDeep }  from 'utils/cloneDeep';
+import GUI            from 'g3w-app';
 
-/** @deprecated */
-import _cloneDeep     from 'lodash.clonedeep';
 import deprecate      from 'util-deprecate';
 
 function merge(destination, source) {
@@ -39,7 +37,7 @@ function merge(destination, source) {
  * @param opts.internalComponent since 3.10.0
  * @param opts.service since 3.10.0
  */
-export default class Component extends G3WObject {
+export default class Component extends Emitter {
 
   constructor(opts = {}) {
 
@@ -150,7 +148,7 @@ export default class Component extends G3WObject {
    * @param opts.propsData
    */
   init(opts = {}) {
-    this.vueComponent = _cloneDeep(opts.vueComponentObject);
+    this.vueComponent = cloneDeep(opts.vueComponentObject);
     this._components  = opts.components || [];
 
     this.setService(opts.service || this._service || noop);
@@ -165,8 +163,8 @@ export default class Component extends G3WObject {
 
     this.setInternalComponent = function() {
       this.internalComponent = new (Vue.extend(this.vueComponent))({
-        service: this._service,
-        template: opts.template,
+        service:   this._service,
+        template:  opts.template,
         propsData: opts.propsData
       });
       this.internalComponent.state = this.getService().state;
@@ -226,9 +224,9 @@ export default class Component extends G3WObject {
     return this.internalComponent;
   }
 
-  setInternalComponent(internalComponent, options={}) {
+  setInternalComponent(internalComponent, opts = {}) {
     this.internalComponent = undefined === internalComponent && this.internalComponentClass ? new this.internalComponentClass : internalComponent;
-    (options.events || [])
+    (opts.events || [])
       .forEach(e => this.internalComponent.$on(e.name, data => e.handler && e.handler(data) || this[`set${e.name[0].toUpperCase()}${e.name.slice(1)}`](data)));
     if (this._service && this._service.state) {
       this.internalComponent.state = this._service.state;
@@ -238,62 +236,54 @@ export default class Component extends G3WObject {
   /**
    * @param { Element | 'string' } parent DOM element
    * @param { boolean } append
-   *  
-   * @returns jquery promise
    * 
-   * @fires internalComponent~ready
-   * @fires mount event
+   * @fires ready
+   * @fires mount
    */
-  mount(parent, append) {
-    return $promisify(new Promise((resolve) => {
-      if (!this.internalComponent) {
-        this.setInternalComponent();
-      }
+  async mount(parent, append) {
 
-      if (append) {
-        $(parent).append(this.internalComponent.$mount().$el);
-      }
+    if (!this.internalComponent) {
+      this.setInternalComponent();
+    }
 
-      if (!append){
-        this.internalComponent.$mount(parent);
-      }
+    if (append) {
+      ('string' === typeof parent ? document.querySelector(parent) : parent).append(this.internalComponent.$mount().$el);
+    }
 
-      this.internalComponent.$nextTick(() => {
-        this.emit('ready');
-        resolve(true);
-      });
+    if (!append){
+      this.internalComponent.$mount(parent);
+    }
 
-      // emit mount event
-      this.emit('mount');
-    }))
+    await this.internalComponent.$nextTick();
+
+    this.emit('ready');
+    this.emit('mount');
+
+    return true;
   }
 
   /**
-   * @returns jquery promise
-   * 
    * @fires unmount
    */
-  unmount() {
-    return $promisify(async () => {
-      if (!this.internalComponent) {
-        return;
-      }
-      if (this.state.resizable) {
-        this.internalComponent.$off('resize-component', this.internalComponent.layout);
-      }
-      this.state.open = false;
-      this.internalComponent.$destroy(true);  // destroy vue component
-      $(this.internalComponent.$el).remove(); // remove dom element
-      this.internalComponent = null;          // set internal componet to null (for GC)
-      this.emit('unmount');                   // emit unmount event
-    })
+  async unmount() {
+    if (!this.internalComponent) {
+      return;
+    }
+    if (this.state.resizable) {
+      this.internalComponent.$off('resize-component', this.internalComponent.layout);
+    }
+    this.state.open = false;
+    this.internalComponent.$destroy(true); // destroy vue component
+    this.internalComponent.$el?.remove();  // remove dom element
+    this.internalComponent = null;         // set internal componet to null (for GC)
+    this.emit('unmount');                  // emit unmount event
   }
 
   /**
    * @returns { Element } DOM element
    */
   ismount() {
-    return this.internalComponent && this.internalComponent.$el;
+    return this.internalComponent?.$el;
   }
 
   /**
@@ -321,9 +311,9 @@ export default class Component extends G3WObject {
  * @deprecated since 3.10.0 Will be deleted in 4.x.
  */
 Object.assign(Component.prototype, {
-  destroy:                           noop,
-  click:                             noop,
-  show:                              noop,
+  destroy:                 noop,
+  click:                   noop,
+  show:                    noop,
   /** used by the following plugins: "iternet" */
-  overwriteServiceMethods:           deprecate(function(o) { Object.entries(o).forEach(([n, m]) => this._service[n] = m) }, '[G3W-CLIENT] Component::overwriteServiceMethods(methodsOptions) is deprecated'),
+  overwriteServiceMethods: deprecate(function(o) { Object.entries(o).forEach(([n, m]) => this._service[n] = m) }, '[G3W-CLIENT] Component::overwriteServiceMethods(methodsOptions) is deprecated'),
 });

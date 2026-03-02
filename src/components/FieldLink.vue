@@ -8,10 +8,9 @@
     <button
       slot        = "field"
       class       = "btn skin-button field_link"
-      v-t         = "'info.link_button'"
       @click.stop = "openLink(value)"
-      :title      = "value">
-    </button>
+      :title      = "value"
+    >{{ $t('Open') }}</button>
   </field>
 </template>
 
@@ -23,10 +22,16 @@ export default {
   /** @since 3.8.6 */
   name: "field-link",
 
-  props: ['state'],
+ props: {
+    state: { 
+      required: true, 
+      type:     Object 
+    }
+  },
+  
   data() {
     return {
-      value: null
+      value: null,
     }
   },
   components: {
@@ -38,7 +43,7 @@ export default {
     }
   },
   created() {
-    this.value = this.state.value && typeof this.state.value === 'object' ? this.state.value.value : this.state.value;
+    this.value = this.state?.value?.value ?? this.state.value;
   }
 };
 </script>

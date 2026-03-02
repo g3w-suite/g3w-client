@@ -24,9 +24,9 @@ export default {
       type: Object
     },
     state: {
-      type: Object,
+      type:    Object,
       default: {
-        value: null,
+        value:      null,
         vueoptions: {
           component: {}
         }

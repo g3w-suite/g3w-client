@@ -7,11 +7,12 @@
   <baseinput :state = "state">
     <div slot = "body" v-disabled = "!editable">
       <div
-        class  = "g3w_input_button skin-border-color"
-        @click = "onClick"
-        style  = "border-style: solid; border-width: 2px; width:100%; cursor: pointer; text-align: center;"
+        class           = "g3w_input_button skin-border-color"
+        @click          = "onClick"
+        style           = "border-style: solid; border-width: 2px; width:100%; cursor: pointer; text-align: center;"
+        v-t-tooltip:top = "accept"
       >
-        <i :class = "g3wtemplate.getFontClass('file-upload')" class = "fa-2x skin-color" style = "padding: 5px;">
+        <i class = "fas fa-file-upload fa-2x skin-color" style = "padding: 5px;">
           <input
             :id       = "mediaid"
             style     = "display:none"
@@ -20,6 +21,7 @@
             :data-url = "state.input.options.uploadurl"
             :class    = "{'input-error-validation' : notvalid}"
             type      = "file"
+            :accept   = "accept"
             @change   = "onChangeFile"
           >
         </i>
@@ -35,20 +37,19 @@
 </template>
 
 <script>
-import GUI                from 'services/gui';
+import GUI                from 'g3w-app';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
-
-const InputMixins                 = require('gui/inputs/input');
-const { media_field: MediaField } = require('gui/fields/fields');
+import Input              from 'components/g3w-input';
+import MediaField         from 'components/FieldMedia.vue';
 
 export default {
 
   /** @since 3.8.6 */
   name: 'input-media',
 
-  mixins: [InputMixins],
+  mixins: [ Input ],
   components: {
-      'g3w-media': MediaField
+    'g3w-media': MediaField
   },
   data() {
     return {
@@ -56,6 +57,8 @@ export default {
         value:     null,
         mime_type: null
       },
+      //@since 4.0.5 take in account allowed types from g3w-admin settings.py G3WFILE_FORM_UPLOAD_FORMATS
+      accept: (this.state.input?.options?.allowed_types || []).map(a => `${a.startsWith('.') ? a : `.${a}`}` ).join(','),
       mediaid: `media_${getUniqueDomId()}`,
       loading: false
     }
@@ -82,14 +85,19 @@ export default {
       this.loading = true;
 
       try {
-        const response = (await (await fetch(this.state.input.options.uploadurl, {
+        let response = (await (await fetch(this.state.input.options.uploadurl, {
           method:  'POST',
           headers: { Accept: 'application/json' },
           body
-        })).json())[this.state.name];
-        console.log(response)
-        if (response) {
-          this.state.value = response;
+        })).json());
+        //@since 4.0.5 in case 
+        if (response?.result) {
+          this.state.value = response?.data;
+        }
+        
+        //@since 4.0.5
+        if (false === response?.result) {
+          GUI.showUserMessage({ type: 'alert', message: response.error || this.$t("info.server_error") });
         }
       } catch(e) {
         console.warn(e);

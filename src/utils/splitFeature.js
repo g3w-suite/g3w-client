@@ -142,7 +142,7 @@ export function splitFeature({
   // LineString or MultiLineString
   if (is_line && !is_multi) {
     const splitGeometry = geometries.split;
-    const lineGeometry = geometries.feature;
+    const lineGeometry  = geometries.feature;
     const isZType                 = undefined !== lineGeometry.getCoordinates()[0][2];
     let splitted                  = false;
     const splittedSegments        = [];
@@ -175,7 +175,7 @@ export function splitFeature({
   
     for (let i = 0; i < targetCoordinates.length - 1; i++) {
       startPoint = targetCoordinates[i];
-      endPoint = targetCoordinates[i+1];
+      endPoint   = targetCoordinates[i+1];
   
       if (isZType) {
         startPoint.z = lineGeometry.getCoordinates()[i][2];
@@ -233,7 +233,7 @@ export function splitFeature({
   
     splittedSegments.push(restOfLine);
   
-    return splitted ? splittedSegments : []
+    return splitted ? splittedSegments : [];
   }
 
   return splittedFeatureGeometries;

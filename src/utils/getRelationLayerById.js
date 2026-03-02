@@ -1,4 +1,4 @@
-import ApplicationState from 'store/application';
+import ApplicationState from 'g3w-state';
 
 /**
  * @since 3.11.8

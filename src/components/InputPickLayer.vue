@@ -27,15 +27,14 @@
 </template>
 
 <script>
-  const Input   = require('gui/inputs/input');
-  const Service = require('gui/inputs/picklayer/service');
+  import Input, { PickLayerService } from 'components/g3w-input';
 
   export default {
 
     /** @since 3.8.6 */
     name: 'input-picklayer',
 
-    mixins: [Input],
+    mixins: [ Input ],
     methods: {
       pickLayer() {
         this.pickservice.pick()
@@ -46,7 +45,7 @@
       }
     },
     created() {
-      this.pickservice = new Service(this.state.input.options)
+      this.pickservice = new PickLayerService(this.state.input.options)
     },
     beforeDestroy() {
       this.pickservice.clear();

@@ -3,7 +3,7 @@
  * @since v3.7
  */
 
-import GUI from 'services/gui';
+import GUI from 'g3w-app';
 
 // show select2 dropdowns as "popover" (ie. always on top over other DOM elements) 
 $(document).on('select2:open', function(e) {
@@ -48,7 +48,6 @@ export default {
         .select2({
           tags:             createTag,
           width:            '100%',
-          // dropdownCssClass: 'skin-color',
           dropdownAutoWidth,
           dropdownParent: true === dropdownParent ? $(el.parentNode) : undefined,
           templateResult,
@@ -131,6 +130,5 @@ export default {
       vnode.g3w_observer.disconnect();
     }
     $(el).select2('destroy');
-    // unwatch({ el, attr });
   }
 };

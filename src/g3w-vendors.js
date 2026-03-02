@@ -40,8 +40,6 @@ import * as xml             from 'ol/xml';
 
 import shp                  from 'shpjs';
 import proj4                from 'proj4';
-import $script              from 'scriptjs';
-import isMobile             from 'ismobilejs';
 import Vue                  from 'vue/dist/vue.js';
 
 /**
@@ -81,9 +79,16 @@ Vue.extend = function(opts) {
 Object.assign(globalThis, {
   Vue,
   /** @deprecated since 3.11.0 */
-  isMobile: isMobile(),
+  isMobile: {
+    get any() { return window.matchMedia('(hover: none) and (pointer: coarse)').matches; }
+  },
   /** @deprecated since 3.11.0 */
-  $script,
+  $script(url, callback) {
+    const script = document.createElement('script');
+    script.src = url;
+    script.onload = callback;
+    document.head.appendChild(script);
+  },
   /** @deprecated since 3.11.0 */
   shp,
   /** @deprecated since 3.11.0 */
@@ -101,31 +106,15 @@ if (initConfig.baseurl) {
   }
 }
 
-// BACKCOMP v3.x (initConfig → initConfig.group)
-initConfig.group = Object.assign(initConfig.group || {}, new Proxy(Object.fromEntries(Object.keys(initConfig).filter(key => ![
-  "i18n",
-  "staticurl",
-  "client",
-  "mediaurl",
-  "user",
-  "baseurl",
-  "vectorurl",
-  "proxyurl",
-  "rasterurl",
-  "interfaceowsurl",
-  "main_map_title",
-  'main_map_title',
-  "g3wsuite_logo_img",
-  "credits",
-  "version",
-  "group",
-  "frontendurl",
-].includes(key)).map(key => ([key, initConfig[key]]))), {
-  get(target, prop, receiver) {
-    console.warn(`[G3W-CLIENT] initConfig.group.${prop.toString()} is deprecated`);
-    return Reflect.get(...arguments);
-  }
-}));
+Object.defineProperty(initConfig, 'group', {
+  get() {
+    console.warn(`[G3W-CLIENT] initConfig.group has been removed from core since 4.1.0`);
+    console.trace();
+    return initConfig;
+  },
+  configurable: false,
+  enumerable: true
+});
 
 // gid of panoramic map project
 initConfig.overviewproject = initConfig.overviewproject ? initConfig.overviewproject.gid : null;
@@ -166,32 +155,142 @@ globalThis.ol = Object.assign({}, ol, {
 globalThis.$ = globalThis.jQuery = require('jquery/dist/jquery');
 
 /**
- * Based on Bootstrap v3.3.7
+ * Based on bootstrap/js/modal.js@v3.3.7
  */
-// require('bootstrap/js/button');
-require('bootstrap/js/carousel');
-require('bootstrap/js/collapse');
-require('bootstrap/js/dropdown');
-require('bootstrap/js/modal');
-require('bootstrap/js/tooltip');
-require('bootstrap/js/tab');
+$.fn.modal = function(option) {
+  const element = this[0];
 
-require('datatables.net/js/jquery.dataTables');
+  if (!element['__g3w_dialog']) {
+    // wrap jquery modal into a native <dialog> element
+    const dialog = element instanceof HTMLDialogElement ? element : document.createElement('dialog');
+    if (dialog !== element) {
+      dialog.append(element)
+    }
+    document.body.appendChild(dialog);
+
+    // handle click on "backdrop" and "data-dismiss" buttons
+    dialog.addEventListener('mousedown', e => {
+      const rect        = dialog.getBoundingClientRect();
+      const is_backdrop = (
+        e.clientY < rect.top - 20 ||
+        e.clientY > rect.top + rect.height ||
+        e.clientX < rect.left ||
+        e.clientX > rect.left + rect.width - 20
+      );
+      const is_interactive = ['label', 'button', 'select', 'input', 'textarea'].some(i => e.target.closest(i));
+      if ((is_backdrop && !is_interactive) || (0 === e.button && e.target.closest('[data-dismiss="modal"]'))) {
+        dialog.close();
+      }
+    });
+
+    // BACKOMP for "shown.bs.modal" and "hidden.bs.modal" events
+    dialog.addEventListener('beforetoggle', e => {
+      if ('open' === e.newState) {
+        setTimeout(() => {
+          $(element).find('.modal-dialog').trigger('shown.bs.modal');
+          $(element).trigger('shown.bs.modal');
+        }, 500);
+      } else {
+        $(element).trigger('hidden.bs.modal');
+      }
+    });
+
+    element['__g3w_dialog'] = ({
+      show:   () => dialog.showModal(),
+      hide:   () => dialog.close(),
+      toggle: () => dialog.open ? dialog.close() : dialog.showModal(),
+    });
+  }
+
+  element['__g3w_dialog']['string' === typeof option ? option : 'show']();
+  return this;
+};
+
+/**
+ * Based on bootstrap/js/modal.js@v3.3.7
+ */
+document.addEventListener('click', function(e) {
+  const target = e.target.closest('[data-toggle="modal"]');
+  const modal  = target && document.querySelector(target.getAttribute('data-target') || target.getAttribute('href'));
+  if (modal) {
+    e.preventDefault();
+    $.fn.modal.call($(modal));
+  }
+});
+
+
+/**
+ * Based on bootstrap/js/tooltip.js@v3.3.7
+ */
+$.fn.tooltip = function(opts) {
+  if ('hide' === opts) {
+    document.querySelector('#tooltip').hidePopover()
+  }
+  return this;
+};
+
 require('select2')(jQuery);
 
-/** @TODO check if deprecated */
-// jQuery.fn.select2.amd.define("select2/i18n/it", [], () => ({
-//   errorLoading:   () => "I risultati non possono essere caricati.",
-//   inputTooLong:    e => "Per favore cancella " + (e.input.length - e.maximum) + " caratter" + (1 !== (e.input.length - e.maximum) ? "i" : "e"),
-//   inputTooShort:   e => "Per favore inserisci " + (e.minimum - e.input.length) + " o più caratteri",
-//   loadingMore:    () => "Caricando più risultati…",
-//   maximumSelected: e => "Puoi selezionare solo " + e.maximum + " element" (1 !== e.maximum ? "i" : "o"),
-//   noResults:      () => "Nessun risultato trovato",
-//   searching:      () => "Sto cercando…",
-//   removeAllItems: () => "Rimuovi tutti gli oggetti",
-// }));
-
 globalThis.moment = require('moment/min/moment-with-locales');
+
+/**
+ * Based on bootstrap/js/dropdown.js@v3.3.7
+ */
+document.addEventListener('click', function(e) {
+  const target = e.target.closest('[data-toggle="dropdown"]');
+  if (3 !== e.button) {
+    document
+      .querySelectorAll('[data-toggle="dropdown"]')
+      .forEach(toggle => {
+        const open = target === toggle && !target.parentNode.classList.contains('open');
+        toggle.setAttribute('aria-expanded', open);
+        toggle.parentNode.classList.toggle('open', open);
+        if (open) {
+          toggle.focus();
+        }
+      });
+  }
+});
+
+/**
+ * Based on bootstrap/js/dropdown.js@v3.3.7
+ */
+document.addEventListener('keydown', function(e) {
+  const target = e.target.closest('[data-toggle="dropdown"]');
+  if (target && 'Escape' === e.key) {
+    target.click();
+  }
+});
+
+/**
+ * Based on bootstrap/js/tab.js@v3.3.7
+ */
+document.addEventListener('click', function(e) {
+  const tab = e.target.closest('[data-toggle="tab"]');
+  if (!tab) {
+    return;
+  }
+  e.preventDefault();
+  if (tab.parentElement.classList.contains('active')) {
+    return;
+  }
+  const pane = document.querySelector(tab.getAttribute('href'));
+  [
+    { element: tab.closest('li'), container: tab.closest('ul') },
+    { element: pane,              container: pane.parentNode },
+  ].forEach(({ element, container }) => {
+    const active = container.querySelector(':scope > .active');
+    if (active) {
+      active.classList.remove('active');
+      active.querySelectorAll('[data-toggle="tab"]').forEach(tab => tab.setAttribute('aria-expanded', false));
+    }
+    element.classList.add('active');
+    element.querySelectorAll('[data-toggle="tab"]').forEach(tab => {
+      tab.setAttribute('aria-expanded', true);
+      tab.focus();
+    });
+  });
+});
 
 /*!
   * HOTFIX: for invalid UMD definition

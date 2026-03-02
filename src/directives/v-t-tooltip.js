@@ -3,7 +3,7 @@
  * @since v3.7
  */
 
-import GUI              from 'services/gui';
+import GUI              from 'g3w-app';
 import { gettext as _ } from 'g3w-i18n';
 
 // show tooltip as "popover" (ie. always on top over other DOM elements) 
@@ -80,9 +80,11 @@ const tooltip = Object.assign(document.createElement('template'), {
 document.querySelector('#app').insertAdjacentElement('afterend', tooltip);
 document.addEventListener('mousemove', showTooltip);
 document.addEventListener('mousedown', showTooltip);
+document.addEventListener('focusin', showTooltip);
+document.addEventListener('focusout', () => tooltip.hidePopover());
 
 function showTooltip(e) {
-  const element = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-i18n-title], [title]');
+  const element = (e.type === 'focusin' ? e.target : document.elementFromPoint(e.clientX, e.clientY))?.closest('[data-i18n-title], [title]');
   const title   = element?.getAttribute('data-i18n-title') ?? element?.getAttribute('title');
 
   if (!element || !title || element?.closest('.select2')) {

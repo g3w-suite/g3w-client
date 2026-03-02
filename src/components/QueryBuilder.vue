@@ -21,7 +21,7 @@
         data-i18n-title = "Docs"
         data-placement  = "right"
       >
-        <i :class = "$fa('external-link')"></i>
+        <i aria-hidden = "true" class = "fa fa-external-link-alt"></i>
       </a>
       <select id = "query_builder_layers_select" class = "form-control">
         <option
@@ -49,18 +49,24 @@
         @click    = "run"
         :disabled = "disabled"
         v-t       = "'RUN'"
-      ><i :class = "$fa('run')" style = "color: green;"></i></button>
+      >
+        <i aria-hidden = "true" class = "fas fa-play" style = "color: green;"></i>
+      </button>
       <button
         class     = "query_builder_button btn btn-secondary bold"
         @click    = "reset"
         v-t       = "'CLEAR'"
-      ><i :class = "$fa('clear')"></i></button>
+      >
+        <i aria-hidden = "true" class = "fas fa-broom"></i>
+      </button>
       <button
         class     = "query_builder_button btn btn-secondary bold"
         @click    = "save"
         :disabled = "disabled"
         v-t       = "'SAVE'"
-      ><i :class = "$fa('save')"></i></button>
+      >
+        <i aria-hidden = "true" class = "far fa-save"></i>
+      </button>
     </div>
 
     <hr>
@@ -80,7 +86,7 @@
     <!-- SEARCH OPERATORS -->
     <div class = "content-wrap mb-5">
       <button
-        v-for  = "operator in operators"
+        v-for  = "operator in ['>=', '<=', '!=', '=', '>', '<', 'IN', 'LIKE', 'ILIKE', 'AND', 'OR' ]"
         @click = "addToExpression({ value: operator, type: 'operator' })"
         :key   = "operator"
         class  = "query_builder_button btn btn-secondary bold"
@@ -106,7 +112,7 @@
       :class    = "{'skin-border-color' : !manual }"
       style     = "color: #000;"
     >
-      <i :class = "g3wtemplate.getFontClass('search')"></i>
+      <i aria-hidden = "true" class = "fas fa-search"></i>
       <span v-t = "'SEARCH A VALUE'"></span>
     </button>
 
@@ -115,15 +121,12 @@
 </template>
 
 <script>
-import { FILTER_OPERATORS }        from 'g3w-constants';
-import ApplicationState            from 'store/application';
-import DataRouterService           from 'services/data';
-import GUI                         from 'services/gui';
+import ApplicationState            from 'g3w-state';
+import GUI                         from 'g3w-app';
 import { getUniqueDomId }          from 'utils/getUniqueDomId';
 import { createFilterFromString }  from 'utils/createFilterFromString';
 import { XHR }                     from 'utils/XHR';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
-import { prompt }                  from 'utils/prompt';
 import { gettext as _ }            from 'g3w-i18n';
 
 export default {
@@ -136,7 +139,7 @@ export default {
       edit:         undefined !== this.$options.options,
       currentlayer: null,
       message:      '',
-      filter:       (undefined !== this.$options.options ? this.$options.options.filter : ''),
+      filter:       this.$options?.options?.filter ?? '',
       loading: {
         test:   false,
         values: false
@@ -147,14 +150,14 @@ export default {
       select: {
         field: null,
         value: null
-      }
+      },
     }
   },
 
   computed:{
 
     fields() {
-      return this.currentlayer ? this.currentlayer.fields : [];
+      return this?.currentlayer?.fields ?? [];
     },
 
     disabled() {
@@ -232,16 +235,16 @@ export default {
       try {
         this.loading.test = true;
         const layer       = getCatalogLayerById(this.currentlayer.id);
-        const { data }    = await DataRouterService.getData('search:features', {
+        const { data }    = await GUI.getData('search:features', {
           inputs: {
             layer,
-            filter: createFilterFromString({ layer, filter: this.filter }),
+            filter:        createFilterFromString({ layer, filter: this.filter }),
             feature_count: 100,
           },
           outputs: true,
         });
-        const n         = data.length && data[0].features.length; // number of features
-        this.message    = undefined === n ? '' : ` ${n}`;
+        const n           = data.length && data[0].features.length; // number of features
+        this.message      = undefined === n ? '' : ` ${n}`;
         return data;
       } catch(e) {
         console.warn(e);
@@ -257,6 +260,7 @@ export default {
       const id      = this.projectId || ApplicationState.project.getId();
       const edit_id = this.edit && this.$options.options.id;
       const item    = window.localStorage.getItem('QUERYBUILDERSEARCHES');
+      //get stored query builder searches
       let searches  = item ? JSON.parse(item) : undefined;
 
       let query;
@@ -266,17 +270,13 @@ export default {
           layerId:   this.currentlayer.id,
           filter:    this.filter,
           layerName: getCatalogLayerById(this.currentlayer.id).getName(),
-          name:      edit_id ? (this.edit && this.$options.options.name) : await (new Promise((res, rej) => prompt({
-            label: _('Insert the name of the new search'),
-            value: '',
-            callback: d => d ? res(d) : rej()
-          }))),
+          name:      edit_id ? (this.edit && this.$options.options.name) : (await GUI.prompt(_('Insert the name of the new search'), '')),
           id:        edit_id || getUniqueDomId(),
         };
 
         // edit local item
         if (edit_id) {
-          const i = searches[id].findIndex(s => s.id === query.id);
+          const i = searches[id].findIndex(s => query.id === s.id);
           if (-1 !== i) {
             searches[id][i] = query;
           }
@@ -291,13 +291,15 @@ export default {
             searches[id] = [...(searches[id] || []), query];
           }
         }
-      } catch (e) {
+      } catch(e) {
         console.warn(e);
         return;
       }
 
       // reset items
       const ITEMS = ApplicationState.querybuilder.searches;
+
+      ITEMS[id]   = ITEMS[id] ?? [];
       
       try {
         window.localStorage.setItem('QUERYBUILDERSEARCHES', JSON.stringify(searches));
@@ -322,7 +324,7 @@ export default {
 
     const project = ApplicationState.project;
 
-    this.layers = project
+    this.layers   = project
       .getLayers()
       .filter(l => !l.baselayer && Array.isArray(l.fields))
       .map(layer => {
@@ -330,21 +332,19 @@ export default {
         let exclude = [];
         project.state.relations
           .filter(r => layer.id === r.referencedLayer && 'ONE' === r.type) // get relations by layerId
-          .forEach( r => {
+          .forEach(r => {
             const l = project.getLayerById(r.referencingLayer);
-            r.customPrefix = r.customPrefix === undefined ? `${l.getName()}_` : r.customPrefix;
-            exclude = [...exclude, ...l.getFields().map(field => `${r.customPrefix}${field.name}`)];
+            r.customPrefix = r?.customPrefix ?? `${l.getName()}_`;
+            exclude = [...exclude, ...l.getFields().map(({ name }) => `${r.customPrefix}${name}`)];
           });
         return {
           id:     layer.id,
           label:  layer.title,
-          fields: layer.fields.filter(f => f.show).map(f => ({ label: f.label, name: f.name })).filter(f => !exclude.includes(f))
+          fields: layer.fields.filter(f => f.show).map(({ label, name }) => ({ label, name })).filter(f => !exclude.includes(f))
         }
       });
 
-    this.operators    = Object.values(FILTER_OPERATORS);
-
-    this.currentlayer = this.edit ? this.layers.find(l => l.id === this.$options.options.layerId) : this.layers[0];
+    this.currentlayer = this.edit ? this.layers.find(l => this.$options.options.layerId === l.id) : this.layers[0];
 
   },
 

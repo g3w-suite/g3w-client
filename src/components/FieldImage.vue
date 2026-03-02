@@ -9,138 +9,51 @@
       <img
         v-for       = "(img, i) in images"
         class       = "img-responsive"
-        style       = "max-height: 50px;"
-        @click.stop = "showGallery(i)"
+        style       = "max-height: 50px; cursor: pointer;"
+        @click.stop = "showGallery(images, i)"
         :src        = "img.src"
+        loading     = "lazy"
       />
-      <Teleport to="body">
-        <div
-          class           = "modal fade modal-fullscreen"
-          :id             = "`gallery_${id}`"
-          tabindex        = "-1"
-          role            = "dialog"
-          aria-labelledby = ""
-          aria-hidden     = "true"
-        >
-          <div class = "modal-dialog">
-            <div class = "modal-content">
-              <div class = "modal-body">
-                <!--begin carousel-->
-                <div
-                  :id           = "`carousel_${id}`"
-                  class         = "carousel slide"
-                  data-interval = "false"
-                >
-                  <div class = "carousel-inner">
-                    <div
-                      v-for  = "(image, i) in images"
-                      class  = "item"
-                      :class = "active == i ? 'active' : ''"
-                    >
-                      <img :src="isRelativePath(image.src)" alt = "" style = "margin:auto" />
-                    </div>
-                  </div>
-                  <a
-                    v-if       = "images.length > 1"
-                    class      = "left carousel-control"
-                    :href      = "`#carousel_${id}`"
-                    role       = "button"
-                    data-slide = "prev"
-                  >
-                    <span :class = "$fa('arrow-left')"></span>
-                  </a>
-                  <a
-                    v-if       = "images.length > 1"
-                    class      = "right carousel-control"
-                    :href      = "`#carousel_${id}`"
-                    role       = "button"
-                    data-slide = "next"
-                  >
-                    <span :class = "$fa('arrow-right')"></span>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Teleport>
     </div>
   </field>
 </template>
 
 <script>
-import Teleport           from 'vue2-teleport';
-import Field              from 'components/Field.vue';
-import { toRawType }      from 'utils/toRawType';
-import { getUniqueDomId } from 'utils/getUniqueDomId';
+import Field from 'components/Field.vue';
+import GUI   from 'g3w-app';
 
 export default {
 
   /** @since 3.8.6 */
   name: "field-image",
 
-  props: ['state'],
-  data() {
-    return {
-      id:     getUniqueDomId(),
-      active: null,
-      value:  undefined !== this.state.value.mime_type ? this.state.value.value : this.state.value,
+  props: {
+    state: { 
+      required: true, 
+      type:     Object 
     }
   },
+
   components: {
     Field,
-    Teleport,
   },
+
   computed: {
     images() {
-      return [].concat(this.value).map(img => ({ src: (img || {}).photo || img }));
+      return []
+        .concat(undefined !== this.state.value.mime_type ? this.state.value.value : this.state.value)
+        .map(img => {
+          let url = (img || {}).photo || img;
+          url = `${!url.startsWith('/') && !url.startsWith('http') ? window.initConfig.mediaurl : ''}${url}`;
+          return ({ src: url })
+        });
     },
   },
+
   methods: {
-    async showGallery(index) {
-      this.active = index;
-      if (toRawType(this.value) === 'Object') {
-        this.value.active = true;
-      }
-      $(`#gallery_${this.id}`).modal('show');
-    },
-    isRelativePath(url) {
-      if (!url.startsWith('/') && !url.startsWith('http')) {
-        return `${window.initConfig.mediaurl}${url}`;
-      }
-      return url;
+    async showGallery(images, index) {
+      GUI.showGallery(images, index);
     },
   }
 };
 </script>
-
-<style scoped>
-  .img-responsive {
-    cursor: pointer;
-  }
-  .modal-content {
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 3px;
-  }
-  .modal-dialog {
-    display: inline-block;
-    text-align: left;
-    vertical-align: middle;
-  }
-  .modal {
-    text-align: center;
-    padding: 0!important;
-  }
-  .modal:before {
-    content: '';
-    display: inline-block;
-    height: 100%;
-    vertical-align: middle;
-    margin-right: -4px;
-  }
-  .carousel .carousel-control span {
-    color: #3c8dbc;
-    position: absolute;
-    top: 50%;
-  }
-</style>

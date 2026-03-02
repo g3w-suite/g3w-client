@@ -2,32 +2,27 @@
  * @file
  * @since v3.7
  */
+import { FieldsService } from 'components/g3w-fields';
 
 export default {
   methods: {
-    getFieldService() {
-      if (undefined === this._fieldsService) {
-        this._fieldsService = require('gui/fields/fieldsservice');
-      }
-      return this._fieldsService;
-    },
     getFieldType(field) {
-      return this.getFieldService().getType(field);
+      return FieldsService.getType(field);
     },
     isSimple(field) {
-      return this.getFieldService().isSimple(field);
+      return FieldsService.isSimple(field);
     },
     isLink(field) {
-      return this.getFieldService().isLink(field);
+      return FieldsService.isLink(field);
     },
     isImage(field) {
-      return this.getFieldService().isImage(field);
+      return FieldsService.isImage(field);
     },
     isPhoto(field) {
-      return this.getFieldService().isPhoto(field);
+      return FieldsService.isPhoto(field);
     },
     isVue(field) {
-      return this.getFieldService().isVue(field);
+      return FieldsService.isVue(field);
     },
     sanitizeFieldValue(value) {
       return (Array.isArray(value) && !value.length) ? '' : value;

@@ -7,11 +7,10 @@ import {
   SEARCH_ALLVALUE,
   PAGELENGTHS
 }                                     from 'g3w-constants';
-import G3WObject                      from 'g3w-object';
+import Emitter                        from 'g3w-emitter';
 import Panel                          from 'g3w-panel';
-import ApplicationState               from 'store/application'
-import GUI                            from 'services/gui';
-import DataRouterService              from 'services/data';
+import ApplicationState               from 'g3w-state'
+import GUI                            from 'g3w-app';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';
 import { createFilterFormInputs }     from 'utils/createFilterFormInputs';
 import { toRawType }                  from 'utils/toRawType';
@@ -36,14 +35,12 @@ export function SearchPanel(opts = {}, show = false) {
     queryurl:             (opts.options || {}).queryurl,
     layerid:              (opts.options || {}).layerid,
     otherquerylayerids:   (opts.options|| {}).otherquerylayerids || [],
-    /** @deprecated will be removed in v4.x */
-    search_endpoint:      'api',
     search_1n_relationid: opts.options.search_1n_relationid, //relations
     /** Layers that will be searchable for that search form. 
      * The First one is a layer owner of the search set on admin. 
      * Need to ser layer TOC layer olorder on results.
      * */
-    search_layers: (GUI.getService('queryresults')._projectLayerIds.filter(id => [(opts.options || {}).querylayerid || (opts.options || {}).layerid, ...((opts.options || {}).otherquerylayerids || [])].includes(id))).map(id => getCatalogLayerById(id)),
+    search_layers: (GUI._projectLayerIds.filter(id => [(opts.options || {}).querylayerid || (opts.options || {}).layerid, ...((opts.options || {}).otherquerylayerids || [])].includes(id))).map(id => getCatalogLayerById(id)),
     /** Array of inputs that belongs to search form  */
     forminputs:    ((opts.options || {}).filter || []).map((d, i) => ({
       id:          d.id || getUniqueDomId(),
@@ -144,12 +141,12 @@ export function SearchPanel(opts = {}, show = false) {
   // create search form structure 
   state.mounted = setInputs();
 
-  const service = opts.service || Object.assign(new G3WObject, {
+  const service = opts.service || Object.assign(new Emitter, {
     state,
     doSearch,
     setInputs,
     run: debounce((...args) => {
-      const [w, h] = GUI.getService('map').getMap().getSize();
+      const [w, h] = GUI.getMap().getSize();
       const hide   = GUI.isMobile() && (0 === w || 0 === h);
       setTimeout(() => {
         if (hide) {
@@ -207,7 +204,7 @@ async function doSearch({
   const search_1n  = !show && ('search_1n' === state.type);
 
   try {
-    data = await DataRouterService.getData('search:features', {
+    data = await GUI.getData('search:features', {
       inputs: {
         layer:     state.search_layers,
         filter:    filter || createFilterFormInputs({
@@ -233,14 +230,14 @@ async function doSearch({
     }
     // no search response (values) → show an empty result
     if (!has_values && 'search' === state.return) {
-      GUI.outputDataPlace(Promise.resolve({ data: [] }));
+      GUI.showData({ data: [] });
       data = [];
     }
     /********************************************************************************/
 
     // auto zoom to query (response)
     if (show && ApplicationState.project.state.autozoom_query && 1 === (data.data || []).length && !state.paginate) {
-      GUI.getService('map').zoomToFeatures(data.data[0].features);
+      GUI.zoomToFeatures(data.data[0].features);
     }
 
     const features  = search_1n       && (data.data[0] || {}).features || []
@@ -249,7 +246,7 @@ async function doSearch({
 
     // no features on result or no relation found (@since 3.11.0) → show an empty message
     if (search_1n && (0 === features.length || !relation)) {
-      GUI.outputDataPlace(Promise.resolve({ data: [] }));
+      GUI.showData({ data: [] });
       parsed = [];
     }
 
@@ -259,7 +256,7 @@ async function doSearch({
       //@since 3.11.0 Backport old relation with relation fields not array (no multiple field)
       referencedField  = [].concat(referencedField);
       referencingField = [].concat(referencingField);
-      parsed = await DataRouterService.getData('search:features', {
+      parsed = await GUI.getData('search:features', {
         inputs: {
           layer,
           filter: createFilterFormInputs({

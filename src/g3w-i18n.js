@@ -1,8 +1,10 @@
 /**
  * @file inspired by "leaflet-i18n"
  */
-import ApplicationState  from 'store/application';
+import ApplicationState  from 'g3w-state';
 import { flattenObject } from 'utils/flattenObject';
+
+const MISSING = new Set(); // list of un-translated strings
 
 /**
  * @param {string} string text to be translated
@@ -11,7 +13,8 @@ import { flattenObject } from 'utils/flattenObject';
  */
 export function gettext(string) {
   let value = window.initConfig.locales?.[ApplicationState.language]?.[string] ?? ApplicationState.locales?.[ApplicationState.language]?.[string] ?? ApplicationState.locales?.en?.[string]; // fallback to "en"
-  if (undefined === value && 'en' !== ApplicationState.language) {
+  if (undefined === value && 'en' !== ApplicationState.language && !MISSING.has(string)) {
+    MISSING.add(string);
     console.info(`[G3W-I18N] missing: '${string}'`);
   }
   return value ?? string;

@@ -4,110 +4,107 @@
 -->
 
 <template>
-  <!-- Modal -->
-  <div
-    class    = "modal fade"
-    id       = "modal-changemap"
-    tabindex = "-1"
+  <dialog
+    id            = "modal-changemap"
+    @beforetoggle = "onBeforetoggle"
+    style         = "width: 80vw;"
+    :aria-label   = "$t('changemap')"
   >
-    <div class = "modal-dialog" style="min-width: 80vw;">
-      <div class = "modal-content">
+    <form method="dialog">
 
-        <div class="modal-body" style="height: 80vh;">
+      <div style="height: 80vh;">
 
-          <!-- CHILD NODE -->
-          <div
-            v-if  = "'root' !== this.current"
-            style = "
-              display: flex;
-              align-items: center;
-              color: #fff
+        <!-- CHILD NODE -->
+        <div
+          v-if  = "'root' !== this.current"
+          style = "
+            display: flex;
+            align-items: center;
+            color: #fff
+          "
+          class = "skin-background-color"
+        >
+          <span
+            title          = "Change Session"
+            data-placement = "bottom"
+            v-disabled     = "loading"
+            @click.stop    = "back"
+            style          = "
+              font-size: 2em;
+              margin: 5px;
+              cursor: pointer;
+              padding: 3px;
+              border: 2px solid #fff;
+              border-radius: 3px;
             "
-            class = "skin-background-color"
           >
-            <span
-              v-t-tooltip:bottom = "'Change Session'"
-              v-disabled         = "loading"
-              @click.stop        = "back"
-              style              = "
-                font-size: 2em;
-                margin: 5px;
-                cursor: pointer;
-                padding: 3px;
-                border: 2px solid #fff;
-                border-radius: 3px;
-              "
-            >
-              <i style  = "color: #FFF" :class = "$fa('reply')"></i>
-            </span>
+            <i style  = "color: #FFF" class = "fas fa-reply" aria-hidden = "true"></i>
+          </span>
 
-              <div v-if = "parent" style = "margin: auto">
-                <h3 style = "font-weight: bold">{{ parent.title || parent.name }}</h3>
-              </div>
-            </div>
-
-          <div
-            v-if  = "items.length"
-            class = "g3w-change-map-menu-container"
-          >
-            <div
-              v-for = "item in items"
-              :key  = "item.name"
-              class = "menu-item"
-            >
-
-            <!-- ITEM IMAGE -->
-              <div
-                class       = "menu-item-image"
-                @click.stop = "trigger(item)"
-              >
-                <img
-                  :src   = "item.thumbnail || item.header_logo_img || item.logo_img"
-                  @error = "setItemImageSrc({ item, type: 'net_error' })"
-                  alt    = "logo"
-                  class  = "img-responsive"
-                />
-              </div>
-
-              <!-- ITEM CONTENT -->
-              <div class = "menu-item-content">
-                <div class = "menu-item-text">
-                  <h4 class = "menu-item-title">{{ item.title }}</h4>
-                  <div v-html = "item.description"></div>
-                </div>
-              </div>
-
+            <div v-if = "parent" style = "margin: auto">
+              <h3 style = "font-weight: bold">{{ parent.title || parent.name }}</h3>
             </div>
           </div>
 
-          <h3 v-else
-            style = "font-weight: bold"
-            v-t   = "`No other ${current}`">
-          </h3>
+        <div
+          v-if  = "items.length"
+          class = "g3w-change-map-menu-container"
+        >
+          <div
+            v-for = "item in items"
+            :key  = "item.name"
+            class = "menu-item"
+          >
 
+          <!-- ITEM IMAGE -->
+            <div
+              class       = "menu-item-image"
+              @click.stop = "trigger(item)"
+            >
+              <img
+                :src   = "item.thumbnail || item.header_logo_img || item.logo_img"
+                @error = "setItemImageSrc({ item, type: 'net_error' })"
+                alt    = "logo"
+                class  = "img-responsive"
+              />
+            </div>
+
+            <!-- ITEM CONTENT -->
+            <div class = "menu-item-content">
+              <div class = "menu-item-text">
+                <h4 class = "menu-item-title">{{ item.title }}</h4>
+                <div v-html = "item.description"></div>
+              </div>
+            </div>
+
+          </div>
         </div>
 
-        <div class = "modal-footer" style="position: relative; background: #fff;">
-          <button
-            v-t          = "'close'"
-            type         = "button"
-            class        = "btn btn-default"
-            data-dismiss = "modal"
-          ></button>
-        </div>
+        <h3 v-else
+          style = "font-weight: bold"
+          v-t   = "`No other ${current}`">
+        </h3>
 
       </div>
-    </div>
-  </div>
+
+      <menu style = "display: flex; justify-content: end;">
+        <button
+          v-t          = "'close'"
+          type         = "cancel"
+          class        = "btn btn-secondary"
+        ></button>
+      </menu>
+
+    </form>
+  </dialog>
 </template>
 
 <script>
 
-import ApplicationState        from 'store/application';
-import Projections             from 'store/projections';
+import ApplicationState        from 'g3w-state';
 import { XHR }                 from 'utils/XHR';
 import { getListableProjects } from 'utils/getListableProjects';
-import GUI                     from 'services/gui';
+import GUI                     from 'g3w-app';
 
 const LOGO_GIS3W = 'images/logo_gis3w_156_85.png';
 
@@ -276,14 +273,14 @@ export default {
       let url;
       const base_url = window.initConfig.urls.baseurl;
       const epsg     = this.parent.srid ? `EPSG:${this.parent.srid}` : this.parent.crs.epsg;
-      await Projections.registerProjection(epsg);
+      await ApplicationState.projections.set(epsg);
       try {
         new URL(base_url);
         url = `${base_url}${item.url || item.map_url.replace(/^\//, "")}`;
       } catch(e) {
         url = `${location.origin}${base_url}${item.url || item.map_url.replace(/^\//, "")}`;
       }
-      url = await GUI.getService('map').addMapExtentUrlParameterToUrl(url, epsg);
+      url = await GUI.addMapExtentUrlParameterToUrl(url, epsg);
       history.replaceState(null, null, url);
       location.replace(url);
     },
@@ -343,6 +340,15 @@ export default {
       return `${host}${imageSrc}`;
     },
 
+    /**
+     * @since 4.1.0
+     */
+    async onBeforetoggle(e) {
+      if ('open' === e.newState && window.innerWidth < 767) {
+        GUI.hideSidebar();
+      }
+    },
+
   },
 
   async created() {
@@ -360,6 +366,10 @@ export default {
     Object
       .entries({ 'project': this.items, 'magrocroup': this.macrogroups, 'group': this.groups })
       .forEach(([type, d]) => d.forEach(item => this.setItemImageSrc({ item, type })))
+  },
+
+  mounted() {
+    document.body.appendChild(this.$el);
   },
 
 };

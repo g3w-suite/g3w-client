@@ -5,19 +5,17 @@
 
 <template>
   <div
-    class   = "usermessage-content"
+    class   = "usermessage-content usermessage-tool"
     :id     = "id"
     :style  = "style"
-    :class  = "{ ['usermessage-' + type]: true}"
     popover = "manual"
   >
     <div
-      v-if  = "showheader"
       class = "usermessage-header-content"
     >
       <i
         class  = "usermessage-header-icontype"
-        :class = "$fa(iconClass || type)">
+        :class = "$fa(iconClass || 'tool')">
       </i>
       <div class = "usermessage-header-title">
         <slot name = "header">
@@ -25,7 +23,7 @@
             v-if = "title"
             v-t  = "title">
           </h4>
-          <h4  v-else> {{ type.toUpperCase() }}</h4>
+          <h4 v-else> TOOL</h4>
           <h5
             v-if  = "subtitle"
             class = "usermessage-header-subtitle"
@@ -35,11 +33,11 @@
       </div>
       <div class = "usermessage-header-right">
         <div
-          v-if             = "closable"
-          v-t-tooltip:left = "'close'"
-          @click           = "closeUserMessage"
+          v-if   = "closable"
+          title  = "close"
+          @click = "closeUserMessage"
         >
-          <i class = "usermessage-header-right-item" :class = "$fa('close')"></i>
+          <i aria-hidden = "true" class = "usermessage-header-right-item fas fa-times"></i>
         </div>
       </div>
     </div>
@@ -65,7 +63,7 @@
    */
   function _makeDraggable(el) {
     let x2 = 0, y2 = 0, x1 = 0, y1 = 0;
-    el.addEventListener('mousedown', function(e) {
+    el.addEventListener('mousedown', e => {
       // skip dragging on form elements
       if (['.select2-container', 'button', 'select', 'input', 'textarea'].some(i => e.target.closest(i))) {
         return;
@@ -76,10 +74,12 @@
       document.addEventListener('mouseup', mouseUp);
       document.addEventListener('mousemove', mouseMove);
     });
+
     function mouseUp() {
       document.removeEventListener('mouseup', mouseUp);
       document.removeEventListener('mousemove', mouseMove);
     }
+    
     function mouseMove(e) {
       e.preventDefault();
       x2 = x1 - e.clientX;
@@ -88,7 +88,7 @@
       y1 = e.clientY;
       if (el.style.marginLeft) { x2 -= parseInt(el.style.marginLeft); el.style.marginLeft = null; }
       if (el.style.marginTop)  { y2 -= parseInt(el.style.marginTop);  el.style.marginTop  = null; }
-      el.style.top  = (el.offsetTop - y2)    + "px";
+      el.style.top  = (el.offsetTop - y2)  + "px";
       el.style.left = (el.offsetLeft - x2) + "px";
     }
   }
@@ -97,10 +97,6 @@
     name: "usermessage",
     props: {
       id: {},
-      type: {
-        type:    String,
-        default: "info" // info, warning, alert, tool
-      },
       title: {
         type:    String,
         default: null,
@@ -109,10 +105,6 @@
         type:    String,
         default: null,
       },
-      size: {
-        type:    String, // values [small, fullpage]
-        default: "fullpage"
-      },
       message: {
         type:    String,
         default: ''
@@ -120,14 +112,6 @@
       textMessage: {
         type:    Boolean,
         default: false
-      },
-      autoclose: {
-        type:    Boolean,
-        default: false
-      },
-      duration: {
-        type:    Number,
-        default: 3000
       },
       closable: {
         type:    Boolean,
@@ -144,14 +128,9 @@
         style: {
           top:        'position-area' in document.body.style ? 'anchor(--g3w-view-map top)' : null,
           left:       'position-area' in document.body.style ? 'anchor(--g3w-view-map left)' : null,
-          width:      'small' === this.size ? '325px' : (g3wsdk.core.ApplicationState.viewport.map.sizes.width + 'px'),
-          marginLeft: 'small' === this.size ? (document.body.classList.contains('sidebar-collapse') ? '5px' : '40px') : null,
+          width:      '325px',
+          marginLeft: (document.body.classList.contains('sidebar-collapse') ? '5px' : '40px'),
         }
-      }
-    },
-    computed: {
-      showheader() {
-        return 'loading'!== this.type ;
       }
     },
     methods: {
@@ -159,21 +138,13 @@
         if (this.$el.popover) {
           this.$el.hidePopover();
         }
-        this.$emit('close-usermessage')
+        this.$emit('close-usermessage');
       },
     },
     
     async mounted() {
       this.$el.showPopover();
-      if ('tool' === this.type) {
-        _makeDraggable(this.$el);
-      }
-      if (this.size === 'fullpage') {
-        this.uw = this.$watch(
-          ()    => g3wsdk.core.ApplicationState.viewport.map.sizes.width, 
-          width => this.style.width = 'fullpage' === this.size ? `${width}px`: this.style.width
-        );
-      }
+      _makeDraggable(this.$el);
       this.observer = new MutationObserver(mutations => {
         mutations.forEach(mutation => {
           if ("class" === mutation.attributeName) {
@@ -182,19 +153,8 @@
         });
       });
       this.observer.observe(document.body, { attributes: true });
-      if (this.autoclose) {
-        await this.$nextTick();
-        const timer = setTimeout(() => {
-          this.closeUserMessage();
-          clearTimeout(timer)
-        }, this.duration)
-      }
     },
     beforeDestroy() {
-      if (this.uw) {
-        this.uw();
-        this.uw = null;
-      }
       if (this.observer) {
         this.observer.disconnect();
         this.observer = null;
@@ -202,13 +162,6 @@
     }
   }
 </script>
-
-<style>
-  #g3w-view-map {
-    anchor-name: --g3w-view-map; 
-  }
-</style>
-
 <style scoped>
 
   .usermessage-content {
@@ -221,12 +174,12 @@
     margin: unset;
   }
 
-  .usermessage-success   { background-color: #62ac62; }
-  .usermessage-info      { background-color: #44a0bb; }
-  .usermessage-warning   { background-color: #f29e1d; }
-  .usermessage-alert     { background-color: #c34943; }
-  .usermessage-tool      { background-color: #FFF; color: #222d32; cursor: move; border: thin solid #ccc; }
-  .usermessage-loading   { background-color: #FFF; color: #222d32;  font-weight: bold; }
+  .usermessage-tool {
+    background-color: #FFF;
+    color: #222d32;
+    cursor: move;
+    border: thin solid #ccc;
+  }
 
   .usermessage-header-content {
     display: flex;
