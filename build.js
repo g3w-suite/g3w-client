@@ -492,7 +492,7 @@ async function start_proxy_server() {
 
     server.listen(3000, () => {
       console.log('\n' + GREEN__ + 'Proxy server running at: http://localhost:3000' + __RESET);
-      console.log('\n' + 'Remote server: ' + SERVER_URL.origin);
+      console.log('\n' + 'Remote server: ' + SERVER_URL.origin + '\n');
     });
   } catch(e) {
     console.warn(e);
