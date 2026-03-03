@@ -263,7 +263,7 @@ export default {
         page_size: PAGELENGTHS[1],
         search:    null,
         in_bbox:   undefined,
-        ordering:  headers[0].name,
+        ordering:  headers?.[0]?.name,
         formatter: 1,
       }
     };
