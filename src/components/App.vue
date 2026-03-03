@@ -1419,9 +1419,9 @@ export default {
       const config  = Object.values(ApplicationState.project.state.map_themes).flat().find(c => theme_name === c.theme);
       try {
         if (config && undefined === config.layerstree) {
-          const response = await XHR.get({ url: `${ApplicationState.project.urls.map_themes}${theme_name}/` });
-          if (response.result) {
-            config.layerstree = response.data;
+          const { result, data } = await XHR.get({ url: `${ApplicationState.project.urls.map_themes}${theme_name}/` });
+          if (result) {
+            config.layerstree = data;
           }
         }
       } catch(e) {

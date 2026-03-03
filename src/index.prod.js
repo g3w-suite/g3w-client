@@ -427,7 +427,7 @@ $.ajaxSetup({
   // fetch project configuration from remote server
 
   // { Array } config.layers - The order of layers follows layer rendering order set on QGIS project.Can be different to TOC layer order
-  const config    = await Promise.race([
+  const config = await Promise.race([
     new Promise(res => setTimeout(() => res("Timeout"), TIMEOUT)),
     await XHR.get({ url:
       `${window.initConfig.urls.baseurl}${window.initConfig.urls.config}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}?_t=${CONFIG.modified}`
@@ -435,7 +435,7 @@ $.ajaxSetup({
   ]);
 
   const THEME     = (new URLSearchParams(location.search)).get('map_theme');
-  const map_theme = config && THEME && Object.values(config.map_themes).flat().find(({ theme }) => theme === THEME);
+  const map_theme = config && THEME && Object.values(config.map_themes).flat().find(({ theme }) => THEME === theme);
 
   /** In the case of url param set map_theme, need to get map theme configuration from server */
   if (map_theme) {
