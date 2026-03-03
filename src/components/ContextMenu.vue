@@ -1088,9 +1088,6 @@
     color: #FFF !important;
     transform: scale(1.1);
   }
-  .context-menu .click-to-copy .tooltip-inner {
-    min-width: 200px;
-  }
   .context-menu li.title {
     background: transparent !important;
     font-size: 1.1em;
@@ -1118,10 +1115,6 @@
     white-space: normal;
     overflow-y: auto;
     max-height: 150px;
-  }
-  .context-menu .tooltip-inner {
-    word-break: break-all;
-    font-weight: bold;
   }
   .context-menu .item-text {
     margin-left: 3px;
