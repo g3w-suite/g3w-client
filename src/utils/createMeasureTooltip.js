@@ -99,7 +99,7 @@ export function get_formatted_length(geom, epsg = ApplicationState.map_epsg, uni
     return `${length * 0.0005399568} nm`;
   }
 
-  return length > 100 ? `${round(length / 1000)} km` : `${round(length)} m`;
+  return length > 1000 ? `${round(length / 1000)} km` : `${round(length)} m`;
 }
 
 export function get_formatted_angle(c1, c2) {
@@ -116,5 +116,5 @@ export function get_formatted_radius(geom, epsg = ApplicationState.map_epsg, uni
     return `${radius * 0.0005399568} nm`;
   }
 
-  return radius > 100 ? `${round(radius / 1000)} km` : `${round(radius)} m`;
+  return radius > 1000 ? `${round(radius / 1000)} km` : `${round(radius)} m`;
 }
