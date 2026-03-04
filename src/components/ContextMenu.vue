@@ -145,8 +145,8 @@
         <i class = "fas fa-chevron-right" style  = "position: absolute; right: 0; margin-top: 3px"></i>
         <ul class = "sub-contex-menu">
           <li
-            v-for       = "(style, i) in layer.styles"
-            @click.stop = "setLayerStyle(i)"
+            v-for       = "style in layer.styles"
+            @click.stop = "setLayerStyle(style.name)"
             :key        = "style.name"
             style       = "display: list-item;"
           >
@@ -390,7 +390,6 @@
         ApplicationState,
         layerstree:       null,
         layer:            null,
-        layer_style:      null,
         top:              0,
         left:             0,
         context:          null,
@@ -724,10 +723,10 @@
         }
       },
 
-      async setLayerStyle(index) {
+      async setLayerStyle(style) {
         try {
           //change layer style
-          await getCatalogLayerById(this.layer.id).changeStyle(this.layer_style);
+          await getCatalogLayerById(this.layer.id).changeStyle(style);
           ApplicationState.map_theme.theme = null; // @since 4.0.7 on group or layer change , set map_theme null
         } catch (e) {
           console.warn(e);
