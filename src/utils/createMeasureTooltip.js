@@ -55,6 +55,9 @@ export function createMeasureTooltip({ map, feature } = {}) {
       }
     });
 
+    //@since 4.1.0 emit change event to show tooltip at start
+    feature.getGeometry().dispatchEvent({ type: 'change' })
+
   return {
     tooltip,
     unbyKey,
