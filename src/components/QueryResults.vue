@@ -335,7 +335,7 @@
                     >
                       <!-- ORIGINAL SOURCE: src/components/QueryResultsActions.vue@v4.0.0 -->
                       <button
-                        v-for                     = "action in state.layersactions[layer.id].filter(action => initAction({ action, layer, feature, index }))" 
+                        v-for                     = "action in state.layersactions[layer.id].filter(async action => await initAction({ action, layer, feature, index }))" 
                         type                      = "button"
                         :key                      = "action.id"
                         @contextmenu.prevent.stop = ""

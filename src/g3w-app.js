@@ -2253,7 +2253,7 @@ export default new (class GUI extends Emitter {
     // get features from added pick layer in case of a new request query
     layers.forEach((l, index) => {
        // whether result comes from pagination or previous requestis a filter pagination (case search with autofilter)
-      l.filter.pagination = l.filter.active && (l.filter.pagination || !!(this.state.query?.pagination?.paginate?.at(index)));
+      l.filter.pagination = l.filter.active || (l.filter.pagination || !!(this.state.query?.pagination?.[l.id]?.paginate));
       if (options.add || options.update) {
         this.updateLayerResultFeatures(l, options.update);
       } else {
