@@ -90,6 +90,7 @@
               <!-- LOGIN URL -->
               <a
                 v-if         = "!user"
+                href         = "#"
                 :src         = "login_url"
                 :data-toggle = "has_iframe_login ? 'modal'        : undefined"
                 :data-target = "has_iframe_login ? '#modal-login' : undefined"
