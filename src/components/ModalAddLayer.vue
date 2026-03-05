@@ -7,7 +7,7 @@
   <dialog
     id            = "modal-addlayer"
     @beforetoggle = "onBeforetoggle"
-    style         = "width: min(85vw, 600px);"
+    :style        = "{ width: wms_config ? 'min(85vw, 1400px)' : 'min(85vw, 600px)' }"
     :aria-label   = "$t('Add Layer')"
   >
     <form method="dialog" style="padding: 15px;">
@@ -126,17 +126,55 @@
             <h3 class = "skin-color g3w-wms-panel-title">{{ title }}</h3>
 
             <!-- LAYER INFO -->
-            <fieldset v-if = "wms_config.abstract" class = "form-group" style = "border: 1px solid #c0c0c0; padding: 4.9px 8.75px 8.75px 10.5px;border-radius: 3px;">
+            <fieldset v-if = "wms_config.abstract" class = "form-group" style = "border: 1px solid #c0c0c0; padding: 4.9px 8.75px 8.75px 10.5px;border-radius: 3px;font-size: small;">
               <legend style = "width: 15px; height: 15px; border: none; border-radius: 50%; background-color: rgb(34, 45, 50); font-weight: bold; color: rgb(255, 255, 255); font-size: 0.7em; display: flex; justify-content: center; margin: 0px -14px; user-select: none;">i</legend>
               {{ wms_config.abstract }}
             </fieldset>
 
             <!-- LAYERS NAME -->
-            <div class = "form-group">
-              <label for = "g3w-wms-layers"><span v-t = "'Layers'"></span></label>
-              <select id = "g3w-wms-layers" :multiple = "true" :clear = "true" v-select2 = "'wms_styles'" :dropdownParent = "true" :templateResult = "templateResultLayers" :templateSelection = "templateSelectionLayers">
-                <option v-for = "(l, i) in layers" :value = "i">{{ l.title }}</option>
-              </select>
+            <div class="form-group">
+              <label for="g3w-wms-layers">{{ $t('Layers') }}</label>
+              <input
+                id           = "g3w-wms-layers"
+                class        = "form-control"
+                :placeholder = "$t('Type to search layers')"
+                v-model      = "wms_layers_filter"
+                :aria-label  = "$t('Type to search layers')"
+                style        = "margin-bottom:8px;"
+              />
+              <p><small>{{ wms_styles.length }} {{ $t('layers selected') }}</small></p>
+              <table v-if = "wms_filtered_layers.length"  class="table" style="width:100%; display: block; max-height: 300px; overflow-y: scroll; user-select: none;">
+                <thead style="position: sticky; top: 0; background-color: #f4f4f4;">
+                  <tr>
+                    <th style="width: 40px; text-align: center;">
+                      <input
+                        type         = "checkbox"
+                        :checked     = "wms_all_selected"
+                        @change.stop = "onToggleSelectAllWMS"
+                        :aria-label  = "$t('Select all layers')"
+                      />
+                    </th>
+                    <th v-t="'Title'"></th>
+                    <th v-t="'Name'"></th>
+                    <th v-t="'Abstract'"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="(l, i) in wms_filtered_layers"
+                    :key="l.__idx"
+                    :style="{ background: wms_styles.includes(String(l.__idx)) ? 'rgba(25,77,51,0.05)' : 'transparent', cursor: 'pointer' }"
+                    @click="wms_styles.includes(String(l.__idx)) ? wms_styles.splice(wms_styles.indexOf(String(l.__idx)),1) : wms_styles.push(String(l.__idx))"
+                  >
+                    <td style="width: 40px; text-align: center;">
+                      <input type="checkbox" :value="String(l.__idx)" v-model="wms_styles" @click.stop />
+                    </td>
+                    <td><b>{{ l.title }}</b></td>
+                    <td><small class="text-muted">{{ l.name }}</small></td>
+                    <td><small>{{ l.abstract }}</small></td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
             <!-- EPSG PROJECTIONS -->
@@ -516,6 +554,7 @@ export default {
       wms_projection:   null, // choose epsg project
       wms_styles:       [],   // selected layers styles
       wms_layers:       [],   // selected layers
+      wms_layers_filter: '',  // search filter (wms layers)
       wms_visible:      true,
       wms_opacity:      1,
       url:              null,
@@ -552,9 +591,30 @@ export default {
   },
 
   computed: {
+
     feature_count() {
       return this.olLayer?.getSource().getFeatures().length || 0;
     },
+
+    wms_filtered_layers() {
+      const filter = (this.wms_layers_filter || '').toLowerCase().trim();
+      // preserve original index via __idx so wms_styles (which store original indexes) keep working
+      let mapped = (this.layers || []).map((l, idx) => ({ ...l, __idx: String(idx) }));
+
+      // apply filter if present, otherwise show all
+      if (filter) {
+        mapped = mapped.filter(l => ((l.title || '') + (l.name || '') + (l.abstract || '')).toLowerCase().includes(filter));
+      }
+
+      return mapped;
+    },
+
+    wms_all_selected() {
+      const vis = (this.wms_filtered_layers || []).map(l => String(l.__idx));
+      if (!vis.length) return false;
+      return vis.every(id => (this.wms_styles || []).includes(id));
+    },
+
   },
 
   watch: {
@@ -632,6 +692,20 @@ export default {
 
     onChangeColor(val) {
       this.layer_color = val;
+    },
+
+    onToggleSelectAllWMS(e) {
+      const checked    = e.target.checked;
+      const visibleIds = (this.wms_filtered_layers || []).map(l => String(l.__idx));
+      if (checked) {
+        // add visible ids preserving order and avoiding duplicates
+        const current = [...(this.wms_styles || [])];
+        visibleIds.forEach(id => { if (!current.includes(id)) current.push(id); });
+        this.wms_styles = current;
+      } else {
+        // remove visible ids from current selection
+        this.wms_styles = (this.wms_styles || []).filter(id => !visibleIds.includes(id));
+      }
     },
 
     async parseFile() {
