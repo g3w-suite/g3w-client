@@ -309,6 +309,8 @@ export const FONT_AWESOME_ICONS = {
   "backward":       'fas fa-angle-double-left',
   //@since 3.12.0 **/
   "annotation":     'fas fa-font', 
+  /** @since 4.1.0 */
+  "tasks":          'fas fa-tasks', 
 };
 
 /**
