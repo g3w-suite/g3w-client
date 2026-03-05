@@ -2565,7 +2565,7 @@ export default new (class GUI extends Emitter {
             this.unwatch && this.unwatch(); // remove action when destroy
           },
           change() {
-            this.state.disabled = !layer.filter.pagination;
+            this.state.disabled = layer.filter.pagination;
           }
         },
 
