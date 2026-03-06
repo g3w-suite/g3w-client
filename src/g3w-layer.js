@@ -1276,7 +1276,7 @@ export class Layer extends Emitter {
    * @returns { boolean }
    */
   isInEditing() {
-    return this.state.inediting;
+    return this.state?.editing?.inediting;
   }
 
   /**
@@ -1285,7 +1285,7 @@ export class Layer extends Emitter {
    * @param {boolean} bool
    */
   setInEditing(bool = false) {
-    this.state.inediting = bool;
+    this.state.editing.inediting = bool;
   }
 
   /**

@@ -2220,7 +2220,7 @@ export default new (class GUI extends Emitter {
           addfeaturesresults:     { active: false },
           downloadformats:        { active: false },
           editable:               is_layer   ? layer.isEditable() && layer.config.editing?.visible : false,
-          inediting:              is_layer   ? layer.isInEditing()                                 : false,
+          editing:                is_layer   ? layer.state.editing                                 : { inediting: false},
           source:                 is_layer   ? layer.getSource()                                   : undefined,
           infoformat:             is_layer   ? layer.getInfoFormat()                               : undefined,
           infoformats:            is_layer   ? layer.getInfoFormats()                              : [],
@@ -2555,11 +2555,12 @@ export default new (class GUI extends Emitter {
           class:     "fas fa-minus-square",
           style:     { color: 'red' },
           /** @since 3.11.0 hide element in case of pagination (show = false) */
-          state:     Vue.observable({ show: !layer.filter.pagination }),
+          state:     Vue.observable({ disabled: layer.filter.pagination || layer.filter.active }),
           hint:      'Remove feature from results',
           cbk:       this.removeFeatureFromResult.bind(this),
           init() {
-            this.unwatch = Vue.watch(() => layer.filter.pagination, bool => this.state.show = !bool ); // listen filter layer pagination change
+            //@4.1.0 need to listen pagination and active filter on layer
+            this.unwatch = Vue.watch(() => [layer.filter.pagination, layer.filter.active], bools => this.state.disabled = (bools.reduce((a, bool) => { a = a || bool; return a; }, false))); // listen filter layer pagination change
           },
           clear() {
             this.unwatch && this.unwatch(); // remove action when destroy
@@ -2575,11 +2576,11 @@ export default new (class GUI extends Emitter {
           class:    "fas fa-check-circle",
           hint:     'Add/Remove Selection',
           state:    Vue.observable({
-            toggled: layer.features.reduce((a, _ , i ) => { a[i] = false; return a; }, {}),
-            show:    !layer.filter.active // show action when filter is not set
+            toggled:  layer.features.reduce((a, _ , i ) => { a[i] = false; return a; }, {}),
+            disabled: layer.filter.active // show action when filter is not set
           }),
           init({ layer, feature, index, action } = {}) {
-            this.unwatch = Vue.watch(() => layer.filter.active, bool => this.state.show = !bool ); // listen filter layer pagination change
+            this.unwatch = Vue.watch(() => layer.filter.active, bool => this.state.disabled = bool ); // listen filter layer pagination change
             if (!feature) {
               return console.trace('Invalid feature');
             }
@@ -2610,10 +2611,17 @@ export default new (class GUI extends Emitter {
         },
 
         // edit
-        (layer.editable && false === layer.inediting) && {
+        (layer.editable) && {
           id:    'editing',
           class: "fas fa-pencil-alt",
           hint:  'Editing',
+          state:  Vue.observable({ disabled: layer.editing.inediting }), //disable when in editing
+          init() {
+             this.unwatch = Vue.watch(() => layer.editing.inediting, bool => this.state.disabled = bool );
+          },
+          clear() {
+            this.unwatch && this.unwatch(); // remove action when destroy
+          },
           cbk:   (layer, feature) => this.editFeature({ layer, feature })
         },
 
@@ -2907,6 +2915,8 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   #clearState() {
+    //need to reset pagination
+    this.state.queried_layers.forEach(l => l.filter.pagination = false);
     this.state.queried_layers.splice(0);
     this.state.query               = null;
     this.state.querytitle          = "";
