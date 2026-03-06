@@ -76,8 +76,8 @@ export default {
   },
 
   mounted() {
-    //@since 4.0.6 Check after created (set default value eventualy)
-    const { checked, label, value } = this.state.input.options.values.find(v => `${this.state.value}` === v.value) ?? { };
+    //@since 4.0.6 Check after created (set default value eventualy). Need to convert it to string
+    const { checked, label, value } = this.state.input.options.values.find(v => `${this.state.value}` === `${v.value}`) ?? { };
     this.value             = checked ?? null;
     this.label             = label ?? value ?? null;
   },
