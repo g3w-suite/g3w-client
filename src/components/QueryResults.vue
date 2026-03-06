@@ -849,7 +849,7 @@
 
       async trigger(action, layer, feature, index) {
         //In case of action is disbled do nothing
-        if (state.download || !!(action.state || {}).disabled) {
+        if (this.state.download || !!(action.state || {}).disabled) {
           return;
         }
         
