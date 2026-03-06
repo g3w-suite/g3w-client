@@ -341,9 +341,8 @@
                         v-if                      = "(action.state && action.state.show) || true"
                         @contextmenu.prevent.stop = ""
                         @click.stop               = "trigger(action, layer, feature, index)"
-                        :class                    = "{'toggled': (action.state || {}).toggled && action.state.toggled[index] }"
+                        :class                    = "{'toggled': (action.state || {}).toggled && action.state.toggled[index], 'disabled' :state.download || !!(action.state || {}).disabled } "
                         class                     = "action-button"
-                        v-disabled                = "state.download || !!(action.state || {}).disabled"
                         :title                    = "action.hint"
                         data-placement            = "top"
                       >
@@ -849,6 +848,11 @@
       },
 
       async trigger(action, layer, feature, index) {
+        //In case of action is disbled do nothing
+        if (state.download || !!(action.state || {}).disabled) {
+          return;
+        }
+        
         if (action.opened && 'none' === document.getElementById(`${layer.id}_${index}`)?.style?.display) {
           this.toggleFeatureBox(layer, feature);
           await this.$nextTick();
@@ -1195,5 +1199,9 @@
   margin: 2px;
   font-weight: bold;
   font-size: 0.8em;
+}
+.action-button.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 </style>
