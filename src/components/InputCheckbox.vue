@@ -33,9 +33,9 @@ export default {
 
   data() {
     return {
-      value:  null,
-      label:  null,
-      id:     getUniqueDomId(), // new id
+      value: null,
+      label: null,
+      id:    getUniqueDomId(), // new id
     }
   },
 
@@ -73,13 +73,15 @@ export default {
       this.state.value       = value;
       this.change();
     },
+
   },
+
   mounted() {
-    //@since 4.0.6 Check after created (set default value eventualy)
-    const { value, label } = this.getValuesItem(this.state.value);
-    this.value = value ?? null;
-    this.label = label ?? value ?? null;
-  }
+    //@since 4.0.6 Check after created (set default value eventualy). Need to convert it to string
+    const { checked, label, value } = this.state.input.options.values.find(v => `${this.state.value}` === `${v.value}`) ?? { };
+    this.value             = checked ?? null;
+    this.label             = label ?? value ?? null;
+  },
 
 };
 </script>
