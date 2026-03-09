@@ -1819,10 +1819,6 @@ export class Layer extends Emitter {
     if (this.isMulti() && !this.isXYZ()) {
       return 'application/vnd.ogc.gml';
     }
-    // In the case of NETCDF (qtime series)
-    if (true === this.state.qtimeseries || 'gdal' === this.getSourceType()) {
-      return 'application/json';
-    }
     if (this.state.infoformat && '' !== this.state.infoformat  && 'wfs' !== ogcService) {
       return this.state.infoformat;
     }
