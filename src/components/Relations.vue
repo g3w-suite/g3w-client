@@ -17,9 +17,9 @@
     </div>
     <div style = "display: grid; grid-template-columns: repeat(2, auto); grid-column-gap: 5px;grid-row-gap: 5px;">
       <div
-        v-for  = "relation in relations"
-        @click = "showRelation(relation)"
-        class  = "skin-border-color grid-item"
+        v-for       = "relation in relations"
+        @click.stop = "showRelation(relation)"
+        class       = "skin-border-color grid-item"
       >
         <i class = "fas fa-sitemap" style = "padding: 6px;"></i>
         <b style = "padding: 5px; overflow: hidden; white-space: normal; overflow-wrap: break-word;">{{ relation.name }}</b>
@@ -295,7 +295,7 @@
         /**
          * @since 4.1.0
          */
-        relations: ((ApplicationState.project.getRelations() || []).reduce((group, r) => {
+        relations: !this.$options.relation && ((ApplicationState.project.getRelations() || []).reduce((group, r) => {
           group[r.referencedLayer] = group[r.referencedLayer] || [];
           group[r.referencedLayer].push(r);
           return group;
@@ -409,7 +409,6 @@
         this.loading  = true;
         this.relation = relation;
         try {
-          GUI.setCurrentContentOptions({ title: relation.name, crumb: { title: relation.name, text: true } });
           this.view = 'relation';
 
           await this.$nextTick();
@@ -420,6 +419,12 @@
 
           if ('ONE' !== this.relation.type) {
             this.getData();
+            //In case coming from list of relations
+            if (this.relations.length > 1) {
+              const currentDC         = g3w.app.state.contentsdata.at(-1);
+              currentDC.options.title = [currentDC.options.title, this.relation.title];
+            }
+            
           }
         } catch(e) {
           console.warn(e);
@@ -615,7 +620,7 @@
           this.relations[0].noback = true;
           await this.showRelation(this.relations[0]);
         }
-        GUI.setCurrentContentOptions({ crumb: { title: 'info.list_of_relations' } });
+        g3w.app.state.contentsdata.at(-1).options.title = g3w.app.state.contentsdata.at(-1).options.title.at(0);
         this.loading = false;
       },
 

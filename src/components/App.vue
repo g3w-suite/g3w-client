@@ -770,15 +770,14 @@
           class = "content_breadcrumb"
         >
           <span
-            v-for = "(crumb, index) in breadcrumb"
-            :key  = "crumb.title"
+            v-for = "(b, index) in breadcrumb"
+            :key  = "b"
           >
             <span
               class  = "skin-color-dark"
               :style = "{fontWeight: isNotLastCrumb(index) ? 'bold' : 'normal'}"
-              v-t    = "crumb.text ? null : crumb.title"
+              v-t    = "b"
             >
-              <span v-if = "crumb.text"> {{ crumb.title }} </span>
             </span>
             <span
               v-if  = "isNotLastCrumb(index)"
@@ -1002,7 +1001,7 @@ export default {
     },
 
     breadcrumb() {
-      return this.state.content.contentsdata.filter(c => c.options.crumb).map(c => c.options.crumb);
+      return this.state.content.contentsdata.filter(cd => cd?.options?.title).map(cd => cd.options.title).flat();
     },
 
     has_panel() {

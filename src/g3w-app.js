@@ -843,7 +843,6 @@ export default new (class GUI extends Emitter {
           vueComponentObject: require('components/QueryResults.vue').default,
         }),
         title:      "Results",
-        crumb:      { title: "Results", trigger: null },
         push:       this.push_content,
         post_title: output.title || '',
         perc:       isMobile.any ? 100 : undefined,
@@ -887,7 +886,6 @@ export default new (class GUI extends Emitter {
             vueComponentObject: require('components/QueryResults.vue').default,
           }),
           title:      "Results",
-          crumb:      { title: "Results", trigger: null },
           push:       this.push_content,
           post_title: output.title || '',
           perc:       isMobile.any ? 100 : undefined,
@@ -921,9 +919,10 @@ export default new (class GUI extends Emitter {
     const formComponent = options.formComponent ? new options.formComponent(options) : new FormComponent(options);
     this.setContent({
       perc:       options.perc,
+      //@since 4.1.0 used instead crumb
+      title:      formComponent.parentData && [getCatalogLayerById(formComponent.parentData?.qgs_layer_id)?.getName?.(), formComponent?.layer?.getTitle?.()].filter(Boolean),
       content:    formComponent,
       split:      undefined !== options.split ? options.split : 'h',
-      crumb:      options.crumb,
       push:       !!options.push, //only one (if other deletes previous component)
       showgoback: !!options.showgoback,
       closable:   false
@@ -1398,20 +1397,6 @@ export default new (class GUI extends Emitter {
     return ApplicationState.content.contentsdata.length;
   }
 
-  /**
-   * change current content options
-   * @param opts: { title, crumb, text }
-   */
-  setCurrentContentOptions(opts = {}) {
-    const content = ApplicationState.content.contentsdata.at(-1) || null;
-    if (content && opts.title) {
-      content.options.title = opts.title;
-    }
-    if (content && opts.crumb) {
-      content.options.crumb = opts.crumb;
-    }
-  }
-
   getCurrentContent() {
     return ApplicationState.content.contentsdata.at(-1) || null;
   }
@@ -1436,7 +1421,7 @@ export default new (class GUI extends Emitter {
       this.closeUserMessage();
     }
 
-    const panel    = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
+    const panel = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
 
     Object.assign(opts, {
       content:     opts.content || null,
@@ -3165,11 +3150,12 @@ export default new (class GUI extends Emitter {
     push = true
   } = {}) {
     let _relation;
+    let title;
     if (relation) {
       _relation = ApplicationState.project.getRelationById(relation.name);
+      title     = [getCatalogLayerById(_relation.referencedLayer).getTitle(), _relation.name];
     } else {
-      const title = getCatalogLayerById(layerId).getTitle();
-      this.setCurrentContentOptions({ title, crumb: { text: true, title } });
+      title = getCatalogLayerById(layerId).getTitle();
     }
     this.setContent({
       push,
@@ -3182,10 +3168,10 @@ export default new (class GUI extends Emitter {
       }),
       perc:        isMobile.any ? 100                                   : undefined,
       crumb:       _relation    ? { title: _relation.name, text: true } : { title: 'List of Relations', trigger: null },
-      title:       _relation    ? _relation.name                        : 'List of Relations',
+      title:       _relation    ? title                                 : 'List of Relations',
       text:        _relation    ? true                                  : undefined,
       backonclose: _relation    ? undefined                             : true,
-      closable: !push
+      closable:    !push,
     });
   };
 
