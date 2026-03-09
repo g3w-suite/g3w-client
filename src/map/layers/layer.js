@@ -2362,10 +2362,6 @@ class Layer extends G3WObject {
    * @returns { default.watch.infoformat | * | string }
    */
   getInfoFormat(ogcService) {
-    // In the case of NETCDF (qtime series)
-    if (true === this.config.qtimeseries || 'gdal' === this.getSourceType()) {
-      return 'application/json';
-    }
     if (this.config.infoformat && '' !== this.config.infoformat  && 'wfs' !== ogcService) {
       return this.config.infoformat;
     }
