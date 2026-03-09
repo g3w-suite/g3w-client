@@ -44,6 +44,7 @@
     'texthtml_input':            require('gui/inputs/texthtml/vue/texthtml'),
     'textarea_input':            require('gui/inputs/textarea/vue/textarea'),
     'integer_input':             require('gui/inputs/integer/vue/integer'),
+    'bigint_input':              require('gui/inputs/integer/vue/integer'), //@since 4.0.8
     'string_input':              require('gui/inputs/text/vue/text'), //temporary
     'float_input':               require('gui/inputs/float/vue/float'),
     'radio_input':               require('gui/inputs/radio/vue/radio'),
@@ -84,17 +85,11 @@
     },
     computed: {
       type() {
-
-        /**@since 4.0.7 set integer and bigint as integer input (numeric) */
-        if (['integer', 'bigint'].includes(this.state.type)) {
-          return 'integer_input';
+        /**@since 4.0.8 set integer,bigint, float and  'text' === this.state.input.type set (numeric) input dom type */
+        if (['integer', 'bigint', 'float'].includes(this.state.type) && 'text' === this.state.input.type) {
+          return `${this.state.type}_input`;
         }
-
-        //In case of float, use float input (numeric)
-        if (['float'].includes(this.state.type)) {
-          return 'float_input';
-        }
-
+        
         return this.state.input.type ? `${this.state.input.type}_input`: `${this.state.type}_input`;
         
           
