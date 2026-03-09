@@ -3167,8 +3167,7 @@ export default new (class GUI extends Emitter {
         })
       }),
       perc:        isMobile.any ? 100                                   : undefined,
-      crumb:       _relation    ? { title: _relation.name, text: true } : { title: 'List of Relations', trigger: null },
-      title:       _relation    ? title                                 : 'List of Relations',
+      title,
       text:        _relation    ? true                                  : undefined,
       backonclose: _relation    ? undefined                             : true,
       closable:    !push,
