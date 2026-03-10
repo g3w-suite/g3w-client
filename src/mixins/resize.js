@@ -20,7 +20,7 @@ export default {
   },
   async mounted() {
     await this.$nextTick();
-    if (this.resize) { this.resize(); }
+    this.resize?.();
   },
   beforeDestroy() {
     GUI.off('resize', this.delayResize);
