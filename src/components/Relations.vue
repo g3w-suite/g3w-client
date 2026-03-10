@@ -12,7 +12,7 @@
     <div class = "header skin-background-color lighten">
       <span style = "font-size: 1.1em;">{{ $t('List of relations of feature') }}</span>
       <ul style = "padding: 1em 0 0 15px; list-style: square;">
-        <li v-for = "info in feature_info()"><b>{{ info.key }}</b>: {{ info.value }}</li>
+        <li v-for = "({ label, value }) in feature_info()"><b>{{ label }}</b>: {{ value }}</li>
       </ul>
     </div>
     <div style = "display: grid; grid-template-columns: repeat(2, auto); grid-column-gap: 5px;grid-row-gap: 5px;">
@@ -30,6 +30,7 @@
   <!-- SELECTED RELATION -->
   <div
     v-else-if = "'relation' === view"
+    ref       = "relation" 
     class     = "layer-relation"
   >
     <div class = "header skin-background-color lighten">
@@ -221,6 +222,7 @@
   import Field                             from 'components/FieldG3W.vue';
   import { FieldsService }                 from 'components/g3w-fields';
   import GUI                               from 'g3w-app';
+  import { resizeMixin }                   from 'mixins';
   import { debounce }                      from 'utils/debounce';
   import { getCatalogLayerById }           from 'utils/getCatalogLayerById';
   import { createRelationsUrl }            from 'utils/createRelationsUrl';
@@ -231,6 +233,8 @@
 
     /** @since 3.8.6 */
     name: 'relation',
+
+    mixins: [resizeMixin], 
 
     components: {
       Field,
@@ -396,9 +400,21 @@
       async 'table.page_size'() {
         this.getData();
       },
+      async 'table.rows'(rows) {
+        if (rows.length) {
+          await this.$nextTick();
+          this.resize();
+        }
+      }
     },
 
     methods: {
+
+      resize() {
+        if (this.$refs.wrapper) {
+          this.$refs.wrapper.style.height = `${document.querySelector('#contents').offsetHeight - this.$refs.relation.querySelector('.header').offsetHeight}px`;
+        }
+      },
 
       /**
        * @param relation
@@ -438,10 +454,12 @@
        * @since 4.1.0
        */
       feature_info() {
-        return Object
+        const attributes = Object
           .entries(this.feature.attributes)
           .filter(([_, value]) => (value && 'string' === typeof value && !value.includes('/')))
-          .map(([key, value]) => ({key, value})).slice(0,3)
+        return getCatalogLayerById(this.$options.layerId)
+          .getFields().slice(0,3)
+          .map(f => ({ label: f.label, value: attributes.find(([ key ]) => f.name === key)[1] }))
       },
 
      /**
@@ -561,9 +579,9 @@
                 form_structure: this.form_structure,
               }),
               template: /* html */`
-                <div class="queryresults-wrapper">
-                  <div class ="queryresults-container">
-                    <table ref="table" class="table">
+                <div class = "queryresults-wrapper">
+                  <div class = "queryresults-container">
+                    <table ref = "table" class="table">
                       <tbody>
                         <tr class="featurebox-body">
                           <td>
@@ -758,6 +776,10 @@
 
     },
 
+    beforeCreate() {
+      this.delayType = 'debounce';
+    },
+
     async mounted() {
       this.changeColumn = debounce((e, i) => {
         this.columns[i].search = e.target.value.trim();
@@ -766,7 +788,7 @@
 
       // autoload selected relation
       if (this.relation) {
-        this.showRelation(this.relation);
+        await this.showRelation(this.relation);
       }
     },
 
@@ -929,6 +951,5 @@
     justify-content: space-between;
     margin-bottom: 5px;
     margin-top: 3px;
-    height: 95%;
   }
 </style>
