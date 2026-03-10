@@ -1054,7 +1054,7 @@ export default {
         : null;
       this.updatePreviousTitle = true;
       this.$nextTick(() => this.updatePreviousTitle = false);
-      return title;
+      return Array.isArray(title) ? title[1]: title;
     },
 
     title() {

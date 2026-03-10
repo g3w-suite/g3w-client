@@ -913,18 +913,20 @@ export default new (class GUI extends Emitter {
     this.setLoadingContent(this.showData.reqs.length > 0);
   }
 
-  showForm(options = {}) {
+  showForm(opts = {}) {
     const { FormComponent } = require('components/g3w-form');
     // new instance every time
-    const formComponent = options.formComponent ? new options.formComponent(options) : new FormComponent(options);
+    const formComponent = opts.formComponent ? new opts.formComponent(opts) : new FormComponent(opts);
     this.setContent({
-      perc:       options.perc,
+      perc:       opts.perc,
       //@since 4.1.0 used instead crumb
-      title:      formComponent.parentData && [getCatalogLayerById(formComponent.parentData?.qgs_layer_id)?.getName?.(), formComponent?.layer?.getTitle?.()].filter(Boolean),
+      title:      formComponent.parentData && (Array.isArray(this.state.contentsdata.at(-1)?.options.title) 
+                    ? formComponent?.layer?.getName?.() 
+                    : [getCatalogLayerById(formComponent.parentData?.qgs_layer_id)?.getName?.(), formComponent?.layer?.getName?.()].filter(Boolean)),
       content:    formComponent,
-      split:      undefined !== options.split ? options.split : 'h',
-      push:       !!options.push, //only one (if other deletes previous component)
-      showgoback: !!options.showgoback,
+      split:      undefined !== opts.split ? opts.split : 'h',
+      push:       !!opts.push, //only one (if other deletes previous component)
+      showgoback: !!opts.showgoback,
       closable:   false
     });
     // return service
@@ -1425,7 +1427,7 @@ export default new (class GUI extends Emitter {
 
     Object.assign(opts, {
       content:     opts.content || null,
-      title:       opts.title || "",
+      title:       opts.title   || null,
       push:        !!opts.push,
       split:       opts.split || 'h',
       perc:        opts.perc ?? (isMobile.any ? 100 : ('h' === ApplicationState.split ? panel.width: panel.height)),
@@ -3153,7 +3155,7 @@ export default new (class GUI extends Emitter {
     let title;
     if (relation) {
       _relation = ApplicationState.project.getRelationById(relation.name);
-      title     = [getCatalogLayerById(_relation.referencedLayer).getTitle(), _relation.name];
+      title     = Array.isArray(g3w.app.state.contentsdata.at(-2)?.options?.title) ? _relation.name : [getCatalogLayerById(_relation.referencedLayer).getTitle(), _relation.name];
     } else {
       title = getCatalogLayerById(layerId).getTitle();
     }
