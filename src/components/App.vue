@@ -1042,7 +1042,7 @@ export default {
 
     backOrBackTo() {
       return (this.state.content.contentsdata.length > 1 && this.state.content.showgoback)
-        ? !(this.state.content.contentsdata.at(-2).options.title)
+        ? !(this.state.content.contentsdata.filter(cd => cd.options.title).at(-2).options.title)
           ? 'back'
           : 'backto'
         : false;
@@ -1050,7 +1050,8 @@ export default {
 
     previousTitle() {
       const title = (this.state.content.contentsdata.length > 1 && this.state.content.showgoback)
-        ? this.state.content.contentsdata.at(-2).options.title
+        //In case of no set title (ex. show form of feature - relation), show previous title
+        ? this.state.content.contentsdata.at(-2).options.title || this.state.content.contentsdata.at(-3)?.options?.title?.[1]
         : null;
       this.updatePreviousTitle = true;
       this.$nextTick(() => this.updatePreviousTitle = false);

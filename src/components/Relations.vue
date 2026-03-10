@@ -589,7 +589,6 @@
           push:       true,
           showgoback: true,
           closable:   false,
-          title:      this.table.features[i].id, //@since 4.1.0 set feature id value
         });
       },
 
