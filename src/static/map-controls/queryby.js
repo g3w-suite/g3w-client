@@ -266,7 +266,7 @@ export class QueryBy extends MapControl {
                   }
 
                   // perform request again
-                  if ('__NEW__' !== value && 'querybypolygon' !== this.type) {
+                  if ('__NEW__' !== value) {
                     this.reset();
                   }
                 }
