@@ -78,6 +78,16 @@
 
       </div>
     </div>
+
+    <details>
+      <summary>Parent feature</summary>
+      <div>
+        <ul style = "padding: 1em 0 0 15px; list-style: square;">
+          <li v-for = "({ label, value }) in feature_info()"><b>{{ label }}</b>: {{ value }}</li>
+        </ul>
+      </div>
+    </details>
+
     <div
       v-if       = "table.rows.length" 
       ref        = "wrapper"
@@ -91,10 +101,8 @@
           position:    'relative',
         }"
       >
-
         <!-- TOTAL ELEMENTS -->
         <span>{{ table.rows.length }} {{ $t('entries') }}</span>
-
         <!-- TABLE CONTENT -->
         <table ref = "table">
           <thead>
@@ -821,7 +829,7 @@
 
   .layer-relation {
     margin-top: 3px;
-    display: flex;
+    display: flex !important;
     flex-direction: column;
   }
 
@@ -937,6 +945,19 @@
     justify-content: space-between;
     margin-bottom: 5px;
     margin-top: 3px;
-    height: 95%;
   }
+
+  details {
+    border: 1px solid #aaaaaa;
+    border-radius: 4px;
+    padding: 0.5em 0.5em 0;
+  }
+
+  summary {
+    cursor: pointer;
+    font-weight: bold;
+    margin: -0.5em -0.5em 0;
+    padding: 0.5em;
+  }
+
 </style>
