@@ -120,7 +120,7 @@ class XSelect extends HTMLElement {
           });
       })).observe(this, { childList: true });
 
-      document.addEventListener('click', this.#onClickOutside.bind(this));
+      document.addEventListener('pointerup', this.#onClickOutside.bind(this));
       window.addEventListener('scroll', () => { if(this.isOpen) this.#updatePosition(); }, true);
       window.addEventListener('resize', () => { if(this.isOpen) this.#updatePosition(); });
 
