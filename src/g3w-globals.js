@@ -107,6 +107,8 @@ import InputUnique                                 from 'components/InputUnique.
 //Fields
 import Fields, { FieldsService }                   from 'components/g3w-fields';
 
+import 'components/x-select';
+
 const deprecate                   = require('util-deprecate');
 
 /**

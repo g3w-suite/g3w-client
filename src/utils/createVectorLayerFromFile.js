@@ -78,9 +78,19 @@ export async function createVectorLayerFromFile({ name, type, crs, mapCrs, data,
       hooks: {
         footer: {
           template: /* html */
-          `<select v-select2 = "errors[0].value" class = "skin-color" :search = "false" style = "width:100%">
-            <option v-for = "e in errors" :key = "e.row" :value = "e.value">[{{ e.row}}] {{e.value}}</option>
-          </select>`,
+          `<x-select
+            style    = "width:100%"
+            :value   = "errors[0].value"
+            @change  = "errors[0].value = $event.target.value"
+            class    = "skin-color"
+          >
+            <x-option
+              v-for     = "e in errors"
+              :key      = "e.row"
+              :value    = "e.value"
+            >[{{ e.row}}] {{e.value}}</x-option>
+          </x-select>`,
+
           data: () => ({ errors }),
         }
       },
