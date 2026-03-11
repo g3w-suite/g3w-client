@@ -32,7 +32,15 @@
     v-else-if = "'relation' === view"
     class     = "layer-relation"
   >
+
     <div class = "header skin-background-color lighten">
+      <span style = "font-size: 1.1em;">{{ $t('List of relations of feature') }}</span>
+      <ul style = "padding: 1em 0 0 15px; list-style: square;">
+        <li v-for = "({ label, value }) in feature_info()"><b>{{ label }}</b>: {{ value }}</li>
+      </ul>
+    </div>
+
+    <div class = "sub-header">
 
       <div class = "g3w-long-text">
 
@@ -78,15 +86,6 @@
 
       </div>
     </div>
-
-    <details>
-      <summary>Parent feature</summary>
-      <div>
-        <ul style = "padding: 1em 0 0 15px; list-style: square;">
-          <li v-for = "({ label, value }) in feature_info()"><b>{{ label }}</b>: {{ value }}</li>
-        </ul>
-      </div>
-    </details>
 
     <div
       v-if       = "table.rows.length" 
@@ -822,7 +821,7 @@
     overflow-y: auto;
   }
 
-  .layer-relations > .header {
+  .header {
     margin: 5px 0 10px 0;
     padding: 5px;
   }
@@ -837,7 +836,7 @@
     flex-grow: 1;
   } 
 
-  .layer-relation > .header {
+  .sub-header {
     margin-top: 5px;
     margin-bottom: 5px;
     padding: 3px;
@@ -849,7 +848,7 @@
     margin: 0 !important;
   }
 
-  .layer-relation > .header > .g3w-long-text {
+  .sub-header > .g3w-long-text {
     border-radius: 3px;
     font-size: 1.3em;
   }
