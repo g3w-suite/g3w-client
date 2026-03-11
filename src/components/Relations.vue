@@ -438,12 +438,12 @@
        * @since 4.1.0
        */
       feature_info() {
-        const attributes = Object
-          .entries(this.feature.attributes)
-          .filter(([_, value]) => (value && 'string' === typeof value && !value.includes('/')))
+        const attributes = Object.entries(this.feature.attributes)
         return getCatalogLayerById(this.$options.layerId)
-          .getFields().slice(0,3)
+          .getFields()
           .map(f => ({ label: f.label, value: attributes.find(([ key ]) => f.name === key)?.[1] }))
+          .filter(({ value }) => (![undefined, null, ''].includes(value) && !`${value}`.includes('/')))
+          .slice(0,3);
       },
 
      /**
