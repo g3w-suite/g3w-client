@@ -450,7 +450,7 @@
           .filter(([_, value]) => (value && 'string' === typeof value && !value.includes('/')))
         return getCatalogLayerById(this.$options.layerId)
           .getFields().slice(0,3)
-          .map(f => ({ label: f.label, value: attributes.find(([ key ]) => f.name === key)[1] }))
+          .map(f => ({ label: f.label, value: attributes.find(([ key ]) => f.name === key)?.[1] }))
       },
 
      /**
