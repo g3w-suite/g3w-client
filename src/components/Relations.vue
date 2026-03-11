@@ -946,17 +946,4 @@
     margin-top: 3px;
   }
 
-  details {
-    border: 1px solid #aaaaaa;
-    border-radius: 4px;
-    padding: 0.5em 0.5em 0;
-  }
-
-  summary {
-    cursor: pointer;
-    font-weight: bold;
-    margin: -0.5em -0.5em 0;
-    padding: 0.5em;
-  }
-
 </style>
