@@ -222,7 +222,6 @@
   import Field                             from 'components/FieldG3W.vue';
   import { FieldsService }                 from 'components/g3w-fields';
   import GUI                               from 'g3w-app';
-  import { resizeMixin }                   from 'mixins';
   import { debounce }                      from 'utils/debounce';
   import { getCatalogLayerById }           from 'utils/getCatalogLayerById';
   import { createRelationsUrl }            from 'utils/createRelationsUrl';
@@ -233,8 +232,6 @@
 
     /** @since 3.8.6 */
     name: 'relation',
-
-    mixins: [resizeMixin], 
 
     components: {
       Field,
@@ -409,12 +406,6 @@
     },
 
     methods: {
-
-      resize() {
-        if (this.$refs.wrapper) {
-          this.$refs.wrapper.style.height = `${document.querySelector('#contents').offsetHeight - this.$refs.relation.querySelector('.header').offsetHeight}px`;
-        }
-      },
 
       /**
        * @param relation
@@ -774,13 +765,23 @@
         }
       },
 
+      resize() {
+        if (this.$refs.wrapper) {
+          this.$refs.wrapper.style.height = `${document.querySelector('#contents').offsetHeight - this.$refs.relation.querySelector('.header').offsetHeight}px`;
+        }
+      },
+
     },
 
-    beforeCreate() {
-      this.delayType = 'debounce';
+    created() {
+      this.delayResize = debounce(this.resize.bind(this));
+      GUI.on('resize', this.delayResize);
     },
 
     async mounted() {
+      await this.$nextTick();
+      this.resize();
+
       this.changeColumn = debounce((e, i) => {
         this.columns[i].search = e.target.value.trim();
         this.getData();
@@ -796,6 +797,9 @@
      * @fires hide-chart
      */
     async beforeDestroy() {
+      GUI.off('resize', this.delayResize);
+      this.delayResize = null;
+
       // hide opened chart
       if (this.chart.toggled) {
          GUI.hideChart(this.chart.container);
