@@ -3155,7 +3155,7 @@ export default new (class GUI extends Emitter {
     let title;
     if (relation) {
       _relation = ApplicationState.project.getRelationById(relation.name);
-      title     = Array.isArray(g3w.app.state.contentsdata.at(-2)?.options?.title) ? _relation.name : [getCatalogLayerById(_relation.referencedLayer).getTitle(), _relation.name];
+      title     = Array.isArray(ApplicationState.contentsdata.at(-2)?.options?.title) ? _relation.name : [getCatalogLayerById(_relation.referencedLayer).getTitle(), _relation.name];
     } else {
       title = getCatalogLayerById(layerId).getTitle();
     }
