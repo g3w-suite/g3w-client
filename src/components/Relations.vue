@@ -821,7 +821,13 @@
 
   .layer-relation {
     margin-top: 3px;
+    display: flex;
+    flex-direction: column;
   }
+
+  .layer-relation > .relation-table {
+    flex-grow: 1;
+  } 
 
   .layer-relation > .header {
     margin-top: 5px;
