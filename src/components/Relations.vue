@@ -428,7 +428,7 @@
             this.getData();
             //In case coming from list of relations
             if (this.relations.length > 1) {
-              const currentDC         = g3w.app.state.contentsdata.at(-1);
+              const currentDC         = ApplicationState.contentsdata.at(-1);
               currentDC.options.title = [currentDC.options.title, this.relation.title];
             }
             
@@ -628,7 +628,7 @@
           this.relations[0].noback = true;
           await this.showRelation(this.relations[0]);
         }
-        g3w.app.state.contentsdata.at(-1).options.title = g3w.app.state.contentsdata.at(-1).options.title.at(0);
+        ApplicationState.contentsdata.at(-1).options.title = ApplicationState.contentsdata.at(-1).options.title.at(0);
         this.loading = false;
       },
 
