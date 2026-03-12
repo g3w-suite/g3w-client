@@ -617,7 +617,6 @@ export default {
 
   async mounted() {
   
-    console.log(this.state.features)
     // un-toggle map controls
     this.last_map_control = GUI.getMapControls().find(c => c?.control?.isToggled?.());
     if (this.last_map_control) {

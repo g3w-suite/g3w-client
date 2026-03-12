@@ -3159,6 +3159,7 @@ export default new (class GUI extends Emitter {
     } else {
       title = getCatalogLayerById(layerId).getTitle();
     }
+    console.log(title)
     this.setContent({
       push,
       content: new Component({
