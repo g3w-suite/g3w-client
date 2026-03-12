@@ -394,10 +394,10 @@
        */
       async showRelation(relation) {
         GUI.showRelations({
-          relation,
-          layerId: this.layerId,
-          feature: this.feature,
-          push: true
+          relationId: relation.id,
+          layerId:    this.layerId,
+          feature:    this.feature,
+          push:       true
         });
       },
 

@@ -3146,28 +3146,25 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   showRelations({
-    relation,
+    relationId,
     layerId,
     feature,
     push = true
   } = {}) {
-    let _relation;
-    if (relation) {
-      _relation = ApplicationState.project.getRelationById(relation.id);
-    }
+    const relation = relationId && ApplicationState.project.getRelationById(relationId);
     this.setContent({
       push,
       content: new Component({
         internalComponent: new (Vue.extend(require('components/Relations.vue').default))({
-          relation:  _relation,
+          relation,
           layerId,
           feature,
         })
       }),
-      perc:        isMobile.any ? 100            : undefined,
-      title:       _relation    ? _relation.name : getCatalogLayerById(layerId).getTitle(),
-      text:        _relation    ? true           : undefined,
-      backonclose: _relation    ? undefined      : true,
+      perc:        isMobile.any ? 100           : undefined,
+      title:       relation     ? relation.name : getCatalogLayerById(layerId).getTitle(),
+      text:        relation     ? true          : undefined,
+      backonclose: relation     ? undefined     : true,
     });
   };
 
