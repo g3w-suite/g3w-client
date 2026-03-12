@@ -790,19 +790,16 @@
           class = "close-panel-block"
           style = "display: flex; justify-content: space-between"
         >
-          <div
-            v-if  = "previousTitle"
-            class = "g3w_contents_back g3w-long-text"
+          <button
+            v-if        = "previousTitle"
+            type        = "button"
+            @click.stop = "gotoPreviousContent()"
+            class       = "action-button action-button-back"
+            style       = "font-size: 0.8em;"
           >
-            <button
-              type        = "button"
-              @click.stop = "gotoPreviousContent()"
-              class       = "action-button action-button-back"
-            >
-              <i aria-hidden = "true" class = "fas fa-chevron-circle-left"></i>
-              <b>{{ $t('back') }}</b>
-            </button>
-          </div>
+            <i aria-hidden = "true" class = "fas fa-chevron-circle-left"></i>
+            <b>{{ $t('back') }}</b>
+          </button>
           <div
             v-if   = "!previousTitle && showtitle && contentTitle"
             class  = "panel-title"
