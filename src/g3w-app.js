@@ -2231,10 +2231,10 @@ export default new (class GUI extends Emitter {
           max_preview_fields:        layer.state?.max_preview_fields || 3, //@since 4.0.0 
         };
       });
-
-    // sort layers by TOC (external layer always on bottom)
+      
+    /// sort layers by TOC (external layer always on bottom)
     if (false === options.add) {
-      layers.sort((a, _) => a.external ? 1 : 0);
+      layers.sort((a, b) => a.external ? 0 : (this._projectLayerIds.indexOf(a.id) > this._projectLayerIds.indexOf(b.id) ? 1 : -1));
     }
 
     // get features from added pick layer in case of a new request query
