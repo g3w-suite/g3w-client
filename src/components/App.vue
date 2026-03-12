@@ -1014,8 +1014,7 @@ export default {
 
     contentTitle() {
       if (this.state.content.contentsdata.length) {
-        const { title, post_title, text = false } = this.state.content.contentsdata.at(-1).options;
-        return { title, post_title, text };
+        return this.state.content.contentsdata.at(-1).options;
       }
     },
 

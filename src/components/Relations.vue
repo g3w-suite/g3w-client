@@ -557,7 +557,7 @@
               }
             }))
           }),
-          title:      'Form View',
+          title:      this.featureId,
           text:       true,
           push:       true,
           showgoback: true,
