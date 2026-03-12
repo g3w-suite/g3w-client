@@ -1232,7 +1232,7 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 .content_breadcrumb button                                     { background: none; border: none; padding: 0; }
 
 /** show only first and last crumb */
-.content_breadcrumb ul > li:not(:first-of-type, :last-of-type) { display: none; }
+/* .content_breadcrumb ul > li:not(:first-of-type, :last-of-type) { display: none; } */
 
 /** disable breadcrumbs while editing */
 #g3w-view-content:has(.g3wform_content) .content_breadcrumb { pointer-events: none; }
