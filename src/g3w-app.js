@@ -1528,9 +1528,19 @@ export default new (class GUI extends Emitter {
   }
 
   // remove last content from stack
-  async popContent() {
+  async popContent(size) {
+
+    // remove multiple elements from stack
+    if (typeof size === 'number' && !isNaN(size) && size > 0) {
+      while (size > 0) {
+        await this.popContent();
+        size--;
+      }
+      return;
+    }
+
     // skip when no content data
-    if (0 === ApplicationState.content.contentsdata.length) {
+    if (!ApplicationState.content.contentsdata.length) {
       return Promise.reject();
     }
 

@@ -763,27 +763,21 @@
         :style     = "styles.content"
         v-disabled = "state.content.disabled"
       >
-        <section
-          v-if  = "breadcrumb.length > 1"
-          :ref  = "breadcrumb"
-          class = "content_breadcrumb"
+        <nav
+          v-if       = "breadcrumb.length > 1"
+          class      = "content_breadcrumb"
+          aria-label = "breadcrumb"
         >
-          <span
-            v-for = "(b, index) in breadcrumb"
-            :key  = "b"
-          >
-            <span
-              class  = "skin-color-dark"
-              :style = "{fontWeight: isNotLastCrumb(index) ? 'bold' : 'normal'}"
-              v-t    = "b"
-            >
-            </span>
-            <span
-              v-if  = "isNotLastCrumb(index)"
-              style = "font-weight: bold; margin: 3px 0"
-            >/</span>
-          </span>
-        </section>
+          <ul>
+            <li v-for = "(crumb, index) in breadcrumb" :key = "crumb">
+              <button
+                type          = "button"
+                :aria-current = "index === breadcrumb.length - 1 ? 'page' : undefined"
+                @click.stop   = "popContent(breadcrumb.length - index -1)"
+              >{{ $t(crumb || '') }}</button>
+            </li>
+          </ul>
+        </nav>
         <div
           v-if  = "(showtitle && contentTitle) || previousTitle || state.content.closable"
           class = "close-panel-block"
@@ -1144,8 +1138,8 @@ export default {
       GUI.closeContent();
     },
 
-    popContent() {
-      GUI.popContent();
+    popContent(index) {
+      GUI.popContent(index);
     },
 
     closeUserMessage() {

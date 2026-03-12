@@ -1226,7 +1226,12 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 .project_title .h2                     { font-size: 1.5em; }
 .project_title h1                      { font-size: 1.2em; padding-bottom: 5px; }
 
-.content_breadcrumb                    { font-size: 1.2em; padding: 0 3px; border-radius: 3px; }
+.content_breadcrumb ul                                 { font-size: 1.2em; padding: 0 3px; margin: 0; display: flex; align-items: center; justify-content: start; list-style-type: none; gap: 5px; color: hsl(from var(--skin-color) h s calc(l - 20)); font-weight: bold; }
+.content_breadcrumb ul > li:not(:first-of-type):before { content: " / "; }
+.content_breadcrumb ul > li:last-of-type               { font-weight: normal; pointer-events: none; }
+.content_breadcrumb button                             { background: none; border: none; padding: 0; }
+
+
 .close-panel-block                     { overflow: hidden; margin-top: 2px; margin-bottom: 2px; font-size: 1.4em; }
 
 .user-header                           { padding: 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,.3); }

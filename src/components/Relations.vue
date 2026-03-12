@@ -16,14 +16,15 @@
       </ul>
     </div>
     <div style = "display: grid; grid-template-columns: repeat(2, auto); grid-column-gap: 5px;grid-row-gap: 5px;">
-      <div
+      <button
         v-for       = "relation in relations"
-        @click.stop = "showRelation(relation)"
+        type        = "button"
         class       = "skin-border-color grid-item"
+        @click.stop = "showRelation(relation)"
       >
-        <i class = "fas fa-sitemap" style = "padding: 6px;"></i>
+        <i aria-hidden = "true" class = "fas fa-sitemap" style = "padding: 6px;"></i>
         <b style = "padding: 5px; overflow: hidden; white-space: normal; overflow-wrap: break-word;">{{ relation.name }}</b>
-      </div>
+      </button>
     </div>
   </div>
 
