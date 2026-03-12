@@ -558,7 +558,6 @@
       <a
         href           = "#"
         class          = "sidebar-aside-toggle"
-        style          = "z-index: 2"
         @click.prevent = "toggleSidebar"
         role           = "button"
         title          = "Sidebar menu"
