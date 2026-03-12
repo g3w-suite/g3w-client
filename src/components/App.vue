@@ -1041,11 +1041,7 @@ export default {
     },
 
     backOrBackTo() {
-      return (this.state.content.contentsdata.length > 1 && this.state.content.showgoback)
-        ? !(this.state.content.contentsdata.filter(cd => cd.options.title).at(-2)?.options?.title)
-          ? 'back'
-          : 'backto'
-        : false;
+      return this.state.content.contentsdata.filter(cd => cd.options.title).at(-2)?.options?.title ? 'backto' : 'back';
     },
 
     previousTitle() {
