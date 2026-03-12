@@ -6,7 +6,7 @@
 <template>
   <!-- CHOOSE A RELATION -->
   <div
-    v-if  = "'relations' === view"
+    v-if  = "relations"
     class = "layer-relations"
   >
     <div class = "header skin-background-color lighten">
@@ -29,7 +29,7 @@
 
   <!-- SELECTED RELATION -->
   <div
-    v-else-if = "'relation' === view"
+    v-else-if = "relation"
     class     = "layer-relation"
   >
 
@@ -42,21 +42,9 @@
 
     <div class = "sub-header">
 
+      <!-- RELATION NAME -->
       <div class = "g3w-long-text">
-
-        <!-- BACK BUTTON -->
-        <button
-          v-if        = "relations.length > 1"
-          type        = "button"
-          title       = "Back to relations"
-          class       = "action-button fas fa-door-open"
-          style       = "font-size: 0.8em;"
-          @click.stop = "back"
-        ></button>
-
-        <!-- RELATION NAME -->
         <b class = "relation-tile"> {{ relation.name }} </b>
-
       </div>
       <div
         v-if  = "table.rows.length"
@@ -216,7 +204,7 @@
       ></div>
 
     </div>
-    <div v-else><span v-t = "'No relations found'"></span></div>
+    <div v-else-if="!ApplicationState.content.loading">{{ $t('No relations found') }}</div>
   </div>
 </template>
 
@@ -245,6 +233,7 @@
 
     data() {
       const layer = getCatalogLayerById(this.$options.nmRelation?.referencedLayer || this.$options.relation?.referencingLayer || this.$options.layerId);
+
       return {
 
         layer,
@@ -282,17 +271,7 @@
         /**
          * @since 4.1.0
          */
-        loading:     false,
-
-        /**
-         * @since 4.1.0
-         */
         feature:     this.$options.feature ?? null,
-
-        /**
-         * @since 4.1.0
-         */
-        view:        'relations',
 
         /**
          * @since 4.1.0
@@ -383,7 +362,7 @@
        * @since 4.1.0
        */
       charts() {
-        if ('relation' === this.view) {
+        if (this.relation) {
           return GUI.plotLayerIds.find(pid => this.relation.referencingLayer == pid) ? [this.relation.referencingLayer] : [];
         } else {
           return this.relations.map(r => GUI.plotLayerIds.find(id => r.referencingLayer === id)).filter(Boolean);
@@ -394,7 +373,7 @@
        * @since 4.1.0
        */
       has_charts() {
-        return !!this.charts.find(id => this?.relation?.referencingLayer === id);
+        return !!this.charts.find(id => this.relation?.referencingLayer === id);
       },
 
     },
@@ -413,30 +392,12 @@
        * @since 4.1.0
        */
       async showRelation(relation) {
-        this.loading  = true;
-        this.relation = relation;
-        try {
-          this.view = 'relation';
-
-          await this.$nextTick();
-
-          this.layer = getCatalogLayerById(this.nmRelation?.referencedLayer || this.relation?.referencingLayer || this.layerId);
-         
-          this.relation.title = this.relation.name;
-
-          if ('ONE' !== this.relation.type) {
-            this.getData();
-            //In case coming from list of relations
-            if (this.relations.length > 1) {
-              const currentDC         = ApplicationState.contentsdata.at(-1);
-              currentDC.options.title = [currentDC.options.title, this.relation.title];
-            }
-            
-          }
-        } catch(e) {
-          console.warn(e);
-        }
-        this.loading = true;
+        GUI.showRelation({
+          relation,
+          layerId: this.layerId,
+          feature: this.feature,
+          push: true
+        });
       },
 
       /**
@@ -613,24 +574,6 @@
         });
       },
 
-      /**
-       * @FIXME add description
-       */
-      async back() {
-        // hide opened chart
-        if (this.chart.toggled) {
-          this.toggleChart();
-        }
-        this.view = 'relations';
-        await this.$nextTick();
-        if (1 === this.relations.length) {
-          this.relations[0].noback = true;
-          await this.showRelation(this.relations[0]);
-        }
-        ApplicationState.contentsdata.at(-1).options.title = ApplicationState.contentsdata.at(-1).options.title.at(0);
-        this.loading = false;
-      },
-
       onChartResize() {
         const move = e => {
           const perc                     =  (Math.abs(e.x - window.innerWidth) * 100 / this.$refs.wrapper.clientWidth); // percentage
@@ -774,7 +717,10 @@
 
       // autoload selected relation
       if (this.relation) {
-        await this.showRelation(this.relation);
+        this.relation.title = this.relation.name;
+        if ('ONE' !== this.relation.type) {
+          this.getData();
+        }
       }
     },
 

@@ -1444,7 +1444,6 @@ export default new (class GUI extends Emitter {
       split:        undefined === opts.split       ? null : opts.split,
       closable:     undefined === opts.closable    || opts.closable,
       backonclose:  undefined === opts.backonclose || opts.backonclose,
-      style:        undefined === opts.style       ? {} : opts.style,
       headertools:  undefined === opts.headertools ? [] : opts.headertools,
       showgoback:   undefined === opts.showgoback  || opts.showgoback,
       contentsdata: ApplicationState.contentsdata,
@@ -3152,12 +3151,8 @@ export default new (class GUI extends Emitter {
     push = true
   } = {}) {
     let _relation;
-    let title;
     if (relation) {
-      _relation = ApplicationState.project.getRelationById(relation.name);
-      title     = Array.isArray(ApplicationState.contentsdata.at(-2)?.options?.title) ? _relation.name : [getCatalogLayerById(_relation.referencedLayer).getTitle(), _relation.name];
-    } else {
-      title = getCatalogLayerById(layerId).getTitle();
+      _relation = ApplicationState.project.getRelationById(relation.id);
     }
     this.setContent({
       push,
@@ -3168,10 +3163,10 @@ export default new (class GUI extends Emitter {
           feature,
         })
       }),
-      perc:        isMobile.any ? 100       : undefined,
-      title,
-      text:        _relation    ? true      : undefined,
-      backonclose: _relation    ? undefined : true,
+      perc:        isMobile.any ? 100           : undefined,
+      title:       relation     ? relation.name : getCatalogLayerById(layerId).getTitle(),
+      text:        _relation    ? true          : undefined,
+      backonclose: _relation    ? undefined     : true,
     });
   };
 

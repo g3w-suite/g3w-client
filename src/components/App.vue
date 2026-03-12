@@ -792,7 +792,7 @@
           <button
             v-if        = "previousTitle"
             type        = "button"
-            @click.stop = "popContent()"
+            @click.stop = "popContent"
             class       = "action-button action-button-back"
             style       = "font-size: 0.8em;"
           >
@@ -802,9 +802,8 @@
           <div
             v-if   = "!previousTitle && showtitle && contentTitle"
             class  = "panel-title"
-            :style = "[state.content.style.title]"
           >
-            <b>{{ (contentTitle.text ? contentTitle.title : $t(contentTitle.title)) + $t(contentTitle.post_title) }}</b>
+            <b>{{ (contentTitle.text ? contentTitle.title || '' : $t(contentTitle.title || '')) + $t(contentTitle.post_title || '') }}</b>
           </div>
           <div
             class = "g3-content-header-action-tools"
