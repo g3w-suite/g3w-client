@@ -803,14 +803,8 @@
             v-if   = "!previousTitle && showtitle && contentTitle"
             class  = "panel-title"
             :style = "[state.content.style.title]"
-            :class = "{'mobile': isMobile()}"
           >
-            <b id = "contenttitle">
-              <span v-t = "contentTitle.text ? null : contentTitle.title">
-                <span v-if = "contentTitle.text ">{{ contentTitle.title }}</span>
-              </span>
-              <span v-t = "contentTitle.post_title"></span>
-            </b>
+            <b>{{ (contentTitle.text ? contentTitle.title : $t(contentTitle.title)) + $t(contentTitle.post_title) }}</b>
           </div>
           <div
             class = "g3-content-header-action-tools"
