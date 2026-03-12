@@ -558,7 +558,6 @@
       <a
         href           = "#"
         class          = "sidebar-aside-toggle"
-        style          = "z-index: 2"
         @click.prevent = "toggleSidebar"
         role           = "button"
         title          = "Sidebar menu"
@@ -829,13 +828,13 @@
               @click         = "resizeFull"
             ></button>
             <button
-              type           = "button"
-              style          = "scale:.9;"
-              :style         = "{ transform: 'h' === state.split ? 'rotate(134deg)' : 'rotate(44deg)'}"
-              :title         = "`Dock to ${'h' === this.state.split ? 'Bottom' : 'Right'}`"
-              data-placement = "bottom"
-              class          = "action-button action-button-dock skin-color-dark fa fa-external-link-alt"
-              @click         = "splitContent"
+              type             = "button"
+              style            = "scale:.9;"
+              :style           = "{ transform: 'h' === state.split ? 'rotate(134deg)' : 'rotate(44deg)'}"
+              :data-i18n-title = "'h' === state.split ? 'Dock to Bottom' : 'Dock to Right'"
+              data-placement   = "bottom"
+              class            = "action-button action-button-dock skin-color-dark fa fa-external-link-alt"
+              @click           = "splitContent"
             ></button>
             <button
               v-if           = "state.content.closable"
