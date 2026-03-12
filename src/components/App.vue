@@ -797,13 +797,12 @@
             <button
               type        = "button"
               @click.stop = "gotoPreviousContent()"
-              class       = "action-button"
-              :class      = "backOrBackTo"
+              class       = "action-button action-button-back"
               :disabled   = "'back' === backOrBackTo"
             >
               <i aria-hidden = "true" class = "fas fa-chevron-circle-left"></i>
-              <span v-t="backOrBackTo"></span>
-              <span v-if = "'back' !== backOrBackTo && !updatePreviousTitle" v-t = "previousTitle"></span>
+              <b v-t="backOrBackTo"></b>
+              <b v-if = "'back' !== backOrBackTo && !updatePreviousTitle" v-t = "previousTitle"></b>
             </button>
           </div>
           <div
