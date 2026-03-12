@@ -798,11 +798,9 @@
               type        = "button"
               @click.stop = "gotoPreviousContent()"
               class       = "action-button action-button-back"
-              :disabled   = "'back' === backOrBackTo"
             >
               <i aria-hidden = "true" class = "fas fa-chevron-circle-left"></i>
-              <b v-t="backOrBackTo"></b>
-              <b v-if = "'back' !== backOrBackTo && !updatePreviousTitle" v-t = "previousTitle"></b>
+              <b>{{ $t('back') }}</b>
             </button>
           </div>
           <div
@@ -916,7 +914,6 @@ export default {
       GUI,
       ApplicationState,
       language:              null,
-      updatePreviousTitle:   false,
       custom_links:          (window.initConfig.header_custom_links || []).concat(ApplicationState.navbaritems).filter(Boolean).map(l => Object.assign(l, { id: l.id || getUniqueDomId() })),
       mouse: {
         visible:     true,
@@ -1039,17 +1036,11 @@ export default {
       }
     },
 
-    backOrBackTo() {
-      return this.state.content.contentsdata.filter(cd => cd.options.title).at(-2)?.options?.title ? 'backto' : 'back';
-    },
-
     previousTitle() {
       const title = (this.state.content.contentsdata.length > 1 && this.state.content.showgoback)
         //In case of no set title (ex. show form of feature - relation), show previous title
         ? this.state.content.contentsdata.at(-2).options.title || this.state.content.contentsdata.at(-3)?.options?.title?.[1]
         : null;
-      this.updatePreviousTitle = true;
-      this.$nextTick(() => this.updatePreviousTitle = false);
       return Array.isArray(title) ? title[1]: title;
     },
 
