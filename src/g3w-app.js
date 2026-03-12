@@ -3168,11 +3168,10 @@ export default new (class GUI extends Emitter {
           feature,
         })
       }),
-      perc:        isMobile.any ? 100                                   : undefined,
+      perc:        isMobile.any ? 100       : undefined,
       title,
-      text:        _relation    ? true                                  : undefined,
-      backonclose: _relation    ? undefined                             : true,
-      closable:    !push,
+      text:        _relation    ? true      : undefined,
+      backonclose: _relation    ? undefined : true,
     });
   };
 

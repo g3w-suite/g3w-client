@@ -597,7 +597,6 @@
           }),
           push:       true,
           showgoback: true,
-          closable:   false,
         });
       },
 
