@@ -786,7 +786,7 @@
           <button
             v-if        = "previousTitle"
             type        = "button"
-            @click.stop = "popContent"
+            @click.stop = "popContent(1)"
             class       = "action-button action-button-back"
             style       = "font-size: 0.8em;"
           >
@@ -1138,8 +1138,14 @@ export default {
       GUI.closeContent();
     },
 
-    popContent(index) {
-      GUI.popContent(index);
+    async popContent(size = 1) {
+      // remove multiple elements from stack
+      if (typeof size === 'number' && !isNaN(size) && size > 0) {
+        while (size > 0) {
+          await GUI.popContent();
+          size--;
+        }
+      }
     },
 
     closeUserMessage() {
