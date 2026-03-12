@@ -392,7 +392,7 @@
        * @since 4.1.0
        */
       async showRelation(relation) {
-        GUI.showRelation({
+        GUI.showRelations({
           relation,
           layerId: this.layerId,
           feature: this.feature,
@@ -556,6 +556,8 @@
               }
             }))
           }),
+          title:      'Form View',
+          text:       true,
           push:       true,
           showgoback: true,
         });

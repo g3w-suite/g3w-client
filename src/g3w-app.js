@@ -3163,10 +3163,10 @@ export default new (class GUI extends Emitter {
           feature,
         })
       }),
-      perc:        isMobile.any ? 100           : undefined,
+      perc:        isMobile.any ? 100            : undefined,
       title:       _relation    ? _relation.name : getCatalogLayerById(layerId).getTitle(),
-      text:        _relation    ? true          : undefined,
-      backonclose: _relation    ? undefined     : true,
+      text:        _relation    ? true           : undefined,
+      backonclose: _relation    ? undefined      : true,
     });
   };
 
