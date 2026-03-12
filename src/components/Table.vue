@@ -16,7 +16,7 @@
       data-placement = "top"
       title          = "Metadata"
     >
-      <i data-v-5685d65c = "" aria-hidden = "true" class = "fas fa-info-circle"></i>
+      <i aria-hidden = "true" class = "fas fa-info-circle"></i>
     </button>
 
     <!-- TOTAL ELEMENTS -->
