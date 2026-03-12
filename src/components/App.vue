@@ -792,7 +792,7 @@
           <button
             v-if        = "previousTitle"
             type        = "button"
-            @click.stop = "gotoPreviousContent()"
+            @click.stop = "popContent()"
             class       = "action-button action-button-back"
             style       = "font-size: 0.8em;"
           >
@@ -1145,7 +1145,7 @@ export default {
       GUI.closeContent();
     },
 
-    gotoPreviousContent() {
+    popContent() {
       GUI.popContent();
     },
 
