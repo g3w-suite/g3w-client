@@ -797,7 +797,7 @@
             v-if   = "!previousTitle && showtitle && contentTitle"
             class  = "panel-title"
           >
-            <b>{{ (contentTitle.text ? contentTitle.title || '' : $t(contentTitle.title || '')) + $t(contentTitle.post_title || '') }}</b>
+            <b>{{ [(contentTitle.text ? contentTitle.title || '' : $t(contentTitle.title || '')), $t(contentTitle.post_title || '')].filter(Boolean).join(' ') }}</b>
           </div>
           <div
             class = "g3-content-header-action-tools"
@@ -980,7 +980,7 @@ export default {
     },
 
     breadcrumb() {
-      return this.state.content.contentsdata.filter(cd => cd?.options?.title).map(cd => cd.options.title).flat();
+      return this.state.content.contentsdata.filter(cd => cd?.options?.title).map(cd => [cd.options.title, cd.options.post_title].filter(Boolean).join(' ')).flat();
     },
 
     has_panel() {
