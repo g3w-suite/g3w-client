@@ -773,7 +773,7 @@
               <button
                 type          = "button"
                 :aria-current = "index === breadcrumb.length - 1 ? 'page' : undefined"
-                @click.stop   = "popContent(breadcrumb.length - index -1)"
+                @click.stop   = "popContent(index)"
               >{{ $t(crumb || '') }}</button>
             </li>
           </ul>
@@ -786,7 +786,7 @@
           <button
             v-if        = "previousTitle"
             type        = "button"
-            @click.stop = "popContent(1)"
+            @click.stop = "popContent(-1)"
             class       = "action-button action-button-back"
             style       = "font-size: 0.8em;"
           >
@@ -980,7 +980,8 @@ export default {
     },
 
     breadcrumb() {
-      return this.state.content.contentsdata.filter(cd => cd?.options?.title).map(cd => cd.options.title).flat();
+      const breadcrums = this.state.content.contentsdata.map(cd => cd.options.title).flat();
+      return breadcrums.filter((item, index) => breadcrums.indexOf(item) === index || breadcrums[index - 2] !== item);
     },
 
     has_panel() {
@@ -1137,14 +1138,16 @@ export default {
       GUI.closeContent();
     },
 
-    async popContent(size = 1) {
-      // remove multiple elements from stack
-      if (typeof size === 'number' && !isNaN(size) && size > 0) {
-        while (size > 0) {
-          await GUI.popContent();
-          size--;
-        }
+    async popContent(index) {
+      if (-1 === index) {
+         await GUI.popContent();
+         return
       }
+      // remove multiple elements from stack
+      while (this.state.content.contentsdata.length > Math.max(1, index)) {
+        await GUI.popContent();  
+      }
+    
     },
 
     closeUserMessage() {
