@@ -258,6 +258,7 @@
           layerId:       layer.getId(),
           features:      [],
           page:          1,
+          allfeatures:   0,
           page_size:     layer.getAttributeTablePageLength() || PAGELENGTHS[1],
           rows:          [],
           rows_fid:      [],
@@ -312,7 +313,7 @@
        * @since 4.1.0
        */
       pages() {
-        return Math.ceil(this.table.rows.length / this.table.page_size);
+        return Math.ceil(this.table.allfeatures / this.table.page_size);
       },
 
       /**
@@ -499,10 +500,11 @@
             }));
           }
 
-          this.table.features = features;
-          this.table.rows     = features.map(f => this.columns.filter(h => h).map(h => (h.value = (f.attributes || f.properties)[h.name])))
-          this.table.rows_fid = features.map(r => r.attributes[G3W_FID]);
-          this.table.page     = page;
+          this.table.allfeatures = response?.vector?.count;
+          this.table.features    = features;
+          this.table.rows        = features.map(f => this.columns.filter(h => h).map(h => (h.value = (f.attributes || f.properties)[h.name])))
+          this.table.rows_fid    = features.map(r => r.attributes[G3W_FID]);
+          this.table.page        = page;
 
         } catch(e) {
           console.warn(e);
