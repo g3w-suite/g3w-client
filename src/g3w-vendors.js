@@ -40,7 +40,7 @@ import * as xml             from 'ol/xml';
 
 import shp                  from 'shpjs';
 import proj4                from 'proj4';
-import Vue                  from 'vue/dist/vue.js';
+import Vue                  from 'vue/dist/vue.min.js';
 
 /**
  * Monkey patch for: `Vue.extend(require())`
