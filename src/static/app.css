@@ -901,6 +901,11 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
   .queryresults-container .featurebox-body .field_label .col-sm-6 { width: 50% !important; float: left; }
 }
 
+/** stack box header vertically (small panel) */
+@container g3w-view-content (width < 350px) {
+  .queryresults-container ul > li .box-header { flex-wrap: wrap; justify-content: flex-end; }
+}
+
 /**************************************************************************************
  * 9. Form
  **************************************************************************************/
