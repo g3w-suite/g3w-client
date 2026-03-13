@@ -384,6 +384,9 @@
       async 'table.page_size'() {
         this.getData();
       },
+      async 'table.page'(page) {
+        this.getData({ page });
+      },
     },
 
     methods: {
