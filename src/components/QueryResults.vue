@@ -68,7 +68,7 @@
               </div>
 
               <!-- LAYER ACTIONS -->
-              <div style = "display: flex; gap: 2.5px; padding-right: 10px;">
+              <div class="query-layer-actions" style = "display: flex; gap: 2.5px; padding-right: 10px;">
                 <!-- INFO FORMATS -->
                 <select
                   v-if      = "(layer.infoformats || []).length"
