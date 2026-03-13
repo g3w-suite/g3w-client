@@ -920,7 +920,9 @@ export default new (class GUI extends Emitter {
     this.setContent({
       perc:       opts.perc,
       //@since 4.1.0 used instead crumb
-      title:      formComponent?.layer?.getName?.(),
+      title:      formComponent.parentData && (Array.isArray(this.state.contentsdata.at(-1)?.options.title) 
+                    ? formComponent?.layer?.getName?.() 
+                    : [getCatalogLayerById(formComponent.parentData?.qgs_layer_id)?.getName?.(), formComponent?.layer?.getName?.()].filter(Boolean)),
       content:    formComponent,
       split:      undefined !== opts.split ? opts.split : 'h',
       push:       !!opts.push, //only one (if other deletes previous component)
@@ -3144,7 +3146,6 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   showRelations({
-    parent,
     relationId,
     layerId,
     feature,
@@ -3161,7 +3162,7 @@ export default new (class GUI extends Emitter {
         })
       }),
       perc:        isMobile.any ? 100           : undefined,
-      title:       relation     ? parent ? [parent, relation.name] : relation.name : getCatalogLayerById(layerId).getTitle(),
+      title:       relation     ? relation.name : getCatalogLayerById(layerId).getTitle(),
       text:        relation     ? true          : undefined,
       backonclose: relation     ? undefined     : true,
     });

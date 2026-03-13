@@ -87,7 +87,6 @@
   import { getUniqueDomId }       from 'utils/getUniqueDomId';
   import { noop }                 from 'utils/noop';
   import { XHR }                  from 'utils/XHR';
-  import { getCatalogLayerById }  from 'utils/getCatalogLayerById';
 
   /**
    * Convert feature to form Data for expression/expression_eval request
@@ -152,7 +151,8 @@
       handleRelation: {
         type:     Function,
         default: ({ relation, layerId, feature } = {}) => {
-          GUI.showRelations({ parent: getCatalogLayerById(layerId).getName(), relationId: relation?.name, layerId, feature });
+          GUI.showRelations({ layerId, feature });
+          GUI.showRelations({ relationId: relation.name, layerId, feature });
         }
       }
     },
