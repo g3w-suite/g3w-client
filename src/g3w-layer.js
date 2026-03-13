@@ -913,18 +913,20 @@ export class Layer extends Emitter {
     const is_active   = this.state.filter.active;
 
     // there is an active filter --> create a new filter
-    if (is_active) {
+    if (is_active && !has_current) {
       await this.#createToken();
     }
 
-    // there is a current saved filter --> apply filter
-    if (has_current && !is_active) {
+    // there is an active filter --> create a new filter
+    if (has_current && is_active) {
       await this.applyToken(this.state.filter.current);
     }
 
     // there is no current saved filter --> delete it
-    if (!has_current && !is_active) {
+    if (!is_active) {
       await this.deleteToken();
+      //reset current filter 
+      this.state.filter.current = has_current;
     }
 
     return this.state.filter.active;

@@ -100,7 +100,14 @@
 
     <!-- TOGGLE FILTER  -->
     <button
-      v-if           = "(!layerstree.hidden || isGroup) && !isGroup && layerstree.selection && !layerstree.external && (layerstree.selection.active || layerstree.filter.active) && !layerstree.filter.pagination"
+      v-if           = "  !isGroup  //is not a group (layer)
+                          && !layerstree.external // in not an external layer
+                          && !layerstree.hidden  //is not hidden layer
+                          && !layerstree.filter.pagination //has no pagination
+                          && (
+                              (layerstree.filter && layerstree.filter.current && layerstree.filter.current.name) //has current filter set from stored filter
+                              || (layerstree.selection && layerstree.selection.active) // has a selection active
+                            )"
       type           = "button"
       class          = "action-button"
       title          = "Enable/Disable filter"
