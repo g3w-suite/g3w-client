@@ -980,8 +980,6 @@ export default {
     },
 
     breadcrumb() {
-      // const breadcrums = this.state.content.contentsdata.map(cd => cd.options.title).flat();
-      // return breadcrums.filter((item, index) => breadcrums.indexOf(item) === index || breadcrums[index - 2] !== item);
       return this.state.content.contentsdata.filter(cd => cd?.options?.title).map(cd => [cd.options.title, cd.options.post_title].filter(Boolean).flat().join(' ')).flat();
     },
 
