@@ -109,23 +109,34 @@ class XSelect extends HTMLElement {
       this.#onDisabled();
 
       // make reactive: "<x-option>" elements
-      (new MutationObserver(() => {
-        this.querySelectorAll(':scope > x-option').forEach(opt => {
-          if (opt._xselect_proxy) {
-            return;
-          }
-          // proxy original node (make it vue happy)
-          const proxy = opt.cloneNode(true);
-          opt._xselect_proxy = proxy;
-          opt.style.display  = 'none';
-          // copy attributes from original node
-          (new MutationObserver(() => {
-            proxy.innerHTML = opt.innerHTML;
-            Array.from(opt.attributes).filter(attr => attr.name !== 'style').forEach(attr => proxy.setAttribute(attr.name, attr.value));
-          })).observe(opt, { childList: true, attributes: true, characterData: true, subtree: true  });
-          // delegate click event
-          proxy.onclick = (e) => { e.stopPropagation(); this.select(opt); opt.click(); };
-          this.list.appendChild(proxy);
+      (new MutationObserver((mutations) => {
+        mutations.forEach(mutation => {
+          // proxy original node (dynamically added by vue)
+          mutation.addedNodes.forEach(opt => {
+            if (opt._xselect_proxy || opt.tagName !== 'X-OPTION') {
+              return;
+            }
+            const proxy = opt.cloneNode(true);
+            opt._xselect_proxy = proxy;
+            opt.style.display = 'none';
+            // copy attributes from original node
+            (new MutationObserver(() => {
+              proxy.innerHTML = opt.innerHTML;
+              Array.from(opt.attributes)
+                .filter(attr => attr.name !== 'style')
+                .forEach(attr => proxy.setAttribute(attr.name, attr.value));
+            })).observe(opt, { childList: true, attributes: true, characterData: true, subtree: true });
+            // delegate click event
+            proxy.onclick = (e) => {  e.stopPropagation();  this.select(opt);  opt.click();  };
+            this.list.appendChild(proxy);
+          });
+          // remove proxied node (dynamically removed by vue)
+          mutation.removedNodes.forEach(opt => {
+            if (opt._xselect_proxy) {
+              opt._xselect_proxy.remove();
+              opt._xselect_proxy = null;
+            }
+          });
         });
       })).observe(this, { childList: true });
 
