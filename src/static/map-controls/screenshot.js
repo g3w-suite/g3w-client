@@ -21,6 +21,7 @@ const {
   getCatalogLayerById,
   saveBlob,
   sameOrigin,
+  debounce,
 } = g3w.utils;
 
 const _                = g3w.gettext;
@@ -479,23 +480,8 @@ template: /*html*/`
      * Perform atlas search
      */
     atlas_search: {
-      async handler(atlas_search) {
-        try {
-          if (!this.atlas || !atlas_search || atlas_search.length < 1) {
-            this.atlas_options = [];
-            return;
-          }
-          this.atlas_loading = true;
-          this.atlas_options = (await getCatalogLayerById(this.atlas.qgs_layer_id).getFilterData({
-            suggest: `${this.atlas.field_name}|${atlas_search}`,
-            unique:  this.atlas.field_name,
-          }));
-        } catch (e) {
-          console.warn('Atlas search error:', e);
-          this.atlas_options = [];
-        } finally {
-          this.atlas_loading = false;
-        }
+      handler(atlas_search) {
+        this.performAjaxSearch(atlas_search);
       }
     },
 
@@ -889,6 +875,25 @@ template: /*html*/`
       }
     },
 
+    async performAjaxSearch(atlas_search) {
+      try {
+        if (!this.atlas || !atlas_search || atlas_search.length < 1) {
+          this.atlas_options = [];
+          return;
+        }
+        this.atlas_loading = true;
+        this.atlas_options = (await getCatalogLayerById(this.atlas.qgs_layer_id).getFilterData({
+          suggest: `${this.atlas.field_name}|${atlas_search}`,
+          unique:  this.atlas.field_name,
+        }));
+      } catch (e) {
+        console.warn('Atlas search error:', e);
+        this.atlas_options = [];
+      } finally {
+        this.atlas_loading = false;
+      }
+    },
+
     /**
      * Check if a layer has a Cross Origin source URI
      * 
@@ -945,17 +950,14 @@ template: /*html*/`
     };
   },
 
+  created() {
+    this.performAjaxSearch = debounce(this.performAjaxSearch.bind(this), 400);
+  },
+
   /**
    * @since 3.10.2
    */
   async mounted() {
-    await this.$nextTick();
-    // when default print template is "atlas" → initialize autocomplete
-    if (this.atlas) {
-      this.atlas_search = '';
-      this.atlas_options = [];
-    }
-
     document.body.appendChild(this.$refs.dialog);
 
     this.$refs.dialog.addEventListener('close', () => {
