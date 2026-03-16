@@ -41,14 +41,18 @@ class XSelect extends HTMLElement {
       return;
     }
     this.setAttribute('value', val);
-    this.#syncFromValue(val);
-  }
-
-  #syncFromValue(val) {
-    const opt = Array.from(this.container.querySelectorAll('x-option')).find(o => (o.getAttribute('value') ?? o.textContent.trim()) === val);
+    const opt = this.#getOption(val);
     if (opt) {
       this.#applySelection(opt);
     }
+  }
+
+  #getOptions() {
+    return Array.from(this.querySelectorAll('x-option'));
+  }
+
+  #getOption(val) {
+    return this.#getOptions().find(o => (o.getAttribute('value') ?? o.textContent.trim()) === val)
   }
 
   static observedAttributes = ['disabled']
@@ -122,6 +126,7 @@ class XSelect extends HTMLElement {
             const proxy = opt.cloneNode(true);
             opt._xselect_proxy = proxy;
             opt.style.display = 'none';
+            proxy.style.display = null;
             // copy attributes from original node
             (new MutationObserver(() => {
               proxy.innerHTML = opt.innerHTML;
@@ -148,7 +153,10 @@ class XSelect extends HTMLElement {
       window.addEventListener('resize', () => { if(this.isOpen) this.#updatePosition(); });
 
       if (this.getAttribute('value')) {                       // inital value (from <x-select value="some value">)
-        this.#syncFromValue(this.getAttribute('value'));
+        const opt = this.#getOption(this.getAttribute('value'));
+        if (opt) {
+          this.#applySelection(opt);
+        }
       } else if (this.container.querySelector('x-option[selected]')) {  // inital value (from <x-option selected>)
         const opt = this.container.querySelector('x-option[selected]');
         if (opt) {
@@ -187,7 +195,7 @@ class XSelect extends HTMLElement {
       e.preventDefault();
 
       // create a new (dynamic) option
-      if (!Array.from(this.container.querySelectorAll('x-option')).find(o => (o.getAttribute('value') ?? o.textContent.trim()) === currentValue)) {
+      if (!this.#getOption(currentValue)) {
         const opt = document.createElement('x-option');
         opt.setAttribute('value', currentValue);
         opt.textContent = currentValue;
@@ -196,7 +204,7 @@ class XSelect extends HTMLElement {
       }
 
       // select the option
-      const opt = Array.from(this.container.querySelectorAll('x-option')).find(o => (o.getAttribute('value') ?? o.textContent.trim()) === currentValue);
+      const opt = this.#getOption(currentValue);
       if (opt) {
         this.select(opt);
       }
@@ -367,7 +375,7 @@ class XSelect extends HTMLElement {
         btn.onclick = (e) => {
           e.stopPropagation();
           const val = this.selectedValues[parseInt(btn.getAttribute('data-index'))].value;
-          const opt = Array.from(this.container.querySelectorAll('x-option')).find(o => (o.getAttribute('value') ?? o.textContent.trim()) === val);
+          const opt = this.#getOption(val);
           if (opt) {
             this.select(opt);
           }
@@ -380,7 +388,10 @@ class XSelect extends HTMLElement {
    * reloads the current HTML from the selected option and updates the trigger
    */
   refresh() {
-    this.#syncFromValue(this.value);
+    const opt = this.#getOption(this.value);
+    if (opt) {
+      this.#applySelection(opt);
+    }
   }
 }
 
