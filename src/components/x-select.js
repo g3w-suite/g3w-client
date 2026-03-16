@@ -61,9 +61,7 @@ class XSelect extends HTMLElement {
 
     Promise.resolve().then(() => {
 
-      const originalOptions = Array.from(this.querySelectorAll('x-option'));
-
-      this.innerHTML = /* html */`
+      this.insertAdjacentHTML('afterbegin', /* html */`
         <div class="x-select-trigger" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox">
           <div class="x-selected-content"></div>
           <i class="triangle"></i>
@@ -72,7 +70,7 @@ class XSelect extends HTMLElement {
           ${ this.hasAttribute('searchable') || this.hasAttribute('multiple') ? '<div class="x-search-box"><input type="text" placeholder="Search..."></div>' : '' }
           <div class="x-options-list"></div>
         </div>
-      `;
+      `);
 
       this.trigger   = this.querySelector('.x-select-trigger');
       this.content   = this.querySelector('.x-selected-content');
@@ -80,7 +78,7 @@ class XSelect extends HTMLElement {
       this.list      = this.querySelector('.x-options-list');
       this.input     = this.querySelector('.x-search-box input');
 
-      originalOptions.forEach(opt => {
+      Array.from(this.querySelectorAll(':scope > x-option')).forEach(opt => {
         this.list.appendChild(opt);
         opt.onclick = (e) => { e.stopPropagation(); this.select(opt); };
       });
