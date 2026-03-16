@@ -110,14 +110,23 @@ class XSelect extends HTMLElement {
 
       // make reactive: "<x-option>" elements
       (new MutationObserver(() => {
-        Array
-          .from(this.querySelectorAll(':scope > x-option'))
-          .forEach(opt => {
-            if (!this.list.contains(opt)) {
-              this.list.appendChild(opt);
-              opt.onclick = (e) => { e.stopPropagation(); this.select(opt); };
-            }
-          });
+        this.querySelectorAll(':scope > x-option').forEach(opt => {
+          if (opt._xselect_proxy) {
+            return;
+          }
+          // proxy original node (make it vue happy)
+          const proxy = opt.cloneNode(true);
+          opt._xselect_proxy = proxy;
+          opt.style.display  = 'none';
+          // copy attributes from original node
+          (new MutationObserver(() => {
+            proxy.innerHTML = opt.innerHTML;
+            Array.from(opt.attributes).filter(attr => attr.name !== 'style').forEach(attr => proxy.setAttribute(attr.name, attr.value));
+          })).observe(opt, { childList: true, attributes: true, characterData: true, subtree: true  });
+          // delegate click event
+          proxy.onclick = (e) => { e.stopPropagation(); this.select(opt); opt.click(); };
+          this.list.appendChild(proxy);
+        });
       })).observe(this, { childList: true });
 
       document.addEventListener('pointerup', this.#onClickOutside.bind(this));
