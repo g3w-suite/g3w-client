@@ -91,6 +91,7 @@ class XSelect extends HTMLElement {
       });
 
       this.container.onkeydown = (e) => this.#onContainerKeydown(e);
+      this.container.addEventListener('beforetoggle', e => this.#onContainerToggle(e));
 
       if (this.input) {
         this.input.oninput = (e) => {
@@ -126,14 +127,13 @@ class XSelect extends HTMLElement {
             const proxy = opt.cloneNode(true);
             opt._xselect_proxy = proxy;
             opt.style.display = 'none';
-            proxy.style.display = null;
             // copy attributes from original node
             (new MutationObserver(() => {
               proxy.innerHTML = opt.innerHTML;
-              Array.from(opt.attributes)
-                .filter(attr => attr.name !== 'style')
-                .forEach(attr => proxy.setAttribute(attr.name, attr.value));
+              Array.from(opt.attributes).forEach(attr => proxy.setAttribute(attr.name, attr.value));
             })).observe(opt, { childList: true, attributes: true, characterData: true, subtree: true });
+
+            proxy.style.display = null;
             // delegate click event
             proxy.onclick = (e) => {  e.stopPropagation();  this.select(opt);  opt.click();  };
             this.list.appendChild(proxy);
@@ -235,6 +235,28 @@ class XSelect extends HTMLElement {
     }
   }
 
+  #onContainerToggle(e) {
+    const isOpen = 'open' === e.newState;
+    this.trigger.setAttribute('aria-expanded', isOpen);
+    this.trigger.classList.toggle('open', isOpen);
+    if (isOpen) {
+      this.#updatePosition(); 
+      if (this.input) {
+        this.input.value = '';                    // reset search box
+        this.#search('');
+        setTimeout(() => this.input.focus(), 50); // auto focus
+      } else {
+        this.#focus('first');
+      }
+    } else {
+      this.trigger.removeAttribute('aria-activedescendant');
+      if (this.activeOption) {
+        this.activeOption.setAttribute('aria-selected', this.activeOption.hasAttribute('selected') ? 'true' : 'false');
+        this.activeOption = null;
+      }
+    }
+  }
+
   #focus(direction) {
     const options = Array.from(this.container.querySelectorAll('x-option:not([hidden])'));
 
@@ -332,27 +354,10 @@ class XSelect extends HTMLElement {
   }
 
   open() {
-    this.trigger.setAttribute('aria-expanded', 'true');
-    this.trigger.classList.add('open');
-    this.#updatePosition(); 
     this.container.showPopover(); 
-    if (this.input) {
-      this.input.value = '';                    // reset search box
-      this.#search('');
-      setTimeout(() => this.input.focus(), 50); // auto focus
-    } else {
-      this.#focus('first');
-    }
   }
 
   close() {
-    this.trigger.setAttribute('aria-expanded', 'false');
-    this.trigger.classList.remove('open');
-    this.trigger.removeAttribute('aria-activedescendant');
-    if (this.activeOption) {
-      this.activeOption.setAttribute('aria-selected', this.activeOption.hasAttribute('selected') ? 'true' : 'false');
-      this.activeOption = null;
-    }
     this.container.hidePopover(); 
   }
 
