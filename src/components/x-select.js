@@ -24,9 +24,12 @@ class XSelect extends HTMLElement {
 
   constructor() {
     super();
-    this.isOpen = false;
     this.selectedValues = [];
     this.activeOption = null;
+  }
+
+  get isOpen() {
+    return this.container && this.container.matches(":popover-open");
   }
 
   get value() {
@@ -320,8 +323,7 @@ class XSelect extends HTMLElement {
     }
   }
 
-  open() { 
-    this.isOpen = true; 
+  open() {
     this.trigger.setAttribute('aria-expanded', 'true');
     this.trigger.classList.add('open');
     this.#updatePosition(); 
@@ -336,7 +338,6 @@ class XSelect extends HTMLElement {
   }
 
   close() {
-    this.isOpen = false; 
     this.trigger.setAttribute('aria-expanded', 'false');
     this.trigger.classList.remove('open');
     this.trigger.removeAttribute('aria-activedescendant');
