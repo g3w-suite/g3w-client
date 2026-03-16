@@ -41,10 +41,7 @@ class XSelect extends HTMLElement {
       return;
     }
     this.setAttribute('value', val);
-    const opt = this.#getOption(val);
-    if (opt) {
-      this.#applySelection(opt);
-    }
+    this.select(this.#getOption(val), { autoclose: false, emit: false });
   }
 
   #getOptions() {
@@ -135,7 +132,7 @@ class XSelect extends HTMLElement {
 
             proxy.style.display = null;
             // delegate click event
-            proxy.onclick = (e) => {  e.stopPropagation();  this.select(opt);  opt.click();  };
+            proxy.onclick = (e) => { e.stopPropagation(); this.select(opt); };
             this.list.appendChild(proxy);
           });
           // remove proxied node (dynamically removed by vue)
@@ -153,15 +150,9 @@ class XSelect extends HTMLElement {
       window.addEventListener('resize', () => { if(this.isOpen) this.#updatePosition(); });
 
       if (this.getAttribute('value')) {                       // inital value (from <x-select value="some value">)
-        const opt = this.#getOption(this.getAttribute('value'));
-        if (opt) {
-          this.#applySelection(opt);
-        }
+        this.select(this.#getOption(this.getAttribute('value')), { autoclose: false, emit: false });
       } else if (this.container.querySelector('x-option[selected]')) {  // inital value (from <x-option selected>)
-        const opt = this.container.querySelector('x-option[selected]');
-        if (opt) {
-          this.select(opt);
-        }
+        this.select(this.container.querySelector('x-option[selected]'));
       } else {                                                // initial value (from first available <x-option>)
         const opt = Array.from(this.container.querySelectorAll('x-option')).find(opt => !opt.hasAttribute('disabled')) 
         if (opt) this.select(opt);
@@ -204,10 +195,7 @@ class XSelect extends HTMLElement {
       }
 
       // select the option
-      const opt = this.#getOption(currentValue);
-      if (opt) {
-        this.select(opt);
-      }
+      this.select(this.#getOption(currentValue));
     }
   }
 
@@ -227,11 +215,11 @@ class XSelect extends HTMLElement {
       return;
     }
     switch (e.key) {
-      case 'ArrowDown': e.preventDefault(); this.#focus(1);                           break;
-      case 'ArrowUp':   e.preventDefault(); this.#focus(-1);                          break;
-      case 'Enter':     e.preventDefault(); if (this.activeOption) this.select(this.activeOption); break;
-      case 'Escape':    e.preventDefault(); this.close(); this.trigger.focus();                    break;
-      case 'Tab':       this.close();                                                              break; // Allow tab to move out
+      case 'ArrowDown': e.preventDefault(); this.#focus(1);                     break;
+      case 'ArrowUp':   e.preventDefault(); this.#focus(-1);                    break;
+      case 'Enter':     e.preventDefault(); this.select(this.activeOption);     break;
+      case 'Escape':    e.preventDefault(); this.close(); this.trigger.focus(); break;
+      case 'Tab':       this.close();                                           break; // Allow tab to move out
     }
   }
 
@@ -303,7 +291,12 @@ class XSelect extends HTMLElement {
     this.container.style.setProperty('--select-width', `${rect.width}px`);
   }
 
-  #applySelection(opt) {
+  select(opt, settings = { autoclose: false, emit: true }) {
+
+    if (!opt) {
+      return;
+    }
+
     const val = opt.getAttribute('value') ?? opt.textContent.trim();
 
     // single-select
@@ -331,18 +324,16 @@ class XSelect extends HTMLElement {
     }
 
     this.render();
-  }
 
-  select(opt) {
-    this.#applySelection(opt);
-
-    if (!this.hasAttribute('multiple')) {
+    if (true == settings.autoclose || !this.hasAttribute('multiple')) {
       this.close();
     }
 
-    const newValue = this.selected_values.map(v => v.value).join(',');
-    this.setAttribute('value', newValue);
-    this.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: { value: newValue } }));
+    if (false !== settings.emit ) {
+      const newValue = this.selected_values.map(v => v.value).join(',');
+      this.setAttribute('value', newValue);
+      this.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: { value: newValue } }));
+    }
   }
 
   toggle() {
@@ -379,11 +370,7 @@ class XSelect extends HTMLElement {
       this.content.querySelectorAll('.x-remove').forEach(btn => {
         btn.onclick = (e) => {
           e.stopPropagation();
-          const val = this.selected_values[parseInt(btn.getAttribute('data-index'))].value;
-          const opt = this.#getOption(val);
-          if (opt) {
-            this.select(opt);
-          }
+          this.select(this.#getOption(this.selected_values[parseInt(btn.getAttribute('data-index'))].value));
         };
       });
     }
@@ -393,10 +380,7 @@ class XSelect extends HTMLElement {
    * reloads the current HTML from the selected option and updates the trigger
    */
   refresh() {
-    const opt = this.#getOption(this.value);
-    if (opt) {
-      this.#applySelection(opt);
-    }
+    this.select(this.#getOption(this.value), { autoclose: false, emit: false });
   }
 }
 
