@@ -24,7 +24,7 @@ class XSelect extends HTMLElement {
 
   constructor() {
     super();
-    this.selectedValues = [];
+    this.selected_values = [];
     this.activeOption = null;
   }
 
@@ -290,7 +290,7 @@ class XSelect extends HTMLElement {
         o.removeAttribute('selected');
         o.setAttribute('aria-selected', 'false');
       });
-      this.selectedValues = [{ value: val, html: opt.innerHTML }];
+      this.selected_values = [{ value: val, html: opt.innerHTML }];
       opt.setAttribute('selected', '');
       opt.setAttribute('aria-selected', 'true');
     }
@@ -300,11 +300,11 @@ class XSelect extends HTMLElement {
       if (opt.hasAttribute('selected')) {
         opt.removeAttribute('selected');
         opt.setAttribute('aria-selected', 'false');
-        this.selectedValues = this.selectedValues.filter(v => v.value !== val);
+        this.selected_values = this.selected_values.filter(v => v.value !== val);
       } else {
         opt.setAttribute('selected', '');
         opt.setAttribute('aria-selected', 'true');
-        this.selectedValues.push({ value: val, html: opt.innerHTML });
+        this.selected_values.push({ value: val, html: opt.innerHTML });
       }
     }
 
@@ -318,7 +318,7 @@ class XSelect extends HTMLElement {
       this.close();
     }
 
-    const newValue = this.selectedValues.map(v => v.value).join(',');
+    const newValue = this.selected_values.map(v => v.value).join(',');
     this.setAttribute('value', newValue);
     this.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: { value: newValue } }));
   }
@@ -363,18 +363,18 @@ class XSelect extends HTMLElement {
 
     // single-select
     if (!this.hasAttribute('multiple')) {
-      this.content.innerHTML = this.selectedValues.length ? this.selectedValues[0].html : 'Seleziona...';
+      this.content.innerHTML = this.selected_values.length ? this.selected_values[0].html : 'Seleziona...';
     }
 
     // multi-select
     if (this.hasAttribute('multiple')) {
-      this.content.innerHTML = this.selectedValues.length ? this.selectedValues.map((v, i) => 
+      this.content.innerHTML = this.selected_values.length ? this.selected_values.map((v, i) => 
         `<span class="x-selected-badge"><span class="x-remove" data-index="${i}">×</span>${v.html}</span>`
       ).join('') : 'Seleziona...';
       this.content.querySelectorAll('.x-remove').forEach(btn => {
         btn.onclick = (e) => {
           e.stopPropagation();
-          const val = this.selectedValues[parseInt(btn.getAttribute('data-index'))].value;
+          const val = this.selected_values[parseInt(btn.getAttribute('data-index'))].value;
           const opt = this.#getOption(val);
           if (opt) {
             this.select(opt);
