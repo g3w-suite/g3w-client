@@ -48,6 +48,15 @@ class XSelect extends HTMLElement {
     }
   }
 
+  static observedAttributes = ['disabled']
+
+  attributeChangedCallback(attr) {
+    // make reactive: "disabled" attribute
+    if ('disabled' === attr) {
+      this.#onDisabled()
+    }
+  }
+
   connectedCallback() {
 
     Promise.resolve().then(() => {
@@ -100,13 +109,6 @@ class XSelect extends HTMLElement {
 
       this.trigger.onclick = (e) => { e.stopPropagation(); if (!this.isDisabled) this.toggle(); };
       this.trigger.onkeydown = (e) => { if (!this.isDisabled) this.#onTriggerKeydown(e); };
-
-      // make reactive: "disabled" attribute
-      (new MutationObserver(() => this.#onDisabled())).observe(this, {
-        attributes: true,
-        attributeFilter: ['disabled']
-      });
-      this.#onDisabled();
 
       // make reactive: "<x-option>" elements
       (new MutationObserver((mutations) => {
