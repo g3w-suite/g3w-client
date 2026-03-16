@@ -91,26 +91,12 @@ class XSelect extends HTMLElement {
       this.container.addEventListener('beforetoggle', e => this.#onContainerToggle(e));
 
       if (this.input) {
-        this.input.oninput = (e) => {
-          const value = e.target.value;
-          this.#search(value);
-          // open dropdown
-          if (!this.isOpen) {
-            this.open();
-          }
-          // emit custom "search-input" event (eg. for AJAX search)
-          this.dispatchEvent(new CustomEvent('search-input', { 
-            detail: { value },
-            bubbles: true,
-            composed: true
-          }));
-        };
-        // suppress 'change' event on parent `<x-select>`
-        this.input.onchange = (e) => { e.stopPropagation(); };
+        this.input.oninput   = (e) => this.#onSearchInput(e);
+        this.input.onchange  = (e) => { e.stopPropagation(); }; // suppress 'change' event on parent `<x-select>`
         this.input.onkeydown = (e) => this.#onSearchKeydown(e);
       }
 
-      this.trigger.onclick = (e) => { e.stopPropagation(); if (!this.isDisabled) this.toggle(); };
+      this.trigger.onclick   = (e) => { e.stopPropagation(); if (!this.isDisabled) this.toggle(); };
       this.trigger.onkeydown = (e) => { if (!this.isDisabled) this.#onTriggerKeydown(e); };
 
       // make reactive: "<x-option>" elements
@@ -197,6 +183,21 @@ class XSelect extends HTMLElement {
       // select the option
       this.select(this.#getOption(currentValue));
     }
+  }
+
+  #onSearchInput(e) {
+    const value = e.target.value;
+    this.#search(value);
+    // open dropdown
+    if (!this.isOpen) {
+      this.open();
+    }
+    // emit custom "search-input" event (eg. for AJAX search)
+    this.dispatchEvent(new CustomEvent('search-input', { 
+      detail: { value },
+      bubbles: true,
+      composed: true
+    }));
   }
 
   #onTriggerKeydown(e) {
@@ -301,10 +302,7 @@ class XSelect extends HTMLElement {
 
     // single-select
     if (!this.hasAttribute('multiple')) {
-      this.container.querySelectorAll('x-option').forEach(o => {
-        o.removeAttribute('selected');
-        o.setAttribute('aria-selected', 'false');
-      });
+      this.container.querySelectorAll('x-option').forEach(o => { o.removeAttribute('selected'); o.setAttribute('aria-selected', 'false'); });
       this.selected_values = [{ value: val, html: opt.innerHTML }];
       opt.setAttribute('selected', '');
       opt.setAttribute('aria-selected', 'true');
