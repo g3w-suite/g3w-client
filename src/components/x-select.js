@@ -42,7 +42,7 @@ class XSelect extends HTMLElement {
   }
 
   #syncFromValue(val) {
-    const opt = Array.from(this.querySelectorAll('x-option')).find(o => (o.getAttribute('value') ?? o.textContent.trim()) === val);
+    const opt = Array.from(this.container.querySelectorAll('x-option')).find(o => (o.getAttribute('value') ?? o.textContent.trim()) === val);
     if (opt) {
       this.#applySelection(opt);
     }
@@ -146,13 +146,13 @@ class XSelect extends HTMLElement {
 
       if (this.getAttribute('value')) {                       // inital value (from <x-select value="some value">)
         this.#syncFromValue(this.getAttribute('value'));
-      } else if (this.querySelector('x-option[selected]')) {  // inital value (from <x-option selected>)
-        const opt = this.querySelector('x-option[selected]');
+      } else if (this.container.querySelector('x-option[selected]')) {  // inital value (from <x-option selected>)
+        const opt = this.container.querySelector('x-option[selected]');
         if (opt) {
           this.select(opt);
         }
       } else {                                                // initial value (from first available <x-option>)
-        const opt = Array.from(this.querySelectorAll('x-option')).find(opt => !opt.hasAttribute('disabled')) 
+        const opt = Array.from(this.container.querySelectorAll('x-option')).find(opt => !opt.hasAttribute('disabled')) 
         if (opt) this.select(opt);
         else this.render();
       }
@@ -174,7 +174,7 @@ class XSelect extends HTMLElement {
 
   #search(query) {
     const term    = query.toLowerCase();
-    this.querySelectorAll('x-option').forEach(opt => { opt.toggleAttribute('hidden', !opt.textContent.toLowerCase().includes(term)); });
+    this.container.querySelectorAll('x-option').forEach(opt => { opt.toggleAttribute('hidden', !opt.textContent.toLowerCase().includes(term)); });
   }
 
   #onSearchKeydown(e) {
@@ -184,7 +184,7 @@ class XSelect extends HTMLElement {
       e.preventDefault();
 
       // create a new (dynamic) option
-      if (!Array.from(this.querySelectorAll('x-option')).find(o => (o.getAttribute('value') ?? o.textContent.trim()) === currentValue)) {
+      if (!Array.from(this.container.querySelectorAll('x-option')).find(o => (o.getAttribute('value') ?? o.textContent.trim()) === currentValue)) {
         const opt = document.createElement('x-option');
         opt.setAttribute('value', currentValue);
         opt.textContent = currentValue;
@@ -193,7 +193,7 @@ class XSelect extends HTMLElement {
       }
 
       // select the option
-      const opt = Array.from(this.querySelectorAll('x-option')).find(o => (o.getAttribute('value') ?? o.textContent.trim()) === currentValue);
+      const opt = Array.from(this.container.querySelectorAll('x-option')).find(o => (o.getAttribute('value') ?? o.textContent.trim()) === currentValue);
       if (opt) {
         this.select(opt);
       }
@@ -211,7 +211,7 @@ class XSelect extends HTMLElement {
   }
 
   #onContainerKeydown(e) {
-    const options = Array.from(this.querySelectorAll('x-option:not([hidden])'));
+    const options = Array.from(this.container.querySelectorAll('x-option:not([hidden])'));
     if (0 === options.length) {
       return;
     }
@@ -225,7 +225,7 @@ class XSelect extends HTMLElement {
   }
 
   #focus(direction) {
-    const options = Array.from(this.querySelectorAll('x-option:not([hidden])'));
+    const options = Array.from(this.container.querySelectorAll('x-option:not([hidden])'));
 
     if ('first' === direction) {
       if (options.length > 0) {
@@ -275,7 +275,7 @@ class XSelect extends HTMLElement {
 
     // single-select
     if (!this.hasAttribute('multiple')) {
-      this.querySelectorAll('x-option').forEach(o => {
+      this.container.querySelectorAll('x-option').forEach(o => {
         o.removeAttribute('selected');
         o.setAttribute('aria-selected', 'false');
       });
@@ -366,7 +366,7 @@ class XSelect extends HTMLElement {
         btn.onclick = (e) => {
           e.stopPropagation();
           const val = this.selectedValues[parseInt(btn.getAttribute('data-index'))].value;
-          const opt = Array.from(this.querySelectorAll('x-option')).find(o => (o.getAttribute('value') ?? o.textContent.trim()) === val);
+          const opt = Array.from(this.container.querySelectorAll('x-option')).find(o => (o.getAttribute('value') ?? o.textContent.trim()) === val);
           if (opt) {
             this.select(opt);
           }

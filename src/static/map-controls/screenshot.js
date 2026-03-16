@@ -875,11 +875,17 @@ template: /*html*/`
       const selected = event.target.value;
       if (selected) {
         this.atlas_values = selected.split(',').filter(v => v);
-        // Resetta la ricerca per forzare l'utente a digitare di nuovo
-        this.atlas_search = '';
-        this.atlas_options = [];
-        // Chiudi la dropdown
+        // hide dropdown
         event.target.close();
+        // auto reset (force new user input)
+        const reset = e => {
+          if (e.newState === 'open') {
+            this.atlas_search = '';
+            this.atlas_options = [];
+            event.target.container.removeEventListener('toggle', reset);
+          }
+        };
+        event.target.container.addEventListener('toggle', reset);
       }
     },
 
