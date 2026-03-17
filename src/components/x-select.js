@@ -132,14 +132,14 @@ class XSelect extends HTMLElement {
       })).observe(this, { childList: true });
 
       document.addEventListener('pointerup', this.#onClickOutside.bind(this));
-      window.addEventListener('scroll', () => { if(this.isOpen) this.#updatePosition(); }, true);
-      window.addEventListener('resize', () => { if(this.isOpen) this.#updatePosition(); });
+      window.addEventListener('scroll', () => { if(this.isOpen) this.#resize(); }, true);
+      window.addEventListener('resize', () => { if(this.isOpen) this.#resize(); });
 
-      if (this.getAttribute('value')) {                       // inital value (from <x-select value="some value">)
+      if (this.getAttribute('value')) {                                 // inital value (from <x-select value="some value">)
         this.select(this.#getOption(this.getAttribute('value')), { autoclose: false, emit: false });
       } else if (this.container.querySelector('x-option[selected]')) {  // inital value (from <x-option selected>)
         this.select(this.container.querySelector('x-option[selected]'));
-      } else {                                                // initial value (from first available <x-option>)
+      } else {                                                          // initial value (from first available <x-option>)
         const opt = Array.from(this.container.querySelectorAll('x-option')).find(opt => !opt.hasAttribute('disabled')) 
         if (opt) this.select(opt);
         else this.render();
@@ -166,23 +166,25 @@ class XSelect extends HTMLElement {
   }
 
   #onSearchKeydown(e) {
-    const currentValue = this.input.value.trim();
+    const value = this.input.value.trim();
 
-    if (e.key === 'Enter' && currentValue && (this.hasAttribute('createTag') || this.getAttribute('createTag') === 'true')) {
-      e.preventDefault();
-
-      // create a new (dynamic) option
-      if (!this.#getOption(currentValue)) {
-        const opt = document.createElement('x-option');
-        opt.setAttribute('value', currentValue);
-        opt.textContent = currentValue;
-        opt.onclick = (e) => { e.stopPropagation(); this.select(opt); };
-        this.list.appendChild(opt);
-      }
-
-      // select the option
-      this.select(this.#getOption(currentValue));
+    if (!(e.key === 'Enter' && value && (this.hasAttribute('createTag') || this.getAttribute('createTag') === 'true'))) {
+      return;
     }
+
+    e.preventDefault();
+
+    // create a new (dynamic) option
+    if (!this.#getOption(value)) {
+      const opt = document.createElement('x-option');
+      opt.setAttribute('value', value);
+      opt.textContent = value;
+      opt.onclick = (e) => { e.stopPropagation(); this.select(opt); };
+      this.list.appendChild(opt);
+    }
+
+    // select the option
+    this.select(this.#getOption(value));
   }
 
   #onSearchInput(e) {
@@ -212,7 +214,7 @@ class XSelect extends HTMLElement {
 
   #onContainerKeydown(e) {
     const options = Array.from(this.container.querySelectorAll('x-option:not([hidden])'));
-    if (0 === options.length) {
+    if (!options.length) {
       return;
     }
     switch (e.key) {
@@ -229,7 +231,7 @@ class XSelect extends HTMLElement {
     this.trigger.setAttribute('aria-expanded', isOpen);
     this.trigger.classList.toggle('open', isOpen);
     if (isOpen) {
-      this.#updatePosition(); 
+      this.#resize(); 
       if (this.input) {
         this.input.value = '';                    // reset search box
         this.#search('');
@@ -285,7 +287,7 @@ class XSelect extends HTMLElement {
     option.focus();
   }
 
-  #updatePosition() {
+  #resize() {
     const rect = this.trigger.getBoundingClientRect();
     this.container.style.top = `${rect.bottom + 2}px`;
     this.container.style.left = `${rect.left}px`;
@@ -293,7 +295,6 @@ class XSelect extends HTMLElement {
   }
 
   select(opt, settings = { autoclose: false, emit: true }) {
-
     if (!opt) {
       return;
     }
@@ -304,33 +305,29 @@ class XSelect extends HTMLElement {
     if (!this.hasAttribute('multiple')) {
       this.container.querySelectorAll('x-option').forEach(o => { o.removeAttribute('selected'); o.setAttribute('aria-selected', 'false'); });
       this.selected_values = [{ value: val, html: opt.innerHTML }];
-      opt.setAttribute('selected', '');
       opt.setAttribute('aria-selected', 'true');
+      opt.setAttribute('selected', '');
     }
 
     // multi-select
     if (this.hasAttribute('multiple')) {
-      if (opt.hasAttribute('selected')) {
-        opt.removeAttribute('selected');
-        opt.setAttribute('aria-selected', 'false');
-        this.selected_values = this.selected_values.filter(v => v.value !== val);
-      } else {
-        opt.setAttribute('selected', '');
-        opt.setAttribute('aria-selected', 'true');
-        this.selected_values.push({ value: val, html: opt.innerHTML });
-      }
+      this.selected_values = opt.hasAttribute('selected') ? this.selected_values.filter(v => v.value !== val) : this.selected_values.concat({ value: val, html: opt.innerHTML });
+      opt.setAttribute('aria-selected', !opt.hasAttribute('selected'));
+      opt.toggleAttribute('selected');
     }
 
     this.render();
 
+    // auto close
     if (true == settings.autoclose || !this.hasAttribute('multiple')) {
       this.close();
     }
 
+    // emit new value
     if (false !== settings.emit ) {
-      const newValue = this.selected_values.map(v => v.value).join(',');
-      this.setAttribute('value', newValue);
-      this.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: { value: newValue } }));
+      const value = this.selected_values.map(v => v.value).join(',');
+      this.setAttribute('value', value);
+      this.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: { value } }));
     }
   }
 
