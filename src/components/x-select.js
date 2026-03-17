@@ -237,7 +237,7 @@ class XSelect extends HTMLElement {
     } else {
       this.trigger.removeAttribute('aria-activedescendant');
       if (this.activeOption) {
-        this.activeOption.setAttribute('aria-selected', this.activeOption.hasAttribute('selected') ? 'true' : 'false');
+        this.activeOption.setAttribute('aria-selected', this.activeOption.hasAttribute('selected'));
         this.activeOption = null;
       }
     }
@@ -273,9 +273,7 @@ class XSelect extends HTMLElement {
   }
 
   #setActiveOption(option) {
-    if (this.activeOption) {
-      this.activeOption.setAttribute('aria-selected', this.activeOption.hasAttribute('selected') ? 'true' : 'false');
-    }
+    this.activeOption?.setAttribute('aria-selected', this.activeOption.hasAttribute('selected'));
     this.activeOption = option;
     this.trigger.setAttribute('aria-activedescendant', option.id || (option.id = 'option-' + Math.random().toString(36).substr(2, 9)));
     option.setAttribute('aria-selected', 'true');
@@ -297,7 +295,7 @@ class XSelect extends HTMLElement {
       if (opt) {
         this.container.querySelectorAll('x-option').forEach(o => { o.removeAttribute('selected'); o.setAttribute('aria-selected', 'false'); });
         this.selected_values  = [{ value: val, html: opt.innerHTML }];
-        this.selected_options = opt;
+        this.selected_options = [opt];
         opt.setAttribute('aria-selected', 'true');
         opt.setAttribute('selected', '');
       }
