@@ -13,6 +13,9 @@ class XOption extends HTMLElement {
     this.setAttribute('tabindex', '-1');
     this.setAttribute('aria-selected', 'false');
   }
+  get value() {
+    return this.getAttribute('value') ?? this.textContent.trim();
+  }
 }
 
 /**
@@ -52,7 +55,7 @@ class XSelect extends HTMLElement {
   }
 
   #getOption(val) {
-    return this.#getOptions().find(o => (o.getAttribute('value') ?? o.textContent.trim()) === val)
+    return this.#getOptions().find(o => o.value === val)
   }
 
   static observedAttributes = ['disabled']
@@ -305,7 +308,7 @@ class XSelect extends HTMLElement {
     // multi-select
     if (this.hasAttribute('multiple')) {
       if (opt) {
-        this.selected_options = opt.hasAttribute('selected') ? this.selected_options.filter(o => (o.getAttribute('value') ?? o.textContent?.trim()) !== (opt.getAttribute('value') ?? opt.textContent?.trim())) : this.selected_options.concat(opt);
+        this.selected_options = opt.hasAttribute('selected') ? this.selected_options.filter(o => o.value !== opt.value) : this.selected_options.concat(opt);
         opt.setAttribute('aria-selected', !opt.hasAttribute('selected'));
         opt.toggleAttribute('selected');
       }
@@ -316,7 +319,7 @@ class XSelect extends HTMLElement {
         btn.onclick = (e) => {
           e.stopPropagation();
           const opt = this.selected_options[parseInt(btn.getAttribute('data-index'))];
-          this.select(this.#getOption(opt?.getAttribute('value') ?? opt?.textContent?.trim()));
+          this.select(this.#getOption(opt?.value));
         };
       });
     }
@@ -328,7 +331,7 @@ class XSelect extends HTMLElement {
 
     // emit new value
     if (opt && false !== settings.emit ) {
-      const value = this.selected_options.map(opt => opt.getAttribute('value') ?? opt.textContent?.trim()).join(',');
+      const value = this.selected_options.map(opt => opt.value).join(',');
       this.setAttribute('value', value);
       this.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: { value } }));
     }
