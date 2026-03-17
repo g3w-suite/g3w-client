@@ -41,7 +41,6 @@ const state = {
   template:        print?.[0]?.name,
   atlas:           print?.[0]?.atlas,
   atlas_values:    [],
-  atlas_search:    '',
   atlas_options:   [],
   atlas_loading:   false,
   rotation:        0,
@@ -176,11 +175,11 @@ template: /*html*/`
     <template v-if = "!is_screenshot && atlas && has_autocomplete">
       <label  for = "print_atlas_autocomplete"><span>{{ atlas.field_name }}</span></label>
       <x-select
-        :key            = "template"
-        id              = "print_atlas_autocomplete"
-        :value          = "JSON.stringify(atlas_values)"
-        @change         = "onAtlasChange"
-        @search-input   = "atlas_search = $event.detail.value"
+        :key          = "template"
+        id            = "print_atlas_autocomplete"
+        :value        = "JSON.stringify(atlas_values)"
+        @change       = "onAtlasChange"
+        @search-input = "onAtlasSearch"
         multiple
         searchable
       >
@@ -420,7 +419,6 @@ template: /*html*/`
 
         //In case of current atlas template just init select
         if (this.atlas) {
-          this.atlas_search = '';
           this.atlas_options = [];
           this.atlas_values = [];
           return;
@@ -433,7 +431,6 @@ template: /*html*/`
     async has_autocomplete(b) {
       if (b) {
         await this.$nextTick();
-        this.atlas_search = '';
         this.atlas_options = [];
       }
     },
@@ -473,15 +470,6 @@ template: /*html*/`
         await this.$nextTick();
         this._skip_atlas_check = false;
         this.disabled = '' === value.trim();
-      }
-    },
-
-    /**
-     * Perform atlas search
-     */
-    atlas_search: {
-      handler(atlas_search) {
-        this.performAjaxSearch(atlas_search);
       }
     },
 
@@ -857,26 +845,26 @@ template: /*html*/`
       this.scales.forEach(s => this.resolutions[s.value] = getResolutionFromScale(s.value, units));
     },
 
-    onAtlasChange(event) {
-      const selected = event.target.value;
+    onAtlasChange(e) {
+      const selected = e.target.value;
       if (selected) {
         this.atlas_values = selected.split(',').filter(v => v);
         // hide dropdown
-        event.target.close();
+        e.target.close();
         // auto reset (force new user input)
-        const reset = e => {
-          if (e.newState === 'open') {
-            this.atlas_search = '';
+        const reset = event => {
+          if (event.newState === 'open') {
             this.atlas_options = [];
-            event.target.container.removeEventListener('toggle', reset);
+            e.target.container.removeEventListener('toggle', reset);
           }
         };
-        event.target.container.addEventListener('toggle', reset);
+        e.target.container.addEventListener('toggle', reset);
       }
     },
 
-    async performAjaxSearch(atlas_search) {
+    async onAtlasSearch(e) {
       try {
+        const atlas_search = e.detail.value;
         if (!this.atlas || !atlas_search || atlas_search.length < 1) {
           this.atlas_options = [];
           return;
@@ -951,7 +939,7 @@ template: /*html*/`
   },
 
   created() {
-    this.performAjaxSearch = debounce(this.performAjaxSearch.bind(this), 400);
+    this.onAtlasSearch = debounce(this.onAtlasSearch.bind(this), 400);
   },
 
   /**
