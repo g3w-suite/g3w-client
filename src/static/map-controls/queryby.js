@@ -109,7 +109,7 @@ export class QueryBy extends MapControl {
               types:           this.types,
               type:            this.types[0],
               methods:         ['intersects', 'within'],
-              method:          this.getSpatialMethod(),
+              method:          this.getSpatialMethod() ?? 'intersects',
               layers:          [],
               selectedLayer:   (GUI.getSelectedLayer() || { getId() { return '__ALL__'; } }).getId(), // TODO: use optional chaining instead: GUI.getSelectedLayer()?.getId() || '__ALL__'
               reloading:       true,
@@ -182,11 +182,11 @@ export class QueryBy extends MapControl {
                     ref     = "layer"
                     searchable
                   >
-                    <x-option :value="'__ALL__'">{{ $t(all) }}</x-option>
-                    <x-option v-for="(layer, index) in layers" :key="layer.getId() + '_' + index" :value="layer.getId()">
+                    <x-option value="__ALL__">{{ $t(all) }}</x-option>
+                    <x-option v-for="(layer, index) in layers" :key="layer.getId()" :value="layer.getId()">
                       <i :class="g3wtemplate.getFontClass(layer.isVisible() ? 'eye' : 'eye-close')"></i>&nbsp;&nbsp;{{ layer.get('name') }}
                     </x-option>
-                    <x-option :value="'__NEW__'">{{ $t('mapcontrols.queryby.new') }}</x-option>
+                    <x-option value="__NEW__">{{ $t('mapcontrols.queryby.new') }}</x-option>
                   </x-select>
                 </div>
                 <!-- HELP TEXT -->
