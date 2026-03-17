@@ -178,7 +178,7 @@ template: /*html*/`
       <x-select
         :key            = "template"
         id              = "print_atlas_autocomplete"
-        :value          = "atlas_values.join(',')"
+        :value          = "JSON.stringify(atlas_values)"
         @change         = "onAtlasChange"
         @search-input   = "atlas_search = $event.detail.value"
         multiple
