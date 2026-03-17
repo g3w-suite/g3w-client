@@ -140,9 +140,7 @@ class XSelect extends HTMLElement {
       } else if (this.container.querySelector('x-option[selected]')) {  // inital value (from <x-option selected>)
         this.select(this.container.querySelector('x-option[selected]'));
       } else {                                                          // initial value (from first available <x-option>)
-        const opt = Array.from(this.container.querySelectorAll('x-option')).find(opt => !opt.hasAttribute('disabled')) 
-        if (opt) this.select(opt);
-        else this.render();
+        this.select(Array.from(this.container.querySelectorAll('x-option')).find(opt => !opt.hasAttribute('disabled')));
       }
     });
   }
@@ -295,36 +293,44 @@ class XSelect extends HTMLElement {
   }
 
   select(opt, settings = { autoclose: false, emit: true }) {
-    if (!opt) {
-      return;
-    }
-
-    const val = opt.getAttribute('value') ?? opt.textContent.trim();
+    const val = opt?.getAttribute('value') ?? opt?.textContent?.trim();
 
     // single-select
     if (!this.hasAttribute('multiple')) {
-      this.container.querySelectorAll('x-option').forEach(o => { o.removeAttribute('selected'); o.setAttribute('aria-selected', 'false'); });
-      this.selected_values = [{ value: val, html: opt.innerHTML }];
-      opt.setAttribute('aria-selected', 'true');
-      opt.setAttribute('selected', '');
+      if (opt) {
+        this.container.querySelectorAll('x-option').forEach(o => { o.removeAttribute('selected'); o.setAttribute('aria-selected', 'false'); });
+        this.selected_values = [{ value: val, html: opt.innerHTML }];
+        opt.setAttribute('aria-selected', 'true');
+        opt.setAttribute('selected', '');
+      }
+      this.content.innerHTML = this.selected_values.length ? this.selected_values[0].html : 'Seleziona...';
     }
 
     // multi-select
     if (this.hasAttribute('multiple')) {
-      this.selected_values = opt.hasAttribute('selected') ? this.selected_values.filter(v => v.value !== val) : this.selected_values.concat({ value: val, html: opt.innerHTML });
-      opt.setAttribute('aria-selected', !opt.hasAttribute('selected'));
-      opt.toggleAttribute('selected');
+      if (opt) {
+        this.selected_values = opt.hasAttribute('selected') ? this.selected_values.filter(v => v.value !== val) : this.selected_values.concat({ value: val, html: opt.innerHTML });
+        opt.setAttribute('aria-selected', !opt.hasAttribute('selected'));
+        opt.toggleAttribute('selected');
+      }
+      this.content.innerHTML = this.selected_values.length ? this.selected_values.map((v, i) => 
+        `<span class="x-selected-badge"><span class="x-remove" data-index="${i}">×</span>${v.html}</span>`
+      ).join('') : 'Seleziona...';
+      this.content.querySelectorAll('.x-remove').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          this.select(this.#getOption(this.selected_values[parseInt(btn.getAttribute('data-index'))].value));
+        };
+      });
     }
 
-    this.render();
-
     // auto close
-    if (true == settings.autoclose || !this.hasAttribute('multiple')) {
+    if (opt && (true == settings.autoclose || !this.hasAttribute('multiple'))) {
       this.close();
     }
 
     // emit new value
-    if (false !== settings.emit ) {
+    if (opt && false !== settings.emit ) {
       const value = this.selected_values.map(v => v.value).join(',');
       this.setAttribute('value', value);
       this.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: { value } }));
@@ -347,30 +353,6 @@ class XSelect extends HTMLElement {
     this.container.hidePopover(); 
   }
 
-  render() {
-    if (!this.content) {
-      return;
-    }
-
-    // single-select
-    if (!this.hasAttribute('multiple')) {
-      this.content.innerHTML = this.selected_values.length ? this.selected_values[0].html : 'Seleziona...';
-    }
-
-    // multi-select
-    if (this.hasAttribute('multiple')) {
-      this.content.innerHTML = this.selected_values.length ? this.selected_values.map((v, i) => 
-        `<span class="x-selected-badge"><span class="x-remove" data-index="${i}">×</span>${v.html}</span>`
-      ).join('') : 'Seleziona...';
-      this.content.querySelectorAll('.x-remove').forEach(btn => {
-        btn.onclick = (e) => {
-          e.stopPropagation();
-          this.select(this.#getOption(this.selected_values[parseInt(btn.getAttribute('data-index'))].value));
-        };
-      });
-    }
-  }
-
   /**
    * reloads the current HTML from the selected option and updates the trigger
    */
@@ -382,25 +364,27 @@ class XSelect extends HTMLElement {
 customElements.define('x-option', XOption);
 customElements.define('x-select', XSelect);
 
-// document.body.insertAdjacentHTML('afterbegin', /* html */`
-// <x-select multiple>
-//   <x-option>Nothing</x-option>
-//   <x-option value="1">Some option</x-option>
-//   <x-option value="2">Another option</x-option>
-//   <x-option value="3" disabled>A disabled option</x-option>
-//   <x-option value="4">Potato</x-option>
-// </x-select>
-// `);
-
-// document.body.insertAdjacentHTML('afterbegin', /* html */`
-// <x-select>
-//   <x-option>Nothing</x-option>
-//   <x-option value="1" selected>Some option</x-option>
-//   <x-option value="2">Another option</x-option>
-//   <x-option value="3" disabled>A disabled option</x-option>
-//   <x-option value="4">Potato</x-option>
-// </x-select>
-// `);
+// document.addEventListener('DOMContentLoaded', () => {
+//   g3w.app.isReady().then(() => {
+//     const sidebar = document.querySelector('.main-sidebar');
+//     sidebar.insertAdjacentHTML('afterbegin', /* html */`
+//       <x-select style="color: #000; margin: .5em 0">
+//         <x-option>Nothing</x-option>
+//         <x-option value="1" selected>Some option</x-option>
+//         <x-option value="2">Another option</x-option>
+//         <x-option value="3" disabled>A disabled option</x-option>
+//         <x-option value="4">Potato</x-option>
+//       </x-select>
+//       <x-select multiple style="color: #000; margin: .5em 0;">
+//         <x-option>Nothing</x-option>
+//         <x-option value="1">Some option</x-option>
+//         <x-option value="2">Another option</x-option>
+//         <x-option value="3" disabled>A disabled option</x-option>
+//         <x-option value="4">Potato</x-option>
+//       </x-select>
+//     `);
+//   });
+// });
 
 document.head.insertAdjacentHTML('beforeend', /* html */`<style id ="x-select-css">
   x-select                          { display: inline-block; position: relative; width:100%; font-family: inherit; }
