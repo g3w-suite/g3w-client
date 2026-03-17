@@ -864,7 +864,7 @@ template: /*html*/`
 
     async onAtlasSearch(e) {
       try {
-        const atlas_search = e.detail.value;
+        const atlas_search = e.detail.value.split(',');
         if (!this.atlas || !atlas_search || atlas_search.length < 1) {
           this.atlas_options = [];
           return;
