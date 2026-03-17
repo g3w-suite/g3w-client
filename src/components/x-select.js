@@ -27,6 +27,9 @@ class XSelect extends HTMLElement {
     this.selected_values  = [];
     this.selected_options = [];
     this.activeOption = null;
+    this._onClickOutside = e => { if (!this.contains(e.target)) { this.close(); } };
+    this._onPageScroll   = () => { if(this.isOpen) this.#resize(); };
+    this._onPageResize   = () => { if(this.isOpen) this.#resize(); };
   }
 
   get isOpen() {
@@ -101,7 +104,7 @@ class XSelect extends HTMLElement {
       this.trigger.onkeydown = (e) => { if (!this.isDisabled) this.#onTriggerKeydown(e); };
 
       // make reactive: "<x-option>" elements
-      (new MutationObserver((mutations) => {
+      this.observer = (new MutationObserver((mutations) => {
         mutations.forEach(mutation => {
           // proxy original node (dynamically added by vue)
           mutation.addedNodes.forEach(opt => {
@@ -111,11 +114,13 @@ class XSelect extends HTMLElement {
             const proxy = opt.cloneNode(true);
             opt._xselect_proxy = proxy;
             opt.style.display = 'none';
+
             // copy attributes from original node
-            (new MutationObserver(() => {
+            opt._xselect_observer = (new MutationObserver(() => {
               proxy.innerHTML = opt.innerHTML;
               Array.from(opt.attributes).forEach(attr => proxy.setAttribute(attr.name, attr.value));
-            })).observe(opt, { childList: true, attributes: true, characterData: true, subtree: true });
+            }));
+            opt._xselect_observer.observe(opt, { childList: true, attributes: true, characterData: true, subtree: true });
 
             proxy.style.display = null;
             // delegate click event
@@ -124,17 +129,17 @@ class XSelect extends HTMLElement {
           });
           // remove proxied node (dynamically removed by vue)
           mutation.removedNodes.forEach(opt => {
-            if (opt._xselect_proxy) {
-              opt._xselect_proxy.remove();
-              opt._xselect_proxy = null;
-            }
+            opt?._xselect_proxy?.remove();
+            opt?._xselect_observer?.disconnect();
           });
         });
-      })).observe(this, { childList: true });
+      }));
+      
+      this.observer.observe(this, { childList: true });
 
-      document.addEventListener('pointerup', this.#onClickOutside.bind(this));
-      window.addEventListener('scroll', () => { if(this.isOpen) this.#resize(); }, true);
-      window.addEventListener('resize', () => { if(this.isOpen) this.#resize(); });
+      document.addEventListener('pointerup', this._onClickOutside);
+      window.addEventListener('scroll', this._onPageScroll, true);
+      window.addEventListener('resize', this._onPageResize);
 
       if (this.getAttribute('value')) {                                 // inital value (from <x-select value="some value">)
         this.select(this.#getOption(this.getAttribute('value')), { autoclose: false, emit: false });
@@ -146,10 +151,11 @@ class XSelect extends HTMLElement {
     });
   }
 
-  #onClickOutside(e) {
-    if (!this.contains(e.target)) {
-      this.close();
-    }
+  disconnectedCallback() {
+    document.removeEventListener('pointerup', this._onClickOutside);
+    window.removeEventListener('scroll', this._onPageScroll, true);
+    window.removeEventListener('resize', this._onPageResize);
+    this.observer?.disconnect();
   }
 
   #onDisabled() {
