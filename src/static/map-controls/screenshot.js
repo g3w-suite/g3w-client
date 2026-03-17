@@ -183,10 +183,10 @@ template: /*html*/`
         :search-placeholder = "$t('Please enter') + ' 1 ' + $t('or more characters')"
         multiple
         searchable
+        v-disabled          = "atlas_loading"
       >
         <x-option v-for = "option in atlas_options" :key = "option" :value = "option" :selected="atlas_values.includes(option)">{{ option }}</x-option>
       </x-select>
-      <div v-if = "atlas_loading" style = "font-size: 0.85em; color: #999; margin-top: 4px;">{{ $t('Searching ...') }}</div>
     </template>
 
     <!-- PRINT ATLAS -->
@@ -865,8 +865,8 @@ template: /*html*/`
 
     async onAtlasSearch(e) {
       try {
-        const atlas_search = e.detail.value.split(',');
-        if (!this.atlas || !atlas_search || atlas_search.length < 1) {
+        const atlas_search = e.detail.value;
+        if (!this.atlas || !atlas_search.length) {
           this.atlas_options = [];
           return;
         }
