@@ -32,13 +32,16 @@
         </slot>
       </div>
       <div class = "usermessage-header-right">
-        <div
-          v-if   = "closable"
-          title  = "close"
-          @click = "closeUserMessage"
+        <button
+          v-if           = "closable"
+          title          = "close"
+          type           = "button"
+          @click         = "closeUserMessage"
+          style          = "border: none;background: none;"
+          data-placement = "right"
         >
           <i aria-hidden = "true" class = "usermessage-header-right-item fas fa-times"></i>
-        </div>
+        </button>
       </div>
     </div>
     <slot name = "body">
