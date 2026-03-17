@@ -24,12 +24,11 @@ class XSelect extends HTMLElement {
 
   constructor() {
     super();
-    this.selected_values  = [];
     this.selected_options = [];
-    this.activeOption = null;
-    this._onClickOutside = e => { if (!this.contains(e.target)) { this.close(); } };
-    this._onPageScroll   = () => { if(this.isOpen) this.#resize(); };
-    this._onPageResize   = () => { if(this.isOpen) this.#resize(); };
+    this.activeOption     = null;
+    this._onClickOutside  = e => { if (!this.contains(e.target)) { this.close(); } };
+    this._onPageScroll    = () => { if(this.isOpen) this.#resize(); };
+    this._onPageResize    = () => { if(this.isOpen) this.#resize(); };
   }
 
   get isOpen() {
@@ -250,7 +249,7 @@ class XSelect extends HTMLElement {
   }
 
   #focus(direction) {
-    const options = Array.from(this.container.querySelectorAll('x-option:not([hidden])'));
+    const options = Array.from(this.container.querySelectorAll('x-option:not([hidden]):not([disabled])'));
 
     if ('first' === direction) {
       if (options.length > 0) {
@@ -294,35 +293,32 @@ class XSelect extends HTMLElement {
   }
 
   select(opt, settings = { autoclose: false, emit: true }) {
-    const val = opt?.getAttribute('value') ?? opt?.textContent?.trim();
-
     // single-select
     if (!this.hasAttribute('multiple')) {
       if (opt) {
         this.container.querySelectorAll('x-option').forEach(o => { o.removeAttribute('selected'); o.setAttribute('aria-selected', 'false'); });
-        this.selected_values  = [{ value: val, html: opt.innerHTML }];
         this.selected_options = [opt];
         opt.setAttribute('aria-selected', 'true');
         opt.setAttribute('selected', '');
       }
-      this.content.innerHTML = this.selected_values.length ? this.selected_values[0].html : 'Seleziona...';
+      this.content.innerHTML = this.selected_options.length ? this.selected_options[0].innerHTML : 'Seleziona...';
     }
 
     // multi-select
     if (this.hasAttribute('multiple')) {
       if (opt) {
-        this.selected_values  = opt.hasAttribute('selected') ? this.selected_values.filter(v => v.value !== val) : this.selected_values.concat({ value: val, html: opt.innerHTML });
-        this.selected_options = opt.hasAttribute('selected') ? this.selected_options.filter(o => opt) : this.selected_options.concat(opt);
+        this.selected_options = opt.hasAttribute('selected') ? this.selected_options.filter(o => o !== opt) : this.selected_options.concat(opt);
         opt.setAttribute('aria-selected', !opt.hasAttribute('selected'));
         opt.toggleAttribute('selected');
       }
-      this.content.innerHTML = this.selected_values.length ? this.selected_values.map((v, i) => 
-        `<span class="x-selected-badge"><span class="x-remove" data-index="${i}">×</span>${v.html}</span>`
+      this.content.innerHTML = this.selected_options.length ? this.selected_options.map((opt, i) => 
+        `<span class="x-selected-badge"><span class="x-remove" data-index="${i}">×</span>${opt.innerHTML}</span>`
       ).join('') : 'Seleziona...';
       this.content.querySelectorAll('.x-remove').forEach(btn => {
         btn.onclick = (e) => {
           e.stopPropagation();
-          this.select(this.#getOption(this.selected_values[parseInt(btn.getAttribute('data-index'))].value));
+          const opt = this.selected_options[parseInt(btn.getAttribute('data-index'))];
+          this.select(this.#getOption(opt?.getAttribute('value') ?? opt?.textContent?.trim()));
         };
       });
     }
@@ -334,7 +330,7 @@ class XSelect extends HTMLElement {
 
     // emit new value
     if (opt && false !== settings.emit ) {
-      const value = this.selected_values.map(v => v.value).join(',');
+      const value = this.selected_options.map(opt => opt.getAttribute('value') ?? opt.textContent?.trim()).join(',');
       this.setAttribute('value', value);
       this.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: { value } }));
     }
@@ -401,6 +397,7 @@ document.head.insertAdjacentHTML('beforeend', /* html */`<style id ="x-select-cs
   .x-search-box input               { width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; outline: none; }
   x-option                          { padding: 8px 12px; display: flex; align-items: center; cursor: pointer; color: #333; }
   x-option[hidden]                  { display: none; }
+  x-option[disabled]                { pointer-events: none; opacity: .5; }
   x-option:hover                    { background: #f8f9fa; }
   x-option[selected]                { background: var(--skin-color, #007bff) !important; color: white !important; }
   .triangle                         { margin-left: 8px; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid #666; }
