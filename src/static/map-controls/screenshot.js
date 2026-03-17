@@ -184,7 +184,7 @@ template: /*html*/`
         multiple
         searchable
       >
-        <x-option v-for = "option in atlas_options" :key = "option" :value = "option">{{ option }}</x-option>
+        <x-option v-for = "option in atlas_options" :key = "option" :value = "option" :selected="atlas_values.includes(option)">{{ option }}</x-option>
       </x-select>
       <div v-if = "atlas_loading" style = "font-size: 0.85em; color: #999; margin-top: 4px;">{{ $t('Searching ...') }}</div>
     </template>
