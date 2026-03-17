@@ -827,19 +827,21 @@ template: /*html*/`
     },
 
     onAtlasChange(e) {
-      const selected = e.target.value;
-      if (selected) {
-        this.atlas_values = selected.split(',').filter(v => v);
-        // hide dropdown
-        e.target.close();
-        // auto reset (force new user input)
-        const reset = event => {
-          if (event.newState === 'open') {
-            this.atlas_options = [];
-            e.target.container.removeEventListener('toggle', reset);
-          }
-        };
-        e.target.container.addEventListener('toggle', reset);
+      const selected    = e.target.value;
+      this.atlas_values = (selected || '').split(',').filter(v => v);
+      // hide dropdown
+      e.target.close();
+      // auto reset (force new user input)
+      const reset = event => {
+        if (event.newState === 'open') {
+          this.atlas_options = [];
+          e.target.container.removeEventListener('toggle', reset);
+        }
+      };
+      e.target.container.addEventListener('toggle', reset);
+      // auto reset options (when no value)
+      if (!selected) {
+        this.atlas_options = [];
       }
     },
 
