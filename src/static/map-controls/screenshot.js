@@ -175,11 +175,12 @@ template: /*html*/`
     <template v-if = "!is_screenshot && atlas && has_autocomplete">
       <label  for = "print_atlas_autocomplete"><span>{{ atlas.field_name }}</span></label>
       <x-select
-        :key          = "template"
-        id            = "print_atlas_autocomplete"
-        :value        = "JSON.stringify(atlas_values)"
-        @change       = "onAtlasChange"
-        @search-input = "onAtlasSearch"
+        :key                = "template"
+        id                  = "print_atlas_autocomplete"
+        :value              = "JSON.stringify(atlas_values)"
+        @change             = "onAtlasChange"
+        @search-input       = "onAtlasSearch"
+        :search-placeholder = "$t('Please enter') + ' 1 ' + $t('or more characters')"
         multiple
         searchable
       >

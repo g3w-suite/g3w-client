@@ -74,7 +74,7 @@ class XSelect extends HTMLElement {
           <i class="triangle"></i>
         </div>
         <div class="x-options" popover="manual" role="listbox" ${ this.hasAttribute('multiple') ? 'aria-multiselectable="true"' : '' }>
-          ${ this.hasAttribute('searchable') || this.hasAttribute('multiple') ? `<input class="x-search-box" type="text" placeholder="${ g3w?.gettext('Search') ?? 'Search' }...">` : '' }
+          ${ this.hasAttribute('searchable') || this.hasAttribute('multiple') ? `<input class="x-search-box" type="text" placeholder="${ this.getAttribute('search-placeholder') ?? g3w?.gettext('Search') ?? 'Search' }...">` : '' }
         </div>
       `);
 
