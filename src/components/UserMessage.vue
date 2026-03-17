@@ -33,11 +33,12 @@
       </div>
       <div class = "usermessage-header-right">
         <button
-          v-if   = "closable"
-          title  = "close"
-          type   = "button"
-          @click = "closeUserMessage"
-          style  = "border: none;background: none;"
+          v-if           = "closable"
+          title          = "close"
+          type           = "button"
+          @click         = "closeUserMessage"
+          style          = "border: none;background: none;"
+          data-placement = "right"
         >
           <i aria-hidden = "true" class = "usermessage-header-right-item fas fa-times"></i>
         </button>
