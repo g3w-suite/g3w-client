@@ -305,7 +305,7 @@ class XSelect extends HTMLElement {
     // multi-select
     if (this.hasAttribute('multiple')) {
       if (opt) {
-        this.selected_options = opt.hasAttribute('selected') ? this.selected_options.filter(o => o !== opt) : this.selected_options.concat(opt);
+        this.selected_options = opt.hasAttribute('selected') ? this.selected_options.filter(o => (o.getAttribute('value') ?? o.textContent?.trim()) !== (opt.getAttribute('value') ?? opt.textContent?.trim())) : this.selected_options.concat(opt);
         opt.setAttribute('aria-selected', !opt.hasAttribute('selected'));
         opt.toggleAttribute('selected');
       }
