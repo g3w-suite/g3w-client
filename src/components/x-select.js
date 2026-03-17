@@ -24,7 +24,8 @@ class XSelect extends HTMLElement {
 
   constructor() {
     super();
-    this.selected_values = [];
+    this.selected_values  = [];
+    this.selected_options = [];
     this.activeOption = null;
   }
 
@@ -45,7 +46,7 @@ class XSelect extends HTMLElement {
   }
 
   #getOptions() {
-    return Array.from(this.querySelectorAll('x-option'));
+    return Array.from(new Set([...this.selected_options, ...Array.from(this.querySelectorAll('x-option'))]));
   }
 
   #getOption(val) {
@@ -188,10 +189,6 @@ class XSelect extends HTMLElement {
   #onSearchInput(e) {
     const value = e.target.value;
     this.#search(value);
-    // open dropdown
-    if (!this.isOpen) {
-      this.open();
-    }
     // emit custom "search-input" event (eg. for AJAX search)
     this.dispatchEvent(new CustomEvent('search-input', { 
       detail: { value },
@@ -299,7 +296,8 @@ class XSelect extends HTMLElement {
     if (!this.hasAttribute('multiple')) {
       if (opt) {
         this.container.querySelectorAll('x-option').forEach(o => { o.removeAttribute('selected'); o.setAttribute('aria-selected', 'false'); });
-        this.selected_values = [{ value: val, html: opt.innerHTML }];
+        this.selected_values  = [{ value: val, html: opt.innerHTML }];
+        this.selected_options = opt;
         opt.setAttribute('aria-selected', 'true');
         opt.setAttribute('selected', '');
       }
@@ -309,7 +307,8 @@ class XSelect extends HTMLElement {
     // multi-select
     if (this.hasAttribute('multiple')) {
       if (opt) {
-        this.selected_values = opt.hasAttribute('selected') ? this.selected_values.filter(v => v.value !== val) : this.selected_values.concat({ value: val, html: opt.innerHTML });
+        this.selected_values  = opt.hasAttribute('selected') ? this.selected_values.filter(v => v.value !== val) : this.selected_values.concat({ value: val, html: opt.innerHTML });
+        this.selected_options = opt.hasAttribute('selected') ? this.selected_options.filter(o => opt) : this.selected_options.concat(opt);
         opt.setAttribute('aria-selected', !opt.hasAttribute('selected'));
         opt.toggleAttribute('selected');
       }
