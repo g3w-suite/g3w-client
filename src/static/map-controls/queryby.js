@@ -102,7 +102,7 @@ export class QueryBy extends MapControl {
         title:     'Query area',
         type:      'tool',
         iconClass: 'info',
-        closable:  false,
+        closable:  true,
         hooks: {
           body: {
             data: () => ({
@@ -116,16 +116,6 @@ export class QueryBy extends MapControl {
             }),
             template: /* html */ `
               <div style="width: 100%;">
-                <!-- DOCS URL -->
-                <a
-                  :href           = "'https://g3w-suite.readthedocs.io/en/v3.9.x/g3wsuite_client.html#map-controls'"
-                  target          = "_blank"
-                  style           = "position: absolute;inset: 1em 1em auto auto;"
-                  data-i18n-title = "Docs"
-                  data-placement  = "bottom"
-                >
-                  <i aria-hidden = "true" class = "fa fa-external-link-alt"></i>
-                </a>
                 <!-- SPATIAL METHOD -->
                 <div style = "padding: 5px;">
                   <x-select :value="method" @change="method = $event.target.value">
