@@ -279,7 +279,7 @@ class XSelect extends HTMLElement {
   }
 
   #setActiveOption(option) {
-    this.activeOption?.setAttribute('aria-selected', this.activeOption.hasAttribute('selected'));
+    this.activeOption?.setAttribute('aria-selected', this.activeOption?.hasAttribute('selected'));
     this.activeOption = option;
     this.trigger.setAttribute('aria-activedescendant', option.id || (option.id = 'option-' + Math.random().toString(36).substr(2, 9)));
     option.setAttribute('aria-selected', 'true');
