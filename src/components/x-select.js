@@ -247,7 +247,7 @@ class XSelect extends HTMLElement {
   }
 
   #focus(direction) {
-    const options = Array.from(this.container.querySelectorAll('x-option:not([hidden]):not([disabled])'));
+    const options = Array.from(this.container.querySelectorAll('x-option:not([hidden], [disabled])'));
 
     if ('first' === direction) {
       if (options.length > 0) {
