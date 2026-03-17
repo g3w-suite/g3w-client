@@ -74,7 +74,7 @@ class XSelect extends HTMLElement {
           <i class="triangle"></i>
         </div>
         <div class="x-options-container" popover="manual" role="listbox" ${ this.hasAttribute('multiple') ? 'aria-multiselectable="true"' : '' }>
-          ${ this.hasAttribute('searchable') || this.hasAttribute('multiple') ? '<div class="x-search-box"><input type="text" placeholder="Search..."></div>' : '' }
+          ${ this.hasAttribute('searchable') || this.hasAttribute('multiple') ? `<div class="x-search-box"><input type="text" placeholder="${ g3w?.gettext('Search') ?? 'Search' }..."></div>` : '' }
           <div class="x-options-list"></div>
         </div>
       `);
@@ -301,7 +301,7 @@ class XSelect extends HTMLElement {
         opt.setAttribute('aria-selected', 'true');
         opt.setAttribute('selected', '');
       }
-      this.content.innerHTML = this.selected_options.length ? this.selected_options[0].innerHTML : 'Seleziona...';
+      this.content.innerHTML = this.selected_options.length ? this.selected_options[0].innerHTML : ((g3w?.gettext('Select') ?? 'Select') + '...');
     }
 
     // multi-select
@@ -313,7 +313,7 @@ class XSelect extends HTMLElement {
       }
       this.content.innerHTML = this.selected_options.length ? this.selected_options.map((opt, i) => 
         `<span class="x-selected-badge"><span class="x-remove" data-index="${i}">×</span>${opt.innerHTML}</span>`
-      ).join('') : 'Seleziona...';
+      ).join('') : ((g3w?.gettext('Select') ?? 'Select') + '...');
       this.content.querySelectorAll('.x-remove').forEach(btn => {
         btn.onclick = (e) => {
           e.stopPropagation();
