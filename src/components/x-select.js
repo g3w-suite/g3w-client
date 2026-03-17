@@ -73,20 +73,18 @@ class XSelect extends HTMLElement {
           <div class="x-selected-content"></div>
           <i class="triangle"></i>
         </div>
-        <div class="x-options-container" popover="manual" role="listbox" ${ this.hasAttribute('multiple') ? 'aria-multiselectable="true"' : '' }>
-          ${ this.hasAttribute('searchable') || this.hasAttribute('multiple') ? `<div class="x-search-box"><input type="text" placeholder="${ g3w?.gettext('Search') ?? 'Search' }..."></div>` : '' }
-          <div class="x-options-list"></div>
+        <div class="x-options" popover="manual" role="listbox" ${ this.hasAttribute('multiple') ? 'aria-multiselectable="true"' : '' }>
+          ${ this.hasAttribute('searchable') || this.hasAttribute('multiple') ? `<input class="x-search-box" type="text" placeholder="${ g3w?.gettext('Search') ?? 'Search' }...">` : '' }
         </div>
       `);
 
       this.trigger   = this.querySelector('.x-select-trigger');
       this.content   = this.querySelector('.x-selected-content');
-      this.container = this.querySelector('.x-options-container');
-      this.list      = this.querySelector('.x-options-list');
-      this.input     = this.querySelector('.x-search-box input');
+      this.container = this.querySelector('.x-options');
+      this.input     = this.querySelector('.x-search-box');
 
       Array.from(this.querySelectorAll(':scope > x-option')).forEach(opt => {
-        this.list.appendChild(opt);
+        this.container.appendChild(opt);
         opt.onclick = (e) => { e.stopPropagation(); this.select(opt); };
       });
 
@@ -124,7 +122,7 @@ class XSelect extends HTMLElement {
             proxy.style.display = null;
             // delegate click event
             proxy.onclick = (e) => { e.stopPropagation(); this.select(opt); };
-            this.list.appendChild(proxy);
+            this.container.appendChild(proxy);
           });
           // remove proxied node (dynamically removed by vue)
           mutation.removedNodes.forEach(opt => {
@@ -184,7 +182,7 @@ class XSelect extends HTMLElement {
       opt.setAttribute('value', value);
       opt.textContent = value;
       opt.onclick = (e) => { e.stopPropagation(); this.select(opt); };
-      this.list.appendChild(opt);
+      this.container.appendChild(opt);
     }
 
     // select the option
@@ -386,19 +384,18 @@ customElements.define('x-select', XSelect);
 // });
 
 document.head.insertAdjacentHTML('beforeend', /* html */`<style id ="x-select-css">
-  x-select                          { display: inline-block; position: relative; width:100%; font-family: inherit; }
-  .x-select-trigger                 { border: 1px solid #ccc; background: white; padding: 6px 12px; display: flex; align-items: center; min-height: 34px; cursor: pointer; box-sizing: border-box; }
-  .x-selected-content               { flex: 1; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; pointer-events: none; overflow: hidden; }
-  .x-selected-badge                 { display: inline-flex; align-items: center; background: var(--skin-color, #007bff); color: white; padding: 1px 10px; border-radius: 4px; pointer-events: auto; }
-  .x-selected-badge .x-remove       { margin-right: 5px; cursor: pointer; font-weight: bold; }
-  .x-options-container              { margin: 0; padding: 0; border: 1px solid #ccc; background: white; z-index: 9999; max-height: 300px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15); position: fixed; width: var(--select-width); display: none; }
-  .x-options-container:popover-open { display: block; }
-  .x-search-box                     { padding: 8px; border-bottom: 1px solid #eee; position: sticky; top: 0; background: white; z-index: 1; }
-  .x-search-box input               { width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; outline: none; }
-  x-option                          { padding: 8px 12px; display: flex; align-items: center; cursor: pointer; color: #333; }
-  x-option[hidden]                  { display: none; }
-  x-option[disabled]                { pointer-events: none; opacity: .5; }
-  x-option:hover                    { background: #f8f9fa; }
-  x-option[selected]                { background: var(--skin-color, #007bff) !important; color: white !important; }
-  .triangle                         { margin-left: 8px; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid #666; }
+  x-select                    { display: inline-block; position: relative; width:100%; font-family: inherit; }
+  .x-select-trigger           { border: 1px solid #ccc; background: white; padding: 6px 12px; display: flex; align-items: center; min-height: 34px; cursor: pointer; box-sizing: border-box; }
+  .x-selected-content         { flex: 1; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; pointer-events: none; overflow: hidden; }
+  .x-selected-badge           { display: inline-flex; align-items: center; background: var(--skin-color, #007bff); color: white; padding: 1px 10px; border-radius: 4px; pointer-events: auto; }
+  .x-selected-badge .x-remove { margin-right: 5px; cursor: pointer; font-weight: bold; }
+  .x-options                  { margin: 0; padding: 0; border: 1px solid #ccc; background: white; z-index: 9999; max-height: 300px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15); position: fixed; width: var(--select-width); display: none; }
+  .x-options:popover-open     { display: block; }
+  .x-search-box               { margin: 8px; box-shadow: 0 0 0 19px white; clip-path: inset(-8px -8px -8px -8px); /*! border-bottom: 1px solid #eee; */position: sticky;top: 8px;background: white;z-index: 1;padding: 6px;border: 1px solid #ddd;border-radius: 4px;box-sizing: border-box;outline: none;width: calc(100% - 16px); }
+  x-option                    { padding: 8px 12px; display: flex; align-items: center; cursor: pointer; color: #333; }
+  x-option[hidden]            { display: none; }
+  x-option[disabled]          { pointer-events: none; opacity: .5; }
+  x-option:hover              { background: #f8f9fa; }
+  x-option[selected]          { background: var(--skin-color, #007bff) !important; color: white !important; }
+  .triangle                   { margin-left: 8px; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid #666; }
 </style>`);
