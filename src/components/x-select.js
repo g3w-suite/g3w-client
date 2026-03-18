@@ -388,7 +388,7 @@ customElements.define('x-select', XSelect);
 
 document.head.insertAdjacentHTML('beforeend', /* html */`<style id ="x-select-css">
   x-select                    { display: inline-block; position: relative; width:100%; font-family: inherit; }
-  .x-select-trigger           { border: 1px solid #ccc; background: white; padding: 6px 12px; display: flex; align-items: center; min-height: 34px; cursor: pointer; box-sizing: border-box; }
+  .x-select-trigger           { border: 1px solid #ccc; background: white; padding: 6px 6px 6px 12px; display: flex; align-items: center; min-height: 34px; cursor: pointer; box-sizing: border-box; }
   .x-selected-content         { flex: 1; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; pointer-events: none; overflow: hidden; }
   .x-selected-badge           { display: inline-flex; align-items: center; background: var(--skin-color, #007bff); color: white; padding: 1px 10px; border-radius: 4px; pointer-events: auto; }
   .x-selected-badge .x-remove { margin-right: 5px; cursor: pointer; font-weight: bold; }
