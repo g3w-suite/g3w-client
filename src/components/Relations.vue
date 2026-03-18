@@ -10,9 +10,8 @@
     class = "layer-relations"
   >
     <div class = "header skin-background-color lighten">
-      <span style = "font-size: 1.1em;">{{ $t('List of relations of feature') }}</span>
+      <span style = "font-size: 1.1em;">{{ $t('List of relations of feature') }} <b>{{ parent_layer.getName() }}</b></span>
       <ul style = "padding: 0 0 0 25px; list-style: square;">
-        <li style="list-style-type: none; margin: 5px 0 5px -25px; font-size: 1.1em;"><b>{{ parent_layer.getName() }}</b></li>
         <li v-for = "({ label, value }) in feature_info()"><b>{{ label }}</b>: {{ value }}</li>
       </ul>
     </div>
@@ -36,9 +35,8 @@
   >
 
     <div class = "header skin-background-color lighten">
-      <span style = "font-size: 1.1em;">{{ $t('List of relations of feature') }}</span>
+      <span style = "font-size: 1.1em;"><b>{{ relation.name }}</b> {{ $t('associated with the element') }} <b>{{ parent_layer.getName() }}</b></span>
       <ul style = "padding: 0 0 0 25px; list-style: square;">
-        <li style="list-style-type: none; margin: 5px 0 5px -25px; font-size: 1.1em;"><b>{{ parent_layer.getName() }}</b></li>
         <li v-for = "({ label, value }) in feature_info()"><b>{{ label }}</b>: {{ value }}</li>
       </ul>
     </div>
