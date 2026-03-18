@@ -67,10 +67,7 @@ export default {
   'Edit Layer': 'Editar Camada',
   'Previous': 'Anterior',
   'Next': 'Próximo',
-  'Show _MENU_ values per page': 'Mostrar valores _MENU_ por página',
-  '_TOTAL_ entries': '_TOTAL_ entradas',
   'No matching records found': 'Não foram encontrados registos correspondentes',
-  '(filtered from _MAX_ total records)': '(filtrados de _MAX_ registos totais)',
   'No data': 'Sem dados',
   /** @since 3.11.0 */
   label: 'Etiqueta',

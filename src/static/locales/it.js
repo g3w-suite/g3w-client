@@ -78,13 +78,10 @@ export default {
   'Edit Layer': 'Modifica dati',
   'Previous': 'Precedente',
   'Next': 'Successivo',
-  'Show _MENU_ values per page': 'Mostra _MENU_ valori per pagina',
-  '_TOTAL_ entries': '_TOTAL_ elementi',
   'entries': 'elementi',
   ' of ': ' di ',
   'values per page': 'valori per pagina',
   'No matching records found': 'Nessun risultato trovato',
-  '(filtered from _MAX_ total records)': '(Filtrati da _MAX_ total righe)',
   /** @since 3.11.0 */
   label: 'Etichetta',
   /** @since 3.11.0 */

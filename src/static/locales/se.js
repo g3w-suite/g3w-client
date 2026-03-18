@@ -55,8 +55,6 @@ export default {
   'Opacity': 'Opacitet',
   'Previous': 'Föregående',
   'Next': 'Nästa',
-  'Show _MENU_ values per page': 'Visa _MENU_ värden per sida',
-  '_TOTAL_ entries': '_TOTAL_ resultat',
   'No matching records found': 'Inga motsvarande poster hittades',
   'No data': 'Inga uppgifter',
   'Connection error': 'Anslutningsfel',

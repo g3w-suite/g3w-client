@@ -67,10 +67,7 @@ export default {
   'Edit Layer': 'Редагувати шар',
   'Previous': 'Попередній',
   'Next': 'Наступний',
-  'Show _MENU_ values per page': 'Показувати _MENU_ значень на сторінці',
-  '_TOTAL_ entries': '_TOTAL_ записів',
   'No matching records found': 'Нічого не знайдено',
-  '(filtered from _MAX_ total records)': '(відфільтровано з _MAX_ записів)',
   /** @since 3.11.0 */
   label: 'Мітка',
   /** @since 3.11.0 */

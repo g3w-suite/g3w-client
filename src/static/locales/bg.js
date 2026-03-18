@@ -75,10 +75,7 @@ export default {
   'Edit Layer': 'Редактирай слой',
   'Previous': 'Предишен',
   'Next': 'Следващ',
-  'Show _MENU_ values per page': 'Покажи _MENU_ стойности на страница',
-  '_TOTAL_ entries': '_TOTAL_ записа',
   'No matching records found': 'Няма съвпадащи записи',
-  '(filtered from _MAX_ total records)': '(филтрирано от _MAX_ общи записа)',
   /** @since 3.11.0 */
   label: 'Етикет',
   /** @since 3.11.0 */
