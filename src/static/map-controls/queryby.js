@@ -143,7 +143,7 @@ export class QueryBy extends MapControl {
                 </div>
                 <!-- RADIUS TYPE IN METERS-->
                 <div v-if = "'querybycircle' === type" style = "padding: 5px;">
-                  <label for = "g3w_querybycircle_radius" v-t:pre = "'mapcontrols.querybycircle.label'">[m]</label>
+                  <label for = "g3w_querybycircle_radius">{{ $t('Radius') }} [m]</label>
                   <div style = "display: flex">
                     <input
                       id      = "g3w_querybycircle_radius"
@@ -164,7 +164,7 @@ export class QueryBy extends MapControl {
                 </div>
                 <!-- SELECTED LAYER -->
                 <div style = "padding: 5px;">
-                  <label v-t = "'mapcontrols.queryby.layer'"></label>
+                  <label>{{ $t('Selected layer:') }}</label>
                   <x-select 
                     v-if    ="!reloading" 
                     :value  = "selectedLayer" 
@@ -180,7 +180,7 @@ export class QueryBy extends MapControl {
                   </x-select>
                 </div>
                 <!-- HELP TEXT -->
-                <div ref = "help" v-t = "help"></div>
+                <div :key = "type" v-t = "help"></div>
                 <!-- CLEAR SELECTION -->
                 <button 
                   v-if        = "!['__ALL__', '__NEW__'].includes(selectedLayer)" 
