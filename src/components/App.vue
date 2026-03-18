@@ -531,7 +531,6 @@
           text-align: center;
           color: #fff;
           border-top: 2px solid var(--skin-color);
-          margin: 0 3px;
           justify-content: space-around;
         "
       >
