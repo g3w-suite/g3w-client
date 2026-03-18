@@ -22,7 +22,7 @@ g3w.app.once('initconfig', () => {
     {
       "i18n":   true,
       "icon":   "fas fa-plus",
-      "title":  "mapcontrols.add_layer_control.header",
+      "title":  "Add Layer",
       "type":   "modal",
       "target": "#modal-addlayer",
     },

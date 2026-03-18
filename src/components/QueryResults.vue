@@ -522,7 +522,7 @@
       <label style="margin-top: 5px;">{{ $t('Filter by:') }}</label>
       <select style="flex: 1;">
         <option v-for = "layer in queryableLayers" :selected = "layer === selectedLayer">{{ layer.getName() }}</option>
-        <option :selected = "!selectedLayer">{{ $t('mapcontrols.queryby.all') }}</option>
+        <option :selected = "!selectedLayer">{{ $t('__ALL__') }}</option>
       </select>
     </div>
 
