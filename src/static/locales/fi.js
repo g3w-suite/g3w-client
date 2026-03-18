@@ -146,7 +146,6 @@ export default {
   'Search': 'Osoite ...',
   'No editable point layers found on this project': 'Tästä projektista ei löytynyt muokattavia pistetasoja',
   'No results': 'Ei tuloksia',
-  'Add Layer': 'Lisää taso',
   'Projection': 'Valitse tason projektio',
   'field shown on map' : 'Select Field to show on map',
   'Delimiter': 'Select delimiter',

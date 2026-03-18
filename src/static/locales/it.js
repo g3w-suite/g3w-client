@@ -242,7 +242,6 @@ export default {
   'Select': 'Seleziona',
   'No editable point layers found on this project': 'Nessun layer di punti modificabile trovato in questo progetto',
   'No results': 'Nessun risultato',
-  'Add Layer': 'Aggiungi livello',
   'Projection': 'Sistema di riferimento',
   'field shown on map': 'valore mostrato sulla mappa',
   'Delimiter': 'Separatore',

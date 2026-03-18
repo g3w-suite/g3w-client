@@ -149,7 +149,6 @@ export default {
   'Search': 'Adres ...',
   'No editable point layers found on this project': 'Brak edytowalnych warstw punktowych w tym projekcie',
   'No results': 'Brak wyników',
-  'Add Layer': 'Dodaj warstwę',
   'Projection': 'Wybierz projekcję warstwy',
   'field shown on map': 'Wybierz pole, aby pokazać na mapie',
   'Delimiter': 'Wybierz Selimiter',

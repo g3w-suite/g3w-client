@@ -159,7 +159,6 @@ export default {
   'Search': 'Saisir une adresse...',
   'No editable point layers found on this project': 'Aucune couche de points modifiable trouvée sur ce projet',
   'No results': 'Aucun résultat',
-  'Add Layer': 'Ajouter une couche',
   'Projection': 'Sélectionner le système de projection',
   'field shown on map': 'Sélectionner le champ à afficher sur la carte',
   'Delimiter': 'Sélectionner le séparateur',

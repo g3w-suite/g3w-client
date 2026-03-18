@@ -145,7 +145,6 @@ export default {
   'Search': 'Adress ...',
   'No editable point layers found on this project': 'Inga redigerbara punktlager hittades i det här projektet',
   'No results': 'Inga resultat',
-  'Add Layer': 'Lägg till nivå',
   'Projection': 'Välj projektion för nivån',
   'field shown on map': 'Select Field to show on map',
   'Delimiter': 'Select delimiter',

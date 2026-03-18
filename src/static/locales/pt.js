@@ -195,7 +195,6 @@ export default {
   'Search': 'Endereço ...',
   'No editable point layers found on this project': 'Sem camadas de pontos editáveis no projeto',
   'No results': 'Sem resultados',
-  'Add Layer': 'Adicionar camada',
   'Projection': 'Projeção',
   'field shown on map': 'campo a mostrar no mapa',
   'Delimiter': 'Delimitador',

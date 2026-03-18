@@ -157,7 +157,6 @@ export default {
   'Search': 'Adresa ...',
   'No editable point layers found on this project': 'Nu s-au găsit straturi de puncte editabile în acest proiect',
   'No results': 'Niciun rezultat',
-  'Add Layer': 'Adăugare Strat',
   'Projection': 'Selectează proiecția strat',
   'field shown on map': 'Selectează câmpul de arătat pe hartă',
   'Delimiter': 'Selectează delimitatorul',

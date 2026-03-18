@@ -151,7 +151,6 @@ export default {
   'Search': 'Addresse ...',
   'No editable point layers found on this project': 'Für dieses Projekt wurden keine bearbeitbaren Punktebenen gefunden',
   'No results': 'Keine Ergebnisse',
-  'Add Layer': 'Layer hinzufügen',
   'Projection': 'Layer Projektion auswählen',
   'field shown on map': 'Feld auswählen, das auf der Karte angezeigt werden soll',
   'Delimiter': 'Begrenzer auswählen',

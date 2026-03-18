@@ -193,7 +193,6 @@ export default {
   'Search': 'Адреса…',
   'No editable point layers found on this project': 'У проекті відсутні точкові шари, які можна редагувати',
   'No results': 'Немає результатів',
-  'Add Layer': 'Додати шар',
   'Projection': 'Система координат',
   'field shown on map': 'значення для відображення на мапі',
   'Delimiter': 'Роздільник',
