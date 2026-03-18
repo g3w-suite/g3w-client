@@ -232,7 +232,6 @@ template: /*html*/`
         border: 1px solid;
         padding: 4.9px 8.75px 8.75px 10.5px;
         border-radius: 3px;
-        background-color: hsl(from var(--bgcolor) h s calc(l + 8));
         user-select:none
       "
     >
@@ -263,9 +262,9 @@ template: /*html*/`
           "
         >
           <span style = "text-overflow: ellipsis;overflow: hidden;">{{ $t('Exportable layers are defined by the administrator') }}</span>
-          <i class = "far fa-eye"></i>
+          <i aria-hidden = "true" class = "far fa-eye"></i>
         </summary>
-        <hr style = "margin: 10px 0;border-style: dotted;color:black;">
+        <hr style = "margin: 10px 0;border-style: dotted;border-color:currentColor;">
         <div style = "white-space: wrap; line-height: 25px;" v-t = "'print_help'"></div>
       </details>
     </fieldset>
