@@ -11,7 +11,8 @@
   >
     <div class = "header skin-background-color lighten">
       <span style = "font-size: 1.1em;">{{ $t('List of relations of feature') }}</span>
-      <ul style = "padding: 1em 0 0 15px; list-style: square;">
+      <ul style = "padding: 0 0 0 25px; list-style: square;">
+        <li style="list-style-type: none; margin: 5px 0 5px -25px; font-size: 1.1em;"><b>{{ parent_layer.getName() }}</b></li>
         <li v-for = "({ label, value }) in feature_info()"><b>{{ label }}</b>: {{ value }}</li>
       </ul>
     </div>
@@ -36,7 +37,8 @@
 
     <div class = "header skin-background-color lighten">
       <span style = "font-size: 1.1em;">{{ $t('List of relations of feature') }}</span>
-      <ul style = "padding: 1em 0 0 15px; list-style: square;">
+      <ul style = "padding: 0 0 0 25px; list-style: square;">
+        <li style="list-style-type: none; margin: 5px 0 5px -25px; font-size: 1.1em;"><b>{{ parent_layer.getName() }}</b></li>
         <li v-for = "({ label, value }) in feature_info()"><b>{{ label }}</b>: {{ value }}</li>
       </ul>
     </div>
@@ -378,6 +380,13 @@
         return !!this.charts.find(id => this.relation?.referencingLayer === id);
       },
 
+      /**
+       * @since 4.1.0
+       */
+      parent_layer() {
+        return getCatalogLayerById(this.$options.layerId);
+      }
+
     },
 
     watch: {
@@ -412,7 +421,7 @@
        */
       feature_info() {
         const attributes = Object.entries(this.feature.attributes)
-        return getCatalogLayerById(this.$options.layerId)
+        return this.parent_layer
           .getFields()
           .map(f => ({ label: f.label, value: attributes.find(([ key ]) => f.name === key)?.[1] }))
           .filter(({ value }) => (![undefined, null, ''].includes(value) && !`${value}`.includes('/')))

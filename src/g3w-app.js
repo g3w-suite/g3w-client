@@ -3161,7 +3161,7 @@ export default new (class GUI extends Emitter {
       }),
       perc:        isMobile.any ? 100           : undefined,
       title:       relation     ? relation.name : getCatalogLayerById(layerId).getTitle(),
-      post_title:  relation     ? ''            : 'relations',
+      // post_title:  relation     ? ''            : 'relations',
       text:        relation     ? true          : undefined,
       backonclose: relation     ? undefined     : true,
     });
