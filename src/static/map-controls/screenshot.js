@@ -54,13 +54,13 @@ const state = {
   screenshot_type: screenshot_types[0],
   print_extent:    null,
   resolutions:     {},
-  moveKey:      null,
+  moveKey:         null,
 };
 
 
 const vueComp = ({
   template: /*html*/`
-    <div class = "print-modal">
+    <div class = "print-modal" v-disabled = "loading">
       <div v-show = "loading" class = "bar-loader"></div>
 
       <form
