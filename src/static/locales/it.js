@@ -295,7 +295,6 @@ export default {
   'mapcontrols.querybypolygon.download.choiches.feature_polygon.label': 'Features+Poligono Interrogazione',
   'mapcontrols.querybypolygon.tooltip': 'Interroga per poligono',
   'mapcontrols.querybypolygon.no_geometry': 'Non contiene la geometria nella risposta',
-
   'Select a (visible) layer.': 'Seleziona un livello (visibile).',
   'Click on a geometry within map.': 'Clicca su un elemento geometrico all’interno della mappa.',
   'Click on map to add a new vertex': 'Clicca sulla mappa per aggiungere un nuovo vertice',
@@ -303,7 +302,6 @@ export default {
   'Drag the mouse to draw a rectangle and query layers': 'Trascina il mouse per disegnare un rettangolo ed interrogare i livelli',
   'Click on map to draw circle': 'Clicca sulla mappa per disegnare il cerchio',
   'Drag the mouse to draw a polygon and query layers': 'Trascina il mouse per disegnare un poligono ed interrogare i livelli',
-
   'mapcontrols.querybydrawpolygon.tooltip': 'Disegna un poligono per interrogare',
   'mapcontrols.querybbox.tooltip': 'Interroga per BBOX',
   'mapcontrols.querybbox.nolayers_visible': 'Nessun layer interrogabile è visibile. Assicurarsi che almeno un layer wfs sia visibile per eseguire l’interrogazione',
