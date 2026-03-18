@@ -119,9 +119,7 @@ export class QueryBy extends MapControl {
                 <!-- SPATIAL METHOD -->
                 <div style = "padding: 5px;">
                   <x-select :value="method" @change="method = $event.target.value">
-                    <x-option v-for="_method in methods" :key="_method" :value="_method">
-                    {{ $t('mapcontrols.queryby.methods.' + _method) }}
-                    </x-option>
+                    <x-option v-for="_method in methods" :key="_method" :value="_method">{{ $t(_method) }}</x-option>
                   </x-select>
                 </div>
                 <!-- QUERY TYPE -->
@@ -137,7 +135,15 @@ export class QueryBy extends MapControl {
                       })[_type]"
                     ></i>
                     &nbsp;&nbsp;
-                    {{ $t('mapcontrols.queryby.' + _type + '.tooltip') }}
+                    {{
+                      $t(({
+                        'querybbox':          'draw a rectangle',
+                        'querybycircle':      'draw a circle',
+                        'querybydrawpolygon': 'draw a polygon',
+                        'querybypolygon':     'select a polygon',
+                        'querybyfreehand':    'freehand',
+                      })[_type])
+                    }}
                     </x-option>
                   </x-select>
                 </div>
