@@ -298,7 +298,7 @@
     </li>
 
     <li v-if = "'map' === context"                                      @click = "copyCoords"><i class = "fas fa-map-pin"></i>{{ map_coords.map(c => c.toFixed(2)).join(', ') }}</li>
-    <li v-if = "'map' === context"                                      @click = "queryCoords"><i class = "far fa-question-circle"></i>{{ $t("What's here?") }}</li>
+    <li v-if = "'map' === context"                                      @click = "queryCoords"><i class = "far fa-question-circle"></i>{{ $t("What’s here?") }}</li>
     <li v-if = "'map' === context"                                      @click = "zoomIn"><i class = "fas fa-search-plus"></i>{{ $t('Zoom in') }}</li>
     <li v-if = "'map' === context"                                      @click = "zoomOut"><i class = "fas fa-search-minus"></i>{{ $t('Zoom out') }}</li>
     <li v-if = "'map' === context"                                      @click = "zoomHome"><i class = "fas fa-home"></i>{{ $t('Fit map extent') }}</li>
