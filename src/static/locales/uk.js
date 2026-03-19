@@ -16,13 +16,11 @@ export default {
   search: 'Пошук',
   no_results: 'Нічого не знайдено',
   print: 'Друк',
-  print_help: `<p>Якщо у файлі відсутні деякі шари:</p>
-  <ol style='padding-left: 25px'>
-    <li>спробуйте обрати інший шаблон</li>
-    <li>спробуйте змінитиіть масштаб</li>
-    <li>перевірте джерела даних (наприклад, зовнішній WMS-сервер)</li>
-    <li>переконайтеся, що шар дійсно вибрано у списку шарів</li>
-  </ol>`,
+  'If you don’t see some layer in your print file:': 'Якщо у файлі відсутні деякі шари:',
+  'try again by selecting a different template': 'спробуйте обрати інший шаблон',
+  'try changing the zoom level': 'спробуйте змінитиіть масштаб',
+  'check the origin (eg. third-party WMS server)': 'перевірте джерела даних (наприклад, зовнішній WMS-сервер)',
+  'make sure the item is actually checked within layers list': 'переконайтеся, що шар дійсно вибрано у списку шарів',
   'Create Print': 'Створити Друк',
   dosearch: 'Пошук',
   catalog: 'Мапа',

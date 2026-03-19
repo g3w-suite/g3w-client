@@ -20,13 +20,11 @@ export default {
   help: 'Aiuto',
   no_results: 'Nessun risultato trovato',
   print: 'Stampa',
-  print_help: `<p>Se non vedi qualche livello nel file di stampa:</p>
-  <ol style='padding-left: 25px'>
-    <li>prova ancora usando un template diverso</li>
-    <li>prova a cambiare lo zoom della mappa</li>
-    <li>controlla l'origine (es. server WMS esterno)</li>
-    <li>verifica che la sua voce sia effettivamente spuntata nella lista dei livelli</li>
-  </ol>`,
+  'If you don’t see some layer in your print file:': 'Se non vedi qualche livello nel file di stampa:',
+  'try again by selecting a different template': 'prova ancora usando un template diverso',
+  'try changing the zoom level': 'prova a cambiare lo zoom della mappa',
+  'check the origin (eg. third-party WMS server)': 'controlla l’origine (es. server WMS esterno)',
+  'make sure the item is actually checked within layers list': 'verifica che la sua voce sia effettivamente spuntata nella lista dei livelli',
   'Create Print': 'Crea Stampa',
   dosearch: 'Cerca',
   catalog: 'Livelli',

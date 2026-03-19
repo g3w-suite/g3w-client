@@ -19,13 +19,11 @@ export default {
   alerts: 'Известия',
   no_results: 'Няма намерени резултати',
   print: 'Печат',
-  print_help: `<p>Ако не виждате някои слоеве във файла за печат:</p>
-  <ol style='padding-left: 25px'>
-    <li>опитайте с друг шаблон</li>
-    <li>променете мащаба на картата</li>
-    <li>проверете източника (например външен WMS сървър)</li>
-    <li>проверете дали е отметнат в списъка със слоеве</li>
-  </ol>`,
+  'If you don’t see some layer in your print file:': 'Ако не виждате някои слоеве във файла за печат:',
+  'try again by selecting a different template': 'опитайте с друг шаблон',
+  'try changing the zoom level': 'променете мащаба на картата',
+  'check the origin (eg. third-party WMS server)': 'проверете източника (например външен WMS сървър)',
+  'make sure the item is actually checked within layers list': 'проверете дали е отметнат в списъка със слоеве',
   'Create Print': 'Създай печат',
   dosearch: 'Търси',
   catalog: 'Карта',

@@ -12,13 +12,6 @@ export default {
   alerts: "Alerts",
   no_results: "No results found",
   print: "Print",
-  print_help: `<p>If you don't see some layer in your print file:</p>
-  <ol style="padding-left: 25px">
-    <li>try again by selecting a different template</li>
-    <li>try changing the zoom level</li>
-    <li>check the origin (eg. third-party WMS server)</li>
-    <li>make sure the item is actually checked within layers list</li>
-  </ol>`,
   dosearch: "Search",
   catalog: "Layers",
   data: "Data",

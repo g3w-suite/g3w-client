@@ -16,13 +16,11 @@ export default {
   search: 'Pesquisar',
   no_results: 'Não foram encontrados resultados',
   print: 'Imprimir',
-  print_help: `<p>Se não visualizar alguma camada no ficheiro de impressão</p>
-  <ol style='padding-left: 25px'>
-    <li>tente novamente selecionando outro modelo</li>
-    <li>tente mudar o nível de zoom</li>
-    <li>verifique a origem (ex. Servidor WMS externos)</li>
-    <li>garanta que a camada está ativada na lista de camadas.</li>
-  </ol>`,
+  'If you don’t see some layer in your print file:': 'Se não visualizar alguma camada no ficheiro de impressão',
+  'try again by selecting a different template': 'tente novamente selecionando outro modelo',
+  'try changing the zoom level': 'tente mudar o nível de zoom',
+  'check the origin (eg. third-party WMS server)': 'verifique a origem (ex. Servidor WMS externos)',
+  'make sure the item is actually checked within layers list': 'garanta que a camada está ativada na lista de camadas.',
   'Create Print': 'Criar impressão',
   dosearch: 'Pesquisar',
   catalog: 'Mapa',

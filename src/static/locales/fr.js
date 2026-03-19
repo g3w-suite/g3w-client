@@ -15,13 +15,11 @@ export default {
   search: 'Rechercher',
   no_results: 'Aucun résultat trouvé',
   print: 'Imprimer',
-  print_help: `<p>Si une couche n'apparaît pas dans l'impression :</p>
-  <ol style='padding-left: 25px'>
-    <li>retestez l'opération avec un autre gabarit d'impression</li>
-    <li>essayez de modifier le niveau de zoom</li>
-    <li>vérifiez l'origine de la source de la couche (ex : serveur WMS tiers)/li>
-    <li>assurez-vous que la couche est bien sélectionnée parmi la liste</li>
-  </ol>`,
+  'If you don’t see some layer in your print file:': 'Si une couche n’apparaît pas dans l’impression:',
+  'try again by selecting a different template': 'retestez l’opération avec un autre gabarit d’impression',
+  'try changing the zoom level': 'essayez de modifier le niveau de zoom',
+  'check the origin (eg. third-party WMS server)': 'vérifiez l’origine de la source de la couche (ex : serveur WMS tiers)',
+  'make sure the item is actually checked within layers list': 'assurez-vous que la couche est bien sélectionnée parmi la liste',
   'Create Print': 'Générer l’impression',
   dosearch: 'Recherche',
   catalog: 'Carte',
