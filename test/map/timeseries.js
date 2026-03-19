@@ -45,20 +45,30 @@ console.log(
 
   // wait for `window.g3w`
   await page.waitForFunction(() => window.g3w, 15000);
-  const g3w = await page.evaluate(() => window.g3w);
-
-  // ASSERT: g3w.version === process.env.g3w_client_rev
-  if (g3w.version.split('-')[0] !== packageJSON.version.split('-')[0]) {
-    errors.push('invalid version', g3w.version, packageJSON.version);
+  
+  const version = await page.evaluate(() => window.g3w?.version);
+  if (!version || version.split('-')[0] !== packageJSON.version.split('-')[0]) {
+    errors.push(`Version mismatch: Remote ${version} vs Local ${packageJSON.version}`);
   }
 
-  // wait for all plugins loaded
-  await page.waitForFunction(() => window.g3w.app.isready && 0 ===  window.g3w.state.plugins.length, { timeout: 30000 });    
-  const qtimeseries = await page.evaluate(() => window.g3w.app.getPlugin('qtimeseries'));
+  // 2. Aspetta che l'app sia pronta e i plugin caricati
+  // Uso un locator o una funzione che restituisce solo un booleano (sicuro)
+  await page.waitForFunction(() => {
+    return window.g3w?.app?.isready && window.g3w?.state?.plugins?.length === 0;
+  }, { timeout: 30000 }).catch(() => errors.push("Timeout waiting for g3w ready state"));
 
-  // ASSERT: qtimeseries plugin is loaded
-  if (!qtimeseries) {
-    errors.push("g3w.app.getPlugin('qtimeseries') is UNDEFINED");
+  // 3. Controlla il plugin SENZA scaricare l'oggetto plugin
+  const isPluginLoaded = await page.evaluate(() => {
+    try {
+      const plugin = window.g3w.app.getPlugin('qtimeseries');
+      return !!plugin; // Restituisce solo true/false, non l'oggetto!
+    } catch (e) {
+      return false;
+    }
+  });
+
+  if (!isPluginLoaded) {
+    errors.push("Plugin 'qtimeseries' is UNDEFINED or not loaded correctly");
   }
 
   // dump errors
