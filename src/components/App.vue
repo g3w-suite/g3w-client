@@ -1258,6 +1258,11 @@ export default {
      * @since 3.11.0
      */
     toggleSidebarItem(e) {
+      // skip toggling element
+      if ('g3w-menu' === e.target.id) {
+        return;
+      }
+
       const mini      = document.body.classList.contains('sidebar-mini');
       const collapsed = document.body.classList.contains('sidebar-collapse');
 
