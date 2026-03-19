@@ -54,19 +54,6 @@ console.log(
 
   // wait for all plugins loaded
   await page.waitForFunction(() => window.g3w.app.isready && 0 ===  window.g3w.state.plugins.length, { timeout: 30000 });    
-
-  // DEBUG
-  const debug = await page.evaluate(() => ({
-    hasG3w:      !!window.g3w,
-    hasState:    !!window.g3w.state,
-    pluginsLeft: window.g3w.state.plugins,
-    plugins:     Object.keys(window.initConfig.plugins),
-    user:        window.initConfig.user,
-    isAppReady:  window.g3w.app.isready,
-    editing:     window.g3w.app.getPlugin('editing') || 'UNDEFINED'
-  })).catch(() => 'Could not get debug info');
-  errors.push(`DEBUG: ${JSON.stringify(debug)}`);
-
   const editing = await page.evaluate(() => window.g3w.app.getPlugin('editing'));
 
   // ASSERT: editing plugin is loaded
