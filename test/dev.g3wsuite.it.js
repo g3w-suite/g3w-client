@@ -6,3 +6,4 @@
 require('./map/demo-311');
 require('./map/expression');
 require('./map/statistic');
+require('./map/timeseries');
