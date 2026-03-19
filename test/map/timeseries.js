@@ -46,7 +46,7 @@ console.log(
   // wait for `window.g3w`
   await page.waitForFunction(() => window.g3w, 15000);
 
-  //
+  // 1. Get ONLY the version, not the entire object!
   const version = await page.evaluate(() => window.g3w?.version);
   if (!version || version.split('-')[0] !== packageJSON.version.split('-')[0]) {
     errors.push(`Version mismatch: Remote ${version} vs Local ${packageJSON.version}`);
