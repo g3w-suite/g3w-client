@@ -541,11 +541,24 @@
                     type: `${FieldsService.getType(c)}`
                   }
                 })),
-                form_structure: this.form_structure,
+                form_structure:    this.form_structure,
+                feature_info:      this.feature_info(),
+                relation_name:     this.relation.name,
+                parent_layer_name: this.parent_layer.getName(),
+                featureId:         this.featureId,
               }),
               template: /* html */`
                 <div class = "queryresults-wrapper">
                   <div class = "queryresults-container">
+                    <div class = "header skin-background-color lighten" style="margin: 5px 0 10px 0; padding: 5px;">
+                      <span style = "font-size: 1.1em;"><b>{{ relation_name }}</b> {{ $t('associated with the element') }} <b>{{ parent_layer_name }}</b></span>
+                      <ul style = "padding: 0 0 0 25px; list-style: square;">
+                        <li v-for = "({ label, value }) in feature_info"><b>{{ label }}</b>: {{ value }}</li>
+                      </ul>
+                    </div>
+                    <div class = "g3w-long-text" style="font-size: 1.3em;padding: 8px 3px;">
+                      <b class = "relation-tile"> {{ relation_name }} ({{ featureId }})</b>
+                    </div>
                     <table ref = "table" class="table">
                       <tbody>
                         <tr class="featurebox-body">
