@@ -60,6 +60,7 @@ console.log(
     hasG3w:      !!window.g3w,
     hasState:    !!window.g3w.state,
     pluginsLeft: window.g3w.state.plugins,
+    plugins:     window.initConfig.plugins,
     isAppReady:  window.g3w.app.isready,
     editing:     window.g3w.app.getPlugin('editing')
   })).catch(() => 'Could not get debug info');
