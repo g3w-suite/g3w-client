@@ -167,7 +167,7 @@ Vue.component('datetime', {
  * @deprecated global `<range>` component
  */
 Vue.component('range', {
-  template: /* html */`<template>
+  template: /* html */`
     <div>
       <section style = "display: flex; justify-content: space-between; font-weight: bold;">
         <section style = "align-self: flex-end">
