@@ -45,23 +45,23 @@ console.log(
 
   // wait for `window.g3w`
   await page.waitForFunction(() => window.g3w, 15000);
-  
+
+  //
   const version = await page.evaluate(() => window.g3w?.version);
   if (!version || version.split('-')[0] !== packageJSON.version.split('-')[0]) {
     errors.push(`Version mismatch: Remote ${version} vs Local ${packageJSON.version}`);
   }
 
-  // 2. Aspetta che l'app sia pronta e i plugin caricati
-  // Uso un locator o una funzione che restituisce solo un booleano (sicuro)
+  // 2. Wait for the app to be ready and plugins to be loaded
+  // Using a locator or a function that returns only a boolean (safe approach)
   await page.waitForFunction(() => {
     return window.g3w?.app?.isready && window.g3w?.state?.plugins?.length === 0;
   }, { timeout: 30000 }).catch(() => errors.push("Timeout waiting for g3w ready state"));
 
-  // 3. Controlla il plugin SENZA scaricare l'oggetto plugin
+  /// 3. Check for the plugin WITHOUT downloading the plugin object
   const isPluginLoaded = await page.evaluate(() => {
     try {
-      const plugin = window.g3w.app.getPlugin('qtimeseries');
-      return !!plugin; // Restituisce solo true/false, non l'oggetto!
+      return !!window.g3w.app.getPlugin('qtimeseries');  // Returns only true/false, not the actual object!
     } catch (e) {
       return false;
     }
