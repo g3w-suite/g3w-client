@@ -545,7 +545,6 @@
                 feature_info:      this.feature_info(),
                 relation_name:     this.relation.name,
                 parent_layer_name: this.parent_layer.getName(),
-                featureId:         this.featureId,
               }),
               template: /* html */`
                 <div class = "queryresults-wrapper">
@@ -557,7 +556,7 @@
                       </ul>
                     </div>
                     <div class = "g3w-long-text" style="font-size: 1.3em;padding: 8px 3px;">
-                      <b class = "relation-tile"> {{ relation_name }} ({{ featureId }})</b>
+                      <b class = "relation-tile"> {{ relation_name }} ({{ feature.id }})</b>
                     </div>
                     <table ref = "table" class="table">
                       <tbody>
@@ -582,7 +581,7 @@
               }
             }))
           }),
-          title:      this.featureId,
+          title:      this.table.features[i].id,
           text:       true,
           push:       true,
           showgoback: true,
