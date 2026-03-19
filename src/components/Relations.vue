@@ -775,10 +775,8 @@
 
 <style scoped>
   .grid-item {
-    min-width: 0;
     min-height: 80px;
     border: 2px solid;
-    cursor:pointer;
     border-radius: 4px;
     background-color: #fff;
     display: flex;
@@ -803,10 +801,6 @@
     display: flex !important;
     flex-direction: column;
   }
-
-  .layer-relation > .relation-table {
-    flex-grow: 1;
-  } 
 
   .sub-header {
     margin-top: 5px;
@@ -916,6 +910,7 @@
     justify-content: space-between;
     margin-bottom: 5px;
     margin-top: 3px;
+    flex-grow: 1;
   }
 
 </style>
