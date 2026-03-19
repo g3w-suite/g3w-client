@@ -53,7 +53,19 @@ console.log(
   }
 
   // wait for all plugins loaded
-  await page.waitForFunction(() => window.g3w.app.isready && 0 ===  window.g3w.state.plugins.length && window.g3w.app.getPlugin('editing'), { timeout: 30000 });
+  try {
+    await page.waitForFunction(() => window.g3w.app.isready && 0 ===  window.g3w.state.plugins.length && window.g3w.app.getPlugin('editing'), { timeout: 30000 });    
+  } catch (error) {
+      // DEBUG: Se va in timeout, vediamo cosa c'è dentro lo stato
+    const debug = await page.evaluate(() => ({
+      hasG3w: !!window.g3w,
+      hasState: !!window.g3w?.state,
+      pluginsLeft: window.g3w?.state?.plugins,
+      isAppReady: window.g3w?.app?.isready
+    })).catch(() => 'Could not get debug info');
+    errors.push(`Timeout/Error: ${e.message}. Debug State: ${JSON.stringify(debug)}`);
+  }
+
   const editing = await page.evaluate(() => window.g3w.app.getPlugin('editing'));
 
   // ASSERT: editing plugin is loaded
