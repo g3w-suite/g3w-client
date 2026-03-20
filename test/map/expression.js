@@ -53,7 +53,7 @@ console.log(
   }
 
   // wait for all plugins loaded
-  await page.waitForFunction(() => window.g3w.app.isready && 0 ===  window.g3w.state.plugins.length, { timeout: 30000 });    
+  await page.waitForFunction(() => window.g3w.app.isready && 0 ===  window.g3w.state.plugins.length, { timeout: 30000 });
   const editing = await page.evaluate(() => window.g3w.app.getPlugin('editing'));
 
   // ASSERT: editing plugin is loaded
