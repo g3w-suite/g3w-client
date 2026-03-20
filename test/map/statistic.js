@@ -54,7 +54,7 @@ console.log(
 
   // wait for all plugins loaded
   await page.waitForFunction(() => window.g3w.app.isready && 0 ===  window.g3w.state.plugins.length, { timeout: 30000 });
-  const qplotly = await page.evaluate(() => window.g3w.app.getPlugin('qplotly'));
+  const qplotly = await page.evaluate(() => !!window.g3w.app.getPlugin('qplotly'));
 
   // ASSERT: qplotly plugin is loaded
   if (!qplotly) {
