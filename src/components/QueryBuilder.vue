@@ -10,7 +10,7 @@
     <div
       id    = "query_builder_layers"
       class = "mb-5">
-      <label class = "querybuilder-title">{{ $t('EXPRESSION') }}</label>
+      <label>{{ $t('EXPRESSION') }}</label>
       <a
         :href           = "`https://g3w-suite.readthedocs.io/en/v3.9.x/g3wsuite_client.html#search-and-query-builder`"
         target          = "_blank"
@@ -380,10 +380,6 @@ export default {
   flex-direction: column;
 }
 #query_builder .select2.select2-container {
-  font-weight: bold;
-}
-.querybuilder-title {
-  color: #fff;
   font-weight: bold;
 }
 select {
