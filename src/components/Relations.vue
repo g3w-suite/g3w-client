@@ -48,15 +48,12 @@
         <b class = "relation-tile"> {{ relation.name }} </b>
       </div>
       <div
-        v-if  = "table.rows.length"
         class = "table-tools"
       >
-
         <!-- DOWNLOAD BUTTON -->
         <button
-          v-if           = "download_formats.length"
           type           = "button"
-          v-disabled     = "ApplicationState.download"
+          v-disabled     = "!hasfeatures && (!download_formats.length || ApplicationState.download)"
           class          = "action-button fas fa-download"
           @click.stop    = "showDownloadModal"
           title          = "Downloads"
@@ -65,7 +62,7 @@
 
         <!-- CHART BUTTON -->
         <button
-          v-if           = "has_charts"
+          v-disabled     = "!hasfeatures && !has_charts"
           class          = "action-button fas fa-chart-bar"
           :class         = "[ chart.toggled ? 'toggled-white' : '',]"
           @click.stop    = "toggleChart"
@@ -77,7 +74,6 @@
     </div>
 
     <div
-      v-if       = "table.rows.length" 
       ref        = "wrapper"
       class      = "relation-table"
     >
@@ -205,7 +201,6 @@
       ></div>
 
     </div>
-    <div v-else-if="!ApplicationState.content.loading">{{ $t('No relations found') }}</div>
   </div>
 </template>
 
@@ -262,7 +257,8 @@
           page_size:     layer.getAttributeTablePageLength() || PAGELENGTHS[1],
           rows:          [],
           rows_fid:      [],
-          ordering:      [-1, 'asc']
+          ordering:      [-1, 'asc'],
+          hasfeatures:   false, //@since 4.1.0 store if there are relations one mount (no change when filter table rows)
         },
 
         /**
@@ -747,6 +743,8 @@
         this.relation.title = this.relation.name;
         if ('ONE' !== this.relation.type) {
           this.getData();
+          //set first time load
+          this.hasfeatures = this.table.rows.length > 0;
         }
       }
     },
