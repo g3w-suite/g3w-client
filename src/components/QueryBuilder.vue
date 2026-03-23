@@ -10,10 +10,7 @@
     <div
       id    = "query_builder_layers"
       class = "mb-5">
-      <label
-        class = "querybuilder-title"
-        v-t   = "'EXPRESSION'">
-      </label>
+      <label class = "querybuilder-title">{{ $t('EXPRESSION') }}</label>
       <a
         :href           = "`https://g3w-suite.readthedocs.io/en/v3.9.x/g3wsuite_client.html#search-and-query-builder`"
         target          = "_blank"
@@ -41,37 +38,37 @@
     <b
       class   = "skin-color"
       v-show  = "message"
-    ><span v-t = "'Features found:'"></span>{{ message }}</b>
+    >{{ $t('Features found:') }} {{ message }}</b>
 
     <div class = "content-end">
       <button
         class     = "query_builder_button btn btn-secondary bold"
         @click    = "run"
         :disabled = "disabled"
-        v-t       = "'RUN'"
       >
         <i aria-hidden = "true" class = "fas fa-play" style = "color: green;"></i>
+        {{ $t('RUN') }}
       </button>
       <button
         class     = "query_builder_button btn btn-secondary bold"
         @click    = "reset"
-        v-t       = "'CLEAR'"
       >
         <i aria-hidden = "true" class = "fas fa-broom"></i>
+        {{ $t('CLEAR') }}
       </button>
       <button
         class     = "query_builder_button btn btn-secondary bold"
         @click    = "save"
         :disabled = "disabled"
-        v-t       = "'SAVE'"
       >
         <i aria-hidden = "true" class = "far fa-save"></i>
+        {{ $t('SAVE') }}
       </button>
     </div>
 
     <hr>
 
-    <label v-t = "'FIELDS'"></label>
+    <label>{{ $t('FIELDS') }}</label>
 
     <!-- SEARCH FIELDS -->
     <select ref = "search_fields" size = "4" class = "mb-5">
@@ -113,7 +110,7 @@
       style     = "color: #000;"
     >
       <i aria-hidden = "true" class = "fas fa-search"></i>
-      <span v-t = "'SEARCH A VALUE'"></span>
+      {{ $t('SEARCH A VALUE') }}
     </button>
 
   </div>
