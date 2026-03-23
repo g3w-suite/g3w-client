@@ -40,7 +40,7 @@
       v-show  = "message"
     >{{ $t('Features found:') }} {{ message }}</b>
 
-    <div class = "content-end">
+    <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; margin-top: 5px;">
       <button
         class     = "query_builder_button btn btn-secondary bold"
         @click    = "run"
@@ -81,7 +81,7 @@
     </select>
 
     <!-- SEARCH OPERATORS -->
-    <div class = "content-wrap mb-5">
+    <div class = "mb-5" style = "display: flex; flex-wrap: wrap;">
       <button
         v-for  = "operator in ['>=', '<=', '!=', '=', '>', '<', 'IN', 'LIKE', 'ILIKE', 'AND', 'OR' ]"
         @click = "addToExpression({ value: operator, type: 'operator' })"
@@ -403,16 +403,6 @@ option:nth-of-type(2n+1) {
   flex-basis: 78px;
   flex-grow: 1;
   color: #000;
-}
-.content-wrap {
-  display: flex;
-  flex-wrap: wrap;
-}
-.content-end {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  margin-top: 5px;
 }
 .mb-5 {
   margin-bottom: 5px;
