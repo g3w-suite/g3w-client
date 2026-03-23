@@ -702,7 +702,7 @@
               console.warn(e);
               GUI.showUserMessage({
                 type:     'alert',
-                message:  e ?? 'info.server_error',
+                message:  e ?? 'server_error',
                 closable: true,
               });
             }
