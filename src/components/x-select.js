@@ -113,7 +113,7 @@ class XSelect extends HTMLElement {
       }
 
       this.trigger.onclick   = (e) => { e.stopPropagation(); if (!this.isDisabled) this.toggle(); };
-      this.trigger.onkeydown = (e) => { if (!this.isDisabled) this.#onTriggerKeydown(e); };
+      this.trigger.onkeydown = (e) => this.#onTriggerKeydown(e);
 
       // make reactive: "<x-option>" elements
       this.observer = (new MutationObserver((mutations) => {
@@ -219,6 +219,9 @@ class XSelect extends HTMLElement {
   }
 
   #onTriggerKeydown(e) {
+    if (this.isDisabled) {
+      return;
+    }
     switch (e.key) {
       case 'Enter':
       case ' ':         e.preventDefault(); this.toggle();                                       break;
