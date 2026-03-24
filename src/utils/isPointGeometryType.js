@@ -1,18 +1,8 @@
-/**
- * core/geometry/geometry::isPointGeometryType@v3.4
- * core/geometry/geometry::getAllPointGeometryTypes@v3.4
- */
+const TYPES = [
+  'MultiPoint', 'MultiPointZ', 'MutliPointM', 'MultiPointZM', 'MultiPoint25D',
+  'Point',           'PointZ',      'PointM',      'PointZM',      'Point25D',
+];
+
 export function isPointGeometryType(geometryType) {
-  return [
-    'Point',
-    'PointZ',
-    'PointM',
-    'PointZM',
-    'Point25D',
-    'MultiPoint',
-    'MultiPointZ',
-    'MutliPointM',
-    'MultiPointZM',
-    'MultiPoint25D',
-  ].includes(geometryType);
+  return TYPES.includes(geometryType);
 }

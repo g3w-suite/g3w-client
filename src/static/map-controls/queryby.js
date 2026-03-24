@@ -31,16 +31,8 @@ GUI.setupControl.querybyfreehand = function(type) {
 };
 
 const POLYGON_TYPES = [
-  'Polygon',
-  'PolygonZ',
-  'PolygonM',
-  'PolygonZM',
-  'Polygon25D',
-  'MultiPolygon',
-  'MultiPolygonZ',
-  'MultiPolygonM',
-  'MultiPolygonZM',
-  'MultiPolygon25D',
+  'MultiPolygon', 'MultiPolygonZ', 'MultiPolygonM', 'MultiPolygonZM', 'MultiPolygon25D',
+       'Polygon',      'PolygonZ',      'PolygonM',      'PolygonZM',      'Polygon25D',
 ];
 
 /**
