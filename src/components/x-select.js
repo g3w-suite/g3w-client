@@ -234,10 +234,10 @@ class XSelect extends HTMLElement {
       return;
     }
     switch (e.key) {
-      case 'ArrowDown': e.preventDefault(); this.#focus(1);                     break;
-      case 'ArrowUp':   e.preventDefault(); this.#focus(-1);                    break;
-      case 'Enter':     e.preventDefault(); this.select(this.activeOption);     break;
-      case 'Escape':    e.preventDefault(); this.close(); this.trigger.focus(); break;
+      case 'ArrowDown': e.preventDefault(); e.stopPropagation(); this.#focus(1);                     break;
+      case 'ArrowUp':   e.preventDefault(); e.stopPropagation(); this.#focus(-1);                    break;
+      case 'Enter':     e.preventDefault(); e.stopPropagation(); this.select(this.activeOption);     break;
+      case 'Escape':    e.preventDefault(); e.stopPropagation(); this.close(); this.trigger.focus(); break;
       case 'Tab':       this.close();                                           break; // Allow tab to move out
     }
   }
