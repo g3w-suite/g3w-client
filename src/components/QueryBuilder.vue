@@ -20,14 +20,14 @@
       >
         <i aria-hidden = "true" class = "fa fa-external-link-alt"></i>
       </a>
-      <select id = "query_builder_layers_select" class = "form-control">
-        <option
-          v-for  = "(layer, i) in layers"
-          :key   = "layer.label"
-          :value = "i"
-          class  = "bold"
-        >{{ layer.label }}</option>
-      </select>
+      <x-select
+        :value     = "Math.max(layers.indexOf(currentlayer), 0)"
+        @change    = "onCurrentlayerChange"
+        style      = "color: #000;"
+        searchable
+      >
+        <x-option v-for = "(layer, i) in layers" :key = "layer.label" :value = "i">{{ layer.label }}</x-option>
+      </x-select>
     </div>
 
     <!-- SEARCH EXPRESSION -->
@@ -309,6 +309,16 @@ export default {
       GUI.showUserMessage({ type: 'success', message: _('Saved'), autoclose: true });
     },
 
+    /**
+     * @since 4.1.0
+     */
+    onCurrentlayerChange(e) {
+      this.currentlayer = this.layers[e.target.value];
+      this.select.field = null;
+      this.select.value = null;
+      this.reset();
+    },
+
   },
 
   created() {
@@ -345,29 +355,6 @@ export default {
 
   },
 
-  async mounted() {
-    await this.$nextTick();
-
-    this.select2 = $('#query_builder_layers_select').select2({ width: '100%' });
-
-    if (this.edit) {
-      this.select2.val(this.layers.indexOf(this.currentlayer));
-      this.select2.trigger('change');
-    }
-
-    this.select2.on('select2:select', e => {
-      this.currentlayer = this.layers[e.params.data.id];
-      this.select.field = null;
-      this.select.value = null;
-      this.reset();
-    });
-  },
-
-  beforeDestroy() {
-    this.select2.select2('destroy');
-    this.select2 = null;
-  },
-
 };
 </script>
 
@@ -378,9 +365,6 @@ export default {
   display: flex;
   flex-wrap: nowrap;
   flex-direction: column;
-}
-#query_builder .select2.select2-container {
-  font-weight: bold;
 }
 select {
   background-color: #fff;

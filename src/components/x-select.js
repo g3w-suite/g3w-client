@@ -32,7 +32,7 @@ class XSelect extends HTMLElement {
     this._onClickOutside  = e => { if (!this.contains(e.target)) { this.close(); } };
     this._onPageScroll    = () => { if(this.isOpen) this.#resize(); };
     this._onPageResize    = () => { if(this.isOpen) this.#resize(); };
-    this._onPageKeyDown   = e =>  { if(this.isOpen) { e.preventDefault(); e.stopPropagation(); this.#onContainerKeydown(e); } };
+    this._onPageKeyDown   = e =>  { if(this.isOpen && e.target !== this.input) { e.preventDefault(); e.stopPropagation(); this.#onContainerKeydown(e); } };
   }
 
   get isOpen() {
