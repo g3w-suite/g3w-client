@@ -32,6 +32,7 @@ class XSelect extends HTMLElement {
     this._onClickOutside  = e => { if (!this.contains(e.target)) { this.close(); } };
     this._onPageScroll    = () => { if(this.isOpen) this.#resize(); };
     this._onPageResize    = () => { if(this.isOpen) this.#resize(); };
+    this._onPageKeyDown   = e =>  { if(this.isOpen) { e.preventDefault(); e.stopPropagation(); this.#onContainerKeydown(e); } };
   }
 
   get isOpen() {
@@ -153,7 +154,7 @@ class XSelect extends HTMLElement {
 
       document.addEventListener('pointerup', this._onClickOutside);
       window.addEventListener('scroll', this._onPageScroll, true);
-      window.addEventListener('resize', this._onPageResize);
+      window.addEventListener('keydown', this._onPageKeyDown);
 
       if (this.getAttribute('value')) {                                 // inital value (from <x-select value="some value">)
         this.select(this.#getOption(this.getAttribute('value')), { autoclose: false, emit: false });
@@ -169,6 +170,7 @@ class XSelect extends HTMLElement {
     document.removeEventListener('pointerup', this._onClickOutside);
     window.removeEventListener('scroll', this._onPageScroll, true);
     window.removeEventListener('resize', this._onPageResize);
+    window.removeEventListener('keydown', this._onPageKeyDown);
     this.observer?.disconnect();
     this.langWatcher();
   }
