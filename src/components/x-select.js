@@ -32,6 +32,7 @@ class XSelect extends HTMLElement {
     this._onClickOutside  = e => { if (!this.contains(e.target)) { this.close(); } };
     this._onPageScroll    = () => { if(this.isOpen) this.#resize(); };
     this._onPageResize    = () => { if(this.isOpen) this.#resize(); };
+    Vue.watch(() => g3w?.state?.language, lang => this.refresh());
   }
 
   get isOpen() {
@@ -48,6 +49,14 @@ class XSelect extends HTMLElement {
     }
     this.setAttribute('value', val);
     this.select(this.#getOption(val), { autoclose: false, emit: false });
+  }
+
+  get #search_placeholder() {
+    return (this.getAttribute('search-placeholder') ?? g3w?.gettext('Search') ?? 'Search') + '...';
+  }
+
+  get #select_placeholder() {
+    return (g3w?.gettext('Select') ?? 'Select') + '...';
   }
 
   #getOptions() {
@@ -67,7 +76,7 @@ class XSelect extends HTMLElement {
     }
     // make reactive: "search-placeholder" attribute
     if ('search-placeholder' === attr && this.input) {
-      this.input.placeholder = this.getAttribute('search-placeholder');
+      this.input.placeholder = this.#search_placeholder;
     }
   }
 
@@ -81,7 +90,7 @@ class XSelect extends HTMLElement {
           <i class="triangle"></i>
         </div>
         <div class="x-options" popover="manual" role="listbox" ${ this.hasAttribute('multiple') ? 'aria-multiselectable="true"' : '' }>
-          ${ this.hasAttribute('searchable') || this.hasAttribute('multiple') ? `<input class="x-search-box" type="text" placeholder="${ this.getAttribute('search-placeholder') ?? g3w?.gettext('Search') ?? 'Search' }...">` : '' }
+          ${ this.hasAttribute('searchable') || this.hasAttribute('multiple') ? `<input class="x-search-box" type="text" placeholder="${ this.#search_placeholder }">` : '' }
         </div>
       `);
 
@@ -306,7 +315,7 @@ class XSelect extends HTMLElement {
         opt.setAttribute('aria-selected', 'true');
         opt.setAttribute('selected', '');
       }
-      this.content.innerHTML = this.selected_options.length ? this.selected_options[0].innerHTML : ((g3w?.gettext('Select') ?? 'Select') + '...');
+      this.content.innerHTML = this.selected_options.length ? this.selected_options[0].innerHTML : this.#select_placeholder;
     }
 
     // multi-select
@@ -318,7 +327,7 @@ class XSelect extends HTMLElement {
       }
       this.content.innerHTML = this.selected_options.length ? this.selected_options.map((opt, i) => 
         `<span class="x-selected-badge"><span class="x-remove" data-index="${i}">×</span>${opt.innerHTML}</span>`
-      ).join('') : ((g3w?.gettext('Select') ?? 'Select') + '...');
+      ).join('') : this.#select_placeholder;
       this.content.querySelectorAll('.x-remove').forEach(btn => {
         btn.onclick = (e) => {
           e.stopPropagation();
