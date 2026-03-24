@@ -32,7 +32,6 @@ class XSelect extends HTMLElement {
     this._onClickOutside  = e => { if (!this.contains(e.target)) { this.close(); } };
     this._onPageScroll    = () => { if(this.isOpen) this.#resize(); };
     this._onPageResize    = () => { if(this.isOpen) this.#resize(); };
-    Vue.watch(() => g3w?.state?.language, lang => this.refresh());
   }
 
   get isOpen() {
@@ -150,6 +149,8 @@ class XSelect extends HTMLElement {
       
       this.observer.observe(this, { childList: true });
 
+      this.langWatcher = Vue.watch(() => g3w?.state?.language, lang => this.refresh());
+
       document.addEventListener('pointerup', this._onClickOutside);
       window.addEventListener('scroll', this._onPageScroll, true);
       window.addEventListener('resize', this._onPageResize);
@@ -169,6 +170,7 @@ class XSelect extends HTMLElement {
     window.removeEventListener('scroll', this._onPageScroll, true);
     window.removeEventListener('resize', this._onPageResize);
     this.observer?.disconnect();
+    this.langWatcher();
   }
 
   #onDisabled() {
