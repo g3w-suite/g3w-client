@@ -4606,7 +4606,7 @@ export default new (class GUI extends Emitter {
     this.#map = new ol.Map({
       controls:            ol.control.defaults({ attribution: false, zoom: false, rotateOptions: { autoHide: true, tipLabel: "Reset rotation (CTRL+DRAG to rotate)" } }),
       interactions:        ol.interaction.defaults().extend([ new ol.interaction.DragRotate({ condition: ol.events.condition.platformModifierKeyOnly, }) ]),
-      keyboardEventTarget: document,
+      keyboardEventTarget: document.getElementById('g3w-view-map'),
       target:              this.target,
       view:                new ol.View({
         extent,

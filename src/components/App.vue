@@ -624,7 +624,7 @@
         </div>
 
         <!-- ORIGINAL SOURCE: src/components/Map.vue -->
-        <div id = "g3w-maps">
+        <div id = "g3w-maps" tabindex = "0">
 
           <div
             v-for = "hidemap in ApplicationState.hidemaps"
