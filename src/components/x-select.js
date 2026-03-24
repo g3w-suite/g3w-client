@@ -58,12 +58,16 @@ class XSelect extends HTMLElement {
     return this.#getOptions().find(o => o.value === val)
   }
 
-  static observedAttributes = ['disabled']
+  static observedAttributes = ['disabled', 'search-placeholder']
 
   attributeChangedCallback(attr) {
     // make reactive: "disabled" attribute
     if ('disabled' === attr) {
       this.#onDisabled()
+    }
+    // make reactive: "search-placeholder" attribute
+    if ('search-placeholder' === attr && this.input) {
+      this.input.placeholder = this.getAttribute('search-placeholder');
     }
   }
 
