@@ -32,7 +32,7 @@ class XSelect extends HTMLElement {
 
     this._onClickOutside  = e => { if (!this.contains(e.target)) this.close(); };
 
-    // throttle resize (on page scroll)
+    // throttle component "resizing" (on page scroll)
     let resizing = false;
     this._onPageScroll = () => {
       if (!resizing && this.isOpen) {
