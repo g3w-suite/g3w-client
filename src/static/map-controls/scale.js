@@ -52,14 +52,13 @@ class ScaleControl extends ol.control.Control {
     Array.from(this.element.querySelectorAll('x-option')).filter(o => !this.scales.includes(1*o.value.split(':')[1])).forEach(o => o?.remove());
 
     // Append the new custom scale option to the x-select
-    this.element.querySelector('x-select').prepend(
-      Object.assign(document.createElement('template'), {
-        innerHTML: /* html */ `<x-option value = "1:${scale}">1:${scale}</x-option>`
-      }).content.firstChild
-    );
+    const opt = Object.assign(document.createElement('template'), {
+        innerHTML: /* html */ `<x-option value = "1:${scale}" selected>1:${scale}</x-option>`
+      }).content.firstChild;
+    this.select.container.appendChild(opt);
+
+    opt.onclick = (e) => { e.stopPropagation(); this.select.select(opt); };
     
-    // Trigger the change event to update the UI
-    this.select.dispatchEvent(new CustomEvent('change', { bubbles: true, detail: { value: `1:${scale}` } } ));
   }
 
   /**
@@ -128,7 +127,7 @@ class ScaleControl extends ol.control.Control {
     this.scales.unshift(currentScale);
 
     // Create the control container and the custom x-select element
-    const div    = document.createElement('div');
+    const div   = document.createElement('div');
     this.select = Object.assign(document.createElement('template'), {
       innerHTML: /* html */`
         <x-select value = "1:${this.scales[0]}" createTag searchable>
