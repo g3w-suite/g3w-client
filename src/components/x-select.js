@@ -107,7 +107,7 @@ class XSelect extends HTMLElement {
       this.container.onkeydown = (e) => this.#onContainerKeydown(e);
 
       this.container.addEventListener('beforetoggle', e => this.#onContainerToggle(e));
-      this.container.addEventListener('toggle', e => this.#resize());
+      // this.container.addEventListener('toggle', e => this.#resize());
 
       if (this.input) {
         this.input.oninput   = (e) => this.#onSearchInput(e);
@@ -254,7 +254,7 @@ class XSelect extends HTMLElement {
     this.trigger.setAttribute('aria-expanded', isOpen);
     this.trigger.classList.toggle('open', isOpen);
     if (isOpen) {
-      this.#resize(); 
+      this.#resize();
       if (this.input) {
         this.input.value = '';                    // reset search box
         this.#search('');
@@ -309,6 +309,7 @@ class XSelect extends HTMLElement {
   }
 
   #resize() {
+    requestAnimationFrame(() => { // wait for next browser "paint"
     const rect = this.trigger.getBoundingClientRect();
     const menu = this.container.getBoundingClientRect();
     this.container.style.top = menu.bottom > window.innerHeight
@@ -316,6 +317,7 @@ class XSelect extends HTMLElement {
       : `${rect.bottom + 2}px`;
     this.container.style.left = `${rect.left}px`;
     this.container.style.setProperty('--select-width', `${rect.width}px`);
+    });
   }
 
   select(opt, settings = { autoclose: false, emit: true }) {
