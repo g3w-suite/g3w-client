@@ -747,9 +747,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .ol-zoom :is(.ol-zoom-in, .ol-zoom-out)                                { border-radius: 3px; display: block; }
 .ol-scale-control                                                      { bottom: 15px; }
 .ol-scale-line                                                         { left: auto; font-weight: bold; bottom: 35px; }
-#scale-control .select2-selection__rendered                            { font-weight: bold !important; }
-#scale-control .select2-container--default .select2-selection--single,
-#scale-control .select2-selection .select2-selection--single           { height: 30px !important; background-color: #eee; border-width: 0; }
+#scale-control .x-select-trigger                                       { border: none; }
 .ol-rotate                                                             { top: 55px; left: 0; }
 .ol-rotate button span                                                 { font-weight: bold; }
 .ol-hidden                                                             { display:none; }
@@ -798,10 +796,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .tool_mapcontrol_button                                                { background-color: var(--skin-color); }
 .g3w-ol-toggled                                                        { background-color: var(--skin-color) !important; }
 
-.ol-attribution li a                                                                           { color: hsl(from var(--skin-color) h s calc(l - 20)); }
-#scale-control .select2-selection__rendered                                                    { color: hsl(from var(--skin-color) h s calc(l - 20)) !important; }
-#scale-control .select2-selection__arrow b                                                     { border-top-color: hsl(from var(--skin-color) h s calc(l - 20)) !important; }
-#scale-control .select2-container--default.select2-container--open .select2-selection__arrow b { border-bottom-color: hsl(from var(--skin-color) h s calc(l - 20)) !important; }
+.ol-attribution li a                                                   { color: hsl(from var(--skin-color) h s calc(l - 20)); }
 
 /* nominatim */
 @media (max-width: 578px) {
