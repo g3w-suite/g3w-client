@@ -41,7 +41,7 @@ class XSelect extends HTMLElement {
        }
     };
 
-    this._onPageResize = () => { if (this.isOpen) this.#resize(); };
+    this._onPageResize = () => { if (this.isOpen) this.close(); };
     this._onPageKeyDown = e => {
       if (this.isOpen && e.target !== this.input) {
         e.preventDefault();
