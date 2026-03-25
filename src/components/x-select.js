@@ -105,7 +105,9 @@ class XSelect extends HTMLElement {
       });
 
       this.container.onkeydown = (e) => this.#onContainerKeydown(e);
+
       this.container.addEventListener('beforetoggle', e => this.#onContainerToggle(e));
+      this.container.addEventListener('toggle', e => this.#resize());
 
       if (this.input) {
         this.input.oninput   = (e) => this.#onSearchInput(e);
@@ -308,7 +310,10 @@ class XSelect extends HTMLElement {
 
   #resize() {
     const rect = this.trigger.getBoundingClientRect();
-    this.container.style.top = `${rect.bottom + 2}px`;
+    const menu = this.container.getBoundingClientRect();
+    this.container.style.top = menu.bottom > window.innerHeight
+      ? `${rect.top - 2 - menu.height}px` // prevent bottom overflow (page) 
+      : `${rect.bottom + 2}px`;
     this.container.style.left = `${rect.left}px`;
     this.container.style.setProperty('--select-width', `${rect.width}px`);
   }
