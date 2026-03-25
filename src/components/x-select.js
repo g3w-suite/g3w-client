@@ -172,6 +172,7 @@ class XSelect extends HTMLElement {
 
       document.addEventListener('pointerup', this._onClickOutside);
       window.addEventListener('scroll', this._onPageScroll, true);
+      window.addEventListener('resize', this._onPageResize);
       window.addEventListener('keydown', this._onPageKeyDown);
 
       if (this.getAttribute('value')) {                                 // inital value (from <x-select value="some value">)
