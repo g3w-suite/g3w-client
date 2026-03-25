@@ -29,10 +29,26 @@ class XSelect extends HTMLElement {
     super();
     this.selected_options = [];
     this.activeOption     = null;
-    this._onClickOutside  = e => { if (!this.contains(e.target)) { this.close(); } };
-    this._onPageScroll    = () => { if(this.isOpen) this.#resize(); };
-    this._onPageResize    = () => { if(this.isOpen) this.#resize(); };
-    this._onPageKeyDown   = e =>  { if(this.isOpen && e.target !== this.input) { e.preventDefault(); e.stopPropagation(); this.#onContainerKeydown(e); } };
+
+    this._onClickOutside  = e => { if (!this.contains(e.target)) this.close(); };
+
+    // throttle resize (on page scroll)
+    let resizing = false;
+    this._onPageScroll = () => {
+      if (!resizing && this.isOpen) {
+        resizing = true;
+        requestAnimationFrame(() => { this.#resize(); resizing = false; });
+       }
+    };
+
+    this._onPageResize = () => { if (this.isOpen) this.#resize(); };
+    this._onPageKeyDown = e => {
+      if (this.isOpen && e.target !== this.input) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.#onContainerKeydown(e);
+      }
+    };
   }
 
   get isOpen() {
@@ -309,14 +325,18 @@ class XSelect extends HTMLElement {
   }
 
   #resize() {
-    requestAnimationFrame(() => { // wait for next browser "paint"
-    const rect = this.trigger.getBoundingClientRect();
-    const menu = this.container.getBoundingClientRect();
-    this.container.style.top = menu.bottom > window.innerHeight
-      ? `${rect.top - 2 - menu.height}px` // prevent bottom overflow (page) 
-      : `${rect.bottom + 2}px`;
-    this.container.style.left = `${rect.left}px`;
-    this.container.style.setProperty('--select-width', `${rect.width}px`);
+    if (!this.trigger || !this.container) {
+      return;
+    }
+
+    // wait for next browser "paint"
+    requestAnimationFrame(() => { 
+      const rect = this.trigger.getBoundingClientRect();
+      this.container.style.top = (window.innerHeight - rect.bottom < this.container.offsetHeight)
+        ? `${rect.top - 2 - this.container.offsetHeight}px` // prevent bottom overflow (page) 
+        : `${rect.bottom + 2}px`;
+      this.container.style.left  = `${rect.left}px`;
+      this.container.style.width = `${rect.width}px`;
     });
   }
 
@@ -419,7 +439,7 @@ document.head.insertAdjacentHTML('beforeend', /* html */`<style id ="x-select-cs
   .x-selected-content         { flex: 1; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; pointer-events: none; overflow: hidden; }
   .x-selected-badge           { display: inline-flex; align-items: center; background: var(--skin-color, #007bff); color: white; padding: 1px 10px; border-radius: 4px; pointer-events: auto; }
   .x-selected-badge .x-remove { margin-right: 5px; cursor: pointer; font-weight: bold; }
-  .x-options                  { margin: 0; padding: 0; border: 1px solid #ccc; background: white; z-index: 9999; max-height: 300px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15); position: fixed; width: var(--select-width); display: none; }
+  .x-options                  { margin: 0; padding: 0; border: 1px solid #ccc; background: white; z-index: 9999; max-height: 300px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15); position: fixed; display: none; }
   .x-options:popover-open     { display: block; }
   .x-search-box               { margin: 8px; box-shadow: 0 0 0 19px white; clip-path: inset(-8px -8px -8px -8px); /*! border-bottom: 1px solid #eee; */position: sticky;top: 8px;background: white;z-index: 1;padding: 6px;border: 1px solid #ddd;border-radius: 4px;box-sizing: border-box;outline: none;width: calc(100% - 16px); }
   x-option                    { padding: 8px 12px; display: flex; align-items: center; cursor: pointer; color: #333; }
