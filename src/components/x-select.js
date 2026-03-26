@@ -287,7 +287,7 @@ class XSelect extends HTMLElement {
         const opt = this.#getOption(this.selected_options[0].value);
         this.#focus(opt);                         // auto focus selected option
         opt.scrollIntoView({ block: 'nearest' });
-      });
+      }, 100);
     }
 
     if (isOpen && !this.input && !this.selected_options.length) {
