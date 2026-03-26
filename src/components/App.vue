@@ -665,91 +665,81 @@
           </div>
 
           <!-- Footer (bottom part) where scale and other component can be set -->
-          <!-- ORIGINAL SOURCE: src/components/MapFooter.vue@v3.10.4 -->
-          <!-- ORIGINAL SOURCE: src/components/MapFooterLeft.vue@v3.10.4 -->
-          <!-- ORIGINAL SOURCE: src/components/MapFooterRight.vue@v3.10.4 -->
-          <div id = "map_footer" class = "skin-border-color">
+          <div id = "map_footer">
 
             <!-- MAP CREDITS -->
-            <div
-              id    = "map_footer_left"
-              style = "display: flex;"
+            <a
+              href   = "https://g3wsuite.it/"
+              style  = "margin-left: 5px; align-self: center;"
+              target = "_blank"
+              :title = "version"
             >
-              <a
-                href   = "https://g3wsuite.it/"
-                style  = "margin-left: 5px; align-self: center;"
-                target = "_blank"
-                :title = "version"
+              <img
+                height = "15"
+                src    = "/static/client/images/g3wsuite_logo.png"
+                alt    = ""
+              />
+              <span hidden>{{ version }}</span>
+            </a>
+
+            <div id="attribution-control"></div>
+
+            <div style="margin-right: auto;"></div>
+
+            <!-- MOUSE POSITION -->
+            <div
+              v-show = "mouse.visible"
+              id     = "mouse-position-control"
+            ></div>
+
+            <!-- SWITCH COORDINATES  -->
+            <button
+              v-if           = "mouse.visible && mouse.switch_icon && !isMobile()"
+              type           = "button"
+              class          = "btn"
+              :title         = "mouse.tooltip"
+              data-placement = "top"
+              @click.stop    = "switchMapsCoordinateTo4326"
+              style          = "border-radius: 0;"
+            >
+              <i aria-hidden="true" class = "fas fa-mouse"></i>
+              <span hidden>{{ $t(mouse.tooltip) }}</span>
+            </button>
+
+            <button
+              type           = "button"
+              class          = "btn"
+              title          = "Copy share URL"
+              data-placement = "top"
+              @click.stop    = "showEmbedModal"
+              style          = "border-radius: 0;"
+            >
+              <i aria-hidden="true" class = "fa fa-share-alt"></i>
+              <span hidden>{{ $t('Copy share URL') }}</span>
+            </button>
+
+            <!-- SCALE CONTROL -->
+            <div id = "scale-control"></div>
+
+            <div
+              v-if = "showmapunits"
+              id   = "scale-line-units"
+            >
+              <select
+                style   = "padding: 5px 2px; font-weight: bold; border:0; cursor: pointer"
+                v-model = "ApplicationState.map_unit"
               >
-                <img
-                  height = "15"
-                  src    = "/static/client/images/g3wsuite_logo.png"
-                  alt    = ""
-                />
-                <span hidden>{{ version }}</span>
-              </a>
+                <option
+                  v-for     = "unit in state.mapunits"
+                  :value    = "unit"
+                  v-t       = "`scaleline_units.${unit}`"
+                  :selected = "ApplicationState.map_unit === unit"
+                  style     = "font-weight: bold"
+                ></option>
+              </select>
+
             </div>
 
-            <div
-              id    = "map_footer_right"
-              style ="display: flex;"
-            >
-
-              <!-- MOUSE POSITION -->
-              <div
-                v-show = "mouse.visible"
-                id     = "mouse-position-control"
-              ></div>
-
-              <!-- SWITCH COORDINATES  -->
-              <button
-                v-if           = "mouse.visible && mouse.switch_icon && !isMobile()"
-                type           = "button"
-                class          = "btn"
-                :title         = "mouse.tooltip"
-                data-placement = "top"
-                @click.stop    = "switchMapsCoordinateTo4326"
-                style          = "border-radius: 0;"
-              >
-                <i aria-hidden="true" class = "fas fa-mouse"></i>
-                <span hidden>{{ $t(mouse.tooltip) }}</span>
-              </button>
-
-              <button
-                type           = "button"
-                class          = "btn"
-                title          = "Copy share URL"
-                data-placement = "top"
-                @click.stop    = "showEmbedModal"
-                style          = "border-radius: 0;"
-              >
-                <i aria-hidden="true" class = "fa fa-share-alt"></i>
-                <span hidden>{{ $t('Copy share URL') }}</span>
-              </button>
-
-              <!-- SCALE CONTROL -->
-              <div id = "scale-control"></div>
-
-              <div
-                v-if = "showmapunits"
-                id   = "scale-line-units"
-              >
-                <select
-                  style   = "padding: 5px 2px; font-weight: bold; border:0; cursor: pointer"
-                  v-model = "ApplicationState.map_unit"
-                >
-                  <option
-                    v-for     = "unit in state.mapunits"
-                    :value    = "unit"
-                    v-t       = "`scaleline_units.${unit}`"
-                    :selected = "ApplicationState.map_unit === unit"
-                    style     = "font-weight: bold"
-                  ></option>
-                </select>
-
-              </div>
-
-            </div>
           </div>
 
         </div>
