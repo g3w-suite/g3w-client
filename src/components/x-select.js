@@ -328,11 +328,16 @@ class XSelect extends HTMLElement {
       return;
     }
 
-    const currentIndex = options.indexOf(this.activeOption);
-    let newIndex = currentIndex + direction;
-    if (newIndex < 0) newIndex = options.length - 1;
-    if (newIndex >= options.length) newIndex = 0;
-    this.#setActiveOption(options.at(newIndex));
+    let idx = options.indexOf(this.activeOption) + direction;
+    if (idx < 0) idx = options.length - 1;
+    if (idx >= options.length) idx = 0;
+
+    if (this.input && 0 === idx) {
+      this.input.focus(); // focus search box when reaching end of list
+    } else {
+      this.#setActiveOption(options.at(idx));
+    }
+    
   }
 
   #setActiveOption(option) {
