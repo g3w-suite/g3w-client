@@ -204,6 +204,10 @@ class XSelect extends HTMLElement {
   #search(query) {
     const term    = query.toLowerCase();
     this.container.querySelectorAll('x-option').forEach(opt => { opt.toggleAttribute('hidden', !opt.textContent.toLowerCase().includes(term)); });
+    // highlight first available if option
+    if (!this.activeOption || this.activeOption.hasAttribute('hidden')) {
+      this.#setActiveOption(this.container.querySelector('x-option:not([hidden], [disabled])'), false);
+    }
   }
 
   #onSearchKeydown(e) {
@@ -340,12 +344,14 @@ class XSelect extends HTMLElement {
     
   }
 
-  #setActiveOption(option) {
+  #setActiveOption(option, autofocus = true) {
     this.activeOption?.setAttribute('aria-selected', this.activeOption?.hasAttribute('selected'));
     this.activeOption = option;
     this.trigger.setAttribute('aria-activedescendant', option.id || (option.id = 'option-' + Math.random().toString(36).substr(2, 9)));
     option.setAttribute('aria-selected', 'true');
-    option.focus();
+    if (autofocus) {
+      option.focus();
+    }
   }
 
   #resize() {
