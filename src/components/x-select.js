@@ -270,21 +270,40 @@ class XSelect extends HTMLElement {
     const isOpen = 'open' === e.newState;
     this.trigger.setAttribute('aria-expanded', isOpen);
     this.trigger.classList.toggle('open', isOpen);
+
     if (isOpen) {
       this.#resize();
-      if (this.input) {
-        this.input.value = '';                    // reset search box
-        this.#search('');
-        setTimeout(() => this.input.focus(), 50); // auto focus
-      } else {
-        this.#focus('first');
-      }
-    } else {
+    }
+
+    if (isOpen && this.input) {
+      this.input.value = '';                    // reset search box
+      this.#search('');
+      setTimeout(() => this.input.focus(), 50); // auto focus
+    }
+
+    // scroll container to selected option (keep it visible)
+    if (isOpen && this.input && this.selected_options.length) {
+      setTimeout(() => this.container.querySelector(`x-option[value="${this.selected_options[0].value}"]`).scrollIntoView({ block: 'nearest' }));
+    }
+
+    // scroll container to selected option (keep it visible)
+    if (isOpen && !this.input && this.selected_options.length) {
+      const opt = this.container.querySelector(`x-option[value="${this.selected_options[0].value}"]`);
+      this.#focus(opt);                         // auto focus selected option
+      opt.scrollIntoView({ block: 'nearest' });
+    }
+
+    if (isOpen && !this.input && !this.selected_options.length) {
+      this.#focus('first'); // no selected option
+    }
+
+    if (!isOpen) {
       this.trigger.removeAttribute('aria-activedescendant');
-      if (this.activeOption) {
-        this.activeOption.setAttribute('aria-selected', this.activeOption.hasAttribute('selected'));
-        this.activeOption = null;
-      }
+    }
+
+    if (!isOpen && this.activeOption) {
+      this.activeOption.setAttribute('aria-selected', this.activeOption.hasAttribute('selected'));
+      this.activeOption = null;
     }
   }
 
