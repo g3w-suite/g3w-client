@@ -66,32 +66,26 @@ class ScaleControl extends ol.control.Control {
    * @param {ol.Map} map 
    */
   layout(map) {
-    let isMapResolutionChanged = false;
-    let selectedOnClick        = false;
+    let change  = false;
+    let clicked = false;
 
     // Update the control value when the map finishes moving
     map.on('moveend', () => {
-      if (isMapResolutionChanged) {
+      if (change) {
         const scale = parseInt(getScaleFromResolution(map.getView().getResolution(), map.getView().getProjection().getUnits()));
         this.#addCustomTag(scale);
         this.select.value = `1:${scale}`;
-        isMapResolutionChanged = false;
+        change = false;
       } else {
-        selectedOnClick = false;
+        clicked = false;
       }
     });
 
-    /**
-     * Attaches a listener to the view resolution change.
-     */
-    const setChangeResolutionHandler = () => {
-      map.getView().on('change:resolution', () => isMapResolutionChanged = !selectedOnClick);
-    };
-
-    setChangeResolutionHandler();
+    // Attaches a listener to the view resolution change.
+    map.getView().on('change:resolution', () => { change = !clicked });
 
     // Re-bind handler if the map view changes
-    map.on('change:view', () => setChangeResolutionHandler());
+    map.on('change:view', () => { map.getView().on('change:resolution', () => { change = !clicked }); });
   }
 
   /**
