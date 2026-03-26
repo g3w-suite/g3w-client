@@ -461,7 +461,7 @@ document.head.insertAdjacentHTML('beforeend', /* html */`<style id ="x-select-cs
   .x-options                     { margin: 0; padding: 0; border: 1px solid #ccc; background: white; z-index: 9999; max-height: 300px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15); position: fixed; display: none; }
   .x-options:popover-open        { display: block; }
   .x-search-box                  { margin: 8px; box-shadow: 0 0 0 19px white; clip-path: inset(-8px -8px -8px -8px); /*! border-bottom: 1px solid #eee; */position: sticky;top: 8px;background: white;z-index: 1;padding: 6px;border: 1px solid #ddd;border-radius: 4px;box-sizing: border-box;outline: none;width: calc(100% - 16px); }
-  x-option                       { padding: 8px 12px; display: flex; align-items: center; cursor: pointer; color: #333; }
+  x-option                       { padding: 8px 12px; display: flex; align-items: center; cursor: pointer; color: #333; border-bottom: 1px solid #eee; }
   x-option[hidden]               { display: none; }
   x-option[disabled]             { pointer-events: none; opacity: .5; }
   x-option[aria-selected="true"] { background: var(--skin-color, #007bff) !important; color: white !important; outline: none !important; }
