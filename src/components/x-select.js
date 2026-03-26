@@ -284,8 +284,10 @@ class XSelect extends HTMLElement {
     // scroll container to selected option (keep it visible)
     if (isOpen && this.selected_options.length) {
       setTimeout(() => {
-        const opt = this.#getOption(this.selected_options[0].value);
-        this.#focus(opt);                         // auto focus selected option
+        const opt = this.container.querySelector(`x-option[value="${this.selected_options[0].value}"]`);
+        if (!this.input) {
+          this.#focus(opt);                         // auto focus selected option
+        }
         opt.scrollIntoView({ block: 'nearest' });
       }, 100);
     }
