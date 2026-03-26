@@ -469,6 +469,7 @@ document.head.insertAdjacentHTML('beforeend', /* html */`<style id ="x-select-cs
   x-option                       { padding: 8px 12px; display: flex; align-items: center; cursor: pointer; color: #333; border-bottom: 1px solid #eee; }
   x-option[hidden]               { display: none; }
   x-option[disabled]             { pointer-events: none; opacity: .5; }
+  x-option[selected],
   x-option[aria-selected="true"] { background: var(--skin-color, #007bff) !important; color: white !important; outline: none !important; }
   x-option:hover,
   x-option[aria-selected="true"]:not([selected]) { background: hsl(from var(--skin-color, #007bff) h s calc(l + 20)) !important; color: white !important; }
