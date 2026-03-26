@@ -41,35 +41,33 @@ class ScaleControl extends ol.control.Control {
   /**
    * Adds a custom scale tag to the select component.
    * Cleans up existing custom tags that are not in the predefined scales list.
+   * 
    * @param {Number} scale 
    */
   #addCustomTag(scale) {
-    //check if is a scale project
+    // check if is a scale project
     if (this.scales.find(s => scale === s)) {
       return;
-    }  
-    // Remove previous custom options that are not part of the original scales list
+    }
+
+    // remove previous custom options that are not part of the original scales list
     Array.from(this.element.querySelectorAll('x-option')).filter(o => !this.scales.includes(1*o.value.split(':')[1])).forEach(o => o?.remove());
 
-    // Append the new custom scale option to the x-select
-    const opt = Object.assign(document.createElement('template'), {
-        innerHTML: /* html */ `<x-option value = "1:${scale}" selected>1:${scale}</x-option>`
-      }).content.firstChild;
-    this.select.container.appendChild(opt);
-
-    opt.onclick = (e) => { e.stopPropagation(); this.select.select(opt); };
+    // append the new custom scale option to the x-select
+    this.select.insertAdjacentHTML('afterbegin', /* html */ `<x-option value = "1:${scale}" selected>1:${scale}</x-option>`);
     
   }
 
   /**
-   * Sets up map listeners to synchronize the scale control with map movements.
-   * @param {ol.Map} map 
+   * Set up map listeners (sync scale control with map movements).
+   * 
+   * @param { ol.Map } map 
    */
   layout(map) {
     let change  = false;
     let clicked = false;
 
-    // Update the control value when the map finishes moving
+    // update the control value when the map finishes moving
     map.on('moveend', () => {
       if (change) {
         const scale = parseInt(getScaleFromResolution(map.getView().getResolution(), map.getView().getProjection().getUnits()));
@@ -81,19 +79,21 @@ class ScaleControl extends ol.control.Control {
       }
     });
 
-    // Attaches a listener to the view resolution change.
+    // attach view resolution change listener.
     map.getView().on('change:resolution', () => { change = !clicked });
 
-    // Re-bind handler if the map view changes
+    // re-bind handler when map view changes.
     map.on('change:view', () => { map.getView().on('change:resolution', () => { change = !clicked }); });
   }
 
   /**
-   * Validates and cleans the scale input string.
-   * @param {String} scale 
-   * @returns {String|null} The numeric part of the scale or null if invalid.
+   * Sanitize input string (scale).
+   *
+   * @param { string } scale
+   * 
+   * @returns { string | null } The numeric part of the scale or null if invalid.
    */
-  #sanitazeScale(scale){
+  #parseScale(scale){
     // Remove the '1:' prefix if present
     if (scale.includes('1:')) {
       scale = scale.split('1:')[1];
@@ -107,54 +107,49 @@ class ScaleControl extends ol.control.Control {
   }
 
   /**
-   * Initializes the control when it is added to the map.
-   * @param {ol.Map} map 
+   * Init the control when it is added to the map.
+   * 
+   * @param { ol.Map } map 
    */
   setMap(map) {
     if (!map) {
       return;
     }
 
-    // Initialize scale list based on current map resolution
+    // init scale list (based on current map resolution)
     const currentScale = parseInt(getScaleFromResolution(map.getView().getResolution(), map.getView().getProjection().getUnits()));
     this.scales        = PRINT_SCALES.map(s => s.value).filter(s => s < currentScale);
     this.scales.unshift(currentScale);
 
-    // Create the control container and the custom x-select element
-    const div   = document.createElement('div');
-    this.select = Object.assign(document.createElement('template'), {
+    // create the control container
+    this.select = this.element = Object.assign(document.createElement('template'), {
       innerHTML: /* html */`
-        <x-select value = "1:${this.scales[0]}" createTag searchable>
+        <x-select value = "1:${this.scales[0]}" createTag searchable style="width: 120px;">
           ${this.scales.map(scale => /* html */`<x-option value = "1:${scale}">1:${scale}</x-option>`).join('')}
         </x-select>
       `.trim()
     }).content.firstChild;
 
-    // Handle scale selection change
+    // handle scale selection change
     this.select.addEventListener('change', e => {
-      const scale = this.#sanitazeScale(e.target.value);
+      const scale = this.#parseScale(e.target.value);
       if (scale) {
         // Update map resolution based on selected scale
         map.getView().setResolution(getResolutionFromScale(1 * scale, map.getView().getProjection().getUnits()));
       }
     });
 
-    // Handle manual input search for custom scales with debounce
+    // handle manual input (when searching for a custom scale)
     this.select.addEventListener('search-input', debounce(e => {
-      const scale = this.#sanitazeScale(e.detail?.value);
+      const scale = this.#parseScale(e.detail?.value);
       if (scale) {
         this.#addCustomTag(scale);
-        return;
+      } else {
+        e.target.container.querySelector('input').value = null; // reset input if the value is invalid
       }
-      // Reset input if the value is invalid
-      e.target.container.querySelector('input').value = null;
     }));
-  
-    div.appendChild(this.select);
-    div.style.width = '120px';
 
-    // Assign the created element to the control and initialize layout logic
-    this.element = div;
+    // init layout
     this.layout(map);
     
     super.setMap(map);
