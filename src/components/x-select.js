@@ -147,9 +147,14 @@ class XSelect extends HTMLElement {
             opt.style.display = 'none';
 
             // copy attributes from original node
-            opt._xselect_observer = (new MutationObserver(() => {
+            opt._xselect_observer = (new MutationObserver((mutations) => {
               proxy.innerHTML = opt.innerHTML;
-              Array.from(opt.attributes).forEach(attr => proxy.setAttribute(attr.name, attr.value));
+              for (const mutation of mutations) {
+                //get attributes mutation
+                if ('attributes' === mutation.type) {
+                  proxy.setAttribute(mutation.attributeName, mutation.target.getAttribute(mutation.attributeName))
+                }
+              }
             }));
             opt._xselect_observer.observe(opt, { childList: true, attributes: true, characterData: true, subtree: true });
 
@@ -157,6 +162,8 @@ class XSelect extends HTMLElement {
             // delegate click event
             proxy.onclick = (e) => { e.stopPropagation(); this.select(opt); };
             this.container.appendChild(proxy);
+            //call select after
+            this.select(opt);
           });
           // remove proxied node (dynamically removed by vue)
           mutation.removedNodes.forEach(opt => {
