@@ -12,6 +12,7 @@ class XOption extends HTMLElement {
     this.setAttribute('role', 'option');
     this.setAttribute('tabindex', '-1');
     this.setAttribute('aria-selected', this.hasAttribute('selected'));
+    this.id = this.id || (this.id = 'x-option-' + Math.random().toString(36).substr(2, 9))
   }
 
   get value() {
@@ -156,6 +157,7 @@ class XSelect extends HTMLElement {
             const proxy = opt.cloneNode(true);
             opt._xselect_proxy = proxy;
             opt.style.display = 'none';
+            opt.setAttribute('aria-hidden', true);
 
             // copy attributes from original node
             opt._xselect_observer = (new MutationObserver((mutations) => {
@@ -171,6 +173,8 @@ class XSelect extends HTMLElement {
             opt._xselect_observer.observe(opt, { childList: true, attributes: true, characterData: true, subtree: true });
 
             proxy.style.display = null;
+            proxy.removeAttribute('aria-hidden');
+
             // delegate click event
             proxy.onclick = (e) => { e.stopPropagation(); this.select(opt); };
             this.container.appendChild(proxy);
@@ -359,7 +363,7 @@ class XSelect extends HTMLElement {
 
   #setActiveOption(option) {
     this.activeOption = option;
-    this.trigger.setAttribute('aria-activedescendant', option.id || (option.id = 'option-' + Math.random().toString(36).substr(2, 9)));
+    this.trigger.setAttribute('aria-activedescendant', option.id);
     option.focus();
   }
 
