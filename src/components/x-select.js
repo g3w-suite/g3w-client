@@ -296,7 +296,7 @@ class XSelect extends HTMLElement {
         if (!this.input) {
           this.#focus(opt);                         // auto focus selected option
         }
-        opt.scrollIntoView({ block: 'nearest' });
+        opt?.scrollIntoView({ block: 'nearest' });
       }, 100);
     }
 
