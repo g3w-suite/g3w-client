@@ -44,8 +44,11 @@ class XOption extends HTMLElement {
  */
 class XSelect extends HTMLElement {
 
+  static _uid = 0;
+
   constructor() {
     super();
+
     this.selected_options = [];
 
     this._onClickOutside  = e => { if (!this.contains(e.target)) this.close(); };
@@ -132,13 +135,15 @@ class XSelect extends HTMLElement {
 
     Promise.resolve().then(() => {
 
+      const _uid = ++XSelect._uid;
+
       this.insertAdjacentHTML('afterbegin', /* html */`
-        <div class="x-select-trigger" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox">
+        <div class="x-select-trigger" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-controls="x-options-${_uid}" >
           <div class="x-selected-content"></div>
           <i class="triangle"></i>
         </div>
-        <div class="x-options" popover="manual" role="listbox" ${ this.hasAttribute('multiple') ? 'aria-multiselectable="true"' : '' }>
-          ${ this.hasAttribute('searchable') || this.hasAttribute('multiple') ? `<input class="x-search-box" type="text" placeholder="${ this.#search_placeholder }">` : '' }
+        <div id="x-options-${_uid}" class="x-options" popover="manual" role="listbox" ${ this.hasAttribute('multiple') ? 'aria-multiselectable="true"' : '' }>
+          ${ this.hasAttribute('searchable') || this.hasAttribute('multiple') ? `<input role="searchbox" class="x-search-box" type="text" placeholder="${ this.#search_placeholder }">` : '' }
         </div>
       `);
 
