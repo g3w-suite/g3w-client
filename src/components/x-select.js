@@ -344,12 +344,14 @@ class XSelect extends HTMLElement {
 
     // scroll container to selected option (keep it visible)
     if (isOpen) {
-      const opt = this.selected_options.length && this.container.querySelector(`x-option[value="${this.selected_options[0].value}"]`);
-      if (opt) {
-        this.#activeOption = opt; // auto focus selected option
-      } else {
-        this.#focus('first');     // no selected option
-      }
+      setTimeout(() => { 
+        const opt = this.selected_options.length && this.container.querySelector(`x-option[value="${this.selected_options[0].value}"]`);
+        if (opt) {
+          this.#activeOption = opt; // auto focus selected option
+        } else {
+          this.#focus('first');     // no selected option
+        }
+      }, 60); // wait until input has focus
     }
 
     if (!isOpen) {
