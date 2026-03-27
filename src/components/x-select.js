@@ -340,7 +340,7 @@ class XSelect extends HTMLElement {
     if (idx < 0) idx = options.length - 1;
     if (idx >= options.length) idx = 0;
 
-    if (this.input && 0 === idx) {
+    if (this.input && 0 === idx && document.activeElement !== this.input) {
       this.input.focus(); // focus search box when reaching end of list
     } else {
       this.#setActiveOption(options.at(idx));
