@@ -11,11 +11,22 @@ class XOption extends HTMLElement {
   connectedCallback() {
     this.setAttribute('role', 'option');
     this.setAttribute('tabindex', '-1');
-    this.setAttribute('aria-selected', 'false');
+    this.setAttribute('aria-selected', this.hasAttribute('selected'));
   }
+
   get value() {
     return this.getAttribute('value') ?? this.textContent.trim();
   }
+
+  static observedAttributes = ['selected'];
+
+  attributeChangedCallback(attr) {
+    // make reactive: "selected" attribute
+    if ('selected' === attr) {
+      this.setAttribute('aria-selected', this.hasAttribute('selected')); 
+    }
+  }
+
 }
 
 /**
@@ -83,7 +94,7 @@ class XSelect extends HTMLElement {
     return this.#getOptions().find(o => o.value === val)
   }
 
-  static observedAttributes = ['disabled', 'search-placeholder']
+  static observedAttributes = ['disabled', 'search-placeholder'];
 
   attributeChangedCallback(attr) {
     // make reactive: "disabled" attribute
@@ -308,7 +319,6 @@ class XSelect extends HTMLElement {
     }
 
     if (!isOpen && this.activeOption) {
-      this.activeOption.setAttribute('aria-selected', this.activeOption.hasAttribute('selected'));
       this.activeOption = null;
     }
   }
@@ -348,10 +358,8 @@ class XSelect extends HTMLElement {
   }
 
   #setActiveOption(option) {
-    this.activeOption?.setAttribute('aria-selected', this.activeOption?.hasAttribute('selected'));
     this.activeOption = option;
     this.trigger.setAttribute('aria-activedescendant', option.id || (option.id = 'option-' + Math.random().toString(36).substr(2, 9)));
-    option.setAttribute('aria-selected', option.hasAttribute('selected'));
     option.focus();
   }
 
@@ -384,9 +392,8 @@ class XSelect extends HTMLElement {
     // single-select
     if (!this.hasAttribute('multiple')) {
       if (opt) {
-        this.container.querySelectorAll('x-option').forEach(o => { o.removeAttribute('selected'); o.setAttribute('aria-selected', 'false'); });
+        this.container.querySelectorAll('x-option').forEach(o => { o.removeAttribute('selected'); });
         this.selected_options = [opt];
-        opt.setAttribute('aria-selected', 'true');
         opt.setAttribute('selected', '');
       }
       this.content.innerHTML = this.selected_options.length ? this.selected_options[0].innerHTML : this.#select_placeholder;
@@ -396,7 +403,6 @@ class XSelect extends HTMLElement {
     if (this.hasAttribute('multiple')) {
       if (opt) {
         this.selected_options = opt.hasAttribute('selected') ? this.selected_options.filter(o => o.value !== opt.value) : this.selected_options.concat(opt);
-        opt.setAttribute('aria-selected', !opt.hasAttribute('selected'));
         opt.toggleAttribute('selected');
       }
       this.content.innerHTML = this.selected_options.length ? this.selected_options.map((opt, i) => 
