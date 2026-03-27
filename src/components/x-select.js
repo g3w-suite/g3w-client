@@ -23,7 +23,7 @@ class XOption extends HTMLElement {
   attributeChangedCallback(attr) {
     // make reactive: "selected" attribute
     if ('selected' === attr) {
-      this.setAttribute('aria-selected', this.hasAttribute('selected')); 
+      this.setAttribute('aria-selected', this.hasAttribute('selected')); // keep it sync
     }
   }
 
