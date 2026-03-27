@@ -102,11 +102,9 @@ class XSelect extends HTMLElement {
       this.trigger.removeAttribute('aria-activedescendant');
       return;
     }
-    if ('string' === typeof opt) {
-      opt = { id: opt };
-    }
     this.trigger.setAttribute('aria-activedescendant', opt.id);
-    this.#getOptions().forEach(o => o.classList.toggle('is-active', o.id === opt.id))
+    this.#getOptions().forEach(o => o.classList.toggle('is-active', o.id === opt.id));
+    opt.scrollIntoView({ block: 'nearest', container: 'nearest' });
   }
 
   #getOptions() {
@@ -349,7 +347,6 @@ class XSelect extends HTMLElement {
       const opt = this.selected_options.length && this.container.querySelector(`x-option[value="${this.selected_options[0].value}"]`);
       if (opt) {
         this.#activeOption = opt; // auto focus selected option
-        opt.scrollIntoView({ block: 'nearest' });
       } else {
         this.#focus('first');     // no selected option
       }
