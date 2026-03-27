@@ -517,8 +517,7 @@ document.head.insertAdjacentHTML('beforeend', /* html */`<style id ="x-select-cs
   x-option[hidden]               { display: none; }
   x-option[disabled]             { pointer-events: none; opacity: .5; }
   x-option[selected],
-  x-option[aria-selected="true"] { background: var(--skin-color, #007bff) !important; color: white !important; }
-  x-option.is-active:not([selected]),
-  x-option:focus-visible:not([selected]) { background: hsl(from var(--skin-color, #007bff) h s calc(l + 20)) !important; color: white !important; }
+  x-option.is-active { background: var(--skin-color, #007bff) !important; color: white !important; }
+  x-option[aria-selected="true"]:not(.is-active) { background: hsl(from var(--skin-color, #007bff) h s calc(l + 20)) !important; color: white !important; }
   .triangle                      { margin-left: 8px; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid #666; }
 </style>`);
