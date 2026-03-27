@@ -8,11 +8,13 @@
  * @since 4.1.0
  */
 class XOption extends HTMLElement {
+  static _uid = 0;
+
   connectedCallback() {
     this.setAttribute('role', 'option');
     this.setAttribute('tabindex', '-1');
     this.setAttribute('aria-selected', this.hasAttribute('selected'));
-    this.id = this.id || (this.id = 'x-option-' + Math.random().toString(36).substr(2, 9))
+    this.id = this.id || ('x-option-' + (++XOption._uid));
   }
 
   get value() {
