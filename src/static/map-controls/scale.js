@@ -126,7 +126,7 @@ class ScaleControl extends ol.control.Control {
     // create the control container
     this.select = this.element = Object.assign(document.createElement('template'), {
       innerHTML: /* html */`
-        <x-select value = "1:${this.scales[0]}" createTag searchable style="width: 120px;">
+        <x-select value = "1:${this.scales[0]}" createTag searchable style="width: 120px; background-color:#e9e9ed;">
           ${this.scales.map(scale => /* html */`<x-option value = "1:${scale}">1:${scale}</x-option>`).join('')}
         </x-select>
       `.trim()
