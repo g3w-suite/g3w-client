@@ -350,7 +350,7 @@
     let x2 = 0, y2 = 0, x1 = 0, y1 = 0;
     el.addEventListener('mousedown', function(e) {
       // skip dragging on form elements
-      if (['.select2-container', 'button', 'select', 'input', 'textarea'].some(i => e.target.closest(i))) {
+      if (['.select2-container', 'button', 'select', 'input', 'textarea', 'x-select'].some(i => e.target.closest(i))) {
         return;
       }
       e.preventDefault();
