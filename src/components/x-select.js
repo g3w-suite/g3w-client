@@ -168,6 +168,7 @@ class XSelect extends HTMLElement {
           mutation.removedNodes.forEach(opt => {
             opt?._xselect_proxy?.remove();
             opt?._xselect_observer?.disconnect();
+            delete opt._xselect_proxy;
           });
         });
       }));
