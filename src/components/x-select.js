@@ -162,8 +162,9 @@ class XSelect extends HTMLElement {
             // delegate click event
             proxy.onclick = (e) => { e.stopPropagation(); this.select(opt); };
             this.container.appendChild(proxy);
-            //call select after
-            this.select(opt);
+            if (opt.getAttribute('selected')) {
+              this.select(opt);
+            }
           });
           // remove proxied node (dynamically removed by vue)
           mutation.removedNodes.forEach(opt => {
@@ -371,7 +372,16 @@ class XSelect extends HTMLElement {
     });
   }
 
+  /**
+   * @param { XOption | 'string' } opt 
+   * @param settings 
+   */
   select(opt, settings = { autoclose: false, emit: true }) {
+
+    if ('string' === typeof opt) {
+      opt = this.#getOption(opt);
+    }
+
     // single-select
     if (!this.hasAttribute('multiple')) {
       if (opt) {
