@@ -14,6 +14,7 @@ class XOption extends HTMLElement {
     this.setAttribute('role', 'option');
     this.setAttribute('tabindex', '-1');
     this.setAttribute('aria-selected', this.hasAttribute('selected'));
+    this.toggleAttribute('aria-disabled', this.hasAttribute('disabled'));
     this.id = this.id || ('x-option-' + (++XOption._uid));
   }
 
@@ -21,12 +22,16 @@ class XOption extends HTMLElement {
     return this.getAttribute('value') ?? this.textContent.trim();
   }
 
-  static observedAttributes = ['selected'];
+  static observedAttributes = ['selected', 'disabled'];
 
   attributeChangedCallback(attr) {
     // make reactive: "selected" attribute
     if ('selected' === attr) {
       this.setAttribute('aria-selected', this.hasAttribute('selected')); // keep it sync
+    }
+    // make reactive: "disabled" attribute
+    if ('disabled' === attr) {
+      this.toggleAttribute('aria-disabled', this.hasAttribute('disabled')); // keep it sync
     }
   }
 
