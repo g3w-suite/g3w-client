@@ -154,6 +154,24 @@ class XSelect extends HTMLElement {
       this.container.addEventListener('beforetoggle', e => this.#onContainerToggle(e));
       // this.container.addEventListener('toggle', e => this.#resize());
 
+      // delegate click event
+      this.container.addEventListener('click', (e) => {
+        const opt = e.target.closest('x-option');
+        if (opt) {
+          e.stopPropagation();
+          this.select(opt);
+        }
+      });
+
+      // delegate mouseover event
+      this.container.addEventListener('mouseover', (e) => {
+        const opt = e.target.closest('x-option');
+        if (!opt?.hasAttribute('disabled')) {
+          e.stopPropagation();
+          this.#activeOption = opt;
+        }
+      });
+
       if (this.input) {
         this.input.oninput   = (e) => this.#onSearchInput(e);
         this.input.onchange  = (e) => { e.stopPropagation(); }; // suppress 'change' event on parent `<x-select>`
@@ -191,9 +209,6 @@ class XSelect extends HTMLElement {
 
             proxy.style.display = null;
             proxy.removeAttribute('aria-hidden');
-
-            // delegate click event
-            proxy.onclick = (e) => { e.stopPropagation(); this.select(opt); };
             this.container.appendChild(proxy);
           });
           // remove proxied node (dynamically removed by vue)
@@ -503,8 +518,7 @@ document.head.insertAdjacentHTML('beforeend', /* html */`<style id ="x-select-cs
   x-option[disabled]             { pointer-events: none; opacity: .5; }
   x-option[selected],
   x-option[aria-selected="true"] { background: var(--skin-color, #007bff) !important; color: white !important; }
-  x-option:hover:not([disabled]),
-  x-option.is-active,
+  x-option.is-active:not([selected]),
   x-option:focus-visible:not([selected]) { background: hsl(from var(--skin-color, #007bff) h s calc(l + 20)) !important; color: white !important; }
   .triangle                      { margin-left: 8px; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid #666; }
 </style>`);
