@@ -149,6 +149,7 @@ class XSelect extends HTMLElement {
             // copy attributes from original node
             opt._xselect_observer = (new MutationObserver((mutations) => {
               proxy.innerHTML = opt.innerHTML;
+              // Array.from(opt.attributes).forEach(attr => proxy.setAttribute(attr.name, attr.value));
               for (const mutation of mutations) {
                 //get attributes mutation
                 if ('attributes' === mutation.type) {
@@ -162,9 +163,6 @@ class XSelect extends HTMLElement {
             // delegate click event
             proxy.onclick = (e) => { e.stopPropagation(); this.select(opt); };
             this.container.appendChild(proxy);
-            if (opt.getAttribute('selected')) {
-              this.select(opt);
-            }
           });
           // remove proxied node (dynamically removed by vue)
           mutation.removedNodes.forEach(opt => {

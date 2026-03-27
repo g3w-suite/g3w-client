@@ -54,8 +54,10 @@ class ScaleControl extends ol.control.Control {
     Array.from(this.element.querySelectorAll('x-option')).filter(o => !this.scales.includes(1*o.value.split(':')[1])).forEach(o => o?.remove());
 
     // append the new custom scale option to the x-select
-    this.select.insertAdjacentHTML('beforeend', /* html */ `<x-option value = "1:${scale}" selected>1:${scale}</x-option>`);
-    
+    this.select.insertAdjacentHTML('beforeend', /* html */ `<x-option value = "1:${scale}">1:${scale}</x-option>`);
+
+    // auto select
+    this.select.select(`1:${scale}`);
   }
 
   /**
