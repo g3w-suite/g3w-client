@@ -42,7 +42,6 @@ class XSelect extends HTMLElement {
   constructor() {
     super();
     this.selected_options = [];
-    this.activeOption     = null;
 
     this._onClickOutside  = e => { if (!this.contains(e.target)) this.close(); };
 
@@ -87,6 +86,22 @@ class XSelect extends HTMLElement {
 
   get #select_placeholder() {
     return (g3w?.gettext('Select') ?? 'Select') + '...';
+  }
+
+  get #activeOption() {
+    return this.querySelector('#' + this.trigger.getAttribute('aria-activedescendant')); 
+  }
+
+  set #activeOption(opt) {
+    if (!opt) {
+      this.trigger.removeAttribute('aria-activedescendant');
+      return;
+    }
+    if ('string' === typeof opt) {
+      opt = { id: opt };
+    }
+    this.trigger.setAttribute('aria-activedescendant', opt.id);
+    this.#getOptions().forEach(o => o.classList.toggle('is-active', o.id === opt.id))
   }
 
   #getOptions() {
@@ -228,6 +243,10 @@ class XSelect extends HTMLElement {
   #search(query) {
     const term    = query.toLowerCase();
     this.container.querySelectorAll('x-option').forEach(opt => { opt.toggleAttribute('hidden', !opt.textContent.toLowerCase().includes(term)); });
+    // highlight first available if option
+    if (!this.#activeOption || this.#activeOption.hasAttribute('hidden')) {
+      this.#activeOption = this.container.querySelector('x-option:not([hidden], [disabled])');
+    }
   }
 
   #onSearchKeydown(e) {
@@ -284,7 +303,7 @@ class XSelect extends HTMLElement {
     switch (e.key) {
       case 'ArrowDown': e.preventDefault(); e.stopPropagation(); this.#focus(1);                     break;
       case 'ArrowUp':   e.preventDefault(); e.stopPropagation(); this.#focus(-1);                    break;
-      case 'Enter':     e.preventDefault(); e.stopPropagation(); this.select(this.activeOption);     break;
+      case 'Enter':     e.preventDefault(); e.stopPropagation(); this.select(this.#activeOption);     break;
       case 'Escape':    e.preventDefault(); e.stopPropagation(); this.close(); this.trigger.focus(); break;
       case 'Tab':       this.close();                                           break; // Allow tab to move out
     }
@@ -321,11 +340,7 @@ class XSelect extends HTMLElement {
     }
 
     if (!isOpen) {
-      this.trigger.removeAttribute('aria-activedescendant');
-    }
-
-    if (!isOpen && this.activeOption) {
-      this.activeOption = null;
+      this.#activeOption = null;
     }
   }
 
@@ -334,39 +349,33 @@ class XSelect extends HTMLElement {
 
     if ('first' === direction) {
       if (options.length > 0) {
-        this.#setActiveOption(options.at(0));
+        this.#activeOption = options.at(0);
       }
       return; 
     }
 
     if ('last' === direction) {
       if (options.length > 0) {
-        this.#setActiveOption(options.at(-1));
+        this.#activeOption = options.at(-1);
       }
       return;
     }
 
-    if (!this.activeOption) {
-      this.#setActiveOption(options.at(0));
+    if (!this.#activeOption) {
+      this.#activeOption = options.at(0);
       return;
     }
 
-    let idx = options.indexOf(this.activeOption) + direction;
+    let idx = options.indexOf(this.#activeOption) + direction;
     if (idx < 0) idx = options.length - 1;
     if (idx >= options.length) idx = 0;
 
     if (this.input && 0 === idx && document.activeElement !== this.input) {
       this.input.focus(); // focus search box when reaching end of list
     } else {
-      this.#setActiveOption(options.at(idx));
+      this.#activeOption = options.at(idx);
     }
     
-  }
-
-  #setActiveOption(option) {
-    this.activeOption = option;
-    this.trigger.setAttribute('aria-activedescendant', option.id);
-    option.focus();
   }
 
   #resize() {
@@ -500,6 +509,7 @@ document.head.insertAdjacentHTML('beforeend', /* html */`<style id ="x-select-cs
   x-option[selected],
   x-option[aria-selected="true"] { background: var(--skin-color, #007bff) !important; color: white !important; }
   x-option:hover:not([disabled]),
+  x-option.is-active,
   x-option:focus-visible:not([selected]) { background: hsl(from var(--skin-color, #007bff) h s calc(l + 20)) !important; color: white !important; }
   .triangle                      { margin-left: 8px; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid #666; }
 </style>`);
