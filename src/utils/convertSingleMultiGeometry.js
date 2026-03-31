@@ -1,4 +1,3 @@
-import { GEOMETRY_TYPES }  from 'g3w-constants';
 import { isMultiGeometry } from 'utils/isMultiGeometry';
 
 /**
@@ -19,11 +18,11 @@ export function convertSingleMultiGeometry(geometry, toGeometryType) {
   
   if (from_multi && !to_multi) {
     switch (geometry.getType()) {
-      case GEOMETRY_TYPES.MULTIPOLYGON:    return geometry.getPolygons();
-      case GEOMETRY_TYPES.MULTILINE:       return geometry.getLineStrings();
-      case GEOMETRY_TYPES.MULTILINESTRING: return geometry.getLineStrings();
-      case GEOMETRY_TYPES.MULTIPOINT:      return geometry.getPoints();
-      default:                            console.warn('invalid geometry type', geometry.getType());
+      case 'MultiPolygon':    return geometry.getPolygons();
+      case 'MultiLine':       return geometry.getLineStrings();
+      case 'MultiLineString': return geometry.getLineStrings();
+      case 'MultiPoint':      return geometry.getPoints();
+      default:                console.warn('invalid geometry type', geometry.getType());
     }
     return [];
   }

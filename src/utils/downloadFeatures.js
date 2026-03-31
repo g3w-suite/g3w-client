@@ -115,10 +115,10 @@ export async function downloadFeatures({
           </div>
 
           ${down_with_polygon ? /* html */` 
-            <label>${ _('mapcontrols.querybypolygon.download.title') }</label>
+            <label>${ _('Attributes download') }</label>
             <select name = "down_with_polygon" style = "width: 100%" class = "form-control">
-              <option value = "0">${ _('mapcontrols.querybypolygon.download.choiches.feature.label') }</option>
-              <option value = "1">${ _('mapcontrols.querybypolygon.download.choiches.feature_polygon.label') }</option>
+              <option value = "0">${ _('Features only') }</option>
+              <option value = "1">${ _('Features+Query Polygon') }</option>
             </select> ` : '' 
           }
 

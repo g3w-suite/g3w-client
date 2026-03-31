@@ -10,10 +10,7 @@
     <div
       id    = "query_builder_layers"
       class = "mb-5">
-      <label
-        class = "querybuilder-title"
-        v-t   = "'EXPRESSION'">
-      </label>
+      <label>{{ $t('EXPRESSION') }}</label>
       <a
         :href           = "`https://g3w-suite.readthedocs.io/en/v3.9.x/g3wsuite_client.html#search-and-query-builder`"
         target          = "_blank"
@@ -23,14 +20,14 @@
       >
         <i aria-hidden = "true" class = "fa fa-external-link-alt"></i>
       </a>
-      <select id = "query_builder_layers_select" class = "form-control">
-        <option
-          v-for  = "(layer, i) in layers"
-          :key   = "layer.label"
-          :value = "i"
-          class  = "bold"
-        >{{ layer.label }}</option>
-      </select>
+      <x-select
+        :value     = "Math.max(layers.indexOf(currentlayer), 0)"
+        @change    = "onCurrentlayerChange"
+        style      = "color: #000;"
+        searchable
+      >
+        <x-option v-for = "(layer, i) in layers" :key = "layer.label" :value = "i">{{ layer.label }}</x-option>
+      </x-select>
     </div>
 
     <!-- SEARCH EXPRESSION -->
@@ -41,37 +38,37 @@
     <b
       class   = "skin-color"
       v-show  = "message"
-    ><span v-t = "'Features found:'"></span>{{ message }}</b>
+    >{{ $t('Features found:') }} {{ message }}</b>
 
-    <div class = "content-end">
+    <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; margin-top: 5px;">
       <button
         class     = "query_builder_button btn btn-secondary bold"
         @click    = "run"
         :disabled = "disabled"
-        v-t       = "'RUN'"
       >
         <i aria-hidden = "true" class = "fas fa-play" style = "color: green;"></i>
+        {{ $t('RUN') }}
       </button>
       <button
         class     = "query_builder_button btn btn-secondary bold"
         @click    = "reset"
-        v-t       = "'CLEAR'"
       >
         <i aria-hidden = "true" class = "fas fa-broom"></i>
+        {{ $t('CLEAR') }}
       </button>
       <button
         class     = "query_builder_button btn btn-secondary bold"
         @click    = "save"
         :disabled = "disabled"
-        v-t       = "'SAVE'"
       >
         <i aria-hidden = "true" class = "far fa-save"></i>
+        {{ $t('SAVE') }}
       </button>
     </div>
 
     <hr>
 
-    <label v-t = "'FIELDS'"></label>
+    <label>{{ $t('FIELDS') }}</label>
 
     <!-- SEARCH FIELDS -->
     <select ref = "search_fields" size = "4" class = "mb-5">
@@ -84,7 +81,7 @@
     </select>
 
     <!-- SEARCH OPERATORS -->
-    <div class = "content-wrap mb-5">
+    <div class = "mb-5" style = "display: flex; flex-wrap: wrap;">
       <button
         v-for  = "operator in ['>=', '<=', '!=', '=', '>', '<', 'IN', 'LIKE', 'ILIKE', 'AND', 'OR' ]"
         @click = "addToExpression({ value: operator, type: 'operator' })"
@@ -113,7 +110,7 @@
       style     = "color: #000;"
     >
       <i aria-hidden = "true" class = "fas fa-search"></i>
-      <span v-t = "'SEARCH A VALUE'"></span>
+      {{ $t('SEARCH A VALUE') }}
     </button>
 
   </div>
@@ -312,6 +309,16 @@ export default {
       GUI.showUserMessage({ type: 'success', message: _('Saved'), autoclose: true });
     },
 
+    /**
+     * @since 4.1.0
+     */
+    onCurrentlayerChange(e) {
+      this.currentlayer = this.layers[e.target.value];
+      this.select.field = null;
+      this.select.value = null;
+      this.reset();
+    },
+
   },
 
   created() {
@@ -348,29 +355,6 @@ export default {
 
   },
 
-  async mounted() {
-    await this.$nextTick();
-
-    this.select2 = $('#query_builder_layers_select').select2({ width: '100%' });
-
-    if (this.edit) {
-      this.select2.val(this.layers.indexOf(this.currentlayer));
-      this.select2.trigger('change');
-    }
-
-    this.select2.on('select2:select', e => {
-      this.currentlayer = this.layers[e.params.data.id];
-      this.select.field = null;
-      this.select.value = null;
-      this.reset();
-    });
-  },
-
-  beforeDestroy() {
-    this.select2.select2('destroy');
-    this.select2 = null;
-  },
-
 };
 </script>
 
@@ -381,13 +365,6 @@ export default {
   display: flex;
   flex-wrap: nowrap;
   flex-direction: column;
-}
-#query_builder .select2.select2-container {
-  font-weight: bold;
-}
-.querybuilder-title {
-  color: #fff;
-  font-weight: bold;
 }
 select {
   background-color: #fff;
@@ -410,16 +387,6 @@ option:nth-of-type(2n+1) {
   flex-basis: 78px;
   flex-grow: 1;
   color: #000;
-}
-.content-wrap {
-  display: flex;
-  flex-wrap: wrap;
-}
-.content-end {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  margin-top: 5px;
 }
 .mb-5 {
   margin-bottom: 5px;

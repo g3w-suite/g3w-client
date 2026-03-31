@@ -16,7 +16,7 @@
       data-placement = "top"
       title          = "Metadata"
     >
-      <i data-v-5685d65c = "" aria-hidden = "true" class = "fas fa-info-circle"></i>
+      <i aria-hidden = "true" class = "fas fa-info-circle"></i>
     </button>
 
     <!-- TOTAL ELEMENTS -->
@@ -558,7 +558,7 @@ export default {
         
       } catch(e) {
         console.warn(e);
-        GUI.showUserMessage({ type: 'alert', message: _("info.server_error") });
+        GUI.showUserMessage({ type: 'alert', message: _("server_error") });
       }
 
       GUI.setLoadingContent(false);
@@ -617,7 +617,6 @@ export default {
 
   async mounted() {
   
-    console.log(this.state.features)
     // un-toggle map controls
     this.last_map_control = GUI.getMapControls().find(c => c?.control?.isToggled?.());
     if (this.last_map_control) {

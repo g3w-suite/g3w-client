@@ -1,38 +1,14 @@
-import { GEOMETRY_TYPES } from 'g3w-constants';
+const TYPES = [
+  'MultiLineStringZ', 'MultiLineStringM', 'MultiLineStringZM', 'MultiLineString25D',
+     'MultiPolygonZ',    'MultiPolygonM',    'MultiPolygonZM',    'MultiPolygon25D',
+       'MultiPointZ',      'MutliPointM',      'MultiPointZM',      'MultiPoint25D',
+       'LineStringZ',      'LineStringM',      'LineStringZM',      'LineString25D',
+        'MultiLineZ',       'MultiLineM',       'MultiLineZM',       'MultiLine25D',
+          'PolygonZ',         'PolygonM',         'PolygonZM',         'Polygon25D',
+            'PointZ',           'PointM',          'PointZM',            'Point25D',
+             'LineZ',            'LineM',            'LineZM',            'Line25D',
+];
 
 export function is3DGeometry(geometryType) {
-  return [
-    GEOMETRY_TYPES.POINTZ,
-    GEOMETRY_TYPES.POINTM,
-    GEOMETRY_TYPES.POINTZM,
-    GEOMETRY_TYPES.POINT25D,
-    GEOMETRY_TYPES.MULTIPOINTZ,
-    GEOMETRY_TYPES.MULTIPOINTM,
-    GEOMETRY_TYPES.MULTIPOINTZM,
-    GEOMETRY_TYPES.MULTIPOINT25D,
-    GEOMETRY_TYPES.LINESTRINGZ,
-    GEOMETRY_TYPES.LINESTRINGM,
-    GEOMETRY_TYPES.LINESTRINGZM,
-    GEOMETRY_TYPES.LINESTRING25D,
-    GEOMETRY_TYPES.MULTILINESTRINGZ,
-    GEOMETRY_TYPES.MULTILINESTRINGM,
-    GEOMETRY_TYPES.MULTILINESTRINGZM,
-    GEOMETRY_TYPES.MULTILINESTRING25D,
-    GEOMETRY_TYPES.LINEZ,
-    GEOMETRY_TYPES.LINEM,
-    GEOMETRY_TYPES.LINEZM,
-    GEOMETRY_TYPES.LINE25D,
-    GEOMETRY_TYPES.MULTILINEZ,
-    GEOMETRY_TYPES.MULTILINEM,
-    GEOMETRY_TYPES.MULTILINEZM,
-    GEOMETRY_TYPES.MULTILINE25D,
-    GEOMETRY_TYPES.POLYGONZ,
-    GEOMETRY_TYPES.POLYGONM,
-    GEOMETRY_TYPES.POLYGONZM,
-    GEOMETRY_TYPES.POLYGON25D,
-    GEOMETRY_TYPES.MULTIPOLYGONZ,
-    GEOMETRY_TYPES.MULTIPOLYGONM,
-    GEOMETRY_TYPES.MULTIPOLYGONZM,
-    GEOMETRY_TYPES.MULTIPOLYGON25D
-  ].find(type3D => type3D === geometryType);
+  return TYPES.find(type3D => type3D === geometryType);
 }

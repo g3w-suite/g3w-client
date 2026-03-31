@@ -1,29 +1,10 @@
-import { GEOMETRY_TYPES } from 'g3w-constants';
+const TYPES = [
+  'MultiLineString', 'MultiLineStringZ', 'MultiLineStringM', 'MultiLineStringZM', 'MultiLineString25D',
+     'MultiPolygon',     'MultiPolygonZ',    'MultiPolygonM',    'MultiPolygonZM',   'MultiPolygon25D',
+       'MultiPoint',       'MultiPointZ',      'MutliPointM',      'MultiPointZM',     'MultiPoint25D',
+        'MultiLine',        'MultiLineZ',       'MultiLineM',       'MultiLineZM',      'MultiLine25D',
+];
 
-/**
- * core/geometry/geometry::isMultiGeometry@v3.4
- */
 export function isMultiGeometry(geometryType) {
-  return [
-    GEOMETRY_TYPES.MULTIPOINT,
-    GEOMETRY_TYPES.MULTIPOINTZ,
-    GEOMETRY_TYPES.MULTIPOINTZM,
-    GEOMETRY_TYPES.MULTIPOINTM,
-    GEOMETRY_TYPES.MULTIPOINT25D,
-    GEOMETRY_TYPES.MULTILINESTRING,
-    GEOMETRY_TYPES.MULTILINESTRINGZ,
-    GEOMETRY_TYPES.MULTILINESTRINGM,
-    GEOMETRY_TYPES.MULTILINESTRINGZM,
-    GEOMETRY_TYPES.MULTILINESTRING25D,
-    GEOMETRY_TYPES.MULTILINE,
-    GEOMETRY_TYPES.MULTILINEZ,
-    GEOMETRY_TYPES.MULTILINEM,
-    GEOMETRY_TYPES.MULTILINEZM,
-    GEOMETRY_TYPES.MULTILINE25D,
-    GEOMETRY_TYPES.MULTIPOLYGON,
-    GEOMETRY_TYPES.MULTIPOLYGONZ,
-    GEOMETRY_TYPES.MULTIPOLYGONM,
-    GEOMETRY_TYPES.MULTIPOLYGONZM,
-    GEOMETRY_TYPES.MULTIPOLYGON25D,
-  ].includes(geometryType);
+  return TYPES.includes(geometryType);
 }

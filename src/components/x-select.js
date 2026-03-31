@@ -8,14 +8,33 @@
  * @since 4.1.0
  */
 class XOption extends HTMLElement {
+  static _uid = 0;
+
   connectedCallback() {
     this.setAttribute('role', 'option');
     this.setAttribute('tabindex', '-1');
-    this.setAttribute('aria-selected', 'false');
+    this.setAttribute('aria-selected', this.hasAttribute('selected'));
+    this.toggleAttribute('aria-disabled', this.hasAttribute('disabled'));
+    this.id = this.id || ('x-option-' + (++XOption._uid));
   }
+
   get value() {
     return this.getAttribute('value') ?? this.textContent.trim();
   }
+
+  static observedAttributes = ['selected', 'disabled'];
+
+  attributeChangedCallback(attr) {
+    // make reactive: "selected" attribute
+    if ('selected' === attr) {
+      this.setAttribute('aria-selected', this.hasAttribute('selected')); // keep it sync
+    }
+    // make reactive: "disabled" attribute
+    if ('disabled' === attr) {
+      this.toggleAttribute('aria-disabled', this.hasAttribute('disabled')); // keep it sync
+    }
+  }
+
 }
 
 /**
@@ -25,13 +44,32 @@ class XOption extends HTMLElement {
  */
 class XSelect extends HTMLElement {
 
+  static _uid = 0;
+
   constructor() {
     super();
+
     this.selected_options = [];
-    this.activeOption     = null;
-    this._onClickOutside  = e => { if (!this.contains(e.target)) { this.close(); } };
-    this._onPageScroll    = () => { if(this.isOpen) this.#resize(); };
-    this._onPageResize    = () => { if(this.isOpen) this.#resize(); };
+
+    this._onClickOutside  = e => { if (!this.contains(e.target)) this.close(); };
+
+    // throttle component "resizing" (on page scroll)
+    let resizing = false;
+    this._onPageScroll = () => {
+      if (!resizing && this.isOpen) {
+        resizing = true;
+        requestAnimationFrame(() => { this.#resize(); resizing = false; });
+       }
+    };
+
+    this._onPageResize = () => { if (this.isOpen) this.close(); };
+    this._onPageKeyDown = e => {
+      if (this.isOpen && e.target !== this.input) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.#onContainerKeydown(e);
+      }
+    };
   }
 
   get isOpen() {
@@ -50,6 +88,28 @@ class XSelect extends HTMLElement {
     this.select(this.#getOption(val), { autoclose: false, emit: false });
   }
 
+  get #search_placeholder() {
+    return (this.getAttribute('search-placeholder') ?? g3w?.gettext('Search') ?? 'Search') + '...';
+  }
+
+  get #select_placeholder() {
+    return (g3w?.gettext('Select') ?? 'Select') + '...';
+  }
+
+  get #activeOption() {
+    return this.querySelector('#' + this.trigger.getAttribute('aria-activedescendant')); 
+  }
+
+  set #activeOption(opt) {
+    if (!opt) {
+      this.trigger.removeAttribute('aria-activedescendant');
+      return;
+    }
+    this.trigger.setAttribute('aria-activedescendant', opt.id);
+    this.#getOptions().forEach(o => o.classList.toggle('is-active', o.id === opt.id));
+    opt.scrollIntoView({ block: 'nearest', container: 'nearest' });
+  }
+
   #getOptions() {
     return Array.from(new Set([...this.selected_options, ...Array.from(this.querySelectorAll('x-option'))]));
   }
@@ -58,12 +118,16 @@ class XSelect extends HTMLElement {
     return this.#getOptions().find(o => o.value === val)
   }
 
-  static observedAttributes = ['disabled']
+  static observedAttributes = ['disabled', 'search-placeholder'];
 
   attributeChangedCallback(attr) {
     // make reactive: "disabled" attribute
     if ('disabled' === attr) {
       this.#onDisabled()
+    }
+    // make reactive: "search-placeholder" attribute
+    if ('search-placeholder' === attr && this.input) {
+      this.input.placeholder = this.#search_placeholder;
     }
   }
 
@@ -71,13 +135,15 @@ class XSelect extends HTMLElement {
 
     Promise.resolve().then(() => {
 
+      const _uid = ++XSelect._uid;
+
       this.insertAdjacentHTML('afterbegin', /* html */`
-        <div class="x-select-trigger" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox">
+        <div class="x-select-trigger" tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-controls="x-options-${_uid}" >
           <div class="x-selected-content"></div>
           <i class="triangle"></i>
         </div>
-        <div class="x-options" popover="manual" role="listbox" ${ this.hasAttribute('multiple') ? 'aria-multiselectable="true"' : '' }>
-          ${ this.hasAttribute('searchable') || this.hasAttribute('multiple') ? `<input class="x-search-box" type="text" placeholder="${ this.getAttribute('search-placeholder') ?? g3w?.gettext('Search') ?? 'Search' }...">` : '' }
+        <div id="x-options-${_uid}" class="x-options" popover="manual" role="listbox" ${ this.hasAttribute('multiple') ? 'aria-multiselectable="true"' : '' }>
+          ${ this.hasAttribute('searchable') || this.hasAttribute('multiple') ? `<input role="searchbox" class="x-search-box" type="text" placeholder="${ this.#search_placeholder }">` : '' }
         </div>
       `);
 
@@ -92,7 +158,27 @@ class XSelect extends HTMLElement {
       });
 
       this.container.onkeydown = (e) => this.#onContainerKeydown(e);
+
       this.container.addEventListener('beforetoggle', e => this.#onContainerToggle(e));
+      // this.container.addEventListener('toggle', e => this.#resize());
+
+      // delegate click event
+      this.container.addEventListener('click', (e) => {
+        const opt = e.target.closest('x-option');
+        if (opt) {
+          e.stopPropagation();
+          this.select(opt);
+        }
+      });
+
+      // delegate mouseover event
+      this.container.addEventListener('mouseover', (e) => {
+        const opt = e.target.closest('x-option');
+        if (!opt?.hasAttribute('disabled')) {
+          e.stopPropagation();
+          this.#activeOption = opt;
+        }
+      });
 
       if (this.input) {
         this.input.oninput   = (e) => this.#onSearchInput(e);
@@ -101,7 +187,7 @@ class XSelect extends HTMLElement {
       }
 
       this.trigger.onclick   = (e) => { e.stopPropagation(); if (!this.isDisabled) this.toggle(); };
-      this.trigger.onkeydown = (e) => { if (!this.isDisabled) this.#onTriggerKeydown(e); };
+      this.trigger.onkeydown = (e) => this.#onTriggerKeydown(e);
 
       // make reactive: "<x-option>" elements
       this.observer = (new MutationObserver((mutations) => {
@@ -114,32 +200,42 @@ class XSelect extends HTMLElement {
             const proxy = opt.cloneNode(true);
             opt._xselect_proxy = proxy;
             opt.style.display = 'none';
+            opt.setAttribute('aria-hidden', true);
 
             // copy attributes from original node
-            opt._xselect_observer = (new MutationObserver(() => {
+            opt._xselect_observer = (new MutationObserver((mutations) => {
               proxy.innerHTML = opt.innerHTML;
-              Array.from(opt.attributes).forEach(attr => proxy.setAttribute(attr.name, attr.value));
+              // Array.from(opt.attributes).forEach(attr => proxy.setAttribute(attr.name, attr.value));
+              for (const mutation of mutations) {
+                //get attributes mutation
+                if ('attributes' === mutation.type) {
+                  proxy.setAttribute(mutation.attributeName, mutation.target.getAttribute(mutation.attributeName))
+                }
+              }
             }));
             opt._xselect_observer.observe(opt, { childList: true, attributes: true, characterData: true, subtree: true });
 
             proxy.style.display = null;
-            // delegate click event
-            proxy.onclick = (e) => { e.stopPropagation(); this.select(opt); };
+            proxy.removeAttribute('aria-hidden');
             this.container.appendChild(proxy);
           });
           // remove proxied node (dynamically removed by vue)
           mutation.removedNodes.forEach(opt => {
             opt?._xselect_proxy?.remove();
             opt?._xselect_observer?.disconnect();
+            delete opt._xselect_proxy;
           });
         });
       }));
       
       this.observer.observe(this, { childList: true });
 
+      this.langWatcher = Vue.watch(() => g3w?.state?.language, lang => this.refresh());
+
       document.addEventListener('pointerup', this._onClickOutside);
       window.addEventListener('scroll', this._onPageScroll, true);
       window.addEventListener('resize', this._onPageResize);
+      window.addEventListener('keydown', this._onPageKeyDown);
 
       if (this.getAttribute('value')) {                                 // inital value (from <x-select value="some value">)
         this.select(this.#getOption(this.getAttribute('value')), { autoclose: false, emit: false });
@@ -155,7 +251,9 @@ class XSelect extends HTMLElement {
     document.removeEventListener('pointerup', this._onClickOutside);
     window.removeEventListener('scroll', this._onPageScroll, true);
     window.removeEventListener('resize', this._onPageResize);
+    window.removeEventListener('keydown', this._onPageKeyDown);
     this.observer?.disconnect();
+    this.langWatcher();
   }
 
   #onDisabled() {
@@ -168,6 +266,10 @@ class XSelect extends HTMLElement {
   #search(query) {
     const term    = query.toLowerCase();
     this.container.querySelectorAll('x-option').forEach(opt => { opt.toggleAttribute('hidden', !opt.textContent.toLowerCase().includes(term)); });
+    // highlight first available if option
+    if (!this.#activeOption || this.#activeOption.hasAttribute('hidden')) {
+      this.#activeOption = this.container.querySelector('x-option:not([hidden], [disabled])');
+    }
   }
 
   #onSearchKeydown(e) {
@@ -204,6 +306,9 @@ class XSelect extends HTMLElement {
   }
 
   #onTriggerKeydown(e) {
+    if (this.isDisabled) {
+      return;
+    }
     switch (e.key) {
       case 'Enter':
       case ' ':         e.preventDefault(); this.toggle();                                       break;
@@ -219,10 +324,10 @@ class XSelect extends HTMLElement {
       return;
     }
     switch (e.key) {
-      case 'ArrowDown': e.preventDefault(); this.#focus(1);                     break;
-      case 'ArrowUp':   e.preventDefault(); this.#focus(-1);                    break;
-      case 'Enter':     e.preventDefault(); this.select(this.activeOption);     break;
-      case 'Escape':    e.preventDefault(); this.close(); this.trigger.focus(); break;
+      case 'ArrowDown': e.preventDefault(); e.stopPropagation(); this.#focus(1);                     break;
+      case 'ArrowUp':   e.preventDefault(); e.stopPropagation(); this.#focus(-1);                    break;
+      case 'Enter':     e.preventDefault(); e.stopPropagation(); this.select(this.#activeOption);     break;
+      case 'Escape':    e.preventDefault(); e.stopPropagation(); this.close(); this.trigger.focus(); break;
       case 'Tab':       this.close();                                           break; // Allow tab to move out
     }
   }
@@ -231,21 +336,31 @@ class XSelect extends HTMLElement {
     const isOpen = 'open' === e.newState;
     this.trigger.setAttribute('aria-expanded', isOpen);
     this.trigger.classList.toggle('open', isOpen);
+
     if (isOpen) {
-      this.#resize(); 
-      if (this.input) {
-        this.input.value = '';                    // reset search box
-        this.#search('');
-        setTimeout(() => this.input.focus(), 50); // auto focus
-      } else {
-        this.#focus('first');
-      }
-    } else {
-      this.trigger.removeAttribute('aria-activedescendant');
-      if (this.activeOption) {
-        this.activeOption.setAttribute('aria-selected', this.activeOption.hasAttribute('selected'));
-        this.activeOption = null;
-      }
+      this.#resize();
+    }
+
+    if (isOpen && this.input) {
+      this.input.value = '';                    // reset search box
+      this.#search('');
+      setTimeout(() => this.input.focus(), 50); // auto focus
+    }
+
+    // scroll container to selected option (keep it visible)
+    if (isOpen) {
+      setTimeout(() => { 
+        const opt = this.selected_options.length && this.container.querySelector(`x-option[value="${this.selected_options[0].value}"]`);
+        if (opt) {
+          this.#activeOption = opt; // auto focus selected option
+        } else {
+          this.#focus('first');     // no selected option
+        }
+      }, 60); // wait until input has focus
+    }
+
+    if (!isOpen) {
+      this.#activeOption = null;
     }
   }
 
@@ -254,67 +369,75 @@ class XSelect extends HTMLElement {
 
     if ('first' === direction) {
       if (options.length > 0) {
-        this.#setActiveOption(options.at(0));
+        this.#activeOption = options.at(0);
       }
       return; 
     }
 
     if ('last' === direction) {
       if (options.length > 0) {
-        this.#setActiveOption(options.at(-1));
+        this.#activeOption = options.at(-1);
       }
       return;
     }
 
-    if (!this.activeOption) {
-      this.#setActiveOption(options.at(0));
+    if (!this.#activeOption) {
+      this.#activeOption = options.at(0);
       return;
     }
 
-    const currentIndex = options.indexOf(this.activeOption);
-    let newIndex = currentIndex + direction;
-    if (newIndex < 0) newIndex = options.length - 1;
-    if (newIndex >= options.length) newIndex = 0;
-    this.#setActiveOption(options.at(newIndex));
-  }
+    let idx = options.indexOf(this.#activeOption) + direction;
+    if (idx < 0) idx = options.length - 1;
+    if (idx >= options.length) idx = 0;
 
-  #setActiveOption(option) {
-    this.activeOption?.setAttribute('aria-selected', this.activeOption?.hasAttribute('selected'));
-    this.activeOption = option;
-    this.trigger.setAttribute('aria-activedescendant', option.id || (option.id = 'option-' + Math.random().toString(36).substr(2, 9)));
-    option.setAttribute('aria-selected', 'true');
-    option.focus();
+    this.#activeOption = options.at(idx);
   }
 
   #resize() {
-    const rect = this.trigger.getBoundingClientRect();
-    this.container.style.top = `${rect.bottom + 2}px`;
-    this.container.style.left = `${rect.left}px`;
-    this.container.style.setProperty('--select-width', `${rect.width}px`);
+    if (!this.trigger || !this.container) {
+      return;
+    }
+
+    // wait for next browser "paint"
+    requestAnimationFrame(() => { 
+      const rect = this.trigger.getBoundingClientRect();
+      this.container.style.top = (window.innerHeight - rect.bottom < this.container.offsetHeight)
+        ? `${rect.top - 2 - this.container.offsetHeight}px` // prevent bottom overflow (page) 
+        : `${rect.bottom + 2}px`;
+      this.container.style.left  = `${rect.left}px`;
+      this.container.style.width = `${rect.width}px`;
+    });
   }
 
+  /**
+   * @param { XOption | 'string' } opt 
+   * @param settings 
+   */
   select(opt, settings = { autoclose: false, emit: true }) {
+
+    if ('string' === typeof opt) {
+      opt = this.#getOption(opt);
+    }
+
     // single-select
     if (!this.hasAttribute('multiple')) {
       if (opt) {
-        this.container.querySelectorAll('x-option').forEach(o => { o.removeAttribute('selected'); o.setAttribute('aria-selected', 'false'); });
+        this.container.querySelectorAll('x-option').forEach(o => { o.removeAttribute('selected'); });
         this.selected_options = [opt];
-        opt.setAttribute('aria-selected', 'true');
         opt.setAttribute('selected', '');
       }
-      this.content.innerHTML = this.selected_options.length ? this.selected_options[0].innerHTML : ((g3w?.gettext('Select') ?? 'Select') + '...');
+      this.content.innerHTML = this.selected_options.length ? this.selected_options[0].innerHTML : this.#select_placeholder;
     }
 
     // multi-select
     if (this.hasAttribute('multiple')) {
       if (opt) {
         this.selected_options = opt.hasAttribute('selected') ? this.selected_options.filter(o => o.value !== opt.value) : this.selected_options.concat(opt);
-        opt.setAttribute('aria-selected', !opt.hasAttribute('selected'));
         opt.toggleAttribute('selected');
       }
       this.content.innerHTML = this.selected_options.length ? this.selected_options.map((opt, i) => 
         `<span class="x-selected-badge"><span class="x-remove" data-index="${i}">×</span>${opt.innerHTML}</span>`
-      ).join('') : ((g3w?.gettext('Select') ?? 'Select') + '...');
+      ).join('') : this.#select_placeholder;
       this.content.querySelectorAll('.x-remove').forEach(btn => {
         btn.onclick = (e) => {
           e.stopPropagation();
@@ -387,18 +510,19 @@ customElements.define('x-select', XSelect);
 // });
 
 document.head.insertAdjacentHTML('beforeend', /* html */`<style id ="x-select-css">
-  x-select                    { display: inline-block; position: relative; width:100%; font-family: inherit; }
-  .x-select-trigger           { border: 1px solid #ccc; background: white; padding: 6px 12px; display: flex; align-items: center; min-height: 34px; cursor: pointer; box-sizing: border-box; }
-  .x-selected-content         { flex: 1; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; pointer-events: none; overflow: hidden; }
-  .x-selected-badge           { display: inline-flex; align-items: center; background: var(--skin-color, #007bff); color: white; padding: 1px 10px; border-radius: 4px; pointer-events: auto; }
-  .x-selected-badge .x-remove { margin-right: 5px; cursor: pointer; font-weight: bold; }
-  .x-options                  { margin: 0; padding: 0; border: 1px solid #ccc; background: white; z-index: 9999; max-height: 300px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15); position: fixed; width: var(--select-width); display: none; }
-  .x-options:popover-open     { display: block; }
-  .x-search-box               { margin: 8px; box-shadow: 0 0 0 19px white; clip-path: inset(-8px -8px -8px -8px); /*! border-bottom: 1px solid #eee; */position: sticky;top: 8px;background: white;z-index: 1;padding: 6px;border: 1px solid #ddd;border-radius: 4px;box-sizing: border-box;outline: none;width: calc(100% - 16px); }
-  x-option                    { padding: 8px 12px; display: flex; align-items: center; cursor: pointer; color: #333; }
-  x-option[hidden]            { display: none; }
-  x-option[disabled]          { pointer-events: none; opacity: .5; }
-  x-option:hover              { background: #f8f9fa; }
-  x-option[selected]          { background: var(--skin-color, #007bff) !important; color: white !important; }
-  .triangle                   { margin-left: 8px; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid #666; }
+  x-select                                       { display: inline-block; position: relative; width:100%; font-family: inherit; }
+  .x-select-trigger                              { border: 1px solid #ccc; background: white; padding: 6px 6px 6px 12px; display: flex; align-items: center; min-height: 34px; cursor: pointer; box-sizing: border-box; user-select: none; }
+  .x-selected-content                            { flex: 1; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; pointer-events: none; overflow: hidden; }
+  .x-selected-badge                              { display: inline-flex; align-items: center; background: var(--skin-color, #007bff); color: white; padding: 1px 10px; border-radius: 4px; pointer-events: auto; }
+  .x-selected-badge .x-remove                    { margin-right: 5px; cursor: pointer; font-weight: bold; }
+  .x-options                                     { margin: 0; padding: 0; border: 1px solid #ccc; background: white; z-index: 9999; max-height: 300px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15); position: fixed; display: none; }
+  .x-options:popover-open                        { display: block; }
+  .x-search-box                                  { margin: 8px; box-shadow: 0 0 0 19px white; clip-path: inset(-8px -8px -8px -8px); /*! border-bottom: 1px solid #eee; */position: sticky;top: 8px;background: white;z-index: 1;padding: 6px;border: 1px solid #ddd;border-radius: 4px;box-sizing: border-box;outline: none;width: calc(100% - 16px); }
+  x-option                                       { padding: 8px 12px; display: flex; align-items: center; cursor: pointer; color: #333; border-bottom: 1px solid #eee; outline: none !important; scroll-margin-top: 85px; user-select: none; }
+  x-option[hidden]                               { display: none; }
+  x-option[disabled]                             { pointer-events: none; opacity: .5; }
+  x-option[selected],
+  x-option.is-active                             { background: var(--skin-color, #007bff) !important; color: white !important; }
+  x-option[aria-selected="true"]:not(.is-active) { background: hsl(from var(--skin-color, #007bff) h s calc(l + 20)) !important; color: white !important; }
+  .triangle                                      { margin-left: 8px; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid #666; }
 </style>`);

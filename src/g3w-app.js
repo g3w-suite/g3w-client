@@ -843,7 +843,6 @@ export default new (class GUI extends Emitter {
           vueComponentObject: require('components/QueryResults.vue').default,
         }),
         title:      "Results",
-        crumb:      { title: "Results", trigger: null },
         push:       this.push_content,
         post_title: output.title || '',
         perc:       isMobile.any ? 100 : undefined,
@@ -887,7 +886,6 @@ export default new (class GUI extends Emitter {
             vueComponentObject: require('components/QueryResults.vue').default,
           }),
           title:      "Results",
-          crumb:      { title: "Results", trigger: null },
           push:       this.push_content,
           post_title: output.title || '',
           perc:       isMobile.any ? 100 : undefined,
@@ -915,17 +913,18 @@ export default new (class GUI extends Emitter {
     this.setLoadingContent(this.showData.reqs.length > 0);
   }
 
-  showForm(options = {}) {
+  showForm(opts = {}) {
     const { FormComponent } = require('components/g3w-form');
     // new instance every time
-    const formComponent = options.formComponent ? new options.formComponent(options) : new FormComponent(options);
+    const formComponent = opts.formComponent ? new opts.formComponent(opts) : new FormComponent(opts);
     this.setContent({
-      perc:       options.perc,
+      perc:       opts.perc,
+      //@since 4.1.0 used instead crumb
+      title:      formComponent?.layer?.getName?.(),
       content:    formComponent,
-      split:      undefined !== options.split ? options.split : 'h',
-      crumb:      options.crumb,
-      push:       !!options.push, //only one (if other deletes previous component)
-      showgoback: !!options.showgoback,
+      split:      undefined !== opts.split ? opts.split : 'h',
+      push:       !!opts.push, //only one (if other deletes previous component)
+      showgoback: !!opts.showgoback,
       closable:   false
     });
     // return service
@@ -1398,20 +1397,6 @@ export default new (class GUI extends Emitter {
     return ApplicationState.content.contentsdata.length;
   }
 
-  /**
-   * change current content options
-   * @param opts: { title, crumb, text }
-   */
-  setCurrentContentOptions(opts = {}) {
-    const content = ApplicationState.content.contentsdata.at(-1) || null;
-    if (content && opts.title) {
-      content.options.title = opts.title;
-    }
-    if (content && opts.crumb) {
-      content.options.crumb = opts.crumb;
-    }
-  }
-
   getCurrentContent() {
     return ApplicationState.content.contentsdata.at(-1) || null;
   }
@@ -1436,11 +1421,11 @@ export default new (class GUI extends Emitter {
       this.closeUserMessage();
     }
 
-    const panel    = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
+    const panel = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
 
     Object.assign(opts, {
       content:     opts.content || null,
-      title:       opts.title || "",
+      title:       opts.title   || null,
       push:        !!opts.push,
       split:       opts.split || 'h',
       perc:        opts.perc ?? (isMobile.any ? 100 : ('h' === ApplicationState.split ? panel.width: panel.height)),
@@ -1457,7 +1442,6 @@ export default new (class GUI extends Emitter {
       split:        undefined === opts.split       ? null : opts.split,
       closable:     undefined === opts.closable    || opts.closable,
       backonclose:  undefined === opts.backonclose || opts.backonclose,
-      style:        undefined === opts.style       ? {} : opts.style,
       headertools:  undefined === opts.headertools ? [] : opts.headertools,
       showgoback:   undefined === opts.showgoback  || opts.showgoback,
       contentsdata: ApplicationState.contentsdata,
@@ -1543,8 +1527,9 @@ export default new (class GUI extends Emitter {
 
   // remove last content from stack
   async popContent() {
+
     // skip when no content data
-    if (0 === ApplicationState.content.contentsdata.length) {
+    if (!ApplicationState.content.contentsdata.length) {
       return Promise.reject();
     }
 
@@ -3159,33 +3144,26 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   showRelations({
-    relation,
+    relationId,
     layerId,
     feature,
     push = true
   } = {}) {
-    let _relation;
-    if (relation) {
-      _relation = ApplicationState.project.getRelationById(relation.name);
-    } else {
-      const title = getCatalogLayerById(layerId).getTitle();
-      this.setCurrentContentOptions({ title, crumb: { text: true, title } });
-    }
+    const relation = relationId && ApplicationState.project.getRelationById(relationId);
     this.setContent({
       push,
       content: new Component({
         internalComponent: new (Vue.extend(require('components/Relations.vue').default))({
-          relation:  _relation,
+          relation,
           layerId,
           feature,
         })
       }),
-      perc:        isMobile.any ? 100                                   : undefined,
-      crumb:       _relation    ? { title: _relation.name, text: true } : { title: 'List of Relations', trigger: null },
-      title:       _relation    ? _relation.name                        : 'List of Relations',
-      text:        _relation    ? true                                  : undefined,
-      backonclose: _relation    ? undefined                             : true,
-      closable: !push
+      perc:        isMobile.any ? 100           : undefined,
+      title:       relation     ? relation.name : getCatalogLayerById(layerId).getTitle(),
+      // post_title:  relation     ? ''            : 'relations',
+      text:        relation     ? true          : undefined,
+      backonclose: relation     ? undefined     : true,
     });
   };
 

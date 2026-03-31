@@ -298,7 +298,7 @@
     </li>
 
     <li v-if = "'map' === context"                                      @click = "copyCoords"><i class = "fas fa-map-pin"></i>{{ map_coords.map(c => c.toFixed(2)).join(', ') }}</li>
-    <li v-if = "'map' === context"                                      @click = "queryCoords"><i class = "far fa-question-circle"></i>{{ $t("What's here?") }}</li>
+    <li v-if = "'map' === context"                                      @click = "queryCoords"><i class = "far fa-question-circle"></i>{{ $t("What’s here?") }}</li>
     <li v-if = "'map' === context"                                      @click = "zoomIn"><i class = "fas fa-search-plus"></i>{{ $t('Zoom in') }}</li>
     <li v-if = "'map' === context"                                      @click = "zoomOut"><i class = "fas fa-search-minus"></i>{{ $t('Zoom out') }}</li>
     <li v-if = "'map' === context"                                      @click = "zoomHome"><i class = "fas fa-home"></i>{{ $t('Fit map extent') }}</li>
@@ -350,7 +350,7 @@
     let x2 = 0, y2 = 0, x1 = 0, y1 = 0;
     el.addEventListener('mousedown', function(e) {
       // skip dragging on form elements
-      if (['.select2-container', 'button', 'select', 'input', 'textarea'].some(i => e.target.closest(i))) {
+      if (['.select2-container', 'button', 'select', 'input', 'textarea', 'x-select'].some(i => e.target.closest(i))) {
         return;
       }
       e.preventDefault();

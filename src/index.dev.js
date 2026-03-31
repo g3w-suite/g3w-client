@@ -22,7 +22,7 @@ g3w.app.once('initconfig', () => {
     {
       "i18n":   true,
       "icon":   "fas fa-plus",
-      "title":  "mapcontrols.add_layer_control.header",
+      "title":  "Add Layer",
       "type":   "modal",
       "target": "#modal-addlayer",
     },
@@ -678,7 +678,7 @@ g3w.app.once('after:setupControls', () => {
             if (btn) {
               btn.classList.replace('fa-stop-circle', 'fa-video');
             }
-            g3w.utils.saveBlob(new Blob(chunks, { type: recorder.mimeType }), `video_caupture_${new Date().getTime()}.webm`);
+            g3w.utils.saveBlob(new Blob(chunks, { type: recorder.mimeType }), `video_capture_${new Date().getTime()}.webm`);
             // Stop all video tracks to close the browser sharing popup
             stream.getTracks().forEach(track => track.stop());
           };

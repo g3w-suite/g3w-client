@@ -97,11 +97,11 @@ export default {
         
         //@since 4.0.5
         if (false === response?.result) {
-          GUI.showUserMessage({ type: 'alert', message: response.error || this.$t("info.server_error") });
+          GUI.showUserMessage({ type: 'alert', message: response.error || this.$t("server_error") });
         }
       } catch(e) {
         console.warn(e);
-        GUI.notify.error(this.$t("info.server_error"));
+        GUI.notify.error(this.$t("server_error"));
       }
 
       this.loading = false;

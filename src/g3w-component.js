@@ -295,11 +295,11 @@ export default class Component extends Emitter {
    * @fires layout
    */
   async layout(width, height) {
-    if (this.state.resizable && this._firstLayout) {
+    if (this.state.resizable && this._firstLayout & this.internalComponent) {
       this.internalComponent.$on('resize-component', this.internalComponent.layout);
       this._firstLayout = false;
     }
-    await this.internalComponent.$nextTick();
+    await this.internalComponent?.$nextTick();
     //need to check if internal component exist becouse wehn unmount, internalcomponent is set to nul
     this.internalComponent?.$emit('resize-component', { width, height });
     this.emit('layout');

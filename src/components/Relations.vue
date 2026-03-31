@@ -6,60 +6,54 @@
 <template>
   <!-- CHOOSE A RELATION -->
   <div
-    v-if  = "'relations' === view"
+    v-if  = "relations"
     class = "layer-relations"
   >
     <div class = "header skin-background-color lighten">
-      <span style = "font-size: 1.1em;">{{ $t('List of relations of feature') }}</span>
-      <ul style = "padding: 1em 0 0 15px; list-style: square;">
-        <li v-for = "info in feature_info()"><b>{{ info.key }}</b>: {{ info.value }}</li>
+      <span style = "font-size: 1.1em;">{{ $t('List of relations of feature') }} <b>{{ parent_layer.getName() }}</b></span>
+      <ul style = "padding: 0 0 0 25px; list-style: square;">
+        <li v-for = "({ label, value }) in feature_info()"><b>{{ label }}</b>: {{ value }}</li>
       </ul>
     </div>
     <div style = "display: grid; grid-template-columns: repeat(2, auto); grid-column-gap: 5px;grid-row-gap: 5px;">
-      <div
-        v-for  = "relation in relations"
-        @click = "showRelation(relation)"
-        class  = "skin-border-color grid-item"
+      <button
+        v-for       = "relation in relations"
+        type        = "button"
+        class       = "skin-border-color grid-item"
+        @click.stop = "showRelation(relation)"
       >
-        <i class = "fas fa-sitemap" style = "padding: 6px;"></i>
+        <i aria-hidden = "true" class = "fas fa-sitemap" style = "padding: 6px;"></i>
         <b style = "padding: 5px; overflow: hidden; white-space: normal; overflow-wrap: break-word;">{{ relation.name }}</b>
-      </div>
+      </button>
     </div>
   </div>
 
   <!-- SELECTED RELATION -->
   <div
-    v-else-if = "'relation' === view"
+    v-else-if = "relation"
     class     = "layer-relation"
   >
+
     <div class = "header skin-background-color lighten">
+      <span style = "font-size: 1.1em;"><b>{{ relation.name }}</b> {{ $t('associated with the element') }} <b>{{ parent_layer.getName() }}</b></span>
+      <ul style = "padding: 0 0 0 25px; list-style: square;">
+        <li v-for = "({ label, value }) in feature_info()"><b>{{ label }}</b>: {{ value }}</li>
+      </ul>
+    </div>
 
+    <div class = "sub-header">
+
+      <!-- RELATION NAME -->
       <div class = "g3w-long-text">
-
-        <!-- BACK BUTTON -->
-        <button
-          v-if        = "relations.length > 1"
-          type        = "button"
-          title       = "Back to relations"
-          class       = "action-button fas fa-door-open"
-          style       = "font-size: 0.8em;"
-          @click.stop = "back"
-        ></button>
-
-        <!-- RELATION NAME -->
         <b class = "relation-tile"> {{ relation.name }} </b>
-
       </div>
       <div
-        v-if  = "table.rows.length"
         class = "table-tools"
       >
-
         <!-- DOWNLOAD BUTTON -->
         <button
-          v-if           = "download_formats.length"
           type           = "button"
-          v-disabled     = "ApplicationState.download"
+          v-disabled     = "!hasfeatures && (!download_formats.length || ApplicationState.download)"
           class          = "action-button fas fa-download"
           @click.stop    = "showDownloadModal"
           title          = "Downloads"
@@ -68,7 +62,7 @@
 
         <!-- CHART BUTTON -->
         <button
-          v-if           = "has_charts"
+          v-disabled     = "!hasfeatures && !has_charts"
           class          = "action-button fas fa-chart-bar"
           :class         = "[ chart.toggled ? 'toggled-white' : '',]"
           @click.stop    = "toggleChart"
@@ -78,8 +72,8 @@
 
       </div>
     </div>
+
     <div
-      v-if       = "table.rows.length" 
       ref        = "wrapper"
       class      = "relation-table"
     >
@@ -91,10 +85,8 @@
           position:    'relative',
         }"
       >
-
         <!-- TOTAL ELEMENTS -->
         <span>{{ table.rows.length }} {{ $t('entries') }}</span>
-
         <!-- TABLE CONTENT -->
         <table ref = "table">
           <thead>
@@ -209,7 +201,6 @@
       ></div>
 
     </div>
-    <div v-else><span v-t = "'No relations found'"></span></div>
   </div>
 </template>
 
@@ -238,6 +229,7 @@
 
     data() {
       const layer = getCatalogLayerById(this.$options.nmRelation?.referencedLayer || this.$options.relation?.referencingLayer || this.$options.layerId);
+
       return {
 
         layer,
@@ -261,10 +253,12 @@
           layerId:       layer.getId(),
           features:      [],
           page:          1,
+          allfeatures:   0,
           page_size:     layer.getAttributeTablePageLength() || PAGELENGTHS[1],
           rows:          [],
           rows_fid:      [],
-          ordering:      [-1, 'asc']
+          ordering:      [-1, 'asc'],
+          hasfeatures:   false, //@since 4.1.0 store if there are relations one mount (no change when filter table rows)
         },
 
         /**
@@ -275,17 +269,7 @@
         /**
          * @since 4.1.0
          */
-        loading:     false,
-
-        /**
-         * @since 4.1.0
-         */
         feature:     this.$options.feature ?? null,
-
-        /**
-         * @since 4.1.0
-         */
-        view:        'relations',
 
         /**
          * @since 4.1.0
@@ -295,7 +279,7 @@
         /**
          * @since 4.1.0
          */
-        relations: ((ApplicationState.project.getRelations() || []).reduce((group, r) => {
+        relations: !this.$options.relation && ((ApplicationState.project.getRelations() || []).reduce((group, r) => {
           group[r.referencedLayer] = group[r.referencedLayer] || [];
           group[r.referencedLayer].push(r);
           return group;
@@ -325,7 +309,7 @@
        * @since 4.1.0
        */
       pages() {
-        return Math.ceil(this.table.rows.length / this.table.page_size);
+        return Math.ceil(this.table.allfeatures / this.table.page_size);
       },
 
       /**
@@ -376,7 +360,7 @@
        * @since 4.1.0
        */
       charts() {
-        if ('relation' === this.view) {
+        if (this.relation) {
           return GUI.plotLayerIds.find(pid => this.relation.referencingLayer == pid) ? [this.relation.referencingLayer] : [];
         } else {
           return this.relations.map(r => GUI.plotLayerIds.find(id => r.referencingLayer === id)).filter(Boolean);
@@ -387,14 +371,24 @@
        * @since 4.1.0
        */
       has_charts() {
-        return !!this.charts.find(id => this?.relation?.referencingLayer === id);
+        return !!this.charts.find(id => this.relation?.referencingLayer === id);
       },
+
+      /**
+       * @since 4.1.0
+       */
+      parent_layer() {
+        return getCatalogLayerById(this.$options.layerId);
+      }
 
     },
 
     watch: {
       async 'table.page_size'() {
         this.getData();
+      },
+      async 'table.page'(page) {
+        this.getData({ page });
       },
     },
 
@@ -406,25 +400,12 @@
        * @since 4.1.0
        */
       async showRelation(relation) {
-        this.loading  = true;
-        this.relation = relation;
-        try {
-          GUI.setCurrentContentOptions({ title: relation.name, crumb: { title: relation.name, text: true } });
-          this.view = 'relation';
-
-          await this.$nextTick();
-
-          this.layer = getCatalogLayerById(this.nmRelation?.referencedLayer || this.relation?.referencingLayer || this.layerId);
-         
-          this.relation.title = this.relation.name;
-
-          if ('ONE' !== this.relation.type) {
-            this.getData();
-          }
-        } catch(e) {
-          console.warn(e);
-        }
-        this.loading = true;
+        GUI.showRelations({
+          relationId: relation.id,
+          layerId:    this.layerId,
+          feature:    this.feature,
+          push:       true
+        });
       },
 
       /**
@@ -433,10 +414,12 @@
        * @since 4.1.0
        */
       feature_info() {
-        return Object
-          .entries(this.feature.attributes)
-          .filter(([_, value]) => (value && 'string' === typeof value && !value.includes('/')))
-          .map(([key, value]) => ({key, value})).slice(0,3)
+        const attributes = Object.entries(this.feature.attributes)
+        return this.parent_layer
+          .getFields()
+          .map(f => ({ label: f.label, value: attributes.find(([ key ]) => f.name === key)?.[1] }))
+          .filter(({ value }) => (![undefined, null, ''].includes(value) && !`${value}`.includes('/')))
+          .slice(0,3);
       },
 
      /**
@@ -523,10 +506,11 @@
             }));
           }
 
-          this.table.features = features;
-          this.table.rows     = features.map(f => this.columns.filter(h => h).map(h => (h.value = (f.attributes || f.properties)[h.name])))
-          this.table.rows_fid = features.map(r => r.attributes[G3W_FID]);
-          this.table.page     = page;
+          this.table.allfeatures = response?.vector?.count;
+          this.table.features    = features;
+          this.table.rows        = features.map(f => this.columns.filter(h => h).map(h => (h.value = (f.attributes || f.properties)[h.name])))
+          this.table.rows_fid    = features.map(r => r.attributes[G3W_FID]);
+          this.table.page        = page;
 
         } catch(e) {
           console.warn(e);
@@ -553,12 +537,24 @@
                     type: `${FieldsService.getType(c)}`
                   }
                 })),
-                form_structure: this.form_structure,
+                form_structure:    this.form_structure,
+                feature_info:      this.feature_info(),
+                relation_name:     this.relation.name,
+                parent_layer_name: this.parent_layer.getName(),
               }),
               template: /* html */`
-                <div class="queryresults-wrapper">
-                  <div class ="queryresults-container">
-                    <table ref="table" class="table">
+                <div class = "queryresults-wrapper">
+                  <div class = "queryresults-container">
+                    <div class = "header skin-background-color lighten" style="margin: 5px 0 10px 0; padding: 5px;">
+                      <span style = "font-size: 1.1em;"><b>{{ relation_name }}</b> {{ $t('associated with the element') }} <b>{{ parent_layer_name }}</b></span>
+                      <ul style = "padding: 0 0 0 25px; list-style: square;">
+                        <li v-for = "({ label, value }) in feature_info"><b>{{ label }}</b>: {{ value }}</li>
+                      </ul>
+                    </div>
+                    <div class = "g3w-long-text" style="font-size: 1.3em;padding: 8px 3px;">
+                      <b class = "relation-tile"> {{ relation_name }} ({{ feature.id }})</b>
+                    </div>
+                    <table ref = "table" class="table">
                       <tbody>
                         <tr class="featurebox-body">
                           <td>
@@ -581,10 +577,10 @@
               }
             }))
           }),
+          title:      this.table.features[i].id,
+          text:       true,
           push:       true,
           showgoback: true,
-          closable:   false,
-          title:      this.layer.getName() || this.layer.getTitle(),
         });
       },
 
@@ -599,24 +595,6 @@
           },
           feature: this.table.features[index],
         });
-      },
-
-      /**
-       * @FIXME add description
-       */
-      async back() {
-        // hide opened chart
-        if (this.chart.toggled) {
-          this.toggleChart();
-        }
-        this.view = 'relations';
-        await this.$nextTick();
-        if (1 === this.relations.length) {
-          this.relations[0].noback = true;
-          await this.showRelation(this.relations[0]);
-        }
-        GUI.setCurrentContentOptions({ crumb: { title: 'info.list_of_relations' } });
-        this.loading = false;
       },
 
       onChartResize() {
@@ -724,7 +702,7 @@
               console.warn(e);
               GUI.showUserMessage({
                 type:     'alert',
-                message:  e ?? 'info.server_error',
+                message:  e ?? 'server_error',
                 closable: true,
               });
             }
@@ -762,7 +740,12 @@
 
       // autoload selected relation
       if (this.relation) {
-        this.showRelation(this.relation);
+        this.relation.title = this.relation.name;
+        if ('ONE' !== this.relation.type) {
+          this.getData();
+          //set first time load
+          this.hasfeatures = this.table.rows.length > 0;
+        }
       }
     },
 
@@ -790,10 +773,8 @@
 
 <style scoped>
   .grid-item {
-    min-width: 0;
     min-height: 80px;
     border: 2px solid;
-    cursor:pointer;
     border-radius: 4px;
     background-color: #fff;
     display: flex;
@@ -808,16 +789,18 @@
     overflow-y: auto;
   }
 
-  .layer-relations > .header {
+  .header {
     margin: 5px 0 10px 0;
     padding: 5px;
   }
 
-  .layer-relation {
+  .layer-relation:not([style*="display: none"]) {
     margin-top: 3px;
+    display: flex !important;
+    flex-direction: column;
   }
 
-  .layer-relation > .header {
+  .sub-header {
     margin-top: 5px;
     margin-bottom: 5px;
     padding: 3px;
@@ -829,7 +812,7 @@
     margin: 0 !important;
   }
 
-  .layer-relation > .header > .g3w-long-text {
+  .sub-header > .g3w-long-text {
     border-radius: 3px;
     font-size: 1.3em;
   }
@@ -925,6 +908,7 @@
     justify-content: space-between;
     margin-bottom: 5px;
     margin-top: 3px;
-    height: 95%;
+    flex-grow: 1;
   }
+
 </style>

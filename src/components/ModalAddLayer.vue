@@ -253,7 +253,7 @@
               type         = "url"
               required
             />
-            <small v-t = "'Inserisci l\'URL del servizio TMS (XYZ)'" />
+            <small>{{ $t('Enter the TMS service URL (XYZ)') }}</small>
           </fieldset>
           <!-- TMS NAME -->
           <fieldset class = "form-group">

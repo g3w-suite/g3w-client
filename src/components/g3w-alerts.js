@@ -146,7 +146,7 @@ async function _showAlerts() {
             ${message.body}
             <menu style = "display: flex;justify-content: space-between;">
               <label style = "display: block; width: fit-content;">
-                <input type = "checkbox" name = "dont_show_again" /> ${_('Don\'t show again')}
+                <input type = "checkbox" name = "dont_show_again" /> ${_('Don’t show again')}
               </label>
               <button type = "button" value = "close" class = "btn btn-secondary" autofocus popovertargetaction = "hide" popovertarget = "project-message">${_('close')}</button>
             </menu>
@@ -220,7 +220,7 @@ function _makeDraggable(dialog) {
       e.clientX < rect.left ||
       e.clientX > rect.left + rect.width - 20
     );
-    const is_interactive = ['label', 'button', 'select', 'input', 'textarea'].some(i => e.target.closest(i));
+    const is_interactive = ['label', 'button', 'select', 'input', 'textarea', 'x-select'].some(i => e.target.closest(i));
     if (is_backdrop || is_interactive) {
       return;
     }

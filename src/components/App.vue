@@ -531,7 +531,6 @@
           text-align: center;
           color: #fff;
           border-top: 2px solid var(--skin-color);
-          margin: 0 3px;
           justify-content: space-around;
         "
       >
@@ -558,7 +557,6 @@
       <a
         href           = "#"
         class          = "sidebar-aside-toggle"
-        style          = "z-index: 2"
         @click.prevent = "toggleSidebar"
         role           = "button"
         title          = "Sidebar menu"
@@ -667,91 +665,81 @@
           </div>
 
           <!-- Footer (bottom part) where scale and other component can be set -->
-          <!-- ORIGINAL SOURCE: src/components/MapFooter.vue@v3.10.4 -->
-          <!-- ORIGINAL SOURCE: src/components/MapFooterLeft.vue@v3.10.4 -->
-          <!-- ORIGINAL SOURCE: src/components/MapFooterRight.vue@v3.10.4 -->
-          <div id = "map_footer" class = "skin-border-color">
+          <div id = "map_footer">
 
             <!-- MAP CREDITS -->
-            <div
-              id    = "map_footer_left"
-              style = "display: flex;"
+            <a
+              href   = "https://g3wsuite.it/"
+              style  = "margin-left: 5px; align-self: center;"
+              target = "_blank"
+              :title = "version"
             >
-              <a
-                href   = "https://g3wsuite.it/"
-                style  = "margin-left: 5px; align-self: center;"
-                target = "_blank"
-                :title = "version"
+              <img
+                height = "15"
+                src    = "/static/client/images/g3wsuite_logo.png"
+                alt    = ""
+              />
+              <span hidden>{{ version }}</span>
+            </a>
+
+            <div id="attribution-control"></div>
+
+            <div style="margin-right: auto;"></div>
+
+            <!-- MOUSE POSITION -->
+            <div
+              v-show = "mouse.visible"
+              id     = "mouse-position-control"
+            ></div>
+
+            <!-- SWITCH COORDINATES  -->
+            <button
+              v-if           = "mouse.visible && mouse.switch_icon && !isMobile()"
+              type           = "button"
+              class          = "btn"
+              :title         = "mouse.tooltip"
+              data-placement = "top"
+              @click.stop    = "switchMapsCoordinateTo4326"
+              style          = "border-radius: 0;"
+            >
+              <i aria-hidden="true" class = "fas fa-mouse"></i>
+              <span hidden>{{ $t(mouse.tooltip) }}</span>
+            </button>
+
+            <button
+              type           = "button"
+              class          = "btn"
+              title          = "Copy share URL"
+              data-placement = "top"
+              @click.stop    = "showEmbedModal"
+              style          = "border-radius: 0;"
+            >
+              <i aria-hidden="true" class = "fa fa-share-alt"></i>
+              <span hidden>{{ $t('Copy share URL') }}</span>
+            </button>
+
+            <!-- SCALE CONTROL -->
+            <div id = "scale-control"></div>
+
+            <div
+              v-if = "showmapunits"
+              id   = "scale-line-units"
+            >
+              <select
+                style   = "padding: 5px 2px; font-weight: bold; border:0; cursor: pointer"
+                v-model = "ApplicationState.map_unit"
               >
-                <img
-                  height = "15"
-                  src    = "/static/client/images/g3wsuite_logo.png"
-                  alt    = ""
-                />
-                <span hidden>{{ version }}</span>
-              </a>
+                <option
+                  v-for     = "unit in state.mapunits"
+                  :value    = "unit"
+                  v-t       = "`scaleline_units.${unit}`"
+                  :selected = "ApplicationState.map_unit === unit"
+                  style     = "font-weight: bold"
+                ></option>
+              </select>
+
             </div>
 
-            <div
-              id    = "map_footer_right"
-              style ="display: flex;"
-            >
-
-              <!-- MOUSE POSITION -->
-              <div
-                v-show = "mouse.visible"
-                id     = "mouse-position-control"
-              ></div>
-
-              <!-- SWITCH COORDINATES  -->
-              <button
-                v-if           = "mouse.visible && mouse.switch_icon && !isMobile()"
-                type           = "button"
-                class          = "btn"
-                :title         = "mouse.tooltip"
-                data-placement = "top"
-                @click.stop    = "switchMapsCoordinateTo4326"
-                style          = "border-radius: 0;"
-              >
-                <i aria-hidden="true" class = "fas fa-mouse"></i>
-                <span hidden>{{ $t(mouse.tooltip) }}</span>
-              </button>
-
-              <button
-                type           = "button"
-                class          = "btn"
-                title          = "Copy share URL"
-                data-placement = "top"
-                @click.stop    = "showEmbedModal"
-                style          = "border-radius: 0;"
-              >
-                <i aria-hidden="true" class = "fa fa-share-alt"></i>
-                <span hidden>{{ $t('Copy share URL') }}</span>
-              </button>
-
-              <!-- SCALE CONTROL -->
-              <div id = "scale-control"></div>
-
-              <div
-                v-if = "showmapunits"
-                id   = "scale-line-units"
-              >
-                <select
-                  style   = "padding: 5px 2px; font-weight: bold; border:0; cursor: pointer"
-                  v-model = "ApplicationState.map_unit"
-                >
-                  <option
-                    v-for     = "unit in state.mapunits"
-                    :value    = "unit"
-                    v-t       = "`scaleline_units.${unit}`"
-                    :selected = "ApplicationState.map_unit === unit"
-                    style     = "font-weight: bold"
-                  ></option>
-                </select>
-
-              </div>
-
-            </div>
           </div>
 
         </div>
@@ -764,61 +752,41 @@
         :style     = "styles.content"
         v-disabled = "state.content.disabled"
       >
-        <section
-          v-if  = "breadcrumb.length > 1"
-          :ref  = "breadcrumb"
-          class = "content_breadcrumb"
+        <nav
+          v-if       = "breadcrumb.length > 1"
+          class      = "content_breadcrumb"
+          aria-label = "breadcrumb"
         >
-          <span
-            v-for = "(crumb, index) in breadcrumb"
-            :key  = "crumb.title"
-          >
-            <span
-              class  = "skin-color-dark"
-              :style = "{fontWeight: isNotLastCrumb(index) ? 'bold' : 'normal'}"
-              v-t    = "crumb.text ? null : crumb.title"
-            >
-              <span v-if = "crumb.text"> {{ crumb.title }} </span>
-            </span>
-            <span
-              v-if  = "isNotLastCrumb(index)"
-              style = "font-weight: bold; margin: 3px 0"
-            >/</span>
-          </span>
-        </section>
+          <ul>
+            <li v-for = "(crumb, index) in breadcrumb" :key = "crumb">
+              <button
+                type          = "button"
+                :aria-current = "index === breadcrumb.length - 1 ? 'page' : undefined"
+                @click.stop   = "popContent(breadcrumb.length - index -1)"
+              >{{ $t(crumb || '') }}</button>
+            </li>
+          </ul>
+        </nav>
         <div
           v-if  = "(showtitle && contentTitle) || previousTitle || state.content.closable"
           class = "close-panel-block"
           style = "display: flex; justify-content: space-between"
         >
-          <div
-            v-if  = "previousTitle"
-            class = "g3w_contents_back g3w-long-text"
+          <button
+            v-if        = "previousTitle"
+            type        = "button"
+            @click.stop = "popContent(1)"
+            class       = "action-button action-button-back"
+            style       = "font-size: 0.8em;"
           >
-            <button
-              type        = "button"
-              @click.stop = "gotoPreviousContent()"
-              class       = "action-button"
-              :class      = "backOrBackTo"
-              :disabled   = "'back' === backOrBackTo"
-            >
-              <i aria-hidden = "true" class = "fas fa-chevron-circle-left"></i>
-              <span v-t="backOrBackTo"></span>
-              <span v-if = "'back' !== backOrBackTo && !updatePreviousTitle" v-t = "previousTitle"></span>
-            </button>
-          </div>
+            <i aria-hidden = "true" class = "fas fa-chevron-circle-left"></i>
+            <b>{{ $t('back') }}</b>
+          </button>
           <div
             v-if   = "!previousTitle && showtitle && contentTitle"
             class  = "panel-title"
-            :style = "[state.content.style.title]"
-            :class = "{'mobile': isMobile()}"
           >
-            <b id = "contenttitle">
-              <span v-t = "contentTitle.text ? null : contentTitle.title">
-                <span v-if = "contentTitle.text ">{{ contentTitle.title }}</span>
-              </span>
-              <span v-t = "contentTitle.post_title"></span>
-            </b>
+            <b>{{ [(contentTitle.text ? contentTitle.title || '' : $t(contentTitle.title || '')), $t(contentTitle.post_title || '')].filter(Boolean).join(' ') }}</b>
           </div>
           <div
             class = "g3-content-header-action-tools"
@@ -836,13 +804,13 @@
               @click         = "resizeFull"
             ></button>
             <button
-              type           = "button"
-              style          = "scale:.9;"
-              :style         = "{ transform: 'h' === state.split ? 'rotate(134deg)' : 'rotate(44deg)'}"
-              :title         = "`Dock to ${'h' === this.state.split ? 'Bottom' : 'Right'}`"
-              data-placement = "bottom"
-              class          = "action-button action-button-dock skin-color-dark fa fa-external-link-alt"
-              @click         = "splitContent"
+              type             = "button"
+              style            = "scale:.9;"
+              :style           = "{ transform: 'h' === state.split ? 'rotate(134deg)' : 'rotate(44deg)'}"
+              :data-i18n-title = "'h' === state.split ? 'Dock to Bottom' : 'Dock to Right'"
+              data-placement   = "bottom"
+              class            = "action-button action-button-dock skin-color-dark fa fa-external-link-alt"
+              @click           = "splitContent"
             ></button>
             <button
               v-if           = "state.content.closable"
@@ -918,7 +886,6 @@ export default {
       GUI,
       ApplicationState,
       language:              null,
-      updatePreviousTitle:   false,
       custom_links:          (window.initConfig.header_custom_links || []).concat(ApplicationState.navbaritems).filter(Boolean).map(l => Object.assign(l, { id: l.id || getUniqueDomId() })),
       mouse: {
         visible:     true,
@@ -1002,7 +969,7 @@ export default {
     },
 
     breadcrumb() {
-      return this.state.content.contentsdata.filter(c => c.options.crumb).map(c => c.options.crumb);
+      return this.state.content.contentsdata.filter(cd => cd?.options?.title).map(cd => [cd.options.title, cd.options.post_title].filter(Boolean).flat().join(' ')).flat();
     },
 
     has_panel() {
@@ -1036,26 +1003,16 @@ export default {
 
     contentTitle() {
       if (this.state.content.contentsdata.length) {
-        const { title, post_title, text = false } = this.state.content.contentsdata.at(-1).options;
-        return { title, post_title, text };
+        return this.state.content.contentsdata.at(-1).options;
       }
-    },
-
-    backOrBackTo() {
-      return (this.state.content.contentsdata.length > 1 && this.state.content.showgoback)
-        ? !(this.state.content.contentsdata.at(-2).options.title)
-          ? 'back'
-          : 'backto'
-        : false;
     },
 
     previousTitle() {
       const title = (this.state.content.contentsdata.length > 1 && this.state.content.showgoback)
-        ? this.state.content.contentsdata.at(-2).options.title
+        //In case of no set title (ex. show form of feature - relation), show previous title
+        ? this.state.content.contentsdata.at(-2).options.title || this.state.content.contentsdata.at(-3)?.options?.title?.[1]
         : null;
-      this.updatePreviousTitle = true;
-      this.$nextTick(() => this.updatePreviousTitle = false);
-      return title;
+      return Array.isArray(title) ? title[1]: title;
     },
 
     title() {
@@ -1169,8 +1126,14 @@ export default {
       GUI.closeContent();
     },
 
-    gotoPreviousContent() {
-      GUI.popContent();
+    async popContent(size = 1) {
+      // remove multiple elements from stack
+      if (typeof size === 'number' && !isNaN(size) && size > 0) {
+        while (size > 0) {
+          await GUI.popContent();
+          size--;
+        }
+      }
     },
 
     closeUserMessage() {
@@ -1285,6 +1248,11 @@ export default {
      * @since 3.11.0
      */
     toggleSidebarItem(e) {
+      // skip toggling element
+      if ('g3w-menu' === e.target.id) {
+        return;
+      }
+
       const mini      = document.body.classList.contains('sidebar-mini');
       const collapsed = document.body.classList.contains('sidebar-collapse');
 
@@ -1634,7 +1602,7 @@ export default {
         this.custom_theme_input = null;
       } catch(e) {
         console.warn(e);
-        GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error' });
+        GUI.showUserMessage({ type: 'alert', message: e.error || 'server_error' });
       }
     },
 
@@ -1666,7 +1634,7 @@ export default {
         GUI.showUserMessage({ type: 'success', message: 'Theme updated successfully', autoclose: true });
       } catch(e) {
         console.warn(e);
-        GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error' });
+        GUI.showUserMessage({ type: 'alert', message: e.error || 'server_error' });
       }
     },
 
@@ -1700,7 +1668,7 @@ export default {
         }
       } catch(e) {
         console.warn(e);
-        GUI.showUserMessage({ type: 'alert', message: e.error || 'info.server_error' });
+        GUI.showUserMessage({ type: 'alert', message: e.error || 'server_error' });
       }
     },
 

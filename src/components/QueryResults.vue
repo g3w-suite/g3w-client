@@ -68,7 +68,7 @@
               </div>
 
               <!-- LAYER ACTIONS -->
-              <div style = "display: flex; gap: 2.5px; padding-right: 10px;">
+              <div class="query-layer-actions" style = "display: flex; gap: 2.5px; padding-right: 10px;">
                 <!-- INFO FORMATS -->
                 <select
                   v-if      = "(layer.infoformats || []).length"
@@ -522,7 +522,7 @@
       <label style="margin-top: 5px;">{{ $t('Filter by:') }}</label>
       <select style="flex: 1;">
         <option v-for = "layer in queryableLayers" :selected = "layer === selectedLayer">{{ layer.getName() }}</option>
-        <option :selected = "!selectedLayer">{{ $t('mapcontrols.queryby.all') }}</option>
+        <option :selected = "!selectedLayer">{{ $t('__ALL__') }}</option>
       </select>
     </div>
 
