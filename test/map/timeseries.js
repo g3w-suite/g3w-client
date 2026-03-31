@@ -67,5 +67,7 @@ console.log(
     process.exit(1);
   }
 
+  //https://playwright.dev/docs/api/class-browser#browser-new-context
+  await context.close();
   await browser.close();
 })();
