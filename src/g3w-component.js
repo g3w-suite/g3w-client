@@ -225,7 +225,7 @@ export default class Component extends Emitter {
   }
 
   setInternalComponent(internalComponent, opts = {}) {
-    this.internalComponent = undefined === internalComponent && this.internalComponentClass ? new this.internalComponentClass : internalComponent;
+    this.internalComponent = internalComponent ?? new this.internalComponentClass;
     (opts.events || [])
       .forEach(e => this.internalComponent.$on(e.name, data => e.handler && e.handler(data) || this[`set${e.name[0].toUpperCase()}${e.name.slice(1)}`](data)));
     if (this._service && this._service.state) {
