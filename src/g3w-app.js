@@ -4417,7 +4417,7 @@ export default new (class GUI extends Emitter {
               if (layer.isEditable()) {
                 await waitFor(() => undefined !== layer.config.editing);
               }
-              return !!(data[0] && data[0].features.length > 0);
+              return (data?.at(0)?.features ?? []).length > 0;
             }
           }
         }
@@ -4436,16 +4436,16 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  zoomToFeatures(features, options = { highlight: false }) {
+  zoomToFeatures(features = [], options = { highlight: false }) {
     features = features || [];
 
     let extent, gtype, geometry;
     const coordinates = features
-      .filter(f => f.getGeometry ? f.getGeometry() : f.geometry)
+      .filter(f => f.getGeometry?.() ?? f.geometry)
       .map(f => {
-        const geom       = f.getGeometry ? f.getGeometry() : f.geometry;
+        const geom       = f.getGeometry?.() ?? f.geometry;
         const is_ol_geom = geom instanceof ol.geom.Geometry;
-        const f_ext      = is_ol_geom ?  [...geom.getExtent()] : f.bbox;
+        const f_ext      = is_ol_geom ? [...geom.getExtent()] : f.bbox;
         extent           = ol.extent.extend(undefined === extent ? f_ext : extent, f_ext);
         gtype            = gtype ? gtype : is_ol_geom ? geom.getType() : geom.type;
         return ( is_ol_geom ? geom.getCoordinates() : geom.coordinates );
@@ -4456,7 +4456,7 @@ export default new (class GUI extends Emitter {
       const is_multi = gtype.includes('Multi');
       try {
         geometry = new ol.geom[is_multi ? gtype : `Multi${gtype}`](is_multi ? coordinates.flat(): coordinates);
-        extent   = undefined === extent ? geometry.getExtent(): extent
+        extent   = extent ?? geometry.getExtent();
       } catch(e) {
         console.warn(e);
       }
@@ -4600,7 +4600,7 @@ export default new (class GUI extends Emitter {
       this.#map = null
     }
 
-    const initextent = map_extent ? map_extent.split(',').map(coord => 1 * coord) : ApplicationState.project.state.initextent;
+    const initextent = map_extent?.split?.(',').map(coord => 1 * coord) ?? ApplicationState.project.state.initextent;
     const extent     = ApplicationState.project.state.extent;
 
     this.#map = new ol.Map({
@@ -4659,7 +4659,7 @@ export default new (class GUI extends Emitter {
       () => [this.getCurrentToggledMapControl(), (this.getPlugin('editing') && this.getPlugin('editing').getActiveTool())],
       ([control, activeTool]) => {
         currentControl = control
-        can_drag = !control && !activeTool;
+        can_drag       = !control && !activeTool;
         this.#map.getViewport().classList.toggle('ol-grab', can_drag);
         this.#map.getInteractions().getArray().find(i => i instanceof ol.interaction.DoubleClickZoom).setActive(can_drag);
       }
@@ -4667,7 +4667,7 @@ export default new (class GUI extends Emitter {
     this.#map.on(['pointerdrag', 'pointerup'], (e) => {
       /** @TODO disable default interaction "shift+zoom" ? */
       this.#map.getViewport().classList.toggle('ol-grabbing', e.type == 'pointerdrag' && (!currentControl || !(currentControl.getInteraction() instanceof ol.interaction.DragBox)));
-      this.#map.getViewport().classList.toggle('ol-grab',     e.type == 'pointerup' && can_drag);
+      this.#map.getViewport().classList.toggle('ol-grab',     e.type == 'pointerup'   && can_drag);
     });
 
     let geom;
@@ -4865,7 +4865,7 @@ export default new (class GUI extends Emitter {
       (newVal, oldVal) => {
         const added   = newVal.filter(key => !(key in oldVal));
         const removed = oldVal.filter(key => !(key in newVal));
-        added.forEach(key => this.#setUpEventsKeysToLayersStore(ApplicationState.layers[key]));
+        added.forEach(key   => this.#setUpEventsKeysToLayersStore(ApplicationState.layers[key]));
         removed.forEach(key => this.#removeEventsKeysToLayersStore(ApplicationState.layers[key]));
       }
     );
@@ -4946,8 +4946,8 @@ export default new (class GUI extends Emitter {
       this.#shadow.inner[3] = upperRight[1] * ol.has.DEVICE_PIXEL_RATIO; // y_max
     }
 
-    this.#shadow.scale    = [null, undefined].includes(opts.scale) ? this.#shadow.scale || 1 : opts.scale;
-    this.#shadow.rotation = [null, undefined].includes(opts.rotation) ? this.#shadow.rotation || 0 : opts.rotation;
+    this.#shadow.scale    = opts.scale    ?? (this.#shadow.scale || 1);
+    this.#shadow.rotation = opts.rotation ?? (this.#shadow.rotation || 0);
 
     if (this.#shadow.outer) {
       this.getMap().render();
@@ -5101,7 +5101,7 @@ export default new (class GUI extends Emitter {
     // vector layer
     if (externalLayer instanceof ol.layer.Vector) {
 
-      externalLayer.set('id', externalLayer.get('id') || getUniqueDomId());
+      externalLayer.set('id', externalLayer.get('id') ?? getUniqueDomId());
 
       vectorLayer           = externalLayer;
       vectorLayer.filter    = { // used by `selection` for query result purpose ?
@@ -5122,7 +5122,7 @@ export default new (class GUI extends Emitter {
             if (isPointGeometryType(geometryType)) {          // Point
               style = new ol.style.Style({
                 image: new ol.style.Circle({
-                  fill: new ol.style.Fill({ color }),
+                  fill:   new ol.style.Fill({ color }),
                   stroke: new ol.style.Stroke({ color, width: 1 }),
                   radius: 5,
                 })
@@ -5141,12 +5141,12 @@ export default new (class GUI extends Emitter {
             }
             if (options.field) {
               style.setText(new ol.style.Text({
-                text: `${feat.get(options.field)}`,
-                font: 'bold',
-                scale: 2,
+                text:   `${feat.get(options.field)}`,
+                font:   'bold',
+                scale:   2,
                 offsetY: 15,
-                fill: new ol.style.Fill({ color: options.color }),
-                stroke: new ol.style.Stroke(({ color: '#FFF', width: 2 })),
+                fill:    new ol.style.Fill({ color: options.color }),
+                stroke:  new ol.style.Stroke(({ color: '#FFF', width: 2 })),
               }));
             }
             return style;
@@ -5157,7 +5157,7 @@ export default new (class GUI extends Emitter {
       let color;
       try {
         const style = externalLayer.getStyle();
-        color = style._g3w_options ? style._g3w_options.color : 'blue'; //setted by geo utils create style function
+        color = style?._g3w_options?.color ?? 'blue'; //setted by geo utils create style function
       } catch(e) { console.warn(e); }
 
       externalLayer = {
@@ -5236,7 +5236,7 @@ export default new (class GUI extends Emitter {
 
     if (features.length) {
       externalLayer.geometryType = features[0].getGeometry().getType();
-      externalLayer.selected = false;
+      externalLayer.selected     = false;
     }
 
     if (extent.length) {
@@ -5317,9 +5317,8 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   removeExternalLayer(name) {
-    const pid = ApplicationState.project.state.id;
     const layer = this.getLayerByName(name);
-    const type = layer._type || 'vector';
+    const type  = layer._type || 'vector';
     
     this.unregisterVectorLayer(layer);
     this.getService('catalog').removeExternalLayer({ name, type });
@@ -5330,7 +5329,7 @@ export default new (class GUI extends Emitter {
       /** @since v4.0.0 remove selection feature belong to layer */
       this.defaultsLayers.selectionLayer.getSource()
         .getFeatures()
-        .filter(f => layer.get('id') === f.__layerId)
+        .filter(f  => layer.get('id') === f.__layerId)
         .forEach(f => this.defaultsLayers.selectionLayer.getSource().removeFeature(f));
       this.#events.unwatches[name].forEach(unWatch => unWatch());
       delete this.#events.unwatches[name];
@@ -5339,7 +5338,7 @@ export default new (class GUI extends Emitter {
     /** @since 3.11.0 - temporary layers from local storage (ref: `addlayers` map control) */
     if ('vector' === type) {
       idb.getItem('externalLayers').then(externalLayers => {
-        externalLayers  = externalLayers || {}
+        externalLayers = externalLayers || {};
         if (name in externalLayers) {
           delete externalLayers[name];
         }
@@ -5707,7 +5706,7 @@ export default new (class GUI extends Emitter {
           }
           // pagination (total elements > page size)
           if (params.page_sizes)  {
-            const page_size     = Math.max(...(Array.isArray(params.page_sizes)? params.page_sizes : [params.page_sizes])); // page size = max elements per page
+            const page_size     = Math.max(...(Array.isArray(params.page_sizes) ? params.page_sizes : [params.page_sizes])); // page size = max elements per page
             const page_sizes    = (page_size <= value.count ? params.page_sizes : [...params.page_sizes.filter(p => p < value.count), value.count]);
             pagination[layerId] = {
               /** number of pages */
@@ -5765,7 +5764,7 @@ export default new (class GUI extends Emitter {
     try {
       // convert API response to Open Layer Features
       features = (await layer?.getFeatureByFids?.({ fids, formatter }))?.map?.(f => {
-        const props    = undefined !== f.properties ? f.properties : {}
+        const props    = f.properties ?? {};
         props[G3W_FID] = f.id;
         const feat     = new ol.Feature(f.geometry && new ol.geom[f.geometry.type](f.geometry.coordinates));
         feat.setProperties(props);
