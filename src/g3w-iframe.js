@@ -127,7 +127,7 @@ export class IframeApp extends Emitter {
   async 'app:getcenter'(params = {}) {
     const center = GUI.getCenter();
     if (undefined !== params.epsg) {
-      params.epsg = normalizeEpsg(params.epsg)
+      params.epsg = normalizeEpsg(params.epsg);
       await ApplicationState.projections.set(params.epsg);
       return ol.proj.transform(center, GUI.getEpsg(), params.epsg);
     }
@@ -169,7 +169,7 @@ export class IframeApp extends Emitter {
   async 'app:getextent'(params = {}) {
     const extent = GUI.getMapExtent();
     if (params.epsg) {
-      params.epsg = normalizeEpsg(params.epsg)
+      params.epsg = normalizeEpsg(params.epsg);
       await ApplicationState.projections.set(params.epsg);
       return ol.proj.transformExtent(extent, GUI.getEpsg(), params.epsg);
     }
@@ -191,7 +191,7 @@ export class IframeApp extends Emitter {
     }
     /** If epsg is provide, get epsg definition */
     if (params.epsg) {
-      params.epsg = normalizeEpsg(params.epsg)
+      params.epsg = normalizeEpsg(params.epsg);
       await ApplicationState.projections.set(params.epsg);
       extent = ol.proj.transformExtent(extent, params.epsg, GUI.getEpsg());
     } else {
