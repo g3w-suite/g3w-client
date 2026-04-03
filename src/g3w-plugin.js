@@ -36,32 +36,7 @@ export class Plugin extends Emitter {
 
     this.setName(name);
     this.setConfig(config);
-
-    
-
-    // i18n object
-    if ('object' === typeof i18n) {
-      this.setLocale(i18n);
-    }
-
-    // lazy load i18n
-    if ('string' === typeof i18n) {
-      
-      Vue.watch(() => ApplicationState.language, async lang => {
-        try {
-          this.setLocale({ [lang]: (await import(`${i18n.replace(/\/+$/, '')}/${lang}.js`)).default });
-        } catch(e) {
-          try {
-            //@since 4.1.0 in case of missing language file, fallback to "en" and log missing translation
-            this.setLocale({ [lang]: (await import(`${i18n.replace(/\/+$/, '')}/en.js`)).default });
-          } catch(e) {
-            console.warn(e);
-          }
-          console.warn(e);
-        }
-      }, { immediate: true });
-    }
-
+    this.setI18n(i18n);
     this.setService(service);
     this.setDependencies(dependencies);
     this.addFontClasses(fontClasses);
@@ -91,17 +66,57 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * @FIXME add description
+   * Set plugin name
+   * @param { String } name
    */
   setName(name) {
     this.name = name;
   }
 
   /**
-   * @FIXME add description
+   * Get plugin name
+   * @returns { String } name
    */
   getName() {
     return this.name;
+  }
+
+  /**
+   * @since 4.1.0
+   * Set i18n translations lang for the plugin
+   * @param { String | Object } i18n 
+   */
+  async setI18n(i18n) {
+    //In case of missing i18n configuration, do nothing
+    if (!i18n) { 
+      return; 
+    }
+
+    try {
+      //Need to load default en translations before loading
+      const en = (await import(`${i18n.replace(/\/+$/, '')}/en.js`))?.default;
+      //In case of missing language file, fallback to "en" and log missing translation
+      this.setLocale({ en });
+    } catch(e) {
+      console.warn(e);
+    }
+
+    // i18n object
+    if ('object' === typeof i18n) {
+      this.setLocale(i18n);
+    }
+
+    // lazy load i18n
+    if ('string' === typeof i18n) {
+      
+      Vue.watch(() => ApplicationState.language, async lang => {
+        try {
+          this.setLocale({ [lang]: (await import(`${i18n.replace(/\/+$/, '')}/${lang}.js`)).default });
+        } catch(e) {
+          console.warn(e);
+        }
+      }, { immediate: true });
+    }
   }
 
   /**
