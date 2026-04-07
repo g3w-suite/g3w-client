@@ -92,15 +92,6 @@ export class Plugin extends Emitter {
       return; 
     }
 
-    try {
-      //Need to load default en translations before loading
-      const en = (await import(`${i18n.replace(/\/+$/, '')}/en.js`))?.default;
-      //In case of missing language file, fallback to "en" and log missing translation
-      this.setLocale({ en });
-    } catch(e) {
-      console.warn(e);
-    }
-
     // i18n object
     if ('object' === typeof i18n) {
       this.setLocale(i18n);
@@ -108,7 +99,15 @@ export class Plugin extends Emitter {
 
     // lazy load i18n
     if ('string' === typeof i18n) {
-      
+      try {
+        //Need to load default en translations before loading
+        const en = (await import(`${i18n.replace(/\/+$/, '')}/en.js`))?.default;
+        //In case of missing language file, fallback to "en" and log missing translation
+        this.setLocale({ en });
+      } catch(e) {
+        console.warn(e);
+      }
+
       Vue.watch(() => ApplicationState.language, async lang => {
         try {
           this.setLocale({ [lang]: (await import(`${i18n.replace(/\/+$/, '')}/${lang}.js`)).default });
