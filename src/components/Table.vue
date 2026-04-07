@@ -616,12 +616,6 @@ export default {
   },
 
   async mounted() {
-  
-    // un-toggle map controls
-    this.last_map_control = GUI.getMapControls().find(c => c?.control?.isToggled?.());
-    if (this.last_map_control) {
-      this.last_map_control.control.toggle();
-    }
 
     this.reload();
 
