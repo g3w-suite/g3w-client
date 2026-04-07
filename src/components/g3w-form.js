@@ -830,7 +830,7 @@ export class FormService extends Emitter {
    * @since 3.8.0
    */
   async saveDefaultExpressionFieldsNotDependencies() {
-    if (0 === this.default_expression_fields_on_update.length) { return }
+    if (0 === this.default_expression_fields_on_update.length || 0 === this.state.fields.filter(f => f.update).length) { return }
 
     try {
       //@since 3.11.0 get unique field names that has dependencies from another fields
