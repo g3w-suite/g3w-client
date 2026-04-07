@@ -616,12 +616,6 @@ export default {
   },
 
   async mounted() {
-  
-    // un-toggle map controls
-    this.last_map_control = GUI.getMapControls().find(c => c?.control?.isToggled?.());
-    if (this.last_map_control) {
-      this.last_map_control.control.toggle();
-    }
 
     this.reload();
 
@@ -639,13 +633,6 @@ export default {
   },
 
   async beforeDestroy() {
-
-    // restore any previous active map control
-    if (false === this?.last_map_control?.control?.isToggled()) {
-     this.last_map_control.control.toggle();
-    }
-
-    this.last_map_control = null;
 
     this.layer.off('unselectionall',    this.unSelectAll);
     this.layer.off('filtertokenchange', this.reload);
