@@ -3718,14 +3718,26 @@ export default new (class GUI extends Emitter {
           onLegendLoad(url) {
             url.loading = false;
           },
+          async setLegendUrls() {
+            this.legendurls = await g3w.app.getLegendSrc({ change: true }); 
+          },
+          
         },
         async mounted() {
-          this.legendurls = await g3w.app.getLegendSrc({ change: true });
+          await this.setLegendUrls();
+          
+          if (ApplicationState.project.state.context_base_legend) {
+            g3w.app.on('change-map-legend-params', this.setLegendUrls);
+          }
+          
         },
         beforeDestroy() {
           // automatically hide sidebar on mobile
           if (window.innerWidth < 767) {
             g3w.app.hideSidebar();
+          }
+          if (ApplicationState.project.state.context_base_legend) {
+            g3w.app.off('change-map-legend-params', this.setLegendUrls );
           }
         },
       }))(),
