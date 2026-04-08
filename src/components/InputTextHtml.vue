@@ -61,15 +61,9 @@
                 } else {
                   this.quill.container.firstChild.innerHTML = this.quill.container.firstChild.innerText;
                 }
-                for (const qlformat of this.$el.querySelectorAll('.ql-formats')) {
-                  for (const child of qlformat.children) {
-                    if (!child.classList.contains('ql-html')) {
-                      child.classList.toggle('g3w-disabled');
-                    } else {
-                      child.classList.toggle('skin-color');
-                    }
-                  }
-                }
+                this.$el.querySelectorAll('.ql-formats > *').forEach(child => {
+                  child.classList.toggle(child.classList.contains('ql-html') ? 'skin-color' : 'g3w-disabled');
+                });
               },
               'column-left':   () => this.table.insertColumnLeft(),
               'column-right':  () => this.table.insertColumnRight(),
