@@ -14,11 +14,6 @@
   import Input from 'components/g3w-input';
   import Quill from 'quill';
 
-  //@since 4.1.0 check if value has tag HTML to set content in quill editor
-  const hasTagHTML = value => {
-    return Array.from(new DOMParser().parseFromString(value, 'text/html')?.body?.childNodes ?? []).some(node => node.nodeType === 1);
-  }
-
   export default {
 
     /** @since 3.8.6 */
@@ -46,6 +41,9 @@
       this.quill = new Quill(this.$refs.quill_editor, {
         theme: 'snow',
         modules: {
+          clipboard: {
+            matchVisual: false,
+          },
           table: true,
           toolbar: {
             container: [
@@ -84,12 +82,9 @@
         },
       });
 
-      if (this.state.value && hasTagHTML(this.state.value)) {
-        this.quill.container.firstChild.innerHTML = this.state.value;
-      } else {
-        this.quill.setText(this.state.value);
-      }
-      
+      // set value in quill editor
+      this.quill.clipboard.dangerouslyPasteHTML(0, this.state.value);
+
       this.table = this.quill.getModule('table');
 
       // CUSTOM TOOL: column left
