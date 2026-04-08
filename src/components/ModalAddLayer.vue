@@ -469,7 +469,7 @@
           type        = "button"
           class       = "btn btn-success"
           @click.stop = "addLayer"
-          :disabled   = "('wms' === layer_type ? !wms_layers.length : ('tms' === layer_type ? !(tms_url && tms_name) : !layer_data))"
+          :disabled   = "!canAdd"
           style       = "font-weight: bold; min-width: 70px; margin-bottom: 0; margin-left: 5px;"
         ></button>
 
@@ -591,6 +591,20 @@ export default {
   },
 
   computed: {
+
+    /**
+     * @since 4.1.0 
+     */
+    canAdd() {
+      const data = GUI.getLocalExternalLayersData();
+      if ('wms' === this.layer_type) { 
+        return this.wms_layers.length
+      } 
+      if ('tms' === this.layer_type) { 
+        return this.tms_name && this.tms_url && !data.tms?.[this.tms_url];
+      } 
+      return this.layer_data;
+    },
 
     feature_count() {
       return this.olLayer?.getSource().getFeatures().length || 0;
