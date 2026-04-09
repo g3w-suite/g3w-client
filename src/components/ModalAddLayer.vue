@@ -1253,8 +1253,6 @@ export default {
 
     await GUI.isMapReady();
 
-    // Load WMS urls from local storage
-
     let data = GUI.getLocalStorage('externallayers');
 
     if (undefined === data) {
@@ -1266,17 +1264,9 @@ export default {
       GUI.setLocalStorage('externallayers', data);
     }
 
-    setTimeout(() => {
-      GUI.on('change-layer-position-map', ({ id: name, position, type } = {}) => GUI.changeLayerData({ type, name, attr: { key: 'position', value: position }}));
-      GUI.on('change-layer-opacity',      ({ id: name, opacity, type } = {})  => GUI.changeLayerData({ type, name, attr: { key: 'opacity',  value: opacity }}));
-      GUI.on('change-layer-visibility',   ({ id: name, visible, type } = {})  => GUI.changeLayerData({ type, name, attr: { key: 'visible',  value: visible }}));
-
-      // load eventually data
-      //WMS
-      Object.keys(data.wms).forEach(url => { data.wms[url].forEach(d => this._addExternalWMSLayer({ url, ...d })); });
-      //TMS
-      Object.keys(data.tms).forEach(url => { data.tms[url].forEach(d => this._addExternalTMSLayer({ url, ...d })); });
-    });
+    // reload layers from local storage
+    Object.keys(data.wms).forEach(url => { data.wms[url].forEach(d => this._addExternalWMSLayer({ url, ...d })); });
+    Object.keys(data.tms).forEach(url => { data.tms[url].forEach(d => this._addExternalTMSLayer({ url, ...d })); });
 
     this.wms_urls = data.urls;
   },

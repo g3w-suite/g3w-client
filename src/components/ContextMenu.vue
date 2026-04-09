@@ -548,7 +548,7 @@
         if (position !== this.layer.position) {
           this.layer.position = position;
           GUI.getLayerById(this.layer.id).setZIndex(({ top: GUI.layersCount, bottom: 0 })[position]);
-          GUI.emit('change-layer-position-map', { id: this.layer.id, position, type: this.layer._type });
+          GUI.emit('change-layer-position', { id: this.layer.id, position, type: this.layer._type });
           this.closeMenu();
         }
       },

@@ -5021,25 +5021,6 @@ export default new (class GUI extends Emitter {
   }
 
   /**
-   * Change config of storage layer options as position, opacity
-   */
-  changeLayerData({ type, name, attr = {} } = {}) {
-    if ('vector' !== type) {
-      const data = this.getLocalStorage('externallayers');
-      Object
-        .keys(data[type])
-        .find(url => {
-          const i = data[type][url].findIndex(l => name == l.name);
-          if (-1 !== i) {
-            data[type][url][i][attr.key] = attr.value;
-            return true;
-          }
-        });
-      this.setLocalStorage('externallayers', data);
-    }
-  }
-
-  /**
    * @since 4.1.0
    */
   getLocalStorage(key, id = ApplicationState.project.getId()) {
@@ -5289,6 +5270,31 @@ export default new (class GUI extends Emitter {
     if (extent && options.zoomToExtent) {
       this.#map.getView().fit(extent);
     }
+
+    // reactive layer options (local storage)
+    [
+      'change-layer-position',
+      'change-layer-opacity',
+      'change-layer-visible'
+    ].forEach(evt => {
+      this.on(evt, attrs => {
+        if ('vector' === attrs.type) {
+          return;
+        }
+        const key = evt.replace('change-layer-', '');        // ie. "position", "opacity", "visible"
+        const data = this.getLocalStorage('externallayers');
+        Object
+          .keys(data[attrs.type])
+          .find(url => {
+            const i = data[attrs.type][url].findIndex(l => attrs.id == l.name);
+            if (-1 !== i) {
+              data[attrs.type][url][i][key] = attrs[key];
+              return true;
+            }
+          });
+        this.setLocalStorage('externallayers', data);
+      });
+    });
 
     this.loadExternalLayer(layer);
 
