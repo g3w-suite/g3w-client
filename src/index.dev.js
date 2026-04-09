@@ -156,22 +156,20 @@ g3w.app.once('initconfig', () => {
 
   // DBTM Multiscala
   const url  = "http://www502.regione.toscana.it/geoscopio_qg/cgi-bin/qgis_mapserv?map=dbtm_rt.qgs&"
-  const layers = JSON.parse(localStorage.getItem('externallayers') || '{}');
-  layers[pid]  = layers[pid] || { urls: [], wms: {} , tms: {}};
-  layers[pid]  = {
-    urls: layers[pid].urls.length ? layers[pid].urls : [{ url, id: "DBTM" }],
-    wms: Object.keys(layers[pid].wms).length ? layers[pid].wms : { [url]: [{
-      url,
-      "name":     "DBTM",
-      "layers":   [ "DBTM_DataBaseTopograficoMultiscala" ],
-      "epsg":     "EPSG:25832",
-      "position": "bottom",
-      "visible":  false,
-      "opacity":  1
-    }]},
-    tms: layers[pid].tms ?? {},
-  };
-  localStorage.setItem('externallayers', JSON.stringify(layers));
+  const data = JSON.parse(localStorage.getItem('externallayers') || '{ "urls": [], "data": [] }');
+  data.urls = [...(data.urls || []), ...(data.urls?.some(u => u.url === url) ? [] : [{ url, id: "DBTM", type: 'wms', pid }])];
+  data.data = [...(data.data || []), ...(data.data?.some(l => l.name === 'DBTM') ? [] : [{
+    "type":    'wms',
+    pid,
+    url,
+    "name":     "DBTM",
+    "layers":   [ "DBTM_DataBaseTopograficoMultiscala" ],
+    "epsg":     "EPSG:25832",
+    "position": "bottom",
+    "visible":  false,
+    "opacity":  1,
+  }])];
+  localStorage.setItem('externallayers', JSON.stringify(data));
 
   // piazza-leopoldo.kml
   idb.getItem('externalLayers').then(externalLayers => {

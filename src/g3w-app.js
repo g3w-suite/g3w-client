@@ -5023,21 +5023,16 @@ export default new (class GUI extends Emitter {
   /**
    * @since 4.1.0
    */
-  getLocalStorage(key, id = ApplicationState.project.getId()) {
-    const store = (JSON.parse(window.localStorage.getItem(key) || '{}'));
-    return id ? store[id] : store;
+  getLocalStorage(key) {
+    return (JSON.parse(window.localStorage.getItem(key) || '{}'));
   }
 
   /**
    * @since 4.1.0
    */
-  setLocalStorage(key, data, id = ApplicationState.project.getId()) {
+  setLocalStorage(key, data) {
     try {
-      const store = JSON.parse(window.localStorage.getItem(key) || '{}');
-      if (id) {
-        store[id] = data;
-      }
-      window.localStorage.setItem(key, JSON.stringify(store));
+      window.localStorage.setItem(key, JSON.stringify(data));
     } catch(e) {
       console.warn(e);
     }
@@ -5278,21 +5273,17 @@ export default new (class GUI extends Emitter {
       'change-layer-opacity',
       'change-layer-visible'
     ], ({ type, opts }) => {
-      if ('vector' === opts.type) {
-        return;
-      }
-      const key  = type.replace('change-layer-', '');        // ie. "position", "opacity", "visible"
-      const data = this.getLocalStorage('externallayers');
-      Object
-        .keys(data[opts.type])
-        .find(url => {
-          const i = data[opts.type][url].findIndex(l => opts.id == l.name);
-          if (-1 !== i) {
-            data[opts.type][url][i][key] = opts[key];
-            return true;
+        if ('vector' === opts.type) {
+          return;
+        }
+        const key = type.replace('change-layer-', '');        // ie. "position", "opacity", "visible"
+        const data = this.getLocalStorage('externallayers');
+        data.data.forEach((layer, i) => {
+          if (type === layer.type && opts.id == layer.name && ApplicationState.project.getId() === layer.pid) {
+            data.data[i][key] = opts[key];
           }
         });
-      this.setLocalStorage('externallayers', data);
+        this.setLocalStorage('externallayers', data);
     });
   
     this.loadExternalLayer(layer);
@@ -5342,16 +5333,12 @@ export default new (class GUI extends Emitter {
     /** @since 4.1.0 - remove wms/tms layers from local storage */
     if (['tms','wms'].includes(type)) {
       const data = this.getLocalStorage('externallayers');
-      Object.keys(data[type] || {}).forEach(url => {
-        const i = data[type][url].findIndex(w => layer.id == w.name);
-        // remove WMS entry
-        if (i >= 0) {
-          data[type][url].splice(i, 1);
+      const layer_id = layer.id;
+      data.data = data.data.filter(layer => {
+        if (type === layer.type && ApplicationState.project.getId() === layer.pid && layer_id === layer.name) {
+          return false;
         }
-        // remove empty groups
-        if (!data[type][url].length) {
-          delete data[type][url];
-        }
+        return true;
       });
       this.setLocalStorage('externallayers', data);
     }

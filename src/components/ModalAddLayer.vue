@@ -600,7 +600,7 @@ export default {
         return this.wms_layers.length
       } 
       if ('tms' === this.layer_type) { 
-        return this.tms_name && this.tms_url && !GUI.getLocalStorage('externallayers').tms?.[this.tms_url];
+        return this.tms_name && this.tms_url && !GUI.getLocalStorage('externallayers').data.find(layer => 'tms' === layer.type && this.tms_url === layer.url && ApplicationState.project.getId() === layer.pid);
       } 
       return this.layer_data;
     },
@@ -870,13 +870,21 @@ export default {
 
         try {
       
-          const found = this.wms_config && (data.wms[this.url] || []).some(wms => wms.layers.length === this.wms_layers.length && this.wms_layers.every(l => wms.layers.includes(l.name)));
+          const found = this.wms_config && data.data.some(layer =>
+            'wms' === layer.type 
+            && this.url === layer.url
+            && layer.layers.length === this.wms_layers.length
+            && this.wms_layers.every(l => layer.layers.includes(l.name))
+            && ApplicationState.project.getId() === layer.pid
+          );
 
           if (found) {
             await this.fetchWMS(this.url);
           }
 
           const config = {
+            type:     'wms',
+            pid:      ApplicationState.project.getId(),
             url:      this.url,
             name,
             layers:   this.wms_layers.map(l => l.name),
@@ -886,10 +894,7 @@ export default {
             opacity:  +this.wms_opacity,
           };
 
-          data.wms = data.wms ?? {};
-
-          data.wms[this.url] = data.wms[this.url] || [];
-          data.wms[this.url].push(config);
+          data.data = data.data.concat(config);
 
           GUI.setLocalStorage('externallayers', data);
 
@@ -911,18 +916,17 @@ export default {
       if ('tms' === this.layer_type) {
         try {
           const config = {
+            type:     'tms',
+            pid:      ApplicationState.project.getId(),
+            url:      this.tms_url,
+            name:     this.tms_name,
             position: this.position,
             opacity:  +this.tms_opacity,
             visible:  this.tms_visible,
             crs:      this.tms_projection,
-            name:     this.tms_name,
-            url:      this.tms_url,
           };
 
-          data.tms = data.tms ?? {};
-
-          data.tms[this.tms_url] = data.tms[this.tms_url] || [];
-          data.tms[this.tms_url].push(config);
+          data.data = data.data.concat(config);
 
           GUI.setLocalStorage('externallayers', data);
 
@@ -1257,16 +1261,24 @@ export default {
 
     if (undefined === data) {
       data = {
-        urls: [], // unique url for wms
-        wms:  {}, // object contains url as a key and array of layers bind to url
-        tms:  {}, //@since 4.1.0 take in account tms layers
+        urls:  [], // unique url for wms
+        data:  [], // object contains url as a key and array of layers bind to url
       };
       GUI.setLocalStorage('externallayers', data);
     }
 
     // reload layers from local storage
-    Object.keys(data.wms).forEach(url => { data.wms[url].forEach(d => this._addExternalWMSLayer({ url, ...d })); });
-    Object.keys(data.tms).forEach(url => { data.tms[url].forEach(d => this._addExternalTMSLayer({ url, ...d })); });
+    data.data.forEach(layer => { 
+      if (ApplicationState.project.getId() !== layer.pid) {
+        return;
+      }
+      if ('wms' === layer.type) {
+        this._addExternalWMSLayer(layer);
+      }
+      if ('tms' === layer.type) {
+        this._addExternalTMSLayer(layer);
+      }
+    });
 
     this.wms_urls = data.urls;
   },
