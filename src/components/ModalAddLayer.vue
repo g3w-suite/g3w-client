@@ -1269,7 +1269,7 @@ export default {
     }
 
     // reload layers from local storage
-    data.data.forEach(layer => { 
+    (data.data || []).forEach(layer => { 
       if (this.pid !== layer.pid) {
         return;
       }
