@@ -9,11 +9,41 @@ import shpwrite    from '@mapbox/shp-write';
 // expose global variables
 import 'g3w-globals';
 
+const CONF = require('../config');
+
 // apply dev config overrides (config.js)
-(require('../config').devConfig || (() => { })).call();
+(CONF.devConfig || (() => { })).call();
 
 // print some debug info
 window.g3wsdk.info();
+
+// add a custom PAGELENGTH (ref: Table.vue)
+g3w.constants.PAGELENGTHS.unshift(2);
+
+// override "initConfig->group->plugins" attribute for custom plugin development
+g3w.app.once('initconfig', () => {
+  initConfig.plugins = Object.assign(initConfig.plugins || {}, CONF.plugins.reduce((a, v) => ({ ...a, [v]: { ...initConfig.plugins[v], gid: initConfig.initproject, baseUrl: initConfig.staticurl }}), {}));
+});
+
+// Test MESSAGE sent to "Open in iframe" map control
+g3w.app.once('iframe:message', (w, e) => { w.postMessage({
+  id: null,
+  action: 'app:getcenter',                                        // or 'app:getextent'
+  data: { epsg: 4326 }	
+}, '*') });
+
+g3w.app.once('ready', () => { console.log('ready'); });
+
+// add 20 layer styles
+g3w.app.once('app-ready', () => {
+  g3w.state.project.state.layers.forEach(l => (l.styles || []).push(...Array(20).fill().map((_, i) => ({ name: `style_${i}`, current: false}))));
+});
+
+// dark mode
+g3w.app.isReady().then(() => {
+  document.querySelector('nav').style.setProperty('--skin-color', '#212c31');
+});
+document.body.style.setProperty('--bgcolor', '#212c31');
 
 // custom header links
 g3w.app.once('initconfig', () => {
