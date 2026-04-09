@@ -1260,7 +1260,7 @@ export default {
 
     let data = GUI.getLocalStorage('externallayers');
 
-    if (undefined === data) {
+    if (!data.data) {
       data = {
         urls:  [], // unique url for wms
         data:  [], // object contains url as a key and array of layers bind to url
@@ -1269,7 +1269,7 @@ export default {
     }
 
     // reload layers from local storage
-    (data.data || []).forEach(layer => { 
+    data.data.forEach(layer => { 
       if (this.pid !== layer.pid) {
         return;
       }
