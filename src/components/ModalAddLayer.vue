@@ -1207,25 +1207,6 @@ export default {
       this.loading = false;
     },
 
-    templateResultLayers(state) {
-      const layer = this.layers[state.id];
-      if (!layer) { return state.text }
-      return $(/*html*/`
-        <sub>${ layer.name }</sub><br>
-        <b>${ layer.title }</b><br>
-        <i>${ layer.abstract || '' }</i>
-      `);
-    },
-
-    templateSelectionLayers(state) {
-      const layer = this.layers[state.id];
-      if (!layer) { return state.text }
-      return $(/*html*/`
-        <sub>${ layer.name }</sub><br>
-        <b>${ layer.title }</b>
-      `);
-    },
-
     /**
      * @since 4.1.0
      */
