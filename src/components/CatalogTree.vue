@@ -524,7 +524,6 @@ export default {
       if (!layer.projectLayer) {
         layer.visible = layer.checked;
         layer.setVisible(layer.checked);
-        GUI.getLayerById(layer.id).dispatchEvent({ type: 'change-layer-visible', opts: { id: layer.id, visible: layer.checked, type: layer._type } });
         return;  // NB exit early!
       }
 

@@ -547,8 +547,9 @@
       setLayerPosition(position) {
         if (position !== this.layer.position) {
           this.layer.position = position;
-          GUI.getLayerById(this.layer.id).setZIndex(({ top: GUI.layersCount, bottom: 0 })[position]);
-          GUI.getLayerById(this.layer.id).dispatchEvent({ type: 'change-layer-position', opts: { id: this.layer.id, position, type: this.layer._type } });
+          const layer = GUI.getLayerById(this.layer.id);
+          layer.setZIndex(({ top: GUI.layersCount, bottom: 0 })[position]);
+          layer.set('position', position);
           this.closeMenu();
         }
       },
@@ -862,11 +863,7 @@
        */
       onLayerOpacity() {
         if (this.isExternalImageLayer(this.layer)) {
-          const layer = GUI.getLayerById(this.layer.id);
-          if (layer) {
-            layer.setOpacity(Number(this.layer.opacity));
-            layer.dispatchEvent({ type: 'change-layer-opacity', opts: { id: this.layer.id, opacity: Number(this.layer.opacity), type: this.layer._type } });
-          }
+           GUI.getLayerById(this.layer.id)?.setOpacity(Number(this.layer.opacity));
         } else {
           getCatalogLayerById(this.layer.id)?.change?.();
         }

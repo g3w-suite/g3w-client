@@ -5267,20 +5267,18 @@ export default new (class GUI extends Emitter {
     }
 
     // reactive layer options (local storage)
-    //liste events
     layer.on([
-      'change-layer-position',
-      'change-layer-opacity',
-      'change-layer-visible'
-    ], ({ type, opts }) => {
-        if ('vector' === opts.type) {
+      'change:position',
+      'change:opacity',
+      'change:visible'
+    ], e => {
+        if ('vector' === type) {
           return;
         }
-        const key = type.replace('change-layer-', '');        // ie. "position", "opacity", "visible"
         const data = this.getLocalStorage('externallayers');
-        data.data.forEach((layer, i) => {
-          if (type === layer.type && opts.id == layer.name && ApplicationState.project.getId() === layer.pid) {
-            data.data[i][key] = opts[key];
+        data.data.forEach((l, i) => {
+          if (layer.get('id') === l.name && ApplicationState.project.getId() === l.pid) {
+            data.data[i][e.key] = layer.get(e.key);
           }
         });
         this.setLocalStorage('externallayers', data);
