@@ -540,6 +540,7 @@ export default {
 
     return {
       is_localhost:   'localhost' === window.location.hostname,
+      pid:             ApplicationState.project.getId(),
       layer_type:      undefined,
       file_type:       null,
       layer_name:      null,
@@ -600,7 +601,7 @@ export default {
         return this.wms_layers.length
       } 
       if ('tms' === this.layer_type) { 
-        return this.tms_name && this.tms_url && !GUI.getLocalStorage('externallayers').data.find(layer => 'tms' === layer.type && this.tms_url === layer.url && ApplicationState.project.getId() === layer.pid);
+        return this.tms_name && this.tms_url && !GUI.getLocalStorage('externallayers').data.find(layer => 'tms' === layer.type && this.tms_url === layer.url && this.pid === layer.pid);
       } 
       return this.layer_data;
     },
@@ -875,7 +876,7 @@ export default {
             && this.url === layer.url
             && layer.layers.length === this.wms_layers.length
             && this.wms_layers.every(l => layer.layers.includes(l.name))
-            && ApplicationState.project.getId() === layer.pid
+            && this.pid === layer.pid
           );
 
           if (found) {
@@ -884,7 +885,7 @@ export default {
 
           const config = {
             type:     'wms',
-            pid:      ApplicationState.project.getId(),
+            pid:      this.pid,
             url:      this.url,
             name,
             layers:   this.wms_layers.map(l => l.name),
@@ -917,7 +918,7 @@ export default {
         try {
           const config = {
             type:     'tms',
-            pid:      ApplicationState.project.getId(),
+            pid:      this.pid,
             url:      this.tms_url,
             name:     this.tms_name,
             position: this.position,
@@ -1015,14 +1016,14 @@ export default {
      */
     async addWmsURL() {
       this.loading = true;
-      const wms    = { url: this.url, id: this.id, show: true };
+      const wms    = { url: this.url, id: this.id, type: 'wms', pid: this.pid };
       const found  = this.wms_urls.find(l => this.url === l.url);
       try {
         await this.fetchWMS(this.url);
         if (!found) {
           const data = GUI.getLocalStorage('externallayers');
           this.wms_urls.push(wms);
-          data.urls = this.wms_urls;
+          data.urls = (data.urls || []).concat(wms);
           GUI.setLocalStorage('externallayers', data);
         }
       } catch(e) {
@@ -1039,7 +1040,7 @@ export default {
     deleteWmsUrl(id) {
       this.wms_urls = this.wms_urls.filter(l => id !== l.id);
       const data    = GUI.getLocalStorage('externallayers');
-      data.urls     = this.wms_urls;
+      data.urls     = (data.urls || []).filter(u => u.pid !== this.pid || u.id !== id);
       GUI.setLocalStorage('externallayers', data);
     },
 
@@ -1269,7 +1270,7 @@ export default {
 
     // reload layers from local storage
     data.data.forEach(layer => { 
-      if (ApplicationState.project.getId() !== layer.pid) {
+      if (this.pid !== layer.pid) {
         return;
       }
       if ('wms' === layer.type) {
@@ -1280,7 +1281,7 @@ export default {
       }
     });
 
-    this.wms_urls = data.urls;
+    this.wms_urls = data.urls.filter(u => u.pid === this.pid);
   },
 
 };
