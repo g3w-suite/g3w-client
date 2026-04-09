@@ -5333,13 +5333,7 @@ export default new (class GUI extends Emitter {
     /** @since 4.1.0 - remove wms/tms layers from local storage */
     if (['tms','wms'].includes(type)) {
       const data = this.getLocalStorage('externallayers');
-      const layer_id = layer.id;
-      data.data = data.data.filter(layer => {
-        if (type === layer.type && ApplicationState.project.getId() === layer.pid && layer_id === layer.name) {
-          return false;
-        }
-        return true;
-      });
+      data.data = (data.data || []).filter(l => type !== l.type || ApplicationState.project.getId() !== l.pid || layer.id !== l.name);
       this.setLocalStorage('externallayers', data);
     }
 
