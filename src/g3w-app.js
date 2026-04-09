@@ -5021,33 +5021,11 @@ export default new (class GUI extends Emitter {
   }
 
   /**
-   * Delete WMS by name
-   * 
-   * @param name
-   * @param type (wms, tms)
-   */
-  deleteLocalExternaLayer({ type , name } = {}) {
-    const data = this.getLocalExternalLayersData();
-    Object.keys(data[type] || {}).forEach(url => {
-      const i = data[type][url].findIndex(w => name == w.name);
-      // remove WMS entry
-      if (i >= 0) {
-        data[type][url].splice(i, 1);
-      }
-      // remove empty groups
-      if (!data[type][url].length) {
-        delete data[type][url];
-      }
-    });
-    this.updateLocalExternalLayersData(data);
-  }
-
-  /**
    * Change config of storage layer options as position, opacity
    */
   changeLayerData({ type, name, attr = {} } = {}) {
     if ('vector' !== type) {
-      const data = this.getLocalExternalLayersData();
+      const data = this.getLocalStorage('externallayers');
       Object
         .keys(data[type])
         .find(url => {
@@ -5057,30 +5035,28 @@ export default new (class GUI extends Emitter {
             return true;
           }
         });
-      this.updateLocalExternalLayersData(data);
+      this.setLocalStorage('externallayers', data);
     }
   }
 
   /**
-   * @since 4.1.0 Get all esternal layers data stored on loacal storage
-   * @returns 
+   * @since 4.1.0
    */
-  getLocalExternalLayersData() {
-    const item = window.localStorage.getItem('externallayers');
-    return ((item ? JSON.parse(item) : undefined) || {})[ApplicationState.project.getId()];
+  getLocalStorage(key, id = ApplicationState.project.getId()) {
+    const store = (JSON.parse(window.localStorage.getItem(key) || '{}'));
+    return id ? store[id] : store;
   }
 
   /**
-   * Update local storage data based on changes
-   * 
-   * @param data
+   * @since 4.1.0
    */
-  updateLocalExternalLayersData(data) {
-    const item    = window.localStorage.getItem('externallayers');
-    const alldata = (item ? JSON.parse(item) : undefined) || {};
-    alldata[ApplicationState.project.getId()] = data;
+  setLocalStorage(key, data, id = ApplicationState.project.getId()) {
     try {
-      window.localStorage.setItem('externallayers', JSON.stringify(alldata));
+      const store = JSON.parse(window.localStorage.getItem(key) || '{}');
+      if (id) {
+        store[id] = data;
+      }
+      window.localStorage.setItem(key, JSON.stringify(store));
     } catch(e) {
       console.warn(e);
     }
@@ -5347,7 +5323,7 @@ export default new (class GUI extends Emitter {
       delete this.#events.unwatches[name];
     }
 
-    /** @since 3.11.0 - temporary layers from local storage (ref: `addlayers` map control) */
+    /** @since 3.11.0 - remove vector layers from local storage */
     if ('vector' === type) {
       idb.getItem('externalLayers').then(externalLayers => {
         externalLayers = externalLayers || {};
@@ -5358,11 +5334,21 @@ export default new (class GUI extends Emitter {
       });
     }
 
-    /**
-     * @since 4.1.0 remove wms/tms esternal layer from storage
-     */
+    /** @since 4.1.0 - remove wms/tms layers from local storage */
     if (['tms','wms'].includes(type)) {
-      this.deleteLocalExternaLayer({ type, name: layer.id });
+      const data = this.getLocalStorage('externallayers');
+      Object.keys(data[type] || {}).forEach(url => {
+        const i = data[type][url].findIndex(w => layer.id == w.name);
+        // remove WMS entry
+        if (i >= 0) {
+          data[type][url].splice(i, 1);
+        }
+        // remove empty groups
+        if (!data[type][url].length) {
+          delete data[type][url];
+        }
+      });
+      this.setLocalStorage('externallayers', data);
     }
 
     this.#layers.external = this.#layers.external.filter(l => {

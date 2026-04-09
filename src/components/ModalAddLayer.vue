@@ -469,7 +469,7 @@
           type        = "button"
           class       = "btn btn-success"
           @click.stop = "addLayer"
-          :disabled   = "!canAdd"
+          :disabled   = "!can_add_layer"
           style       = "font-weight: bold; min-width: 70px; margin-bottom: 0; margin-left: 5px;"
         ></button>
 
@@ -595,13 +595,12 @@ export default {
     /**
      * @since 4.1.0 
      */
-    canAdd() {
-      const data = GUI.getLocalExternalLayersData();
+    can_add_layer() {
       if ('wms' === this.layer_type) { 
         return this.wms_layers.length
       } 
       if ('tms' === this.layer_type) { 
-        return this.tms_name && this.tms_url && !data.tms?.[this.tms_url];
+        return this.tms_name && this.tms_url && !GUI.getLocalStorage('externallayers').tms?.[this.tms_url];
       } 
       return this.layer_data;
     },
@@ -865,7 +864,7 @@ export default {
     async addLayer() {
       this.loading = true;
       // check if External Local layers already added (by name)
-      const data = GUI.getLocalExternalLayersData();
+      const data = GUI.getLocalStorage('externallayers');
       if ('wms' === this.layer_type) {
         const name = (this.name || `wms_${getUniqueDomId()}`).trim();
 
@@ -892,7 +891,7 @@ export default {
           data.wms[this.url] = data.wms[this.url] || [];
           data.wms[this.url].push(config);
 
-          GUI.updateLocalExternalLayersData(data);
+          GUI.setLocalStorage('externallayers', data);
 
           try {
             await this._addExternalWMSLayer(config);
@@ -925,7 +924,7 @@ export default {
           data.tms[this.tms_url] = data.tms[this.tms_url] || [];
           data.tms[this.tms_url].push(config);
 
-          GUI.updateLocalExternalLayersData(data);
+          GUI.setLocalStorage('externallayers', data);
 
           try {
             await this._addExternalTMSLayer(config);
@@ -1017,10 +1016,10 @@ export default {
       try {
         await this.fetchWMS(this.url);
         if (!found) {
-          const data = GUI.getLocalExternalLayersData();
+          const data = GUI.getLocalStorage('externallayers');
           this.wms_urls.push(wms);
           data.urls = this.wms_urls;
-          GUI.updateLocalExternalLayersData(data);
+          GUI.setLocalStorage('externallayers', data);
         }
       } catch(e) {
         console.warn(e);
@@ -1035,9 +1034,9 @@ export default {
      */
     deleteWmsUrl(id) {
       this.wms_urls = this.wms_urls.filter(l => id !== l.id);
-      const data    = GUI.getLocalExternalLayersData();
+      const data    = GUI.getLocalStorage('externallayers');
       data.urls     = this.wms_urls;
-      GUI.updateLocalExternalLayersData(data);
+      GUI.setLocalStorage('externallayers', data);
     },
 
      /**
@@ -1256,7 +1255,7 @@ export default {
 
     // Load WMS urls from local storage
 
-    let data = GUI.getLocalExternalLayersData();
+    let data = GUI.getLocalStorage('externallayers');
 
     if (undefined === data) {
       data = {
@@ -1264,7 +1263,7 @@ export default {
         wms:  {}, // object contains url as a key and array of layers bind to url
         tms:  {}, //@since 4.1.0 take in account tms layers
       };
-      GUI.updateLocalExternalLayersData(data);
+      GUI.setLocalStorage('externallayers', data);
     }
 
     setTimeout(() => {
