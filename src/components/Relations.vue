@@ -195,7 +195,7 @@
       >
         <!-- VERTICAL RESIZE -->
         <div
-          style           = "border: 0 solid hsl(from var(--skin-color) h s calc(l + 30)) !important; border-width: 0 1px; min-width: 5px; background-color: #ddd; cursor: col-resize;margin:0 8px; user-select: none;"
+          style           = "border-inline: 1px solid hsl(from var(--skin-color) h s calc(l + 30)); min-width: 5px; background-color: #ddd; cursor: col-resize;margin:0 8px; user-select: none;"
           @mousedown.stop = "onChartResize"
         ></div>
       </div>
