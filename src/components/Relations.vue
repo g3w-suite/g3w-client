@@ -81,7 +81,6 @@
         ref    = "content"
         :style = "{
           width:         chart.toggled ? '70%' : '100%',
-          paddingRight:  chart.toggled ? '8px' : '3px',
           position:      'relative',
           display:       'flex',
           flexDirection: 'column',
@@ -186,24 +185,22 @@
         </div>
       </div>
 
-      <!-- VERTICAL RESIZE -->
-      <div
-        v-show          = "chart.toggled"
-        class           = "skin-border-color lighten"
-        style           = "border-style: solid; border-width: 0 1px 0 1px; min-width: 5px; background-color: #ddd; cursor: col-resize;"
-        @mousedown.stop = "onChartResize"
-      ></div>
-
       <!-- QPLOTLY CHART -->
       <div
         v-show   = "chart.toggled"
         id       = "chart_content"
         ref      = "chart"
         :style   = "{
-          width:       chart.toggled ? '30%' : '0',
-          paddingLeft: '8px',
+          width:   chart.toggled ? '30%' : '0',
+          display: 'flex',
         }"
-      ></div>
+      >
+        <!-- VERTICAL RESIZE -->
+        <div
+          style           = "border: 0 solid hsl(from var(--skin-color) h s calc(l + 30)) !important; border-width: 0 1px; min-width: 5px; background-color: #ddd; cursor: col-resize;margin:0 8px;"
+          @mousedown.stop = "onChartResize"
+        ></div>
+      </div>
 
     </div>
   </div>
