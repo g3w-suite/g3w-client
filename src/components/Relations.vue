@@ -81,7 +81,7 @@
         ref    = "content"
         :style = "{
           width:         chart.toggled ? '70%' : '100%',
-          marginRight:   chart.toggled ? '8px' : '3px',
+          paddingRight:  chart.toggled ? '8px' : '3px',
           position:      'relative',
           display:       'flex',
           flexDirection: 'column',
@@ -199,7 +199,10 @@
         v-show   = "chart.toggled"
         id       = "chart_content"
         ref      = "chart"
-        :style   = "{ width: chart.toggled ? '30%' : '0' }"
+        :style   = "{
+          width:       chart.toggled ? '30%' : '0',
+          paddingLeft: '8px',
+        }"
       ></div>
 
     </div>
@@ -838,12 +841,6 @@
 
   .table-tools .action-button:hover {
     background-color: transparent;
-  }
-
-  #chart_content {
-    padding-bottom: 5px;
-    margin-bottom: 5px;
-    margin-left: 8px;
   }
 
   input.form-control.column-search::placeholder {
