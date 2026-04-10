@@ -80,9 +80,11 @@
       <div
         ref    = "content"
         :style = "{
-          width:       chart.toggled ? '70%' : '100%',
-          marginRight: chart.toggled ? '8px' : '3px',
-          position:    'relative',
+          width:         chart.toggled ? '70%' : '100%',
+          marginRight:   chart.toggled ? '8px' : '3px',
+          position:      'relative',
+          display:       'flex',
+          flexDirection: 'column',
         }"
       >
         <!-- TOTAL ELEMENTS -->
@@ -909,6 +911,7 @@
     margin-bottom: 5px;
     margin-top: 3px;
     flex-grow: 1;
+    overflow: auto;
   }
 
 </style>
