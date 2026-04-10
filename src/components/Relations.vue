@@ -53,7 +53,7 @@
         <!-- DOWNLOAD BUTTON -->
         <button
           type           = "button"
-          v-disabled     = "!hasfeatures && (!download_formats.length || ApplicationState.download)"
+          v-disabled     = "!table.hasfeatures && (!download_formats.length || ApplicationState.download)"
           class          = "action-button fas fa-download"
           @click.stop    = "showDownloadModal"
           title          = "Downloads"
@@ -62,7 +62,7 @@
 
         <!-- CHART BUTTON -->
         <button
-          v-disabled     = "!hasfeatures && !has_charts"
+          v-disabled     = "!table.hasfeatures && !has_charts"
           class          = "action-button fas fa-chart-bar"
           :class         = "[ chart.toggled ? 'toggled-white' : '',]"
           @click.stop    = "toggleChart"
@@ -80,9 +80,9 @@
       <div
         ref    = "content"
         :style = "{
-          width:       chart.toggled ? '70%' : '100%',
-          marginRight: chart.toggled ? '8px' : '3px',
-          position:    'relative',
+          width:         chart.toggled ? '70%' : '100%',
+          display:       'flex',
+          flexDirection: 'column',
         }"
       >
         <!-- TOTAL ELEMENTS -->
@@ -184,21 +184,21 @@
         </div>
       </div>
 
-      <!-- VERTICAL RESIZE -->
-      <div
-        v-show          = "chart.toggled"
-        class           = "skin-border-color lighten"
-        style           = "border-style: solid; border-width: 0 1px 0 1px; min-width: 5px; background-color: #ddd; cursor: col-resize;"
-        @mousedown.stop = "onChartResize"
-      ></div>
-
       <!-- QPLOTLY CHART -->
       <div
-        v-show   = "chart.toggled"
         id       = "chart_content"
         ref      = "chart"
-        :style   = "{ width: chart.toggled ? '30%' : '0' }"
-      ></div>
+        :style   = "{
+          width:    chart.toggled ? '30%' : '0',
+          display:  chart.toggled ? 'flex' : 'none',
+        }"
+      >
+        <!-- VERTICAL RESIZE -->
+        <div
+          style           = "border-inline: 1px solid hsl(from var(--skin-color) h s calc(l + 30)); min-width: 5px; background-color: #ddd; cursor: col-resize;margin:0 8px; user-select: none;"
+          @mousedown.stop = "onChartResize"
+        ></div>
+      </div>
 
     </div>
   </div>
@@ -744,7 +744,7 @@
         if ('ONE' !== this.relation.type) {
           this.getData();
           //set first time load
-          this.hasfeatures = this.table.rows.length > 0;
+          this.table.hasfeatures = this.table.rows.length > 0;
         }
       }
     },
@@ -838,12 +838,6 @@
     background-color: transparent;
   }
 
-  #chart_content {
-    padding-bottom: 5px;
-    margin-bottom: 5px;
-    margin-left: 8px;
-  }
-
   input.form-control.column-search::placeholder {
     font-weight: normal;
     font-style: italic;
@@ -909,6 +903,7 @@
     margin-bottom: 5px;
     margin-top: 3px;
     flex-grow: 1;
+    overflow: auto;
   }
 
 </style>
