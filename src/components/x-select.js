@@ -107,7 +107,10 @@ class XSelect extends HTMLElement {
     }
     this.trigger.setAttribute('aria-activedescendant', opt.id);
     this.#getOptions().forEach(o => o.classList.toggle('is-active', o.id === opt.id));
-    opt.scrollIntoView({ block: 'nearest', container: 'nearest' });
+    //Scroll only if selected
+    if (opt.hasAttribute('selected')) {
+      opt.scrollIntoView({ block: 'nearest', container: 'nearest' });
+    }
   }
 
   #getOptions() {
