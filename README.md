@@ -355,7 +355,7 @@ g3w.app.once('initconfig', () => {
 });
 ```
 
-For more info: [`G3W_CLIENT_HEADER_CUSTOM_LINKS`](https://g3w-suite.readthedocs.io/en/v3.10.x/settings.html#g3w-client-header-custom-links)
+For more info: [`G3W_CLIENT_HEADER_CUSTOM_LINKS`](https://g3w-suite.readthedocs.io/en/v3.11.x/settings.html#g3w-client-header-custom-links)
 
 </details>
 
@@ -381,7 +381,7 @@ g3w.app.on('map:context-menu', menu => {
 
 <summary>6. How can I change the default colors?</summary>
 
-There are several options (depending on your coding skills 👨‍💻), but our basic advice is almost always the same 👉 [`G3WSUITE_CUSTOM_CSS`](https://g3w-suite.readthedocs.io/en/v3.10.x/branding.html#g3wsuite-custom-css).
+There are several options (depending on your coding skills 👨‍💻), but our basic advice is almost always the same 👉 [`G3WSUITE_CUSTOM_CSS`](https://g3w-suite.readthedocs.io/en/v3.11.x/branding.html#g3wsuite-custom-css).
 
 ![image](https://github.com/user-attachments/assets/a0f86d7e-e501-4bb7-8a16-03022278d9fc)
 
@@ -445,8 +445,8 @@ All notable changes to this project are documented in the [releases](https://git
 ---
 
 **Compatibile with:**
-[![g3w-admin version](https://img.shields.io/badge/g3w--admin-3.10-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-admin/tree/v.3.10.x)
-[![g3w-suite-docker version](https://img.shields.io/badge/g3w--suite--docker-3.10-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-suite-docker/tree/v3.10.x)
+[![g3w-admin version](https://img.shields.io/badge/g3w--admin-3.11-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-admin/tree/v.3.11.x)
+[![g3w-suite-docker version](https://img.shields.io/badge/g3w--suite--docker-3.11-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-suite-docker/tree/v3.11.x)
 
 ---
 
