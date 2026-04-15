@@ -388,7 +388,7 @@
         this.getData();
       },
       async 'table.page'(page) {
-        this.getData({ page });
+        this.getData({ page, ordering: this.table.ordering[0] });
       },
     },
 
@@ -459,7 +459,7 @@
        * @since 4.0.0
        */
       async getData({
-        ordering  = 0,
+        ordering  = -1,
         page      = 1,
       } = {}) {
         GUI.setLoadingContent(true);
@@ -478,7 +478,7 @@
               page,
               page_size: this.table.page_size,
               formatter: 1,
-              ordering:  ordering ? ('asc' === this.table.ordering[1] ? '' : '-') + this.columns[ordering].name : undefined,
+              ordering:  ordering < 0 ? undefined : ('asc' === this.table.ordering[1] ? '' : '-') + this.columns[ordering].name,
               field:     this.columns?.filter(c => c.search).map(c => `${c.name}|ilike|${c.search}`).join('|AND,') || undefined,
             }),
           })).json();
