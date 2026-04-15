@@ -86,7 +86,7 @@
         }"
       >
         <!-- TOTAL ELEMENTS -->
-        <span>{{ table.rows.length }} {{ $t('entries') }}</span>
+        <span>{{ table.allfeatures }} {{ $t('entries') }}</span>
         <!-- TABLE CONTENT -->
         <table ref = "table">
           <thead>
