@@ -56,7 +56,7 @@
         <tr>
           <th v-disabled       = "disableSelectAll">
             <label @click.stop = "setSelection('all')">
-              <input type = "checkbox" :checked = "all " />
+              <input type = "checkbox" :checked = "all" />
             </label>
           </th>
           <th v-for = "(header, i) in state.headers">
@@ -558,7 +558,7 @@ export default {
         this.state.features.splice(0);
         this.state.features.push(...features);
         
-        this.all = this.layer.state.filter.active || this.layer.state.selection.fids.has('__ALL__') || (this.state.selectAll && this.state.features.every(f => f.selected));
+        this.all = this.layer.state.filter.active || this.layer.state.selection.fids.has('__ALL__') || this.state.features.every(f => f.selected);
         
       } catch(e) {
         console.warn(e);
