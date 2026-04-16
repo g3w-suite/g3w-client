@@ -195,8 +195,8 @@
           <option v-for = "p in pages" :selected = "p == search.page">{{ p }}</option>
         </select>
         {{ $t(' of ') + pages }}
-        <button v-if="pages > 1" title="Backward" data-placement="top" @click.stop = "search.page = Number(search.page) - 1" class = "btn" v-disabled = "1 == search.page">🞀</button>
-        <button v-if="pages > 1" title="Forward"  data-placement="top" @click.stop = "search.page = Number(search.page) + 1" class = "btn" v-disabled = "pages == search.page">🞂</button>
+        <button v-if="pages > 1" title="Backward" data-placement="top" @click.stop = "search.page = Number(search.page) - 1; reload({ page: search.page });" class = "btn" v-disabled = "1 == search.page">🞀</button>
+        <button v-if="pages > 1" title="Forward"  data-placement="top" @click.stop = "search.page = Number(search.page) + 1; reload({ page: search.page });" class = "btn" v-disabled = "pages == search.page">🞂</button>
       </div>
 
     </div>
@@ -286,9 +286,6 @@ export default {
   watch: {
     async 'search.page_size'(length) {
       this.reload({ length });
-    },
-    async 'search.page'(page) {
-      this.reload({ page });
     },
   },
 
