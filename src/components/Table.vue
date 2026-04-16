@@ -529,7 +529,7 @@ export default {
         field:      Object.entries(columns).length ? (Object.entries(columns).filter(([_, v]) => v).map(([i, v], index, arr) => `${this.state.headers[i].name}|ilike|${v}${index < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined) : this.search.field,
         page,
         page_size: length,
-        search:    search || this.search.search,
+        search:    (search ?? this.search.search) || undefined,
         in_bbox:   this.state.geolayer.in_bbox,
         ordering:  ('asc' === this.ordering[1] ? '' : '-') + this.state.headers[ordering].name,
         formatter: 1,
