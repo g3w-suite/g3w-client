@@ -33,6 +33,7 @@
       :placeholder = "$t('dosearch')"
       style        = "margin-left: auto !important; margin-right: 1ch;"
       @keyup       = "globalSearch"
+      @input       = "globalSearch"
     />
 
     <!-- TABLE CONTENT -->
