@@ -599,7 +599,7 @@ export default {
     this.layer.on('unselectionall',    this.unSelectAll);
     this.layer.on('filtertokenchange', this.reload);
 
-    this.globalSearch = debounce(e => this.getData({ field: this.search.field, search: e.target.value }));
+    this.globalSearch = debounce(e => this.getData({ search: e.target.value }));
 
     GUI.closeSideBar();
 
