@@ -288,7 +288,8 @@ export default {
       this.reload({ length });
     },
     async 'search.page'(page) {
-      this.reload({ page });
+      const { search, field } = this.search;
+      this.reload({ field, search, page });
     },
   },
 
@@ -466,13 +467,14 @@ export default {
      * @param { number } index column index
      */
     sortColumn(index) {
+      const { search, field } = this.search;
       if (index === this.ordering[0]) {
         this.ordering[1] = 'asc' === this.ordering[1] ? 'desc' : 'asc';
       } else {
         this.ordering[0] = index;
         this.ordering[1] = 'asc';
       }
-      this.reload({ ordering: index });
+      this.reload({ search, field, ordering: index });
     },
 
     /**
@@ -505,6 +507,7 @@ export default {
      * Fetch data from server
      * 
      * @param { Object } opts
+     * @param { string } opts.field
      * @param { number } opts.ordering
      * @param { number } opts.length
      * @param opts.columns
@@ -512,6 +515,7 @@ export default {
      * @param { number } opts.page current page
      */
     async getData({
+      field,
       ordering  = 0,
       length    = this.layer.getAttributeTablePageLength() || PAGELENGTHS[1],
       columns   = {},
@@ -529,7 +533,7 @@ export default {
       this.layer.setAttributeTablePageLength(length);
 
       this.search = {
-        field:     Object.entries(columns).filter(([_, v]) => v).map(([i, v], index, arr) => `${this.state.headers[i].name}|ilike|${v}${index < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined,
+        field:     field ?? (Object.entries(columns).filter(([_, v]) => v).map(([i, v], index, arr) => `${this.state.headers[i].name}|ilike|${v}${index < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined),
         page,
         page_size: length,
         search:    search || null,
@@ -580,7 +584,12 @@ export default {
      * @since 4.1.0
      */
     async reload(opts = {}) {
-      this.getData(opts).then(() => this.disableSelectAll = 0 === this.state.features.length);
+      try {
+        await this.getData(opts);
+        this.disableSelectAll = 0 === this.state.features.length;
+      } catch(e) {
+        console.warn(e);
+      } 
     },
 
   },
@@ -594,7 +603,7 @@ export default {
     this.layer.on('unselectionall',    this.unSelectAll);
     this.layer.on('filtertokenchange', this.reload);
 
-    this.globalSearch = debounce(e => this.getData({ search: e.target.value }));
+    this.globalSearch = debounce(e => this.getData({ field: this.search.field, search: e.target.value }));
 
     GUI.closeSideBar();
 
