@@ -529,7 +529,7 @@ export default {
       this.layer.setAttributeTablePageLength(length);
 
       this.search = {
-        field:     this.search.field ?? (Object.entries(columns).filter(([_, v]) => v).map(([i, v], index, arr) => `${this.state.headers[i].name}|ilike|${v}${index < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined),
+        field:      Object.entries(columns).length ? (Object.entries(columns).filter(([_, v]) => v).map(([i, v], index, arr) => `${this.state.headers[i].name}|ilike|${v}${index < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined) : this.search.field,
         page,
         page_size: length,
         search:    search || this.search.search,
