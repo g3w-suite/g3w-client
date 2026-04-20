@@ -33,6 +33,7 @@
       :placeholder = "$t('dosearch')"
       style        = "margin-left: auto !important; margin-right: 1ch;"
       @keyup       = "globalSearch"
+      @input       = "globalSearch"
     />
 
     <!-- TABLE CONTENT -->
@@ -56,7 +57,7 @@
         <tr>
           <th v-disabled       = "disableSelectAll">
             <label @click.stop = "setSelection('all')">
-              <input type = "checkbox" :checked = "all " />
+              <input type = "checkbox" :checked = "all" />
             </label>
           </th>
           <th v-for = "(header, i) in state.headers">
@@ -195,8 +196,8 @@
           <option v-for = "p in pages" :selected = "p == search.page">{{ p }}</option>
         </select>
         {{ $t(' of ') + pages }}
-        <button v-if="pages > 1" title="Backward" data-placement="top" @click.stop = "search.page = Number(search.page) - 1" class = "btn" v-disabled = "1 == search.page">🞀</button>
-        <button v-if="pages > 1" title="Forward"  data-placement="top" @click.stop = "search.page = Number(search.page) + 1" class = "btn" v-disabled = "pages == search.page">🞂</button>
+        <button v-if="pages > 1" title="Backward" data-placement="top" @click.stop = "reload({ page: Number(search.page) - 1 });" class = "btn" v-disabled = "1 == search.page">🞀</button>
+        <button v-if="pages > 1" title="Forward"  data-placement="top" @click.stop = "reload({ page: Number(search.page) + 1 });" class = "btn" v-disabled = "pages == search.page">🞂</button>
       </div>
 
     </div>
@@ -286,9 +287,6 @@ export default {
   watch: {
     async 'search.page_size'(length) {
       this.reload({ length });
-    },
-    async 'search.page'(page) {
-      this.reload({ page });
     },
   },
 
@@ -529,10 +527,10 @@ export default {
       this.layer.setAttributeTablePageLength(length);
 
       this.search = {
-        field:     Object.entries(columns).filter(([_, v]) => v).map(([i, v], index, arr) => `${this.state.headers[i].name}|ilike|${v}${index < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined,
+        field:      Object.entries(columns).length ? (Object.entries(columns).filter(([_, v]) => v).map(([i, v], index, arr) => `${this.state.headers[i].name}|ilike|${v}${index < arr.length - 1 ? '|AND' : ''}`).join(',') || undefined) : this.search.field,
         page,
         page_size: length,
-        search:    search || null,
+        search:    (search ?? this.search.search) || undefined,
         in_bbox:   this.state.geolayer.in_bbox,
         ordering:  ('asc' === this.ordering[1] ? '' : '-') + this.state.headers[ordering].name,
         formatter: 1,
@@ -554,7 +552,7 @@ export default {
         this.state.features.splice(0);
         this.state.features.push(...features);
         
-        this.all = this.layer.state.filter.active || this.layer.state.selection.fids.has('__ALL__') || (this.state.selectAll && this.state.features.every(f => f.selected));
+        this.all = this.layer.state.filter.active || this.layer.state.selection.fids.has('__ALL__') || this.state.features.every(f => f.selected);
         
       } catch(e) {
         console.warn(e);
@@ -580,7 +578,12 @@ export default {
      * @since 4.1.0
      */
     async reload(opts = {}) {
-      this.getData(opts).then(() => this.disableSelectAll = 0 === this.state.features.length);
+      try {
+        await this.getData(opts);
+        this.disableSelectAll = 0 === this.state.features.length;
+      } catch(e) {
+        console.warn(e);
+      } 
     },
 
   },
