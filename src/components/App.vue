@@ -1778,6 +1778,12 @@ export default {
 
     document.body.appendChild(this.$el.querySelector('#modal-fullscreen'));
 
+    //In case of sidebar collapssed by default
+    if (document.body.classList.contains('sidebar-collapse')) {
+      //need sync with GUI state
+      GUI.hideSidebar();
+    }
+
     this.language = this.initConfig.user.i18n;
 
     await this.$nextTick();
