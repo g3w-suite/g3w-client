@@ -492,10 +492,13 @@
                       }
                     }))
                   }
-                } catch (e) {
+                } catch(e) {
                   console.warn(e);
                 }
               }
+              //need to reset values of input select
+              this.state.input.options.values.splice(0);
+              await this.$nextTick();
               this.state.input.options.values = (
                 (await layer.getFilterData({
                   fformatter : referencingField[0],
@@ -506,11 +509,9 @@
                                  .join('|AND,')
                 })).data || []).map(([value, key]) => ({ key, value }));
               //in the case of values length
-              if (this.state.input.options.values.length > 0) {
-                this.state.value = this.state.input.options.values[0].value;
-                this.select2.val(this.state.value).trigger('change');
-                await this.changeSelect(this.state.value);
-              }
+              this.state.value = this.state.input.options.values?.[0]?.value ?? null;
+              this.select2.val(this.state.value).trigger('change');
+              await this.changeSelect(this.state.value);
               //stop loading
               this.setLoading(false);
             })
