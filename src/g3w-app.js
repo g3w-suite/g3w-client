@@ -3688,7 +3688,7 @@ export default new (class GUI extends Emitter {
       title:        'legend',
       internalPanel: new (Vue.extend({
         template: /* html */`
-        <div>
+        <div id = "legend-panel">
           <figure
             v-for  = "url in legendurls"
             :key   = "url.url"
