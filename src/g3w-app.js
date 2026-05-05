@@ -667,11 +667,16 @@ export default new (class GUI extends Emitter {
 
     ApplicationState.sidebar.width = document.querySelector('.main-sidebar').offsetWidth;;
 
-    // handle main window resize and main sidebar resize (shared frame to avoid multiple _layout() calls per frame)
-    let _layoutRaf;
-    const scheduleLayout = () => { cancelAnimationFrame(_layoutRaf); _layoutRaf = requestAnimationFrame(() => this._layout()); };
-    new ResizeObserver(scheduleLayout).observe(document.body);
-    new ResizeObserver(scheduleLayout).observe(document.querySelector('.main-sidebar'));
+    // handle window and sidebar resize
+    const resize_observer = (() => {
+      let frame;
+      return new ResizeObserver(() => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => { this._layout(); });
+      });
+    })();
+    resize_observer.observe(document.body);
+    resize_observer.observe(document.querySelector('.main-sidebar'));
 
     this._layout();
 
