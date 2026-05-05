@@ -668,7 +668,7 @@ export default new (class GUI extends Emitter {
     ApplicationState.sidebar.width = document.querySelector('.main-sidebar').offsetWidth;;
 
     // handle main window resize
-    new ResizeObserver(debounce(() => this._layout(), 0)).observe(document.body);
+    new ResizeObserver(() => this._layout()).observe(document.body);
 
     // handle main sidebar resize
     new ResizeObserver(() => this._layout()).observe(document.querySelector('.main-sidebar'));
