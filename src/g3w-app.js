@@ -667,11 +667,16 @@ export default new (class GUI extends Emitter {
 
     ApplicationState.sidebar.width = document.querySelector('.main-sidebar').offsetWidth;;
 
-    // handle main window resize
-    window.addEventListener('resize', () => { requestAnimationFrame(() => { this._layout(); }); });
-
-    // handle main sidebar resize
-    document.querySelector('.main-sidebar').addEventListener('transitionend', () => { requestAnimationFrame(() => { this._layout(); }); });
+    // handle window and sidebar resize
+    const resize_observer = (() => {
+      let frame;
+      return new ResizeObserver(() => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => { this._layout(); });
+      });
+    })();
+    resize_observer.observe(document.body);
+    resize_observer.observe(document.querySelector('.main-sidebar'));
 
     this._layout();
 
