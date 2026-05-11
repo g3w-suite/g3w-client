@@ -830,9 +830,9 @@ export class FormService extends Emitter {
    * @since 3.8.0
    */
   async saveDefaultExpressionFieldsNotDependencies() {
-    //@since 4.1.0 get updated fields that listen to updates and are not vector join fields
-    const noJoinFieldChanges = this.state.fields.filter(f => f.update && !f.vectorjoin_id);
-    if (0 === this.default_expression_fields_on_update.length || 0 === noJoinFieldChanges.length) { return }
+    //@since 4.1.0 check whether there are updated fields that listen to updates and are not vector join fields
+    const noJoinFieldChanges = this.state.fields.some(f => f.update && !f.vectorjoin_id);
+    if (0 === this.default_expression_fields_on_update.length || !noJoinFieldChanges) { return }
     try {
       //@since 3.11.0 get unique field names that has dependencies from another fields
       const fields_with_dependencies = new Set(Object.values(this.default_expression_fields_dependencies).flat());
