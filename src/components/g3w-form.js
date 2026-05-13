@@ -824,25 +824,22 @@ export class FormService extends Emitter {
   };
 
   /**
-   * Method to get default expression of field that has no dependencies fields listen when save form
-   * @returns {Promise<void>}
-   *
+   * Runs during form submission. Evaluates and assigns default expressions to fields without dependencies.
+   * 
    * @since 3.8.0
    */
   async saveDefaultExpressionFieldsNotDependencies() {
-    if (0 === this.default_expression_fields_on_update.length) { return }
-
     try {
-      //@since 3.11.0 get unique field names that has dependencies from another fields
-      const fields_with_dependencies = new Set(Object.values(this.default_expression_fields_dependencies).flat());
-      //get all fields with default expression without dependencies
-      const fields_without_dependencies = this.default_expression_fields_on_update
-        .filter(({ name }) => !fields_with_dependencies.has(name))
-      //set property value of field by default expression result from server
-      await Promise.allSettled(fields_without_dependencies
-        .map(field => new Promise(async (resolve, reject) => {
+      // skip when there are no default expression fields or if no form fields need an update (excluding vector joins)
+      if (0 === this.default_expression_fields_on_update.length || !this.state.fields.some(f => f.update && !f.vectorjoin_id)) {
+        return;
+      }
+      const fields_with_dependencies    = new Set(Object.values(this.default_expression_fields_dependencies).flat());
+      const fields_without_dependencies = this.default_expression_fields_on_update.filter(({ name }) => !fields_with_dependencies.has(name))
+      // wait until default expression is resolved and set value to field
+      await Promise.allSettled(
+        fields_without_dependencies.map(field => new Promise(async (resolve, reject) => {
             try {
-              //await until default expression is resolved and set value to field
               await getDefaultExpression({
                 field,
                 feature:      this.feature,
@@ -860,6 +857,6 @@ export class FormService extends Emitter {
     } catch(e) {
       console.warn(e);
     }
+  }
 
-  };
 }
