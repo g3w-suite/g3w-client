@@ -1,4 +1,5 @@
 import it from './it.js';
+import es from './es.js';
 import en from './en.js';
 import fi from './fi.js';
 import se from './se.js';
@@ -12,6 +13,7 @@ import bg from './bg.js';
 
 const translations = {
   it,
+  es,
   en,
   fi,
   se,
