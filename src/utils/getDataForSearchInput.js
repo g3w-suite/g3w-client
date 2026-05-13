@@ -32,13 +32,17 @@ export async function getDataForSearchInput({ state, field, layerid, filter, sug
         : [...new Set([...(d.value.data || []), ...acc].map(JSON.stringify))].map(JSON.parse), // ensure uniques values (search performed on multiple serach_layers)
         [] 
       )
-      .map(([value, key]) => ({ key, value }))
-      // re-sort merged results from multiple layers (numeric or alphabetic by key)
-      .sort((a, b) => {
-        if (!state.otherquerylayerids?.length) { return 0 }; // skip sort when querying a single layer (server-side ordering is already applied)
+      .map(([value, key]) => ({ key, value }));
+
+    // re-sort merged results from multiple layers (numeric or alphabetic by key)
+    if (state.otherquerylayerids?.length) {
+      data.sort((a, b) => {
         const ak = a.key, bk = b.key;
         return (!isNaN(ak) && !isNaN(bk)) ? Number(ak) - Number(bk) : String(ak ?? '').localeCompare(String(bk ?? ''));
       });
+    }
+
+    return data;
 
   } catch(e) { console.warn(e); }
 
