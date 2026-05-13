@@ -29,7 +29,7 @@ export async function getDataForSearchInput({ state, field, layerid, filter, sug
       .filter(d => 'fulfilled' === d.status)
       .reduce((acc, d, i) => 0 === i
         ? acc.concat(d.value.data || [])                                                       // for first layer get all uninques values 
-        : [...new Set([...(d.value.data || []), ...acc].map(JSON.stringify))].map(JSON.parse), // ensure uniques values (search performed on multiple serach_layers)
+        : [...new Set([...(d.value.data || []), ...acc].map(JSON.stringify))].map(JSON.parse), // ensure uniques values (search performed on multiple search_layers)
         [] 
       )
       .map(([value, key]) => ({ key, value }));
