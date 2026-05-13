@@ -13,7 +13,7 @@ import { getCatalogLayerById }  from 'utils/getCatalogLayerById';
 export async function getDataForSearchInput({ state, field, layerid, filter, suggest }) {
   try {
     // get unique value from each layers
-    return (
+    const data = (
       await Promise.allSettled([layerid || state.layerid].concat(state.otherquerylayerids).map(id => getCatalogLayerById(id).getFilterData({
         suggest,
         fformatter: field,
