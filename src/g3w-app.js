@@ -1856,8 +1856,8 @@ export default new (class GUI extends Emitter {
       this._layout.secondary = param;
     }
 
-    const sec             =  this._layout.secondary;
-
+    const sec             = this._layout.secondary;
+    
     const layout          = ApplicationState.layout;
 
     const contents        = document.querySelector('#contents');
@@ -1918,10 +1918,10 @@ export default new (class GUI extends Emitter {
     // sidebar panel fix
     const panel_el = document.querySelector('#g3w-view-content');
     if (panel_el) {
-      contents.style.height = panel_el.offsetHeight
+      contents.style.height = `${panel_el.offsetHeight
         - (panel_el.querySelector('.close-panel-block')?.offsetHeight || 0)
         - (panel_el.querySelector('.content_breadcrumb')?.offsetHeight || 0)
-        - (content_child ? 50 : 0) + 'px'; // vertical padding
+        - (content_child ? 50 : 0)}px`; // vertical padding
 
       // workaround for qplotly?
       if (content_child) {
