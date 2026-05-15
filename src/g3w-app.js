@@ -1861,6 +1861,7 @@ export default new (class GUI extends Emitter {
     const layout          = ApplicationState.layout;
 
     const contents        = document.querySelector('#contents');
+    const content_child   = contents.children[0];
     const content_wrapper = document.querySelector('.content-wrapper');
     const navbar          = document.querySelector('.navbar');
     const viewW           = content_wrapper.getBoundingClientRect().width;
@@ -1920,14 +1921,14 @@ export default new (class GUI extends Emitter {
       contents.style.height = panel_el.offsetHeight
         - (panel_el.querySelector('.close-panel-block')?.offsetHeight || 0)
         - (panel_el.querySelector('.content_breadcrumb')?.offsetHeight || 0)
-        - (contents.children[0] ? 50 : 0) + 'px'; // vertical padding
+        - (content_child ? 50 : 0) + 'px'; // vertical padding
 
       // workaround for qplotly?
-      if (contents.children[0]) {
-        contents.children[0].style.height = contents.style.height;
+      if (content_child) {
+        content_child.style.height = contents.style.height;
       }
 
-      panel_el.style.padding = contents.children[0] ? '15px' : null;
+      panel_el.style.padding = content_child ? '15px' : null;
 
       document.querySelector(".main-sidebar").style.height  = `${viewH}px`;
       document.querySelector(".sidebar-panel").style.height = `${viewH}px`;
