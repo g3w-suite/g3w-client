@@ -1882,15 +1882,17 @@ export default new (class GUI extends Emitter {
       this._layout.secondary = param;
     }
 
-    const sec =  this._layout.secondary;
+    const sec             =  this._layout.secondary;
 
-    const layout = ApplicationState.layout;
+    const layout          = ApplicationState.layout;
 
     const contents        = document.querySelector('#contents');
     const content_wrapper = document.querySelector('.content-wrapper');
+    const navbar          = document.querySelector('.navbar');
     const sidebar         = document.querySelector('.main-sidebar').getBoundingClientRect();
-    const viewW           = document.querySelector('#app').getBoundingClientRect().width - sidebar.width - sidebar.left - window.scrollX;
-    const viewH           = window.innerHeight - document.querySelector('.navbar').offsetHeight;
+    const appW            = document.querySelector('#app').getBoundingClientRect().width;
+    const viewW           = appW - sidebar.width - sidebar.left - window.scrollX;
+    const viewH           = window.innerHeight - navbar.offsetHeight;
     const panel           = layout[layout.__current].rightpanel;
 
     const opts = {
@@ -1944,7 +1946,7 @@ export default new (class GUI extends Emitter {
     ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
       try {
         if ('function' == typeof d.content.layout) {
-          d.content.layout(ApplicationState.content.sizes.width, contents.style.height.replace('px',''));
+          d.content.layout(ApplicationState.content.sizes.width, parseFloat(contents.style.height));
         }
       } catch(e) {
         this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
