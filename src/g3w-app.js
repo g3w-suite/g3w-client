@@ -677,30 +677,6 @@ export default new (class GUI extends Emitter {
     })();
     resize_observer.observe(document.querySelector('.content-wrapper'));
 
-    const sidebarFix = new ResizeObserver(() => {
-      const contents = document.querySelector('#contents');
-      const panel    = document.querySelector('#g3w-view-content');
-
-      contents.style.height = panel.offsetHeight
-        - (panel.querySelector('.close-panel-block')?.offsetHeight || 0)
-        - (panel.querySelector('.content_breadcrumb')?.offsetHeight || 0)
-        - (contents.children[0] ? 50 : 0) + 'px'; // vertical padding
-
-      // workaround for qplotly?
-      if (contents.children[0]) {
-        contents.children[0].style.height = contents.style.height;
-      }
-
-      panel.style.padding = contents.children[0] ? '15px' : null;
-
-      const viewH = window.innerHeight - document.querySelector('.navbar').offsetHeight;
-      document.querySelector(".content-wrapper").style.height = `${viewH}px`;
-      document.querySelector(".main-sidebar").style.height    = `${viewH}px`;
-      document.querySelector(".sidebar-panel").style.height   = `${viewH}px`;
-    });
-
-    sidebarFix.observe(document.querySelector('#g3w-view-content'));
-
     this._layout();
 
     // remove "permalink_code" from URL
@@ -1938,6 +1914,26 @@ export default new (class GUI extends Emitter {
       width:  ApplicationState.map.sizes.width,
       height: ApplicationState.map.sizes.height
     });
+
+    // sidebar panel fix
+    const contents_el = document.querySelector('#contents');
+    const panel_el    = document.querySelector('#g3w-view-content');
+    if (contents_el && panel_el) {
+      contents_el.style.height = panel_el.offsetHeight
+        - (panel_el.querySelector('.close-panel-block')?.offsetHeight || 0)
+        - (panel_el.querySelector('.content_breadcrumb')?.offsetHeight || 0)
+        - (contents_el.children[0] ? 50 : 0) + 'px'; // vertical padding
+
+      // workaround for qplotly?
+      if (contents_el.children[0]) {
+        contents_el.children[0].style.height = contents_el.style.height;
+      }
+
+      panel_el.style.padding = contents_el.children[0] ? '15px' : null;
+
+      document.querySelector(".main-sidebar").style.height  = `${viewH}px`;
+      document.querySelector(".sidebar-panel").style.height = `${viewH}px`;
+    }
 
     ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
       try {
