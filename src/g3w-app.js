@@ -677,14 +677,7 @@ export default new (class GUI extends Emitter {
     })();
     resize_observer.observe(document.querySelector('.content-wrapper'));
 
-    this._layout();
-
-    // remove "permalink_code" from URL
-    const url = new URL(window.location);
-    url.searchParams.delete('permalink_code');
-    window.history.replaceState(null, null, url);
-
-    const sidebarFix = () => {
+    const sidebarFix = new ResizeObserver(() => {
       const contents = document.querySelector('#contents');
       const panel    = document.querySelector('#g3w-view-content');
 
@@ -693,7 +686,7 @@ export default new (class GUI extends Emitter {
         - (panel.querySelector('.content_breadcrumb')?.offsetHeight || 0)
         - (contents.children[0] ? 50 : 0) + 'px'; // vertical padding
 
-        // workaround for qplotly?
+      // workaround for qplotly?
       if (contents.children[0]) {
         contents.children[0].style.height = contents.style.height;
       }
@@ -704,10 +697,16 @@ export default new (class GUI extends Emitter {
       document.querySelector(".content-wrapper").style.height = `${viewH}px`;
       document.querySelector(".main-sidebar").style.height    = `${viewH}px`;
       document.querySelector(".sidebar-panel").style.height   = `${viewH}px`;
+    });
 
-      requestAnimationFrame(sidebarFix);
-    };
-    requestAnimationFrame(sidebarFix);
+    sidebarFix.observe(document.querySelector('#g3w-view-content'));
+
+    this._layout();
+
+    // remove "permalink_code" from URL
+    const url = new URL(window.location);
+    url.searchParams.delete('permalink_code');
+    window.history.replaceState(null, null, url);
 
     // initialize iframe services
     if (ApplicationState.iframe) {
