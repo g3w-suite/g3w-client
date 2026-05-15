@@ -1884,7 +1884,6 @@ export default new (class GUI extends Emitter {
     const scale = is_full ? 1 : ((h_split ? panel.width: panel.height) /100);
 
     contents.parentElement.classList.toggle('full-size', is_full);
-    
 
     // size "content"
     Object.assign(ApplicationState.content.sizes, {
@@ -1916,20 +1915,19 @@ export default new (class GUI extends Emitter {
     });
 
     // sidebar panel fix
-    const contents_el = document.querySelector('#contents');
-    const panel_el    = document.querySelector('#g3w-view-content');
-    if (contents_el && panel_el) {
-      contents_el.style.height = panel_el.offsetHeight
+    const panel_el = document.querySelector('#g3w-view-content');
+    if (panel_el) {
+      contents.style.height = panel_el.offsetHeight
         - (panel_el.querySelector('.close-panel-block')?.offsetHeight || 0)
         - (panel_el.querySelector('.content_breadcrumb')?.offsetHeight || 0)
-        - (contents_el.children[0] ? 50 : 0) + 'px'; // vertical padding
+        - (contents.children[0] ? 50 : 0) + 'px'; // vertical padding
 
       // workaround for qplotly?
-      if (contents_el.children[0]) {
-        contents_el.children[0].style.height = contents_el.style.height;
+      if (contents.children[0]) {
+        contents.children[0].style.height = contents.style.height;
       }
 
-      panel_el.style.padding = contents_el.children[0] ? '15px' : null;
+      panel_el.style.padding = contents.children[0] ? '15px' : null;
 
       document.querySelector(".main-sidebar").style.height  = `${viewH}px`;
       document.querySelector(".sidebar-panel").style.height = `${viewH}px`;
