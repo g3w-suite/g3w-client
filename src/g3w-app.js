@@ -1934,16 +1934,17 @@ export default new (class GUI extends Emitter {
       document.querySelector(".sidebar-panel").style.height = `${viewH}px`;
     }
 
-    ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
-      try {
-        if ('function' == typeof d.content.layout) {
+    // re-layout each component stored into the stack
+    ApplicationState.contentsdata
+      .filter(d => 'function' == typeof d.content.layout)
+      .forEach(d => {                           
+        try {  
           d.content.layout(ApplicationState.content.sizes.width, parseFloat(contents.style.height));
+        } catch(e) {
+          this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
+          setTimeout(() => this._layout(), 1000);
         }
-      } catch(e) {
-        this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
-        setTimeout(() => this._layout(), 1000);
-      }
-    });
+      });
     
     this.emit('resize');
 
