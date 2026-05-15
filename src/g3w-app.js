@@ -675,8 +675,7 @@ export default new (class GUI extends Emitter {
         frame = requestAnimationFrame(() => { this._layout(); });
       });
     })();
-    resize_observer.observe(document.body);
-    resize_observer.observe(document.querySelector('.main-sidebar'));
+    resize_observer.observe(document.querySelector('.content-wrapper'));
 
     this._layout();
 
@@ -1889,9 +1888,7 @@ export default new (class GUI extends Emitter {
     const contents        = document.querySelector('#contents');
     const content_wrapper = document.querySelector('.content-wrapper');
     const navbar          = document.querySelector('.navbar');
-    const sidebar         = document.querySelector('.main-sidebar').getBoundingClientRect();
-    const appW            = document.querySelector('#app').getBoundingClientRect().width;
-    const viewW           = appW - sidebar.width - sidebar.left - window.scrollX;
+    const viewW           = content_wrapper.getBoundingClientRect().width;
     const viewH           = window.innerHeight - navbar.offsetHeight;
     const panel           = layout[layout.__current].rightpanel;
 
