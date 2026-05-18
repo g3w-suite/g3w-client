@@ -1850,7 +1850,7 @@ export default new (class GUI extends Emitter {
     const app             = document.querySelector('#app');
     const viewport        = content_wrapper || app || document.documentElement;
     return {
-      viewW: viewport.getBoundingClientRect().width,
+      viewW: viewport?.getBoundingClientRect().width || window.innerWidth,
       viewH: window.innerHeight - (navbar?.offsetHeight || 0),
     };
   }
