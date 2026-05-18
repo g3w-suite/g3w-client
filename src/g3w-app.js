@@ -670,7 +670,10 @@ export default new (class GUI extends Emitter {
     // handle window and sidebar resize
     const resize_observer = (() => {
       let frame;
-      return new ResizeObserver(() => {
+      return new ResizeObserver((entries) => {
+        if (entries.some(({ target }) => '1' === target?.dataset?.manualResize)) {
+          return;
+        }
         cancelAnimationFrame(frame);
         frame = requestAnimationFrame(() => { this._layout(); });
       });

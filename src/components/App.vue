@@ -1143,9 +1143,14 @@ export default {
     async onResize(e) {
       const sidebar = document.getElementById('g3w-view-content');
       const panel   = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
+      const wrapper = document.querySelector('.content-wrapper');
+      let frame;
       let rect, dx, dy;
 
       this.state.content.disabled = true;
+      if (wrapper) {
+        wrapper.dataset.manualResize = '1';
+      }
 
       const mousemove = e => {
         e.preventDefault();
@@ -1153,8 +1158,6 @@ export default {
 
         dx   = e.pageX - rect.left - window.scrollX;
         dy   = e.pageY - rect.top - window.scrollY;
-
-        const wrapper = document.querySelector('.content-wrapper');
 
         panel.width  = Math.min(Math.max(
           Math.round((200               / wrapper.clientWidth)  * 100),
@@ -1166,23 +1169,16 @@ export default {
           Math.round(((rect.height -dy) / wrapper.clientHeight) * 100),
         ), 90);
 
-        const { viewW, viewH } = GUI.getViewportSizes();
-
-        const h_split = 'h' === this.state.split;
-        const v_split = 'v' === this.state.split;
-        
-        // percentage of secondary view (content)
-        const scale = (h_split ? panel.width : panel.height) /100;
-
-        // size "content"
-        Object.assign(this.state.content.sizes, {
-          width:  (h_split ?  (viewW * scale) : viewW),
-          height: (v_split ? (viewH * scale) : viewH),
-        });
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => GUI._layout());
       };
 
       const mouseup = async e => {
         document.removeEventListener('mousemove', mousemove);
+        cancelAnimationFrame(frame);
+        if (wrapper) {
+          delete wrapper.dataset.manualResize;
+        }
         if (!this.disabled && 'h' === this.state.split && panel.width > 65) {
           GUI.hideSidebar();
         }
