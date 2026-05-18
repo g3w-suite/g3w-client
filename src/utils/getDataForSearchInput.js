@@ -17,7 +17,9 @@ export async function getDataForSearchInput({ state, field, layerid, filter, sug
         suggest,
         fformatter:         field,
         ordering:           field,
-        otherquerylayerids: Array.isArray(state.otherquerylayerids) ? state.otherquerylayerids.join(',') : undefined,
+        otherquerylayerids: Array.isArray(state.otherquerylayerids) && state.otherquerylayerids.length
+          ? state.otherquerylayerids.join(',')
+          : undefined,
         field:      filter || getDataForSearchInput.field({
           state,
           //in the case of suggested parameter set (case autocomplete field), need to use current field
