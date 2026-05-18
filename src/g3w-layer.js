@@ -1448,6 +1448,7 @@ export class Layer extends Emitter {
    * @param opts.autofilter since 3.11.0
    * @param opts.page       since 3.11.0
    * @param opts.page_size  since 3.11.0
+   * @param opts.otherquerylayerids  since 3.11.0
    */
   async getFilterData({
     raw = false,
@@ -1462,6 +1463,7 @@ export class Layer extends Emitter {
     autofilter,
     page,
     page_size,
+    otherquerylayerids,
   } = {}) {
     try {
       const response =  await XHR.post({
@@ -1479,6 +1481,7 @@ export class Layer extends Emitter {
           autofilter,
           page,
           page_size,
+          otherquerylayerids,
         })
       });
 

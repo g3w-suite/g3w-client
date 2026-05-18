@@ -13,37 +13,18 @@ import { getCatalogLayerById }  from 'utils/getCatalogLayerById';
 export async function getDataForSearchInput({ state, field, layerid, filter, suggest }) {
   try {
     // get unique value from each layers
-    const data = (
-      await Promise.allSettled([layerid || state.layerid].concat(state.otherquerylayerids).map(id => getCatalogLayerById(id).getFilterData({
+    return (await getCatalogLayerById(layerid || state.layerid).getFilterData({
         suggest,
-        fformatter: field,
-        ordering:   field,
+        fformatter:         field,
+        ordering:           field,
+        otherquerylayerids: Array.isArray(state.otherquerylayerids) ? state.otherquerylayerids.join(',') : undefined,
         field:      filter || getDataForSearchInput.field({
           state,
           //in the case of suggested parameter set (case autocomplete field), need to use current field
           field:  suggest ? field : (state.forminputs.find(i => field === i.attribute) || {}).dependance || field,
           fields: []
         }),
-      })))
-    )
-      .filter(d => 'fulfilled' === d.status)
-      .reduce((acc, d, i) => 0 === i
-        ? acc.concat(d.value.data || [])                                                       // for first layer get all uninques values 
-        : [...new Set([...(d.value.data || []), ...acc].map(JSON.stringify))].map(JSON.parse), // ensure uniques values (search performed on multiple search_layers)
-        [] 
-      )
-      .map(([value, key]) => ({ key, value }));
-
-    // re-sort merged results from multiple layers (numeric or alphabetic by key)
-    if (state.otherquerylayerids?.length) {
-      data.sort((a, b) => {
-        const ak = a.key, bk = b.key;
-        return (!isNaN(ak) && !isNaN(bk)) ? Number(ak) - Number(bk) : String(ak ?? '').localeCompare(String(bk ?? ''));
-      });
-    }
-
-    return data;
-
+      }))?.data?.map?.(([value, key]) => ({ key, value })) ?? [];
   } catch(e) { console.warn(e); }
 
   return [];
