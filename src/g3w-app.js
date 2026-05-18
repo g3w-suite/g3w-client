@@ -1861,7 +1861,6 @@ export default new (class GUI extends Emitter {
     const layout          = ApplicationState.layout;
 
     const contents        = document.querySelector('#contents');
-    const content_child   = contents.children[0];
     const content_wrapper = document.querySelector('.content-wrapper');
     const navbar          = document.querySelector('.navbar');
     const viewW           = content_wrapper.getBoundingClientRect().width;
@@ -1918,34 +1917,34 @@ export default new (class GUI extends Emitter {
     // sidebar panel fix
     const panel_el = document.querySelector('#g3w-view-content');
     if (panel_el) {
-      contents.style.height = `${panel_el.offsetHeight
+      contents.style.height = panel_el.offsetHeight
         - (panel_el.querySelector('.close-panel-block')?.offsetHeight || 0)
         - (panel_el.querySelector('.content_breadcrumb')?.offsetHeight || 0)
-        - (content_child ? 50 : 0)}px`; // vertical padding
+        - (contents.children[0] ? 50 : 0) + 'px'; // vertical padding
 
       // workaround for qplotly?
-      if (content_child) {
-        content_child.style.height = contents.style.height;
+      if (contents.children[0]) {
+        contents.children[0].style.height = contents.style.height;
       }
 
-      panel_el.style.padding = content_child ? '15px' : null;
+      panel_el.style.padding = contents.children[0] ? '15px' : null;
 
       document.querySelector(".main-sidebar").style.height  = `${viewH}px`;
       document.querySelector(".sidebar-panel").style.height = `${viewH}px`;
     }
 
     // re-layout each component stored into the stack
-    ApplicationState.contentsdata
-      .filter(d => 'function' == typeof d.content.layout)
-      .forEach(d => {                           
-        try {  
+    ApplicationState.contentsdata.forEach(d => {
+      try {
+        if ('function' == typeof d.content.layout) {
           d.content.layout(ApplicationState.content.sizes.width, parseFloat(contents.style.height));
-        } catch(e) {
-          this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
-          setTimeout(() => this._layout(), 1000);
         }
-      });
-    
+      } catch(e) {
+        this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
+        setTimeout(() => this._layout(), 1000);
+      }
+    });
+
     this.emit('resize');
 
     window.localStorage.setItem('SIDEBAR', JSON.stringify(panel));
