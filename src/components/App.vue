@@ -568,7 +568,10 @@
     <!-- MAIN (content) -->
     <div
       class  = "content-wrapper"
-      :style = "{ paddingTop: ApplicationState.iframe ? 0 : null }"
+      :style = "{
+        paddingTop: ApplicationState.iframe ? 0 : null,
+        height: `calc(100% - ${ApplicationState.iframe ? 0 : 50}px)`
+      }"
     > 
       <bar-loader style = "position: absolute; z-index: 1;" :loading = "state.content.loading && 0 === state.contentsdata.length"/>
       <transition name = "fade" :duration = "{ enter: 500, leave: 500 }">
@@ -1143,61 +1146,46 @@ export default {
     async onResize(e) {
       const sidebar = document.getElementById('g3w-view-content');
       const panel   = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
-      const wrapper = document.querySelector('.content-wrapper');
-      const minDeltaPx = 1;
-      let frame;
       let rect, dx, dy;
-      let prevPageX = e.pageX;
-      let prevPageY = e.pageY;
 
       this.state.content.disabled = true;
-      if (wrapper) {
-        wrapper.dataset.manualResize = '1';
-      }
 
       const mousemove = e => {
         e.preventDefault();
-        const h_split = 'h' === this.state.split;
-        const v_split = 'v' === this.state.split;
-
-        if ((h_split && Math.abs(e.pageX - prevPageX) < minDeltaPx) || (v_split && Math.abs(e.pageY - prevPageY) < minDeltaPx)) {
-          return;
-        }
-
         rect = sidebar.getBoundingClientRect();
 
         dx   = e.pageX - rect.left - window.scrollX;
         dy   = e.pageY - rect.top - window.scrollY;
 
-        const width = Math.min(Math.max(
+        const wrapper = document.querySelector('.content-wrapper');
+
+        panel.width  = Math.min(Math.max(
           Math.round((200               / wrapper.clientWidth)  * 100),
           Math.round(((rect.width  -dx) / wrapper.clientWidth)  * 100),
         ), 90);
 
-        const height = Math.min(Math.max(
+        panel.height = Math.min(Math.max(
           Math.round((200               / wrapper.clientHeight) * 100),
           Math.round(((rect.height -dy) / wrapper.clientHeight) * 100),
         ), 90);
 
-        if (width === panel.width && height === panel.height) {
-          return;
-        }
+        const { viewW, viewH } = GUI.getViewportSizes();
 
-        panel.width  = width;
-        panel.height = height;
-        prevPageX    = e.pageX;
-        prevPageY    = e.pageY;
+        const h_split = 'h' === this.state.split;
+        const v_split = 'v' === this.state.split;
+        
+        // percentage of secondary view (content)
+        const scale = (h_split ? panel.width : panel.height) /100;
 
-        cancelAnimationFrame(frame);
-        frame = requestAnimationFrame(() => GUI._layout());
+        // size "content"
+        Object.assign(this.state.content.sizes, {
+          width:  (h_split ?  (viewW * scale) : viewW),
+          height: (v_split ? (viewH * scale) : viewH),
+        });
       };
 
       const mouseup = async e => {
         document.removeEventListener('mousemove', mousemove);
-        cancelAnimationFrame(frame);
-        if (wrapper) {
-          delete wrapper.dataset.manualResize;
-        }
         if (!this.disabled && 'h' === this.state.split && panel.width > 65) {
           GUI.hideSidebar();
         }

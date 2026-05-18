@@ -670,15 +670,14 @@ export default new (class GUI extends Emitter {
     // handle window and sidebar resize
     const resize_observer = (() => {
       let frame;
-      return new ResizeObserver((entries) => {
-        if (entries.some(({ target }) => '1' === target?.dataset?.manualResize)) {
-          return;
-        }
+      return new ResizeObserver(() => {
         cancelAnimationFrame(frame);
         frame = requestAnimationFrame(() => { this._layout(); });
       });
     })();
     resize_observer.observe(document.querySelector('.content-wrapper'));
+    document.querySelector('.main-sidebar').addEventListener('transitionend', () => this._layout());
+    document.querySelector('.content-wrapper').addEventListener('transitionend', () => this._layout());
 
     this._layout();
 
