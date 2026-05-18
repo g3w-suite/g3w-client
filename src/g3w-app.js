@@ -675,8 +675,9 @@ export default new (class GUI extends Emitter {
         frame = requestAnimationFrame(() => { this._layout(); });
       });
     })();
-    resize_observer.observe(document.body);
-    resize_observer.observe(document.querySelector('.main-sidebar'));
+    resize_observer.observe(document.querySelector('.content-wrapper'));
+    document.querySelector('.main-sidebar').addEventListener('transitionend', () => this._layout());
+    document.querySelector('.content-wrapper').addEventListener('transitionend', () => this._layout());
 
     this._layout();
 
@@ -684,31 +685,6 @@ export default new (class GUI extends Emitter {
     const url = new URL(window.location);
     url.searchParams.delete('permalink_code');
     window.history.replaceState(null, null, url);
-
-    const sidebarFix = () => {
-      const contents = document.querySelector('#contents');
-      const panel    = document.querySelector('#g3w-view-content');
-
-      contents.style.height = panel.offsetHeight
-        - (panel.querySelector('.close-panel-block')?.offsetHeight || 0)
-        - (panel.querySelector('.content_breadcrumb')?.offsetHeight || 0)
-        - (contents.children[0] ? 50 : 0) + 'px'; // vertical padding
-
-        // workaround for qplotly?
-      if (contents.children[0]) {
-        contents.children[0].style.height = contents.style.height;
-      }
-
-      panel.style.padding = contents.children[0] ? '15px' : null;
-
-      const viewH = window.innerHeight - document.querySelector('.navbar').offsetHeight;
-      document.querySelector(".content-wrapper").style.height = `${viewH}px`;
-      document.querySelector(".main-sidebar").style.height    = `${viewH}px`;
-      document.querySelector(".sidebar-panel").style.height   = `${viewH}px`;
-
-      requestAnimationFrame(sidebarFix);
-    };
-    requestAnimationFrame(sidebarFix);
 
     // initialize iframe services
     if (ApplicationState.iframe) {
@@ -1870,6 +1846,15 @@ export default new (class GUI extends Emitter {
     dialog.showModal();
   }
 
+  getViewportSizes() {
+    const content_wrapper = document.querySelector('.content-wrapper');
+    const navbar          = document.querySelector('.navbar');
+    return {
+      viewW: content_wrapper.getBoundingClientRect().width || window.innerWidth,
+      viewH: window.innerHeight - navbar.offsetHeight,
+    };
+  }
+
   /**
    * load components of viewport after right size setting
    * 
@@ -1882,15 +1867,14 @@ export default new (class GUI extends Emitter {
       this._layout.secondary = param;
     }
 
-    const sec =  this._layout.secondary;
+    const sec             = this._layout.secondary;
+    
+    const layout          = ApplicationState.layout;
 
-    const layout = ApplicationState.layout;
-
-    const contents        = document.querySelector('#contents');
-    const content_wrapper = document.querySelector('.content-wrapper');
-    const viewW           = document.querySelector('#app').getBoundingClientRect().width - document.querySelector(".main-sidebar").getBoundingClientRect().width - document.querySelector('.main-sidebar').getBoundingClientRect().left - window.scrollX;
-    const viewH           = window.innerHeight - document.querySelector('.navbar').offsetHeight;
-    const panel           = layout[layout.__current].rightpanel;
+    const contents         = document.querySelector('#contents');
+    const content_wrapper  = document.querySelector('.content-wrapper');
+    const { viewW, viewH } = this.getViewportSizes();
+    const panel            = layout[layout.__current].rightpanel;
 
     const opts = {
       split: ApplicationState.split,
@@ -1909,7 +1893,6 @@ export default new (class GUI extends Emitter {
     const scale = is_full ? 1 : ((h_split ? panel.width: panel.height) /100);
 
     contents.parentElement.classList.toggle('full-size', is_full);
-    
 
     // size "content"
     Object.assign(ApplicationState.content.sizes, {
@@ -1940,17 +1923,35 @@ export default new (class GUI extends Emitter {
       height: ApplicationState.map.sizes.height
     });
 
-    ApplicationState.contentsdata.forEach(d => {                           // re-layout each component stored into the stack
+    // sidebar panel fix
+    const panel_el = document.querySelector('#g3w-view-content');
+    if (panel_el) {
+      contents.style.height = panel_el.offsetHeight
+        - (panel_el.querySelector('.close-panel-block')?.offsetHeight || 0)
+        - (panel_el.querySelector('.content_breadcrumb')?.offsetHeight || 0)
+        - (contents.children[0] ? 50 : 0) + 'px'; // vertical padding
+
+      // workaround for qplotly?
+      if (contents.children[0]) {
+        contents.children[0].style.height = contents.style.height;
+      }
+
+      document.querySelector(".main-sidebar").style.height  = `${viewH}px`;
+      document.querySelector(".sidebar-panel").style.height = `${viewH}px`;
+    }
+
+    // re-layout each component stored into the stack
+    ApplicationState.contentsdata.forEach(d => {
       try {
         if ('function' == typeof d.content.layout) {
-          d.content.layout(ApplicationState.content.sizes.width, contents.style.height.replace('px',''));
+          d.content.layout(ApplicationState.content.sizes.width, parseFloat(contents.style.height));
         }
       } catch(e) {
         this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
         setTimeout(() => this._layout(), 1000);
       }
     });
-    
+
     this.emit('resize');
 
     window.localStorage.setItem('SIDEBAR', JSON.stringify(panel));
