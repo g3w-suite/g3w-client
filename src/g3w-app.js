@@ -1850,7 +1850,6 @@ export default new (class GUI extends Emitter {
     const app             = document.querySelector('#app');
     const viewport        = content_wrapper || app || document.documentElement;
     return {
-      content_wrapper,
       viewW: viewport.getBoundingClientRect().width,
       viewH: window.innerHeight - (navbar?.offsetHeight || 0),
     };
@@ -1873,7 +1872,8 @@ export default new (class GUI extends Emitter {
     const layout          = ApplicationState.layout;
 
     const contents        = document.querySelector('#contents');
-    const { content_wrapper, viewW, viewH } = this.getViewportSizes();
+    const content_wrapper = document.querySelector('.content-wrapper');
+    const { viewW, viewH } = this.getViewportSizes();
     if (!content_wrapper || !contents) {
       return;
     }
