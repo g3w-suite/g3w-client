@@ -1144,8 +1144,11 @@ export default {
       const sidebar = document.getElementById('g3w-view-content');
       const panel   = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
       const wrapper = document.querySelector('.content-wrapper');
+      const minDeltaPx = 1;
       let frame;
       let rect, dx, dy;
+      let prevPageX = e.pageX;
+      let prevPageY = e.pageY;
 
       this.state.content.disabled = true;
       if (wrapper) {
@@ -1154,20 +1157,36 @@ export default {
 
       const mousemove = e => {
         e.preventDefault();
+        const h_split = 'h' === this.state.split;
+        const v_split = 'v' === this.state.split;
+
+        if ((h_split && Math.abs(e.pageX - prevPageX) < minDeltaPx) || (v_split && Math.abs(e.pageY - prevPageY) < minDeltaPx)) {
+          return;
+        }
+
         rect = sidebar.getBoundingClientRect();
 
         dx   = e.pageX - rect.left - window.scrollX;
         dy   = e.pageY - rect.top - window.scrollY;
 
-        panel.width  = Math.min(Math.max(
+        const width = Math.min(Math.max(
           Math.round((200               / wrapper.clientWidth)  * 100),
           Math.round(((rect.width  -dx) / wrapper.clientWidth)  * 100),
         ), 90);
 
-        panel.height = Math.min(Math.max(
+        const height = Math.min(Math.max(
           Math.round((200               / wrapper.clientHeight) * 100),
           Math.round(((rect.height -dy) / wrapper.clientHeight) * 100),
         ), 90);
+
+        if (width === panel.width && height === panel.height) {
+          return;
+        }
+
+        panel.width  = width;
+        panel.height = height;
+        prevPageX    = e.pageX;
+        prevPageY    = e.pageY;
 
         cancelAnimationFrame(frame);
         frame = requestAnimationFrame(() => GUI._layout());
