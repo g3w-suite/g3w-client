@@ -1936,8 +1936,6 @@ export default new (class GUI extends Emitter {
         contents.children[0].style.height = contents.style.height;
       }
 
-      panel_el.style.padding = contents.children[0] ? '15px' : null;
-
       document.querySelector(".main-sidebar").style.height  = `${viewH}px`;
       document.querySelector(".sidebar-panel").style.height = `${viewH}px`;
     }
