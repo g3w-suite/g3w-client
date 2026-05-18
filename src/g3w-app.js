@@ -1844,6 +1844,16 @@ export default new (class GUI extends Emitter {
     dialog.showModal();
   }
 
+  getViewportSizes() {
+    const content_wrapper = document.querySelector('.content-wrapper');
+    const navbar          = document.querySelector('.navbar');
+    return {
+      content_wrapper,
+      viewW: content_wrapper.getBoundingClientRect().width,
+      viewH: window.innerHeight - navbar.offsetHeight,
+    };
+  }
+
   /**
    * load components of viewport after right size setting
    * 
@@ -1861,10 +1871,7 @@ export default new (class GUI extends Emitter {
     const layout          = ApplicationState.layout;
 
     const contents        = document.querySelector('#contents');
-    const content_wrapper = document.querySelector('.content-wrapper');
-    const navbar          = document.querySelector('.navbar');
-    const viewW           = content_wrapper.getBoundingClientRect().width;
-    const viewH           = window.innerHeight - navbar.offsetHeight;
+    const { content_wrapper, viewW, viewH } = this.getViewportSizes();
     const panel           = layout[layout.__current].rightpanel;
 
     const opts = {
