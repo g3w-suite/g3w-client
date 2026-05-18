@@ -1850,7 +1850,7 @@ export default new (class GUI extends Emitter {
     const app             = document.querySelector('#app');
     const viewport        = content_wrapper || app || document.documentElement;
     return {
-      viewW: viewport?.getBoundingClientRect().width || window.innerWidth,
+      viewW: viewport.getBoundingClientRect().width || window.innerWidth,
       viewH: window.innerHeight - (navbar?.offsetHeight || 0),
     };
   }
@@ -1873,10 +1873,10 @@ export default new (class GUI extends Emitter {
 
     const contents        = document.querySelector('#contents');
     const content_wrapper = document.querySelector('.content-wrapper');
-    const { viewW, viewH } = this.getViewportSizes();
     if (!content_wrapper || !contents) {
       return;
     }
+    const { viewW, viewH } = this.getViewportSizes();
     const panel           = layout[layout.__current].rightpanel;
 
     const opts = {
