@@ -568,7 +568,10 @@
     <!-- MAIN (content) -->
     <div
       class  = "content-wrapper"
-      :style = "{ paddingTop: ApplicationState.iframe ? 0 : null }"
+      :style = "{
+        paddingTop: ApplicationState.iframe ? 0 : null,
+        height: `calc(100% - ${ApplicationState.iframe ? 0 : 50}px)`
+      }"
     > 
       <bar-loader style = "position: absolute; z-index: 1;" :loading = "state.content.loading && 0 === state.contentsdata.length"/>
       <transition name = "fade" :duration = "{ enter: 500, leave: 500 }">
@@ -1166,8 +1169,7 @@ export default {
           Math.round(((rect.height -dy) / wrapper.clientHeight) * 100),
         ), 90);
 
-        const viewW = document.querySelector('#app').getBoundingClientRect().width - document.querySelector('.main-sidebar').getBoundingClientRect().width - document.querySelector('.main-sidebar').getBoundingClientRect().left - window.scrollX;
-        const viewH = window.innerHeight - document.querySelector('.navbar').offsetHeight;
+        const { viewW, viewH } = GUI.getViewportSizes();
 
         const h_split = 'h' === this.state.split;
         const v_split = 'v' === this.state.split;
