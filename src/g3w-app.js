@@ -1847,11 +1847,9 @@ export default new (class GUI extends Emitter {
   getViewportSizes() {
     const content_wrapper = document.querySelector('.content-wrapper');
     const navbar          = document.querySelector('.navbar');
-    const app             = document.querySelector('#app');
-    const viewport        = content_wrapper || app || document.documentElement;
     return {
-      viewW: viewport.getBoundingClientRect().width || window.innerWidth,
-      viewH: window.innerHeight - (navbar?.offsetHeight || 0),
+      viewW: content_wrapper.getBoundingClientRect().width || window.innerWidth,
+      viewH: window.innerHeight - navbar.offsetHeight,
     };
   }
 
@@ -1871,13 +1869,10 @@ export default new (class GUI extends Emitter {
     
     const layout          = ApplicationState.layout;
 
-    const contents        = document.querySelector('#contents');
-    const content_wrapper = document.querySelector('.content-wrapper');
-    if (!content_wrapper || !contents) {
-      return;
-    }
+    const contents         = document.querySelector('#contents');
+    const content_wrapper  = document.querySelector('.content-wrapper');
     const { viewW, viewH } = this.getViewportSizes();
-    const panel           = layout[layout.__current].rightpanel;
+    const panel            = layout[layout.__current].rightpanel;
 
     const opts = {
       split: ApplicationState.split,
