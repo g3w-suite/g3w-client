@@ -8,32 +8,24 @@ import { getCatalogLayerById }  from 'utils/getCatalogLayerById';
  * @param { String } layerid id of layer to search input data 
  * @param { String } filter other filter field
  * @param { String } suggest field
+ * 
  * @returns { Array } of unique values from field
  */
 export async function getDataForSearchInput({ state, field, layerid, filter, suggest }) {
   try {
     // get unique value from each layers
-    return (
-      await Promise.allSettled([layerid || state.layerid].concat(state.otherquerylayerids).map(id => getCatalogLayerById(id).getFilterData({
+    return (await getCatalogLayerById(layerid || state.layerid).getFilterData({
         suggest,
-        fformatter: field,
-        ordering:   field,
+        fformatter:         field,
+        ordering:           field,
+        otherquerylayerids: state.otherquerylayerids?.join?.(',') || undefined,
         field:      filter || getDataForSearchInput.field({
           state,
           //in the case of suggested parameter set (case autocomplete field), need to use current field
           field:  suggest ? field : (state.forminputs.find(i => field === i.attribute) || {}).dependance || field,
           fields: []
         }),
-      })))
-    )
-      .filter(d => 'fulfilled' === d.status)
-      .reduce((acc, d, i) => 0 === i
-        ? acc.concat(d.value.data || [])                                                       // for first layer get all uninques values 
-        : [...new Set([...(d.value.data || []), ...acc].map(JSON.stringify))].map(JSON.parse), // ensure uniques values (search performed on multiple serach_layers)
-        [] 
-      )
-      .map(([value, key]) => ({ key, value }));
-
+      }))?.data?.map?.(([value, key]) => ({ key, value })) ?? [];
   } catch(e) { console.warn(e); }
 
   return [];
