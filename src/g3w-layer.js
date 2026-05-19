@@ -1441,14 +1441,14 @@ export class Layer extends Emitter {
    * @param { 0 | 1 }     opts.formatter
    * @param { Array }     opts.field     - Array of object with type of suggest (see above)
    * @param opts.unique
-   * @param opts.fformatter since 3.9.0
-   * @param opts.ffield     since 3.9.1
+   * @param opts.fformatter         since 3.9.0
+   * @param opts.ffield             since 3.9.1
    * @param opts.queryUrl
    * @param opts.ordering
-   * @param opts.autofilter since 3.11.0
-   * @param opts.page       since 3.11.0
-   * @param opts.page_size  since 3.11.0
-   * @param opts.otherquerylayerids  since 3.11.0
+   * @param opts.autofilter         since 3.11.0
+   * @param opts.page               since 3.11.0
+   * @param opts.page_size          since 3.11.0
+   * @param opts.otherquerylayerids since 3.11.0
    */
   async getFilterData({
     raw = false,
