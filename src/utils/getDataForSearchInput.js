@@ -8,6 +8,7 @@ import { getCatalogLayerById }  from 'utils/getCatalogLayerById';
  * @param { String } layerid id of layer to search input data 
  * @param { String } filter other filter field
  * @param { String } suggest field
+ * 
  * @returns { Array } of unique values from field
  */
 export async function getDataForSearchInput({ state, field, layerid, filter, suggest }) {
@@ -17,9 +18,7 @@ export async function getDataForSearchInput({ state, field, layerid, filter, sug
         suggest,
         fformatter:         field,
         ordering:           field,
-        otherquerylayerids: Array.isArray(state.otherquerylayerids) && state.otherquerylayerids.length
-          ? state.otherquerylayerids.join(',')
-          : undefined,
+        otherquerylayerids: state.otherquerylayerids?.join?.(','),
         field:      filter || getDataForSearchInput.field({
           state,
           //in the case of suggested parameter set (case autocomplete field), need to use current field
