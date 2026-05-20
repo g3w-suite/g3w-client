@@ -208,6 +208,9 @@ Fore more info:
 
 ### FAQ
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/g3w-suite/g3w-client)
+
+
 <details>
 
 <summary>1. How can I start or stop docker containers?</summary>
@@ -448,6 +451,8 @@ All notable changes to this project are documented in the [releases](https://git
 [![g3w-admin version](https://img.shields.io/badge/g3w--admin-3.11-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-admin/tree/v.3.11.x)
 [![g3w-suite-docker version](https://img.shields.io/badge/g3w--suite--docker-3.11-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-suite-docker/tree/v3.11.x)
 
+
 ---
 
 **License:** MPL-2
+
