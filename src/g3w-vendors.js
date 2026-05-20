@@ -80,7 +80,7 @@ Object.assign(globalThis, {
   Vue,
   /** @deprecated since 3.11.0 */
   isMobile: {
-    get any() { return window.matchMedia('(hover: none) and (pointer: coarse)').matches; }
+    get any() { return ('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.matchMedia('(any-pointer: coarse)').matches; }
   },
   /** @deprecated since 3.11.0 */
   $script(url, callback) {
