@@ -208,6 +208,9 @@ Fore more info:
 
 ### FAQ
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/g3w-suite/g3w-client)
+
+
 <details>
 
 <summary>1. How can I start or stop docker containers?</summary>
