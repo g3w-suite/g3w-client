@@ -1944,9 +1944,9 @@ export default new (class GUI extends Emitter {
     console.log(this.isSidebarVisible());
 
     if (this.isSidebarVisible()) {
-      this.getMap().getView().setPadding([0, 0, 0, 350]);
+      this.getMap().getView().set('padding',  [0, 0, 0, 350]);
     } else {
-      this.getMap().getView().setPadding([0, 0, 0, 0]);
+      this.getMap().getView().set('padding',  [0, 0, 0, 0]);
     }
 
     // re-layout each component stored into the stack
