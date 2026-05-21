@@ -225,7 +225,17 @@ button.close                { padding: 0; cursor: pointer; background: transpare
  **************************************************************************************/
 
 #app             { height: 100%; width: 100%; overflow: hidden; }
-.content-wrapper { display: flex; transition: transform .3s ease-in-out, margin .3s ease-in-out; margin-left: var(--sidebar-width); background-color: #ecf0f5; position: relative; overflow: hidden; }
+.content-wrapper { display: flex; transition: transform .3s ease-in-out, margin .3s ease-in-out; background-color: #ecf0f5; position: relative; overflow: hidden; }
+
+body:not(.sidebar-collapse) .g3w-map-controls-left-bottom,
+body:not(.sidebar-collapse) #map_footer,
+body:not(.sidebar-collapse) #application-notifications,
+body:not(.sidebar-collapse) .ol-overlaycontainer-stopevent { transition: margin .3s ease-in-out; }
+
+body:not(.sidebar-collapse) .g3w-map-controls-left-bottom,
+body:not(.sidebar-collapse) #map_footer,
+body:not(.sidebar-collapse) #application-notifications,
+body:not(.sidebar-collapse) .ol-overlaycontainer-stopevent { margin-left: var(--sidebar-width); }
 
 .cookie-banner       { position:fixed; overflow:hidden; box-sizing:border-box; z-index:9999; width:100%; display:flex; justify-content:space-between; background:#424851; color:#fff; padding:1.250em; bottom:0; left:0; right:0; gap: 1em;}
 .cookie-button       { cursor:pointer; align-self:center; white-space:nowrap; background:#97D058; padding:0.625em 3.125em; color:#fff; border-radius:0; border:0; font-size:1em }
