@@ -624,7 +624,7 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
 #content-resizer::after                                                          { content: ''; position: absolute; background-color: #bcbcbc; border-radius: 2px; }
 #content-resizer.split-h                                                         { cursor: col-resize; width: 13px; height: 100%; top: 0; left: 0; }
 #content-resizer.split-h::after                                                  { width: 3px; height: 30px; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-#content-resizer.split-v                                                         { cursor: ns-resize; height: 11px; width: 100%; left: 0; top: 0; }
+#content-resizer.split-v                                                         { cursor: ns-resize; height: 18px; width: 100%; left: 0; top: 0; }
 #content-resizer.split-v::after                                                  { height: 3px; width: 40px; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 .sidebar-mini:not(.sidebar-collapse) .g3w-view.content.full-size                 { padding-left: 45px !important; }
 
