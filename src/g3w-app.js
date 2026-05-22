@@ -1990,13 +1990,10 @@ export default new (class GUI extends Emitter {
 
     contents.parentElement.classList.toggle('full-size', is_full);
 
-    // subtract map_footer height so content panel (split-h and split-v) doesn't overlap it
-    const viewH_eff = viewH - 30; // 30 = map footer height
-
     // size "content" - content floats on top, map always fills the full viewport
     Object.assign(ApplicationState.content.sizes, {
       width:  h_split ? (sec ? Math.max((viewW * scale), 200) : 0) : (sec ? viewW : 0),
-      height: v_split ? (sec ? Math.max((viewH_eff * scale), 200) : 0) : (sec ? viewH_eff : 0),
+      height: v_split ? (sec ? Math.max(((viewH - 30) * scale), 200) : 0) : (sec ? (viewH - 30) : 0),
     });
 
     // handle sidebars
