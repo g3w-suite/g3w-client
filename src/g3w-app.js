@@ -1907,9 +1907,16 @@ export default new (class GUI extends Emitter {
     contents.parentElement.classList.toggle('full-size', is_full);
 
     // subtract map_footer height so content panel (split-h and split-v) doesn't overlap it
-    const footer_h  = document.querySelector('#map_footer')?.offsetHeight || 0;
-    document.documentElement.style.setProperty('--g3w-map-footer-h', `${footer_h}px`);
-    const viewH_eff = viewH - footer_h;
+    const viewH_eff = viewH - 30; // 30 = map footer height
+
+        // sidebar actual rendered width (accounts for open/collapsed/mini states)
+    const sidebar_rect = document.querySelector('.main-sidebar')?.getBoundingClientRect();
+    const wrapper_rect = content_wrapper.getBoundingClientRect();
+
+    // for split-v: left offset of content within content-wrapper.
+    // When content-wrapper has margin-left (e.g. sidebar-mini.sidebar-collapse), the wrapper
+    // already starts after the sidebar so the offset within the wrapper is 0, not sidebar_w.
+    const split_v_offset = Math.max(0, (sidebar_rect?.right || 0) - wrapper_rect.left);
 
     // size "content" — for split-v exclude the content-wrapper's sidebar overlap so the panel doesn't overlap it
     Object.assign(ApplicationState.content.sizes, {
@@ -1917,11 +1924,9 @@ export default new (class GUI extends Emitter {
       height: v_split ? (sec ? Math.max((viewH_eff * scale), 200) : 0) : (sec ? viewH_eff : 0),
     });
 
-    // in split-h, keep map controls anchored to the left of the right content panel
-    document.documentElement.style.setProperty(
-      '--g3w-content-split-h-w',
-      `${(h_split && sec) ? ApplicationState.content.sizes.width : 0}px`
-    );
+    // handle sidebars
+    document.body.style.setProperty('--sidebar-right', `${(h_split && sec) ? ApplicationState.content.sizes.width : 0}px`);
+    document.body.style.setProperty('--sidebar-left', `${document.querySelector(".main-sidebar").clientWidth}px`);
 
     // size "map" - content floats on top, map always fills the full viewport
     Object.assign(ApplicationState.map.sizes, {
@@ -1962,6 +1967,14 @@ export default new (class GUI extends Emitter {
       document.querySelector(".main-sidebar").style.height  = `${viewH}px`;
       document.querySelector(".sidebar-panel").style.height = `${viewH}px`;
     }
+
+    // update map padding
+    this.getMap().getView().set('padding',  [
+      0,
+      parseFloat(document.body.style.getPropertyValue('--sidebar-right')),
+      0,
+      parseFloat(document.body.style.getPropertyValue('--sidebar-left'))
+    ]);
 
     // re-layout each component stored into the stack
     ApplicationState.contentsdata.forEach(d => {
@@ -3480,15 +3493,16 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   createMapImage({ map } = {}) {
-    return new Promise((resolve, reject) => {
-      try {
-        const canvas = (map || this.getMap()).getViewport().querySelector('canvas');
-        canvas.toBlob(blob => resolve(blob));
-      } catch(e) {
-        console.warn(e);
-        reject(e);
-      }
-    })
+    return new Promise((resolve) => {
+      const canvas  = (map || this.getMap()).getViewport().querySelector('canvas');
+      const padding = this.isSidebarVisible() ? (350 * (window.devicePixelRatio || 1)) : 0; // 350 = left sidebar width
+      
+      const w = canvas.width - padding, h = canvas.height;
+      const cropped = Object.assign(document.createElement('canvas'), { width: w, height: h });
+      
+      cropped.getContext('2d').drawImage(canvas, padding, 0, w, h, 0, 0, w, h);
+      cropped.toBlob(resolve);
+    });
   }
 
   /**
