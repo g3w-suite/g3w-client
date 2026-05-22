@@ -2018,10 +2018,7 @@ export default new (class GUI extends Emitter {
     await Vue.nextTick();
 
     // resize "map"
-    this.layout({
-      width:  ApplicationState.map.sizes.width,
-      height: ApplicationState.map.sizes.height
-    });
+    this.layout();
 
     // sidebar panel fix
     const panel_el = document.querySelector('#g3w-view-content');
@@ -4699,13 +4696,9 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  async layout({ width, height }) {
-    const el = document.querySelector('#map');
+  async layout() {
 
-    if (el) {
-      el.style.height = height + 'px';
-      el.style.width  = width + 'px';
-    }
+    const { width, height } = ApplicationState.map.sizes;
 
     if (this.#map && width > 0 && height > 0) {
       this.getMap().updateSize();
@@ -4866,7 +4859,7 @@ export default new (class GUI extends Emitter {
     this.state.mapUnits = this.#map.getView().getProjection().getUnits();
 
     if (window.initConfig.background_color) {
-      document.querySelector('#map').style.backgroundColor = window.initConfig.background_color;
+      document.querySelector('.ol-viewport').style.backgroundColor = window.initConfig.background_color;
     }
 
     this.#map.getViewport().insertAdjacentHTML(
