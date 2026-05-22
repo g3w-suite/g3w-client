@@ -227,17 +227,10 @@ button.close                { padding: 0; cursor: pointer; background: transpare
 #app             { height: 100%; width: 100%; overflow: hidden; }
 .content-wrapper { display: flex; transition: transform .3s ease-in-out, margin .3s ease-in-out; background-color: #ecf0f5; position: relative; overflow: hidden; }
 
-body                                 { --ol-map-pad-left: 0px }
-body:not(.sidebar-collapse)          { --ol-map-pad-left: 350px }
-@media (min-width: 767px) {
-  body.sidebar-mini.sidebar-collapse { --ol-map-pad-left: 35px }
-}
-
-
 .g3w-map-controls-left-bottom,
 #map_footer,
 #application-notifications,
-.ol-overlaycontainer-stopevent > *:not(.ol-control-br) { transition: width .3s ease-in-out, margin .3s ease-in-out; margin-left: var(--ol-map-pad-left); }
+.ol-overlaycontainer-stopevent > *:not(.ol-control-br) { transition: width .3s ease-in-out, margin .3s ease-in-out; margin-left: var(--sidebar-left); }
 
 .cookie-banner       { position:fixed; overflow:hidden; box-sizing:border-box; z-index:9999; width:100%; display:flex; justify-content:space-between; background:#424851; color:#fff; padding:1.250em; bottom:0; left:0; right:0; gap: 1em;}
 .cookie-button       { cursor:pointer; align-self:center; white-space:nowrap; background:#97D058; padding:0.625em 3.125em; color:#fff; border-radius:0; border:0; font-size:1em }
@@ -630,7 +623,7 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
 #application-notifications                                                       { position:absolute; top: 55px; border-radius: 3px; left: 0; z-index: 1; font-size: 25px; pointer-events: none; }
 #application-notifications > div                                                 { display: flex; flex-direction: column; align-items: center; width: 40px; height: 50px; justify-content: space-around; margin-bottom: 5px; background-color: #FFF; border-radius: 3px; }
 
-#g3w-view-map                                                                    { anchor-name: --g3w-view-map; }
+#g3w-view-map                                                                    { anchor-name: --g3w-view-map; position: relative; }
 .g3w-view.map                                                                    { line-height: normal; display:inline-block; height:0; width:0; position: relative; }
 .g3w-view.content #resize-map-and-content                                        { position: absolute; z-index: 12; user-select: none; opacity: 0; background-color: transparent; transition: opacity .2s ease, background-color .2s ease, box-shadow .2s ease; }
 .g3w-view.content #resize-map-and-content:hover,
@@ -674,7 +667,7 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
 .is-mobile .g3w-view.content.full-size :is(.action-button-resize, .action-button-dock) { display: none; }
 .g3w-view.content                                                                { line-height: normal; overflow-wrap: break-word; height: 0; width: 0; background-color: #eee; overflow:hidden; position: absolute; z-index: 10; }
 .g3w-view.content.split-h                                                        { right: 0; top: 0; }
-.g3w-view.content.split-v                                                        { bottom: var(--g3w-map-footer-h, 0px); left: var(--g3w-sidebar-w, 0px); }
+.g3w-view.content.split-v                                                        { bottom: 30px; left: var(--sidebar-left); }
 .g3w-view.content .contents                                                      { height: 100%; padding-left: 0; padding-right: 0; }
 .g3w-view.content                                                                { border-bottom: 1px solid #ccc; }
 .g3w-view.content.split-h                                                        { border-left: 1px solid #d6d6d6; }
@@ -777,7 +770,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .ol-attribution ul                                                     { font-size: 1.0em !important; }
 .ol-attribution.ol-uncollapsible                                       { height: 1.3em !important; }
 .g3w-map-controls                                                      { position: absolute; flex-wrap: wrap; z-index: 1; display: flex; top: 60px; left: 0; align-items: flex-start; flex-direction: column;}
-.g3w-map-controls.rv                                                   { top: 0; right: calc(var(--g3w-content-split-h-w, 0px) + 5px); left: unset; max-height: calc(100% - 65px); flex-flow: column wrap-reverse; align-content: end; }
+.g3w-map-controls.rv                                                   { top: 0; right: calc(var(--sidebar-right) + 5px); left: unset; max-height: calc(100% - 65px); flex-flow: column wrap-reverse; align-content: end; }
 .g3w-map-controls.lv                                                   { top:60px; left: 0; align-items: flex-start; }
 .g3w-map-controls.lh                                                   { top:60px; left: 0; flex-direction: row; }
 .g3w-map-controls.rh                                                   { top:8px; right: 0; flex-direction: row; }
