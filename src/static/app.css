@@ -674,6 +674,7 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
 .g3w-view.content.split-h                                                        { right: 0; top: 0; }
 .g3w-view.content.split-v                                                        { bottom: var(--g3w-map-footer-h, 0px); left: var(--g3w-sidebar-w, 0px); }
 .g3w-view.content .contents                                                      { height: 100%; padding-left: 0; padding-right: 0; }
+.g3w-view.content                                                                { border-bottom: 1px solid #ccc; }
 .g3w-view.content.split-h                                                        { border-left: 1px solid #d6d6d6; }
 .g3w-view.content.split-v                                                        { border-top: 1px solid #d6d6d6; }
 .g3w-view .close-panel-block span i.panel-button                                 { color: transparent; }
