@@ -675,10 +675,8 @@ export default new (class GUI extends Emitter {
         frame = requestAnimationFrame(() => { this._layout(); });
       });
     })();
-    resize_observer.observe(document.querySelector('.content-wrapper'));
-    resize_observer.observe(document.querySelector('.navbar'));
+    resize_observer.observe(document.querySelector('#app'));
     document.querySelector('.main-sidebar').addEventListener('transitionend', () => this._layout());
-    document.querySelector('.content-wrapper').addEventListener('transitionend', () => this._layout());
 
     this._layout();
 
@@ -1884,15 +1882,6 @@ export default new (class GUI extends Emitter {
     dialog.showModal();
   }
 
-  getViewportSizes() {
-    const content_wrapper = document.querySelector('.content-wrapper');
-    const navbar          = document.querySelector('.navbar');
-    return {
-      viewW: content_wrapper.getBoundingClientRect().width || window.innerWidth,
-      viewH: window.innerHeight - navbar.offsetHeight,
-    };
-  }
-
   /**
    * load components of viewport after right size setting
    * 
@@ -1909,9 +1898,13 @@ export default new (class GUI extends Emitter {
     
     const layout          = ApplicationState.layout;
 
+    const navbar           = document.querySelector('.navbar');
     const contents         = document.querySelector('#contents');
     const content_wrapper  = document.querySelector('.content-wrapper');
-    const { viewW, viewH } = this.getViewportSizes();
+
+    const viewW            = content_wrapper.getBoundingClientRect().width || window.innerWidth;
+    const viewH            = window.innerHeight - navbar.offsetHeight;
+
     const panel            = layout[layout.__current].rightpanel;
 
     const opts = {
@@ -1942,7 +1935,7 @@ export default new (class GUI extends Emitter {
     // for split-v: left offset of content within content-wrapper.
     // When content-wrapper has margin-left (e.g. sidebar-mini.sidebar-collapse), the wrapper
     // already starts after the sidebar so the offset within the wrapper is 0, not sidebar_w.
-    const split_v_offset = Math.max(0, (sidebar_rect?.right || 0) - wrapper_rect.left);
+    const split_v_offset = 0;//Math.max(0, (sidebar_rect?.right || 0) - wrapper_rect.left);
 
     // size "content" — for split-v exclude the content-wrapper's sidebar overlap so the panel doesn't overlap it
     Object.assign(ApplicationState.content.sizes, {

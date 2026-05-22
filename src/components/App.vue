@@ -566,268 +566,264 @@
     </aside>
 
     <!-- MAIN (content) -->
-    <div
-      class  = "content-wrapper"
-      :style = "{
-        paddingTop: ApplicationState.iframe ? 0 : null,
-        height: `calc(100% - ${ApplicationState.iframe ? 0 : 50}px)`
-      }"
-    > 
-      <bar-loader style = "position: absolute; z-index: 1;" :loading = "state.content.loading && 0 === state.contentsdata.length"/>
-      <transition name = "fade" :duration = "{ enter: 500, leave: 500 }">
-        <user-message
-          v-if               = "usermessage.show"
-          @close-usermessage = "closeUserMessage"
-          :title             = "usermessage.title"
-          :subtitle          = "usermessage.subtitle"
-          :id                = "usermessage.id"
-          :message           = "usermessage.message"
-          :closable          = "usermessage.closable"
-          :textMessage       = "usermessage.textMessage"
-          :icon-class        = "usermessage.iconClass"
-        >
-          <template v-if = "usermessage.hooks.header" slot = "header"><component :is = "usermessage.hooks.header" /></template>
-          <template v-if = "usermessage.hooks.body"   slot = "body"><component   :is = "usermessage.hooks.body" /></template>
-          <template v-if = "usermessage.hooks.footer" slot = "footer"><component :is = "usermessage.hooks.footer" /></template>
-        </user-message>
-      </transition>
-
-      <div
-        id     = "g3w-view-map"
-        :class = "`split-${state.split}`"
-        class  = "g3w-view map"
-        :style = "styles.map"
+    <bar-loader style = "position: absolute; z-index: 1;" :loading = "state.content.loading && 0 === state.contentsdata.length"/>
+    <transition name = "fade" :duration = "{ enter: 500, leave: 500 }">
+      <user-message
+        v-if               = "usermessage.show"
+        @close-usermessage = "closeUserMessage"
+        :title             = "usermessage.title"
+        :subtitle          = "usermessage.subtitle"
+        :id                = "usermessage.id"
+        :message           = "usermessage.message"
+        :closable          = "usermessage.closable"
+        :textMessage       = "usermessage.textMessage"
+        :icon-class        = "usermessage.iconClass"
       >
+        <template v-if = "usermessage.hooks.header" slot = "header"><component :is = "usermessage.hooks.header" /></template>
+        <template v-if = "usermessage.hooks.body"   slot = "body"><component   :is = "usermessage.hooks.body" /></template>
+        <template v-if = "usermessage.hooks.footer" slot = "footer"><component :is = "usermessage.hooks.footer" /></template>
+      </user-message>
+    </transition>
 
-        <div id = "application-notifications">
-          <!-- OFFLINE -->
-          <div :class = "{ 'g3w-hide': ApplicationState.online }" style = "color: #999">
-            <i class = "fas fa-wifi" aria-hidden = "true"></i>
-            <b style = "font-size: 0.4em">offline</b>
-          </div>
-          <!-- DOWNLOAD -->
-          <div :class = "{ 'skin-color': true, 'g3w-hide': !ApplicationState.download }">
-            <bar-loader :loading = "true" />
-            <i style = "padding:3px" class = "fas fa-download" aria-hidden = "true"></i>
-            <b style = "font-size: 0.35em">download</b>
-          </div>
-          <!-- PLUGINS -->
-          <div :class = "{ 'g3w-hide': 0 === ApplicationState.plugins.length }" style = "color: #994b10">
-            <bar-loader :loading = "true" />
-            <i class = "fas fa-cogs" aria-hidden = "true"></i>
-            <b style = "font-size: 0.4em">plugins</b>
-          </div>
+    <div
+      id     = "g3w-view-map"
+      :class = "`split-${state.split}`"
+      class  = "g3w-view map"
+      :style = "styles.map"
+    >
+
+      <div id = "application-notifications">
+        <!-- OFFLINE -->
+        <div :class = "{ 'g3w-hide': ApplicationState.online }" style = "color: #999">
+          <i class = "fas fa-wifi" aria-hidden = "true"></i>
+          <b style = "font-size: 0.4em">offline</b>
         </div>
+        <!-- DOWNLOAD -->
+        <div :class = "{ 'skin-color': true, 'g3w-hide': !ApplicationState.download }">
+          <bar-loader :loading = "true" />
+          <i style = "padding:3px" class = "fas fa-download" aria-hidden = "true"></i>
+          <b style = "font-size: 0.35em">download</b>
+        </div>
+        <!-- PLUGINS -->
+        <div :class = "{ 'g3w-hide': 0 === ApplicationState.plugins.length }" style = "color: #994b10">
+          <bar-loader :loading = "true" />
+          <i class = "fas fa-cogs" aria-hidden = "true"></i>
+          <b style = "font-size: 0.4em">plugins</b>
+        </div>
+      </div>
 
-        <!-- ORIGINAL SOURCE: src/components/Map.vue -->
-        <div id = "g3w-maps">
+      <!-- ORIGINAL SOURCE: src/components/Map.vue -->
+      <div id = "g3w-maps">
 
+        <div
+          v-for = "hidemap in ApplicationState.hidemaps"
+          :key  = "hidemap.id"
+          :id   = "hidemap.id"
+          class = "g3w-map hidemap"
+        ></div>
+
+        <div :id = "GUI.target" class = "g3w-map" @drop.prevent = "onDrop" @dragenter.prevent = "onDrop" @dragleave.prevent = "onDrop" @dragover.prevent>
+
+          <div class = "drop-area" hidden>
+            Upload Files
+          </div>
+
+          <!-- COMMON MAP CONTROLS (zoom, querybypolygon, geoscreeenshot, ...) -->
           <div
-            v-for = "hidemap in ApplicationState.hidemaps"
-            :key  = "hidemap.id"
-            :id   = "hidemap.id"
-            class = "g3w-map hidemap"
+            ref   = "g3w-map-controls"
+            class = "g3w-map-controls rv"
+            style = "display: flex"
           ></div>
 
-          <div :id = "GUI.target" class = "g3w-map" @drop.prevent = "onDrop" @dragenter.prevent = "onDrop" @dragleave.prevent = "onDrop" @dragover.prevent>
-
-            <div class = "drop-area" hidden>
-              Upload Files
-            </div>
-
-            <!-- COMMON MAP CONTROLS (zoom, querybypolygon, geoscreeenshot, ...) -->
-            <div
-              ref   = "g3w-map-controls"
-              class = "g3w-map-controls rv"
-              style = "display: flex"
-            ></div>
-
-            <!-- FIXME: add description -->
-            <div
-              v-if   = "ApplicationState.map_info"
-              ref    = "g3w-map-info"
-              id     = "g3w-map-info"
-              :style = "ApplicationState.map_style"
-            >
-              {{ApplicationState.map_info}}
-            </div>
-
-            <!-- DIV that will contain marker on map -->
-            <div style = "display: none;"><div id = "marker"></div></div>
-
-            <!-- @since 3.8.0   -->
-            <div class = "g3w-map-controls-left-bottom"></div>
-
+          <!-- FIXME: add description -->
+          <div
+            v-if   = "ApplicationState.map_info"
+            ref    = "g3w-map-info"
+            id     = "g3w-map-info"
+            :style = "ApplicationState.map_style"
+          >
+            {{ApplicationState.map_info}}
           </div>
 
-          <!-- Footer (bottom part) where scale and other component can be set -->
-          <div id = "map_footer">
+          <!-- DIV that will contain marker on map -->
+          <div style = "display: none;"><div id = "marker"></div></div>
 
-            <!-- MAP CREDITS -->
-            <a
-              href   = "https://g3wsuite.it/"
-              style  = "margin-left: 5px; align-self: center;"
-              target = "_blank"
-              :title = "version"
-            >
-              <img
-                height = "15"
-                src    = "/static/client/images/g3wsuite_logo.png"
-                alt    = ""
-              />
-              <span hidden>{{ version }}</span>
-            </a>
-
-            <div id="attribution-control"></div>
-
-            <div style="margin-right: auto;"></div>
-
-            <!-- MOUSE POSITION -->
-            <div
-              v-show = "mouse.visible"
-              id     = "mouse-position-control"
-            ></div>
-
-            <!-- SWITCH COORDINATES  -->
-            <button
-              v-if           = "mouse.visible && mouse.switch_icon && !isMobile()"
-              type           = "button"
-              class          = "btn"
-              :title         = "mouse.tooltip"
-              data-placement = "top"
-              @click.stop    = "switchMapsCoordinateTo4326"
-              style          = "border-radius: 0;"
-            >
-              <i aria-hidden="true" class = "fas fa-mouse"></i>
-              <span hidden>{{ $t(mouse.tooltip) }}</span>
-            </button>
-
-            <button
-              type           = "button"
-              class          = "btn"
-              title          = "Copy share URL"
-              data-placement = "top"
-              @click.stop    = "showEmbedModal"
-              style          = "border-radius: 0;"
-            >
-              <i aria-hidden="true" class = "fa fa-share-alt"></i>
-              <span hidden>{{ $t('Copy share URL') }}</span>
-            </button>
-
-            <!-- SCALE CONTROL -->
-            <div id = "scale-control"></div>
-
-            <div
-              v-if = "showmapunits"
-              id   = "scale-line-units"
-            >
-              <select
-                style   = "padding: 5px 2px; font-weight: bold; border:0; cursor: pointer"
-                v-model = "ApplicationState.map_unit"
-              >
-                <option
-                  v-for     = "unit in state.mapunits"
-                  :value    = "unit"
-                  v-t       = "`scaleline_units.${unit}`"
-                  :selected = "ApplicationState.map_unit === unit"
-                  style     = "font-weight: bold"
-                ></option>
-              </select>
-
-            </div>
-
-          </div>
+          <!-- @since 3.8.0   -->
+          <div class = "g3w-map-controls-left-bottom"></div>
 
         </div>
 
-      </div>
-      <div
-        id         = "g3w-view-content"
-        :class     = "`split-${state.split}`"
-        class      = "g3w-view content"
-        :style     = "styles.content"
-        v-disabled = "state.content.disabled"
-      >
-        <div
-          v-show          = "has_panel"
-          id              = "resize-map-and-content"
-          @mousedown.stop = "onResize"
-          :class          = "`split-${state.split}`"
-        ></div>
-        <nav
-          v-if       = "breadcrumb.length > 1"
-          class      = "content_breadcrumb"
-          aria-label = "breadcrumb"
-        >
-          <ul>
-            <li v-for = "(crumb, index) in breadcrumb" :key = "crumb">
-              <button
-                type          = "button"
-                :aria-current = "index === breadcrumb.length - 1 ? 'page' : undefined"
-                @click.stop   = "popContent(breadcrumb.length - index -1)"
-              >{{ $t(crumb || '') }}</button>
-            </li>
-          </ul>
-        </nav>
-        <div
-          v-if  = "(showtitle && contentTitle) || previousTitle || state.content.closable"
-          class = "close-panel-block"
-          style = "display: flex; justify-content: space-between"
-        >
+        <!-- Footer (bottom part) where scale and other component can be set -->
+        <div id = "map_footer">
+
+          <!-- MAP CREDITS -->
+          <a
+            href   = "https://g3wsuite.it/"
+            style  = "margin-left: 5px; align-self: center;"
+            target = "_blank"
+            :title = "version"
+          >
+            <img
+              height = "15"
+              src    = "/static/client/images/g3wsuite_logo.png"
+              alt    = ""
+            />
+            <span hidden>{{ version }}</span>
+          </a>
+
+          <div id="attribution-control"></div>
+
+          <div style="margin-right: auto;"></div>
+
+          <!-- MOUSE POSITION -->
+          <div
+            v-show = "mouse.visible"
+            id     = "mouse-position-control"
+          ></div>
+
+          <!-- SWITCH COORDINATES  -->
           <button
-            v-if        = "previousTitle"
-            type        = "button"
-            @click.stop = "popContent(1)"
-            class       = "action-button action-button-back"
-            style       = "font-size: 0.8em;"
+            v-if           = "mouse.visible && mouse.switch_icon && !isMobile()"
+            type           = "button"
+            class          = "btn"
+            :title         = "mouse.tooltip"
+            data-placement = "top"
+            @click.stop    = "switchMapsCoordinateTo4326"
+            style          = "border-radius: 0;"
           >
-            <i aria-hidden = "true" class = "fas fa-chevron-circle-left"></i>
-            <b>{{ $t('back') }}</b>
+            <i aria-hidden="true" class = "fas fa-mouse"></i>
+            <span hidden>{{ $t(mouse.tooltip) }}</span>
           </button>
-          <div
-            v-if   = "!previousTitle && showtitle && contentTitle"
-            class  = "panel-title"
+
+          <button
+            type           = "button"
+            class          = "btn"
+            title          = "Copy share URL"
+            data-placement = "top"
+            @click.stop    = "showEmbedModal"
+            style          = "border-radius: 0;"
           >
-            <b>{{ [(contentTitle.text ? contentTitle.title || '' : $t(contentTitle.title || '')), $t(contentTitle.post_title || '')].filter(Boolean).join(' ') }}</b>
-          </div>
+            <i aria-hidden="true" class = "fa fa-share-alt"></i>
+            <span hidden>{{ $t('Copy share URL') }}</span>
+          </button>
+
+          <!-- SCALE CONTROL -->
+          <div id = "scale-control"></div>
+
           <div
-            class = "g3-content-header-action-tools"
-            style = "display: flex; align-items: center; gap: .5ch; padding: 0 .5ch;"
+            v-if = "showmapunits"
+            id   = "scale-line-units"
           >
-            <component v-for = "tool in state.content.headertools" :is = "tool"/>
-            <button
-              v-if           = "undefined !== state.split"
-              type           = "button"
-              :class         = "$fa(`resize-${state.split}`)"
-              title          = "Enlarge / Reduce"
-              data-placement = "bottom"
-              style          = "margin-right: 3px;"
-              class          = "action-button action-button-resize skin-color-dark"
-              @click         = "resizeFull"
-            ></button>
-            <button
-              type             = "button"
-              style            = "scale:.9;"
-              :style           = "{ transform: 'h' === state.split ? 'rotate(134deg)' : 'rotate(44deg)'}"
-              :data-i18n-title = "'h' === state.split ? 'Dock to Bottom' : 'Dock to Right'"
-              data-placement   = "bottom"
-              class            = "action-button action-button-dock skin-color-dark fa fa-external-link-alt"
-              @click           = "splitContent"
-            ></button>
-            <button
-              v-if           = "state.content.closable"
-              type           = "button"
-              @click         = "closeContent"
-              title          = "close"
-              data-placement = "bottom"
-              :class         = "{'mobile': isMobile()}"
-              class          = "action-button action-button-close skin-color-dark fas fa-times"
-            ></button>
+            <select
+              style   = "padding: 5px 2px; font-weight: bold; border:0; cursor: pointer"
+              v-model = "ApplicationState.map_unit"
+            >
+              <option
+                v-for     = "unit in state.mapunits"
+                :value    = "unit"
+                v-t       = "`scaleline_units.${unit}`"
+                :selected = "ApplicationState.map_unit === unit"
+                style     = "font-weight: bold"
+              ></option>
+            </select>
+
           </div>
+
         </div>
-        <bar-loader :loading = "state.content.loading"/>
+
       </div>
+
     </div>
+    <div
+      id         = "g3w-view-content"
+      :class     = "`split-${state.split}`"
+      class      = "g3w-view content"
+      :style     = "styles.content"
+      v-disabled = "state.content.disabled"
+    >
+      <div
+        v-show          = "has_panel"
+        id              = "resize-map-and-content"
+        @mousedown.stop = "onResize"
+        :class          = "`split-${state.split}`"
+      ></div>
+      <nav
+        v-if       = "breadcrumb.length > 1"
+        class      = "content_breadcrumb"
+        aria-label = "breadcrumb"
+      >
+        <ul>
+          <li v-for = "(crumb, index) in breadcrumb" :key = "crumb">
+            <button
+              type          = "button"
+              :aria-current = "index === breadcrumb.length - 1 ? 'page' : undefined"
+              @click.stop   = "popContent(breadcrumb.length - index -1)"
+            >{{ $t(crumb || '') }}</button>
+          </li>
+        </ul>
+      </nav>
+      <div
+        v-if  = "(showtitle && contentTitle) || previousTitle || state.content.closable"
+        class = "close-panel-block"
+        style = "display: flex; justify-content: space-between"
+      >
+        <button
+          v-if        = "previousTitle"
+          type        = "button"
+          @click.stop = "popContent(1)"
+          class       = "action-button action-button-back"
+          style       = "font-size: 0.8em;"
+        >
+          <i aria-hidden = "true" class = "fas fa-chevron-circle-left"></i>
+          <b>{{ $t('back') }}</b>
+        </button>
+        <div
+          v-if   = "!previousTitle && showtitle && contentTitle"
+          class  = "panel-title"
+        >
+          <b>{{ [(contentTitle.text ? contentTitle.title || '' : $t(contentTitle.title || '')), $t(contentTitle.post_title || '')].filter(Boolean).join(' ') }}</b>
+        </div>
+        <div
+          class = "g3-content-header-action-tools"
+          style = "display: flex; align-items: center; gap: .5ch; padding: 0 .5ch;"
+        >
+          <component v-for = "tool in state.content.headertools" :is = "tool"/>
+          <button
+            v-if           = "undefined !== state.split"
+            type           = "button"
+            :class         = "$fa(`resize-${state.split}`)"
+            title          = "Enlarge / Reduce"
+            data-placement = "bottom"
+            style          = "margin-right: 3px;"
+            class          = "action-button action-button-resize skin-color-dark"
+            @click         = "resizeFull"
+          ></button>
+          <button
+            type             = "button"
+            style            = "scale:.9;"
+            :style           = "{ transform: 'h' === state.split ? 'rotate(134deg)' : 'rotate(44deg)'}"
+            :data-i18n-title = "'h' === state.split ? 'Dock to Bottom' : 'Dock to Right'"
+            data-placement   = "bottom"
+            class            = "action-button action-button-dock skin-color-dark fa fa-external-link-alt"
+            @click           = "splitContent"
+          ></button>
+          <button
+            v-if           = "state.content.closable"
+            type           = "button"
+            @click         = "closeContent"
+            title          = "close"
+            data-placement = "bottom"
+            :class         = "{'mobile': isMobile()}"
+            class          = "action-button action-button-close skin-color-dark fas fa-times"
+          ></button>
+        </div>
+      </div>
+      <bar-loader :loading = "state.content.loading"/>
+    </div>
+
+    <!-- BACKOMP: for v4.1.x -->
+    <div class = "content-wrapper"></div>
+
 
     <context-menu />
 
@@ -1168,7 +1164,8 @@ export default {
           Math.round(((rect.height -dy) / wrapper.clientHeight) * 100),
         ), 90);
 
-        const { viewW, viewH } = GUI.getViewportSizes();
+        const viewW = wrapper.getBoundingClientRect().width || window.innerWidth;
+        const viewH = window.innerHeight - document.querySelector('.navbar').offsetHeight;
 
         const h_split = 'h' === this.state.split;
         const v_split = 'v' === this.state.split;

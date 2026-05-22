@@ -47,11 +47,10 @@
   --bgcolor: #212c31;
 }
 
-/* sidebar (right) */
-.content-wrapper {
-  --sidebar-width: 350px;
-}
-
+.content-wrapper            { height: calc(100% - 50px); position: fixed; inset: 0; pointer-events: none; }
+.content-wrapper > *        { pointer-events: all; }
+.is-iframe .content-wrapper { height: calc(100% - 0px); padding-top: 0;  }
+,
 /*!
 * Based on Bootstrap v3.4.1 (https://getbootstrap.com/)
 * Copyright 2011-2019 Twitter, Inc.
@@ -225,7 +224,6 @@ button.close                { padding: 0; cursor: pointer; background: transpare
  **************************************************************************************/
 
 #app             { height: 100%; width: 100%; overflow: hidden; }
-.content-wrapper { display: flex; transition: transform .3s ease-in-out, margin .3s ease-in-out; background-color: #ecf0f5; position: relative; overflow: hidden; }
 
 .g3w-map-controls-left-bottom,
 #map_footer,
@@ -235,11 +233,6 @@ button.close                { padding: 0; cursor: pointer; background: transpare
 .cookie-banner       { position:fixed; overflow:hidden; box-sizing:border-box; z-index:9999; width:100%; display:flex; justify-content:space-between; background:#424851; color:#fff; padding:1.250em; bottom:0; left:0; right:0; gap: 1em;}
 .cookie-button       { cursor:pointer; align-self:center; white-space:nowrap; background:#97D058; padding:0.625em 3.125em; color:#fff; border-radius:0; border:0; font-size:1em }
 .cookie-button:hover { background:#7ebf36 }
-
-/* When opening the sidebar on small screens */
-@media (max-width: 767px) {
-  .sidebar-open .content-wrapper { position: absolute; inset: 0; z-index: -1;}
-}
 
 /**************************************************************************************
 * boxes.less
@@ -604,7 +597,7 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
   .sidebar-open .main-sidebar                                 { position: relative !important; inset: 0 !important; }
   .sidebar-open, .sidebar-open #app                           { overflow-y: visible; }
   .sidebar-open:has(#g3w-menu:not([hidden])) .sidebar-panel:not([hidden]),
-  .sidebar-open :is(.main-sidebar, .content-wrapper)          { height: auto !important; }
+  .sidebar-open .main-sidebar                                 { height: auto !important; }
   .sidebar-open .navbar                                       { display: block !important; height: auto !important; }
   .sidebar-open .nav-links :is(.nav-changemap, .nav-addlayer),
   .sidebar-open:has(#g3w-menu[hidden]) .nav-links             { display: none !important; }
@@ -665,9 +658,9 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
 .g3w-view.content .action-button-icon                                            { padding-top: 2px; font-weight: bold; text-decoration: none; }
 .g3w-view.content .action-button.action-button-icon                              { padding-top: 6px; }
 .is-mobile .g3w-view.content.full-size :is(.action-button-resize, .action-button-dock) { display: none; }
-.g3w-view.content                                                                { line-height: normal; overflow-wrap: break-word; height: 0; width: 0; background-color: #eee; overflow:hidden; position: absolute; z-index: 10; }
-.g3w-view.content.split-h                                                        { right: 0; top: 0; }
-.g3w-view.content.split-v                                                        { bottom: 30px; left: var(--sidebar-left); }
+.g3w-view.content                                                                { line-height: normal; overflow-wrap: break-word; height: 0; width: 0; background-color: #eee; overflow:hidden; position: fixed; z-index: 10; }
+.g3w-view.content.split-h                                                        { right: 0; top: 50px; }
+.g3w-view.content.split-v                                                        { bottom: 30px; left: var(--sidebar-left); right: 0; width: auto !important }
 .g3w-view.content .contents                                                      { height: 100%; padding-left: 0; padding-right: 0; }
 .g3w-view.content                                                                { border-bottom: 1px solid #ccc; }
 .g3w-view.content.split-h                                                        { border-left: 1px solid #d6d6d6; }
