@@ -1877,17 +1877,6 @@ export default new (class GUI extends Emitter {
     const { viewW, viewH } = this.getViewportSizes();
     const panel            = layout[layout.__current].rightpanel;
 
-    // sidebar actual rendered width (accounts for open/collapsed/mini states)
-    const sidebar_rect = document.querySelector('.main-sidebar')?.getBoundingClientRect();
-    const wrapper_rect = content_wrapper.getBoundingClientRect();
-    const sidebar_w    = sidebar_rect?.width || 0;
-
-    // for split-v: left offset of content within content-wrapper.
-    // When content-wrapper has margin-left (e.g. sidebar-mini.sidebar-collapse), the wrapper
-    // already starts after the sidebar so the offset within the wrapper is 0, not sidebar_w.
-    const split_v_offset = Math.max(0, (sidebar_rect?.right || 0) - wrapper_rect.left);
-    document.documentElement.style.setProperty('--g3w-sidebar-w', `${split_v_offset}px`);
-
     const opts = {
       split: ApplicationState.split,
       ...(ApplicationState.contentsdata.at(-1)?.options || {}),
