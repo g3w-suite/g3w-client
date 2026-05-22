@@ -613,7 +613,7 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
  * 5. Viewport
  **************************************************************************************/
 
-#application-notifications                                                       { position:absolute; top: 55px; border-radius: 3px; left: 0; z-index: 1; font-size: 25px; pointer-events: none; }
+#application-notifications                                                       { position:absolute; top: 100px; border-radius: 3px; left: 0; z-index: 1; font-size: 25px; pointer-events: none; }
 #application-notifications > div                                                 { display: flex; flex-direction: column; align-items: center; width: 40px; height: 50px; justify-content: space-around; margin-bottom: 5px; background-color: #FFF; border-radius: 3px; }
 
 #g3w-maps                                                                        { anchor-name: --g3w-view-map; position: relative; width: 100%; height: 100%; }
