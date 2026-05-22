@@ -138,14 +138,14 @@
       }
     },
     data() {
-      const hasAnchorPosition = 'position-area' in document.body.style;
+      const can_anchor = 'position-area' in document.body.style;
       const offset = _getSidebarOffsetWithinWrapper();
       return {
         style: {
-          top:        hasAnchorPosition ? 'anchor(--g3w-view-map top)' : null,
-          left:       hasAnchorPosition ? 'anchor(--g3w-view-map left)' : null,
+          top:        can_anchor ? 'anchor(--g3w-view-map top)' : null,
+          left:       can_anchor ? 'anchor(--g3w-view-map left)' : null,
           width:      '325px',
-          marginLeft: hasAnchorPosition ? `${offset}px` : (document.body.classList.contains('sidebar-collapse') ? '5px' : '40px'),
+          marginLeft: can_anchor ? `${offset}px` : (document.body.classList.contains('sidebar-collapse') ? '5px' : '40px'),
         }
       }
     },

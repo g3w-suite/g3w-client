@@ -1028,7 +1028,7 @@ export default new (class GUI extends Emitter {
     iconClass = null, //@since 3.11.0
   } = {}) {
     if ('tool' !== type) {
-      const hasAnchorPosition = 'position-area' in document.body.style;
+      const can_anchor = 'position-area' in document.body.style;
       const getSidebarOffsetWithinWrapper = () => {
         const sidebar = document.querySelector('.main-sidebar');
         const wrapper = document.querySelector('.content-wrapper');
@@ -1056,7 +1056,7 @@ export default new (class GUI extends Emitter {
           return ApplicationState.map.sizes.width;
         }
         const wrapperRect = wrapper.getBoundingClientRect();
-        const leftOffset = (hasAnchorPosition ? getSidebarOffsetWithinWrapper() : parseInt(getFallbackMarginLeft(), 10) || 0);
+        const leftOffset = (can_anchor ? getSidebarOffsetWithinWrapper() : parseInt(getFallbackMarginLeft(), 10) || 0);
         const rightOffset = getRightPanelOffsetWithinWrapper();
         return Math.max(wrapperRect.width - leftOffset - rightOffset, 0);
       };
@@ -1070,9 +1070,9 @@ export default new (class GUI extends Emitter {
           border: unset;
           inset: unset;
           margin: unset;
-          ${ hasAnchorPosition ? 'top: anchor(--g3w-view-map top);' : '' }
-          ${ hasAnchorPosition ? 'left: anchor(--g3w-view-map left);' : '' }
-          ${ `margin-left: ${hasAnchorPosition ? `${getSidebarOffsetWithinWrapper()}px` : getFallbackMarginLeft()};` }
+          ${ can_anchor ? 'top: anchor(--g3w-view-map top);' : '' }
+          ${ can_anchor ? 'left: anchor(--g3w-view-map left);' : '' }
+          ${ `margin-left: ${can_anchor ? `${getSidebarOffsetWithinWrapper()}px` : getFallbackMarginLeft()};` }
           width: ${getDialogWidth()}px;
           animation: fade 0.3s ease-in;
         ">
@@ -1103,7 +1103,7 @@ export default new (class GUI extends Emitter {
           return;
         }
       
-        dialog.style.marginLeft = hasAnchorPosition ? `${getSidebarOffsetWithinWrapper()}px` : getFallbackMarginLeft();
+        dialog.style.marginLeft = can_anchor ? `${getSidebarOffsetWithinWrapper()}px` : getFallbackMarginLeft();
         
         dialog.style.width = `${getDialogWidth()}px`;
       };
