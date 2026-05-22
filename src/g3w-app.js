@@ -4262,15 +4262,6 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  setTarget(elId) {
-    this.target = elId;
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * @since 4.1.0
-   */
   getCurrentToggledMapControl() {
     return this.#controls.find(c => c?.control?.isToggled?.())?.control;
   }
@@ -4728,7 +4719,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   async layout({ width, height }) {
-    const el = document.getElementById(this.target);
+    const el = document.querySelector('#map');
 
     if (el) {
       el.style.height = height + 'px';
@@ -4789,7 +4780,7 @@ export default new (class GUI extends Emitter {
       controls:            ol.control.defaults({ attribution: false, zoom: false, rotateOptions: { autoHide: true, tipLabel: "Reset rotation (CTRL+DRAG to rotate)" } }),
       interactions:        ol.interaction.defaults().extend([ new ol.interaction.DragRotate({ condition: ol.events.condition.platformModifierKeyOnly, }) ]),
       keyboardEventTarget: document,
-      target:              this.target,
+      target:              'map',
       view:                new ol.View({
         extent,
         projection:    this.getProjection(),
@@ -4894,7 +4885,7 @@ export default new (class GUI extends Emitter {
     this.state.mapUnits = this.#map.getView().getProjection().getUnits();
 
     if (window.initConfig.background_color) {
-      document.getElementById(this.target).style.backgroundColor = window.initConfig.background_color;
+      document.querySelector('#map').style.backgroundColor = window.initConfig.background_color;
     }
 
     this.#map.getViewport().insertAdjacentHTML(
