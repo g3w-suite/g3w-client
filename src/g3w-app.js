@@ -1042,7 +1042,7 @@ export default new (class GUI extends Emitter {
           ${ 'position-area' in document.body.style ? 'top: anchor(--g3w-view-map top);' : '' }
           ${ 'position-area' in document.body.style ? 'left: anchor(--g3w-view-map left);' : '' }
           ${ 'position-area' in document.body.style ? 'left: anchor(--g3w-view-map left);' : '' }
-          width: ${ApplicationState.map.sizes.width + (document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size') ? ApplicationState.content.sizes.width : 0)}px;
+          width: ${ApplicationState.map.sizes.width}px;
           /*margin-left: ${document.body.classList.contains('sidebar-collapse') ? '5px' : '40px'};*/
           animation: fade 0.3s ease-in;
         ">
@@ -1071,7 +1071,7 @@ export default new (class GUI extends Emitter {
       const unwatch = Vue.watch(
           ()    => ApplicationState.map.sizes.width, 
           width => {
-            dialog.style.width = `${width + (document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size') ? ApplicationState.content.sizes.width : 0)}px`
+            dialog.style.width = `${width}px`
           }
       );
 
@@ -1877,6 +1877,17 @@ export default new (class GUI extends Emitter {
     const { viewW, viewH } = this.getViewportSizes();
     const panel            = layout[layout.__current].rightpanel;
 
+    // sidebar actual rendered width (accounts for open/collapsed/mini states)
+    const sidebar_rect = document.querySelector('.main-sidebar')?.getBoundingClientRect();
+    const wrapper_rect = content_wrapper.getBoundingClientRect();
+    const sidebar_w    = sidebar_rect?.width || 0;
+
+    // for split-v: left offset of content within content-wrapper.
+    // When content-wrapper has margin-left (e.g. sidebar-mini.sidebar-collapse), the wrapper
+    // already starts after the sidebar so the offset within the wrapper is 0, not sidebar_w.
+    const split_v_offset = Math.max(0, (sidebar_rect?.right || 0) - wrapper_rect.left);
+    document.documentElement.style.setProperty('--g3w-sidebar-w', `${split_v_offset}px`);
+
     const opts = {
       split: ApplicationState.split,
       ...(ApplicationState.contentsdata.at(-1)?.options || {}),
@@ -1895,16 +1906,27 @@ export default new (class GUI extends Emitter {
 
     contents.parentElement.classList.toggle('full-size', is_full);
 
-    // size "content"
+    // subtract map_footer height so content panel (split-h and split-v) doesn't overlap it
+    const footer_h  = document.querySelector('#map_footer')?.offsetHeight || 0;
+    document.documentElement.style.setProperty('--g3w-map-footer-h', `${footer_h}px`);
+    const viewH_eff = viewH - footer_h;
+
+    // size "content" — for split-v exclude the content-wrapper's sidebar overlap so the panel doesn't overlap it
     Object.assign(ApplicationState.content.sizes, {
-      width:  h_split ? (sec ? Math.max((viewW * scale), 200) : 0) : (sec ? viewW : 0),
-      height: v_split ? (sec ? Math.max((viewH * scale), 200) : 0) : (sec ? viewH : 0),
+      width:  h_split ? (sec ? Math.max((viewW * scale), 200) : 0) : (sec ? viewW - split_v_offset : 0),
+      height: v_split ? (sec ? Math.max((viewH_eff * scale), 200) : 0) : (sec ? viewH_eff : 0),
     });
 
-    // size "map"
+    // in split-h, keep map controls anchored to the left of the right content panel
+    document.documentElement.style.setProperty(
+      '--g3w-content-split-h-w',
+      `${(h_split && sec) ? ApplicationState.content.sizes.width : 0}px`
+    );
+
+    // size "map" - content floats on top, map always fills the full viewport
     Object.assign(ApplicationState.map.sizes, {
-      width:  viewW - (h_split ? ApplicationState.content.sizes.width : 0),
-      height: viewH - (v_split ? ApplicationState.content.sizes.height : 0),
+      width:  viewW,
+      height: viewH,
     });
 
     // size full (when mobile menu is open) 

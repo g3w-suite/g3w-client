@@ -599,13 +599,6 @@
         :style = "styles.map"
       >
 
-        <div
-          v-show          = "has_panel"
-          id              = "resize-map-and-content"
-          @mousedown.stop = "onResize"
-          :class       = "`split-${state.split}`"
-        ></div>
-
         <div id = "application-notifications">
           <!-- OFFLINE -->
           <div :class = "{ 'g3w-hide': ApplicationState.online }" style = "color: #999">
@@ -755,6 +748,12 @@
         :style     = "styles.content"
         v-disabled = "state.content.disabled"
       >
+        <div
+          v-show          = "has_panel"
+          id              = "resize-map-and-content"
+          @mousedown.stop = "onResize"
+          :class          = "`split-${state.split}`"
+        ></div>
         <nav
           v-if       = "breadcrumb.length > 1"
           class      = "content_breadcrumb"
