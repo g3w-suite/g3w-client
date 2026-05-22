@@ -1647,12 +1647,49 @@ export default new (class GUI extends Emitter {
     document.body.classList.add('sidebar-open');
     document.body.classList.remove('sidebar-collapse');
     ApplicationState.sidebar.open = true;
+    const left = this.#syncSidebarLeftOffset();
+    this.getMap()?.getView()?.set('padding', [
+      0,
+      parseFloat(document.body.style.getPropertyValue('--sidebar-right')) || 0,
+      0,
+      left,
+    ]);
   }
 
   hideSidebar() {
     document.body.classList.remove('sidebar-open');
     document.body.classList.add('sidebar-collapse');
     ApplicationState.sidebar.open = false;
+    const left = this.#syncSidebarLeftOffset();
+    this.getMap()?.getView()?.set('padding', [
+      0,
+      parseFloat(document.body.style.getPropertyValue('--sidebar-right')) || 0,
+      0,
+      left,
+    ]);
+  }
+
+  /**
+   * Keep --sidebar-left aligned with sidebar target state so map controls
+   * anchored to this variable do not overlap during/after sidebar toggles.
+   */
+  #syncSidebarLeftOffset() {
+    const sidebar = document.querySelector('.main-sidebar');
+
+    if (!sidebar || window.innerWidth <= 767) {
+      document.body.style.setProperty('--sidebar-left', '0px');
+      return 0;
+    }
+
+    const collapsed = document.body.classList.contains('sidebar-collapse');
+    const mini      = document.body.classList.contains('sidebar-mini');
+
+    const left = collapsed
+      ? (mini ? 35 : 0)
+      : (sidebar.classList.contains('mobile') ? 300 : 350);
+
+    document.body.style.setProperty('--sidebar-left', `${left}px`);
+    return left;
   }
 
   getSize({ element, what }) {
@@ -1915,7 +1952,7 @@ export default new (class GUI extends Emitter {
 
     // handle sidebars
     document.body.style.setProperty('--sidebar-right', `${(h_split && sec) ? ApplicationState.content.sizes.width : 0}px`);
-    document.body.style.setProperty('--sidebar-left', `${document.querySelector(".main-sidebar").clientWidth}px`);
+    this.#syncSidebarLeftOffset();
 
     // size "map" - content floats on top, map always fills the full viewport
     Object.assign(ApplicationState.map.sizes, {
