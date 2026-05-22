@@ -4610,10 +4610,7 @@ export default new (class GUI extends Emitter {
     // [top, right, bottom, left].
     const [top, right, bottom, left] = [
       ...(view.getPadding?.() ?? view.get('padding') ?? []),
-      0,
-      0,
-      0,
-      0,
+      0,0,0,0,
     ]
       .slice(0, 4)
       .map(v => Math.max(0, Number(v) || 0));
