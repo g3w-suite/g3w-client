@@ -743,7 +743,7 @@
     >
       <div
         v-show          = "has_panel"
-        id              = "resize-map-and-content"
+        id              = "content-resizer"
         @mousedown.stop = "onResize"
         :class          = "`split-${state.split}`"
       ></div>
