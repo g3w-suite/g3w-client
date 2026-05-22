@@ -228,16 +228,16 @@ button.close                { padding: 0; cursor: pointer; background: transpare
 .content-wrapper { display: flex; transition: transform .3s ease-in-out, margin .3s ease-in-out; background-color: #ecf0f5; position: relative; overflow: hidden; }
 
 @media (min-width: 767px) {
-  body.sidebar-mini.sidebar-collapse     { --map-padding-left: 35px }
+  body.sidebar-mini.sidebar-collapse     { --ol-map-pad-left: 35px }
 }
 
-body:not(.sidebar-collapse)              { --map-padding-left: 350px }
-body.sidebar-collapse:not(.sidebar-mini) { --map-padding-left: 0px }
+body:not(.sidebar-collapse)              { --ol-map-pad-left: 350px }
+body.sidebar-collapse:not(.sidebar-mini) { --ol-map-pad-left: 0px }
 
 .g3w-map-controls-left-bottom,
 #map_footer,
 #application-notifications,
-.ol-overlaycontainer-stopevent > *:not(.ol-control-br) { transition: width .3s ease-in-out, margin .3s ease-in-out; margin-left: var(--map-padding-left); }
+.ol-overlaycontainer-stopevent > *:not(.ol-control-br) { transition: width .3s ease-in-out, margin .3s ease-in-out; margin-left: var(--ol-map-pad-left); }
 
 .cookie-banner       { position:fixed; overflow:hidden; box-sizing:border-box; z-index:9999; width:100%; display:flex; justify-content:space-between; background:#424851; color:#fff; padding:1.250em; bottom:0; left:0; right:0; gap: 1em;}
 .cookie-button       { cursor:pointer; align-self:center; white-space:nowrap; background:#97D058; padding:0.625em 3.125em; color:#fff; border-radius:0; border:0; font-size:1em }
