@@ -1028,6 +1028,39 @@ export default new (class GUI extends Emitter {
     iconClass = null, //@since 3.11.0
   } = {}) {
     if ('tool' !== type) {
+      const hasAnchorPosition = 'position-area' in document.body.style;
+      const getSidebarOffsetWithinWrapper = () => {
+        const sidebar = document.querySelector('.main-sidebar');
+        const wrapper = document.querySelector('.content-wrapper');
+        if (!sidebar || !wrapper) {
+          return 0;
+        }
+        const sidebarRect = sidebar.getBoundingClientRect();
+        const wrapperRect = wrapper.getBoundingClientRect();
+        return Math.max(0, sidebarRect.right - wrapperRect.left);
+      };
+      const getFallbackMarginLeft = () => document.body.classList.contains('sidebar-collapse') ? '5px' : '40px';
+      const getRightPanelOffsetWithinWrapper = () => {
+        const contentPanel = document.querySelector('#g3w-view-content.split-h:not(.g3w-disabled)');
+        const wrapper = document.querySelector('.content-wrapper');
+        if (!contentPanel || !wrapper) {
+          return 0;
+        }
+        const contentRect = contentPanel.getBoundingClientRect();
+        const wrapperRect = wrapper.getBoundingClientRect();
+        return Math.max(0, wrapperRect.right - Math.max(contentRect.left, wrapperRect.left));
+      };
+      const getDialogWidth = () => {
+        const wrapper = document.querySelector('.content-wrapper');
+        if (!wrapper) {
+          return ApplicationState.map.sizes.width;
+        }
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const leftOffset = (hasAnchorPosition ? getSidebarOffsetWithinWrapper() : parseInt(getFallbackMarginLeft(), 10) || 0);
+        const rightOffset = getRightPanelOffsetWithinWrapper();
+        return Math.max(wrapperRect.width - leftOffset - rightOffset, 0);
+      };
+
       const dialog = Object.assign(document.createElement('template'), {
       innerHTML: /* html */ `
         <dialog class="usermessage-${type}" popover="manual" style = "
@@ -1037,11 +1070,10 @@ export default new (class GUI extends Emitter {
           border: unset;
           inset: unset;
           margin: unset;
-          ${ 'position-area' in document.body.style ? 'top: anchor(--g3w-view-map top);' : '' }
-          ${ 'position-area' in document.body.style ? 'left: anchor(--g3w-view-map left);' : '' }
-          ${ 'position-area' in document.body.style ? 'left: anchor(--g3w-view-map left);' : '' }
-          width: ${ApplicationState.map.sizes.width}px;
-          /*margin-left: ${document.body.classList.contains('sidebar-collapse') ? '5px' : '40px'};*/
+          ${ hasAnchorPosition ? 'top: anchor(--g3w-view-map top);' : '' }
+          ${ hasAnchorPosition ? 'left: anchor(--g3w-view-map left);' : '' }
+          ${ `margin-left: ${hasAnchorPosition ? `${getSidebarOffsetWithinWrapper()}px` : getFallbackMarginLeft()};` }
+          width: ${getDialogWidth()}px;
           animation: fade 0.3s ease-in;
         ">
           <form>
@@ -1066,20 +1098,56 @@ export default new (class GUI extends Emitter {
       `.trim()
       }).content.firstChild;
 
-      const unwatch = Vue.watch(
-          ()    => ApplicationState.map.sizes.width, 
-          width => {
-            dialog.style.width = `${width}px`
-          }
+      const updateDialogLayout = () => {
+        if (!dialog.isConnected) {
+          return;
+        }
+      
+        dialog.style.marginLeft = hasAnchorPosition ? `${getSidebarOffsetWithinWrapper()}px` : getFallbackMarginLeft();
+        
+        dialog.style.width = `${getDialogWidth()}px`;
+      };
+
+      const unwatchMapWidth = Vue.watch(
+        () => ApplicationState.map.sizes.width,
+        updateDialogLayout
+      );
+      const unwatchContentWidth = Vue.watch(
+        () => ApplicationState.content.sizes.width,
+        updateDialogLayout
       );
 
-      dialog.addEventListener('close', () => {
-        dialog.remove();
-        unwatch();
+      let observer = null;
+      const cleanup = () => {
+        if (observer) {
+          observer.disconnect();
+          observer = null;
+        }
+        window.removeEventListener('resize', updateDialogLayout);
+        unwatchMapWidth();
+        unwatchContentWidth();
+      };
+
+      dialog.addEventListener('toggle', () => {
+        if (!dialog.matches(':popover-open')) {
+          cleanup();
+          dialog.remove();
+        }
       });
 
       document.querySelector('.content-wrapper').insertAdjacentElement('afterbegin', dialog);
       dialog.showPopover();
+
+      updateDialogLayout();
+      observer = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+          if ('class' === mutation.attributeName) {
+            updateDialogLayout();
+          }
+        });
+      });
+      observer.observe(document.body, { attributes: true });
+      window.addEventListener('resize', updateDialogLayout);
 
       // close dialog on x icon
       dialog.querySelector('button[value="cancel"]').addEventListener('click', () => {

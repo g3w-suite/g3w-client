@@ -96,6 +96,17 @@
     }
   }
 
+  function _getSidebarOffsetWithinWrapper() {
+    const sidebar = document.querySelector('.main-sidebar');
+    const wrapper = document.querySelector('.content-wrapper');
+    if (!sidebar || !wrapper) {
+      return 0;
+    }
+    const sidebarRect = sidebar.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
+    return Math.max(0, sidebarRect.right - wrapperRect.left);
+  }
+
   export default {
     name: "usermessage",
     props: {
@@ -127,16 +138,23 @@
       }
     },
     data() {
+      const hasAnchorPosition = 'position-area' in document.body.style;
+      const offset = _getSidebarOffsetWithinWrapper();
       return {
         style: {
-          top:        'position-area' in document.body.style ? 'anchor(--g3w-view-map top)' : null,
-          left:       'position-area' in document.body.style ? 'anchor(--g3w-view-map left)' : null,
+          top:        hasAnchorPosition ? 'anchor(--g3w-view-map top)' : null,
+          left:       hasAnchorPosition ? 'anchor(--g3w-view-map left)' : null,
           width:      '325px',
-          marginLeft: (document.body.classList.contains('sidebar-collapse') ? '5px' : '40px'),
+          marginLeft: hasAnchorPosition ? `${offset}px` : (document.body.classList.contains('sidebar-collapse') ? '5px' : '40px'),
         }
       }
     },
     methods: {
+      updateLeftOffset() {
+        this.style.marginLeft = 'position-area' in document.body.style
+          ? `${_getSidebarOffsetWithinWrapper()}px`
+          : (document.body.classList.contains('sidebar-collapse') ? '5px' : '40px');
+      },
       closeUserMessage() {
         if (this.$el.popover) {
           this.$el.hidePopover();
@@ -148,20 +166,23 @@
     async mounted() {
       this.$el.showPopover();
       _makeDraggable(this.$el);
+      this.updateLeftOffset();
       this.observer = new MutationObserver(mutations => {
         mutations.forEach(mutation => {
           if ("class" === mutation.attributeName) {
-            this.style.marginLeft = 'small' === this.size ? (mutation.target.classList.contains('sidebar-collapse') ? '5px' : '40px') : null;
+            this.updateLeftOffset();
           }
         });
       });
       this.observer.observe(document.body, { attributes: true });
+      window.addEventListener('resize', this.updateLeftOffset);
     },
     beforeDestroy() {
       if (this.observer) {
         this.observer.disconnect();
         this.observer = null;
       }
+      window.removeEventListener('resize', this.updateLeftOffset);
     }
   }
 </script>
