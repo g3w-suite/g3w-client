@@ -227,17 +227,17 @@ button.close                { padding: 0; cursor: pointer; background: transpare
 #app             { height: 100%; width: 100%; overflow: hidden; }
 .content-wrapper { display: flex; transition: transform .3s ease-in-out, margin .3s ease-in-out; background-color: #ecf0f5; position: relative; overflow: hidden; }
 
-body:not(.sidebar-collapse) .g3w-map-controls-left-bottom,
-body:not(.sidebar-collapse) #map_footer,
-body:not(.sidebar-collapse) #application-notifications,
-body:not(.sidebar-collapse) .ol-overlaycontainer-stopevent { transition: width .3s ease-in-out, margin .3s ease-in-out; }
+@media (min-width: 767px) {
+  body.sidebar-mini.sidebar-collapse     { --map-padding-left: 35px }
+}
 
-body:not(.sidebar-collapse) .g3w-map-controls-left-bottom,
-body:not(.sidebar-collapse) #map_footer,
-body:not(.sidebar-collapse) #application-notifications,
-body:not(.sidebar-collapse) .ol-overlaycontainer-stopevent { margin-left: var(--sidebar-width); }
+body:not(.sidebar-collapse)              { --map-padding-left: 350px }
+body.sidebar-collapse:not(.sidebar-mini) { --map-padding-left: 0px }
 
-body:not(.sidebar-collapse) #map_footer { width: calc(100% - var(--sidebar-width)); }
+.g3w-map-controls-left-bottom,
+#map_footer,
+#application-notifications,
+.ol-overlaycontainer-stopevent > *:not(.ol-control-br) { transition: width .3s ease-in-out, margin .3s ease-in-out; margin-left: var(--map-padding-left); }
 
 .cookie-banner       { position:fixed; overflow:hidden; box-sizing:border-box; z-index:9999; width:100%; display:flex; justify-content:space-between; background:#424851; color:#fff; padding:1.250em; bottom:0; left:0; right:0; gap: 1em;}
 .cookie-button       { cursor:pointer; align-self:center; white-space:nowrap; background:#97D058; padding:0.625em 3.125em; color:#fff; border-radius:0; border:0; font-size:1em }
@@ -245,13 +245,7 @@ body:not(.sidebar-collapse) #map_footer { width: calc(100% - var(--sidebar-width
 
 /* When opening the sidebar on small screens */
 @media (max-width: 767px) {
-  .content-wrapper               { margin-left: 0; }
-  .sidebar-open .content-wrapper { --sidebar-width: 0; transform: translate(var(--sidebar-width), 0); position: absolute; inset: 0; z-index: -1;}
-}
-
-/* When opening the sidebar on large screens */
-@media (min-width: 768px) {
-  .sidebar-collapse .content-wrapper { margin-left: 0; }
+  .sidebar-open .content-wrapper { position: absolute; inset: 0; z-index: -1;}
 }
 
 /**************************************************************************************
@@ -596,9 +590,7 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
 @media (min-width: 768px) {
   .sidebar-collapse .main-sidebar,
   .sidebar-collapse .sidebar-aside-toggle         { left: 0; }
-  .sidebar-collapse .content-wrapper              { margin-left: 0; }
   .sidebar-collapse .main-sidebar                 { width: 0 !important; }
-  .sidebar-mini.sidebar-collapse .content-wrapper { margin-left: 35px; }
   .sidebar-mini.sidebar-collapse .main-sidebar    { width: 35px !important; }
 }
 
@@ -607,7 +599,6 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
 .sidebar-mini.sidebar-collapse #catalog > *                                     { display: none; }
 .sidebar-mini.sidebar-collapse #catalog > a                                     { display: block !important; }
 .sidebar-mini.sidebar-collapse #g3w-menu                                        { padding-top: 50px; overflow: hidden; }
-.sidebar-mini.sidebar-collapse .ol-geocoder                                     { margin-left: 5px; }
 .sidebar-mini.sidebar-collapse ul.sidebar-menu > li a span.treeview-label       { color:  transparent; }
 .sidebar-mini.sidebar-collapse .main-sidebar                                    { overflow-y: hidden; }
 
@@ -789,7 +780,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .g3w-map-controls .ol-zoom-extent                                      { top:0; left:0; }
 
 .g3w-map-controls-left-bottom .ol-control                              { position: relative; }
-.g3w-map-controls-left-bottom                                          { display: flex; gap: 5px; align-items: end; bottom: 35px !important; }
+.g3w-map-controls-left-bottom                                          { display: flex; gap: 5px; align-items: end; bottom: 35px; position: absolute; z-index: 1; }
 .ol-zoom-history                                                       { align-items: end; order: 1; }
 
 .ol-control button:hover                                               { background-color:var(--skin-color); }
@@ -1283,13 +1274,12 @@ i.triangle                             { border-color: currentColor transparent 
 }
 
 #marker                       { width: 15px; height: 15px; border: 2px solid yellow; border-radius: 10px; background-color: yellow; opacity: 0.8; }
-.g3w-map-controls-left-bottom { position: absolute; bottom: 75px; left: 10px; z-index: 1; }
 #g3w-map-info                 { position: absolute; top: 60px; left: 5px; font-weight: bold; z-index: 100; background: rgba(255,255,255, 0.6); padding: 5px; border-radius: 3px; }
 #g3w-maps                     { position: relative; width: 100%; height: 100%; }
-.g3w-map                      { position: absolute; width: 100%; height: 100%; }
+.g3w-map                      { width: 100%; height: 100%; }
 .g3w-map.show                 { display: block; }
-.g3w-map.hide                 { display: none; }
-#map_footer                   { position:absolute; bottom:0; height: 30px; width:100%; display: flex; background-color: rgba(255, 255, 255, 0.7); }
+.g3w-map.hide                 { display: none; position: absolute; }
+#map_footer                   { position: sticky; bottom:0; height: 30px; display: flex; background-color: rgba(255, 255, 255, 0.7); }
 .drop-area:not([hidden])      { display: flex; }
 .drop-area                    { justify-content: center; align-items: center; width: 100%; height: 100%; color: #fff; font-size: 4em; position: absolute; z-index: 100; background-color: var(--bgcolor); pointer-events: none; }
 .drop-area::before            { border: 5px dashed #fff; content: ""; bottom: 60px; left: 60px;  position: absolute; right: 60px; top: 60px; }
