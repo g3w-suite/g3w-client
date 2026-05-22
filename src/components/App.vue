@@ -585,155 +585,147 @@
       </user-message>
     </transition>
 
-    <div
-      id     = "g3w-view-map"
-      :class = "`split-${state.split}`"
-      class  = "g3w-view map"
-      :style = "styles.map"
-    >
-
-      <div id = "application-notifications">
-        <!-- OFFLINE -->
-        <div :class = "{ 'g3w-hide': ApplicationState.online }" style = "color: #999">
-          <i class = "fas fa-wifi" aria-hidden = "true"></i>
-          <b style = "font-size: 0.4em">offline</b>
-        </div>
-        <!-- DOWNLOAD -->
-        <div :class = "{ 'skin-color': true, 'g3w-hide': !ApplicationState.download }">
-          <bar-loader :loading = "true" />
-          <i style = "padding:3px" class = "fas fa-download" aria-hidden = "true"></i>
-          <b style = "font-size: 0.35em">download</b>
-        </div>
-        <!-- PLUGINS -->
-        <div :class = "{ 'g3w-hide': 0 === ApplicationState.plugins.length }" style = "color: #994b10">
-          <bar-loader :loading = "true" />
-          <i class = "fas fa-cogs" aria-hidden = "true"></i>
-          <b style = "font-size: 0.4em">plugins</b>
-        </div>
+    <div id = "application-notifications">
+      <!-- OFFLINE -->
+      <div :class = "{ 'g3w-hide': ApplicationState.online }" style = "color: #999">
+        <i class = "fas fa-wifi" aria-hidden = "true"></i>
+        <b style = "font-size: 0.4em">offline</b>
       </div>
+      <!-- DOWNLOAD -->
+      <div :class = "{ 'skin-color': true, 'g3w-hide': !ApplicationState.download }">
+        <bar-loader :loading = "true" />
+        <i style = "padding:3px" class = "fas fa-download" aria-hidden = "true"></i>
+        <b style = "font-size: 0.35em">download</b>
+      </div>
+      <!-- PLUGINS -->
+      <div :class = "{ 'g3w-hide': 0 === ApplicationState.plugins.length }" style = "color: #994b10">
+        <bar-loader :loading = "true" />
+        <i class = "fas fa-cogs" aria-hidden = "true"></i>
+        <b style = "font-size: 0.4em">plugins</b>
+      </div>
+    </div>
 
-      <!-- ORIGINAL SOURCE: src/components/Map.vue -->
-      <div id = "g3w-maps">
+    <!-- ORIGINAL SOURCE: src/components/Map.vue -->
+    <div id = "g3w-maps">
 
+      <div
+        v-for = "hidemap in ApplicationState.hidemaps"
+        :key  = "hidemap.id"
+        :id   = "hidemap.id"
+        class = "g3w-map hidemap"
+      ></div>
+
+      <div :id = "GUI.target" class = "g3w-map" @drop.prevent = "onDrop" @dragenter.prevent = "onDrop" @dragleave.prevent = "onDrop" @dragover.prevent>
+
+        <div class = "drop-area" hidden>
+          Upload Files
+        </div>
+
+        <!-- COMMON MAP CONTROLS (zoom, querybypolygon, geoscreeenshot, ...) -->
         <div
-          v-for = "hidemap in ApplicationState.hidemaps"
-          :key  = "hidemap.id"
-          :id   = "hidemap.id"
-          class = "g3w-map hidemap"
+          ref   = "g3w-map-controls"
+          class = "g3w-map-controls rv"
+          style = "display: flex"
         ></div>
 
-        <div :id = "GUI.target" class = "g3w-map" @drop.prevent = "onDrop" @dragenter.prevent = "onDrop" @dragleave.prevent = "onDrop" @dragover.prevent>
-
-          <div class = "drop-area" hidden>
-            Upload Files
-          </div>
-
-          <!-- COMMON MAP CONTROLS (zoom, querybypolygon, geoscreeenshot, ...) -->
-          <div
-            ref   = "g3w-map-controls"
-            class = "g3w-map-controls rv"
-            style = "display: flex"
-          ></div>
-
-          <!-- FIXME: add description -->
-          <div
-            v-if   = "ApplicationState.map_info"
-            ref    = "g3w-map-info"
-            id     = "g3w-map-info"
-            :style = "ApplicationState.map_style"
-          >
-            {{ApplicationState.map_info}}
-          </div>
-
-          <!-- DIV that will contain marker on map -->
-          <div style = "display: none;"><div id = "marker"></div></div>
-
-          <!-- @since 3.8.0   -->
-          <div class = "g3w-map-controls-left-bottom"></div>
-
+        <!-- FIXME: add description -->
+        <div
+          v-if   = "ApplicationState.map_info"
+          ref    = "g3w-map-info"
+          id     = "g3w-map-info"
+          :style = "ApplicationState.map_style"
+        >
+          {{ApplicationState.map_info}}
         </div>
 
-        <!-- Footer (bottom part) where scale and other component can be set -->
-        <div id = "map_footer">
+        <!-- DIV that will contain marker on map -->
+        <div style = "display: none;"><div id = "marker"></div></div>
 
-          <!-- MAP CREDITS -->
-          <a
-            href   = "https://g3wsuite.it/"
-            style  = "margin-left: 5px; align-self: center;"
-            target = "_blank"
-            :title = "version"
+        <!-- @since 3.8.0   -->
+        <div class = "g3w-map-controls-left-bottom"></div>
+
+      </div>
+
+      <!-- Footer (bottom part) where scale and other component can be set -->
+      <div id = "map_footer">
+
+        <!-- MAP CREDITS -->
+        <a
+          href   = "https://g3wsuite.it/"
+          style  = "margin-left: 5px; align-self: center;"
+          target = "_blank"
+          :title = "version"
+        >
+          <img
+            height = "15"
+            src    = "/static/client/images/g3wsuite_logo.png"
+            alt    = ""
+          />
+          <span hidden>{{ version }}</span>
+        </a>
+
+        <div id="attribution-control"></div>
+
+        <div style="margin-right: auto;"></div>
+
+        <!-- MOUSE POSITION -->
+        <div
+          v-show = "mouse.visible"
+          id     = "mouse-position-control"
+        ></div>
+
+        <!-- SWITCH COORDINATES  -->
+        <button
+          v-if           = "mouse.visible && mouse.switch_icon && !isMobile()"
+          type           = "button"
+          class          = "btn"
+          :title         = "mouse.tooltip"
+          data-placement = "top"
+          @click.stop    = "switchMapsCoordinateTo4326"
+          style          = "border-radius: 0;"
+        >
+          <i aria-hidden="true" class = "fas fa-mouse"></i>
+          <span hidden>{{ $t(mouse.tooltip) }}</span>
+        </button>
+
+        <button
+          type           = "button"
+          class          = "btn"
+          title          = "Copy share URL"
+          data-placement = "top"
+          @click.stop    = "showEmbedModal"
+          style          = "border-radius: 0;"
+        >
+          <i aria-hidden="true" class = "fa fa-share-alt"></i>
+          <span hidden>{{ $t('Copy share URL') }}</span>
+        </button>
+
+        <!-- SCALE CONTROL -->
+        <div id = "scale-control"></div>
+
+        <div
+          v-if = "showmapunits"
+          id   = "scale-line-units"
+        >
+          <select
+            style   = "padding: 5px 2px; font-weight: bold; border:0; cursor: pointer"
+            v-model = "ApplicationState.map_unit"
           >
-            <img
-              height = "15"
-              src    = "/static/client/images/g3wsuite_logo.png"
-              alt    = ""
-            />
-            <span hidden>{{ version }}</span>
-          </a>
-
-          <div id="attribution-control"></div>
-
-          <div style="margin-right: auto;"></div>
-
-          <!-- MOUSE POSITION -->
-          <div
-            v-show = "mouse.visible"
-            id     = "mouse-position-control"
-          ></div>
-
-          <!-- SWITCH COORDINATES  -->
-          <button
-            v-if           = "mouse.visible && mouse.switch_icon && !isMobile()"
-            type           = "button"
-            class          = "btn"
-            :title         = "mouse.tooltip"
-            data-placement = "top"
-            @click.stop    = "switchMapsCoordinateTo4326"
-            style          = "border-radius: 0;"
-          >
-            <i aria-hidden="true" class = "fas fa-mouse"></i>
-            <span hidden>{{ $t(mouse.tooltip) }}</span>
-          </button>
-
-          <button
-            type           = "button"
-            class          = "btn"
-            title          = "Copy share URL"
-            data-placement = "top"
-            @click.stop    = "showEmbedModal"
-            style          = "border-radius: 0;"
-          >
-            <i aria-hidden="true" class = "fa fa-share-alt"></i>
-            <span hidden>{{ $t('Copy share URL') }}</span>
-          </button>
-
-          <!-- SCALE CONTROL -->
-          <div id = "scale-control"></div>
-
-          <div
-            v-if = "showmapunits"
-            id   = "scale-line-units"
-          >
-            <select
-              style   = "padding: 5px 2px; font-weight: bold; border:0; cursor: pointer"
-              v-model = "ApplicationState.map_unit"
-            >
-              <option
-                v-for     = "unit in state.mapunits"
-                :value    = "unit"
-                v-t       = "`scaleline_units.${unit}`"
-                :selected = "ApplicationState.map_unit === unit"
-                style     = "font-weight: bold"
-              ></option>
-            </select>
-
-          </div>
+            <option
+              v-for     = "unit in state.mapunits"
+              :value    = "unit"
+              v-t       = "`scaleline_units.${unit}`"
+              :selected = "ApplicationState.map_unit === unit"
+              style     = "font-weight: bold"
+            ></option>
+          </select>
 
         </div>
 
       </div>
 
     </div>
+
     <div
       id         = "g3w-view-content"
       :class     = "`split-${state.split}`"
