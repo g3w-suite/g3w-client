@@ -585,26 +585,6 @@
       </user-message>
     </transition>
 
-    <div id = "application-notifications">
-      <!-- OFFLINE -->
-      <div :class = "{ 'g3w-hide': ApplicationState.online }" style = "color: #999">
-        <i class = "fas fa-wifi" aria-hidden = "true"></i>
-        <b style = "font-size: 0.4em">offline</b>
-      </div>
-      <!-- DOWNLOAD -->
-      <div :class = "{ 'skin-color': true, 'g3w-hide': !ApplicationState.download }">
-        <bar-loader :loading = "true" />
-        <i style = "padding:3px" class = "fas fa-download" aria-hidden = "true"></i>
-        <b style = "font-size: 0.35em">download</b>
-      </div>
-      <!-- PLUGINS -->
-      <div :class = "{ 'g3w-hide': 0 === ApplicationState.plugins.length }" style = "color: #994b10">
-        <bar-loader :loading = "true" />
-        <i class = "fas fa-cogs" aria-hidden = "true"></i>
-        <b style = "font-size: 0.4em">plugins</b>
-      </div>
-    </div>
-
     <!-- ORIGINAL SOURCE: src/components/Map.vue -->
     <div
       v-for = "hidemap in ApplicationState.hidemaps"
@@ -617,6 +597,26 @@
 
       <div class = "drop-area" hidden>
         Upload Files
+      </div>
+
+      <div id = "aria-live" role="status" aria-live="polite">
+        <!-- OFFLINE -->
+        <div :class = "{ 'g3w-hide': ApplicationState.online }" style = "color: #999">
+          <i class = "fas fa-wifi" aria-hidden = "true"></i>
+          <b style = "font-size: 0.4em">offline</b>
+        </div>
+        <!-- DOWNLOAD -->
+        <div :class = "{ 'skin-color': true, 'g3w-hide': !ApplicationState.download }">
+          <bar-loader :loading = "true" aria-label="downloading" />
+          <i style = "padding:3px" class = "fas fa-download" aria-hidden = "true"></i>
+          <b style = "font-size: 0.35em">download</b>
+        </div>
+        <!-- PLUGINS -->
+        <div :class = "{ 'g3w-hide': 0 === ApplicationState.plugins.length }" style = "color: #994b10">
+          <bar-loader :loading = "true" aria-label="loading plugins" />
+          <i class = "fas fa-cogs" aria-hidden = "true"></i>
+          <b style = "font-size: 0.4em">plugins</b>
+        </div>
       </div>
 
       <!-- COMMON MAP CONTROLS (zoom, querybypolygon, geoscreeenshot, ...) -->
