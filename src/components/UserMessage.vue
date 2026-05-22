@@ -142,8 +142,8 @@
       const offset = _getSidebarOffsetWithinWrapper();
       return {
         style: {
-          top:        can_anchor ? 'anchor(--g3w-view-map top)' : null,
-          left:       can_anchor ? 'anchor(--g3w-view-map left)' : null,
+          top:        can_anchor ? 'anchor(--g3w-map top)' : null,
+          left:       can_anchor ? 'anchor(--g3w-map left)' : null,
           width:      '325px',
           marginLeft: can_anchor ? `${offset}px` : (document.body.classList.contains('sidebar-collapse') ? '5px' : '40px'),
         }
