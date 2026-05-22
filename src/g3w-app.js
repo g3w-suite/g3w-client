@@ -1135,7 +1135,7 @@ export default new (class GUI extends Emitter {
         }
       });
 
-      document.querySelector('.content-wrapper').insertAdjacentElement('afterbegin', dialog);
+      document.body.append(dialog);
       dialog.showPopover();
 
       updateDialogLayout();
@@ -1983,9 +1983,6 @@ export default new (class GUI extends Emitter {
     const h_split = 'h' === opts.split;
     const v_split = 'v' === opts.split;
 
-    content_wrapper.style.flexDirection  = h_split ? 'row' : 'column';
-    content_wrapper.style.justifyContent = 'space-between';
-
     const is_full = 100 === opts.perc || (h_split ? panel.width_100 : panel.height_100);
 
     // percentage of secondary view (content)
@@ -1996,18 +1993,9 @@ export default new (class GUI extends Emitter {
     // subtract map_footer height so content panel (split-h and split-v) doesn't overlap it
     const viewH_eff = viewH - 30; // 30 = map footer height
 
-        // sidebar actual rendered width (accounts for open/collapsed/mini states)
-    const sidebar_rect = document.querySelector('.main-sidebar')?.getBoundingClientRect();
-    const wrapper_rect = content_wrapper.getBoundingClientRect();
-
-    // for split-v: left offset of content within content-wrapper.
-    // When content-wrapper has margin-left (e.g. sidebar-mini.sidebar-collapse), the wrapper
-    // already starts after the sidebar so the offset within the wrapper is 0, not sidebar_w.
-    const split_v_offset = 0;//Math.max(0, (sidebar_rect?.right || 0) - wrapper_rect.left);
-
-    // size "content" — for split-v exclude the content-wrapper's sidebar overlap so the panel doesn't overlap it
+    // size "content" - content floats on top, map always fills the full viewport
     Object.assign(ApplicationState.content.sizes, {
-      width:  h_split ? (sec ? Math.max((viewW * scale), 200) : 0) : (sec ? viewW - split_v_offset : 0),
+      width:  h_split ? (sec ? Math.max((viewW * scale), 200) : 0) : (sec ? viewW : 0),
       height: v_split ? (sec ? Math.max((viewH_eff * scale), 200) : 0) : (sec ? viewH_eff : 0),
     });
 
