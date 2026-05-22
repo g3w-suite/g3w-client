@@ -3466,15 +3466,16 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   createMapImage({ map } = {}) {
-    return new Promise((resolve, reject) => {
-      try {
-        const canvas = (map || this.getMap()).getViewport().querySelector('canvas');
-        canvas.toBlob(blob => resolve(blob));
-      } catch(e) {
-        console.warn(e);
-        reject(e);
-      }
-    })
+    return new Promise((resolve) => {
+      const canvas  = (map || this.getMap()).getViewport().querySelector('canvas');
+      const padding = this.isSidebarVisible() ? (350 * (window.devicePixelRatio || 1)) : 0; // 350 = left sidebar width
+      
+      const w = canvas.width - padding, h = canvas.height;
+      const cropped = Object.assign(document.createElement('canvas'), { width: w, height: h });
+      
+      cropped.getContext('2d').drawImage(canvas, padding, 0, w, h, 0, 0, w, h);
+      cropped.toBlob(resolve);
+    });
   }
 
   /**
