@@ -227,12 +227,12 @@ button.close                { padding: 0; cursor: pointer; background: transpare
 #app             { height: 100%; width: 100%; overflow: hidden; }
 .content-wrapper { display: flex; transition: transform .3s ease-in-out, margin .3s ease-in-out; background-color: #ecf0f5; position: relative; overflow: hidden; }
 
+body                                 { --ol-map-pad-left: 0px }
+body:not(.sidebar-collapse)          { --ol-map-pad-left: 350px }
 @media (min-width: 767px) {
-  body.sidebar-mini.sidebar-collapse     { --ol-map-pad-left: 35px }
+  body.sidebar-mini.sidebar-collapse { --ol-map-pad-left: 35px }
 }
 
-body:not(.sidebar-collapse)              { --ol-map-pad-left: 350px }
-body.sidebar-collapse:not(.sidebar-mini) { --ol-map-pad-left: 0px }
 
 .g3w-map-controls-left-bottom,
 #map_footer,
