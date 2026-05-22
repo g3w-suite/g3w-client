@@ -616,7 +616,7 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
   .navbar-toggler                                             { color: #fff; padding: 12px; font-size: 1.3em; position: absolute; z-index: 101; right: 0; top: 0; display: block; border: 0;background: none;}
   .sidebar-open .navbar-toggler                               { position: fixed; }
   .sidebar-open .nav-links                                    { --bgcolor: #212c31; background-color: var(--bgcolor)!important; flex-direction: column !important; }
-  .sidebar-open .project_title                                { position: fixed !important; inset: 0 !important; background-color: var(--skin-color); padding-left: 4px; max-width: calc(100% - 125px) !important; z-index: 2; }
+  .sidebar-open .project_title                                { position: fixed !important; inset: 0 !important; background-color: var(--skin-color); padding-left: 4px; max-width: calc(100% - 18px); padding-right: 105px; z-index: 2; }
   .sidebar-open .main-sidebar                                 { position: relative !important; inset: 0 !important; }
   .sidebar-open, .sidebar-open #app                           { overflow-y: visible; }
   .sidebar-open:has(#g3w-menu:not([hidden])) .sidebar-panel:not([hidden]),
