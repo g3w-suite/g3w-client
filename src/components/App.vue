@@ -980,10 +980,6 @@ export default {
 
     styles() {
       return {
-        map: {
-          width:         `${this.state.map.sizes.width}px`,
-          height:        `${this.state.map.sizes.height}px`,
-        },
         content: {
           width:         `${this.state.content.sizes.width}px`,
           height:        `${this.state.content.sizes.height}px`,
