@@ -4606,65 +4606,46 @@ export default new (class GUI extends Emitter {
     }
 
     const map     = this.getMap();
+    const view    = map.getView();
     const mapSize = map.getSize();
 
-    // Compute the pixel coordinates (within the OL viewport) of the center of
-    // the *visible* map area — i.e. the portion not covered by the
-    // #g3w-view-content panel (split-h on the right or split-v at the bottom)
-    // or by the .main-sidebar (fixed, on the left).
-    // Using getBoundingClientRect() is the most robust approach because it
-    // measures the actual rendered positions and naturally accounts for all
-    // sidebar/margin offsets.
-    const [vis_px, vis_py] = (() => {
-      const defX      = mapSize[0] / 2;
-      const defY      = mapSize[1] / 2;
-      const contentEl = document.querySelector('#g3w-view-content');
+    // Respect the same visible area already used by the map view:
+    // [top, right, bottom, left].
+    const [top, right, bottom, left] = [
+      ...(view.getPadding?.() ?? view.get('padding') ?? []),
+      0,
+      0,
+      0,
+      0,
+    ]
+      .slice(0, 4)
+      .map(v => Math.max(0, Number(v) || 0));
 
-      // Skip correction when the panel is full-size (content already closed before zoom)
-      if (!contentEl || contentEl.classList.contains('full-size')) {
-        return [defX, defY];
-      }
+    const visibleSize = [
+      Math.max(1, mapSize[0] - left - right),
+      Math.max(1, mapSize[1] - top - bottom),
+    ];
 
-      const mapRect   = map.getTargetElement().getBoundingClientRect();
-      const panelRect = contentEl.getBoundingClientRect();
-
-      let cx = defX;
-      let cy = defY;
-
-      if (contentEl.classList.contains('split-h')) {
-        // Panel docked to the right → visible area: mapRect.left … panelRect.left
-        const visW = panelRect.left - mapRect.left;
-        if (visW > 10) { cx = visW / 2; }
-      } else if (contentEl.classList.contains('split-v')) {
-        // Panel docked to the bottom (above map footer) → visible area: mapRect.top … panelRect.top
-        const visH = panelRect.top - mapRect.top;
-        if (visH > 10) { cy = visH / 2; }
-      }
-
-      return [cx, cy];
-    })();
-
-    // The visible map size, used so getResolutionForExtent fits the extent
-    // inside the visible area rather than the full OL viewport.
-    const visibleSize = [vis_px * 2, vis_py * 2];
+    const vis_px = (mapSize[0] + left - right) / 2;
+    const vis_py = (mapSize[1] + top  - bottom) / 2;
 
     let resolution;
 
     // if outside project extent, return max resolution
     if (false === ol.extent.containsExtent(ApplicationState.project.state.extent, extent)) {
-      resolution = map.getView().getResolutionForExtent(ApplicationState.project.state.extent, visibleSize);
+      resolution = view.getResolutionForExtent(ApplicationState.project.state.extent, visibleSize);
     }
 
     // retrieve resolution from given `extent`
     else if (true === options.force) {
-      resolution = map.getView().getResolutionForExtent(extent, visibleSize); // resolution of request extent
+      resolution = view.getResolutionForExtent(extent, visibleSize); // resolution of request extent
     }
 
     // calculate main resolutions from map
     else {
-      const curr = map.getView().getResolution();
+      const curr = view.getResolution();
       // max resolution of the map
-      resolution = Math.max(map.getView().getResolutionForExtent(extent, visibleSize), getResolutionFromScale(this.#maxZoom, this.getMapUnits()));
+      resolution = Math.max(view.getResolutionForExtent(extent, visibleSize), getResolutionFromScale(this.#maxZoom, this.getMapUnits()));
       resolution = (curr < resolution) && (curr > resolution) ? curr : resolution;
     }
 
@@ -4677,14 +4658,14 @@ export default new (class GUI extends Emitter {
     // Solving for center where feature must appear at [vis_px, vis_py]:
     //   center_x = feature_x - (vis_px - viewportW/2) * res  → for split-h (right panel): vis_px < viewportW/2 → center_x > feature_x (shift right)
     //   center_y = feature_y + (vis_py - viewportH/2) * res  → for split-v (bottom panel): vis_py < viewportH/2 → center_y < feature_y (shift south)
-    const res    = resolution || this.#map.getView().getResolution();
+    const res    = resolution || view.getResolution();
     const center = ol.extent.getCenter(extent);
     center[0]   -= (vis_px - mapSize[0] / 2) * res;
     center[1]   += (vis_py - mapSize[1] / 2) * res;
 
     await (new Promise(done => {
-      this.#map.getView().once('change:center', () => setTimeout(done, 500));
-      this.#map.getView().animate(
+      view.once('change:center', () => setTimeout(done, 500));
+      view.animate(
         { duration: 200, center },
         { duration: 200, resolution: res }
       );
