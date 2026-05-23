@@ -37,7 +37,7 @@
         <h1>{{ project_title }}</h1>
       </hgroup>
 
-      <ul class = "nav-links" style = "display: flex; text-align: center;  white-space: nowrap; list-style: none; padding: 0; margin: 0;">
+      <ul ref = "navLinks" class = "nav-links" style = "display: flex; text-align: center;  white-space: nowrap; list-style: none; padding: 0; margin: 0;">
 
         <!-- CUSTOM LINKS -->
         <li
@@ -199,10 +199,12 @@
 
       </ul>
 
+      <span ref = "navLinksAnchor" hidden></span>
+
     </nav>
 
     <!-- SIDEBAR MENU -->
-    <aside :class = "{ 'main-sidebar no-print': true, 'g3w-disabled': disabled }">
+    <aside ref = "mainSidebar" :class = "{ 'main-sidebar no-print': true, 'g3w-disabled': disabled }">
       <!-- SIDEBAR CONTENT -->
       <div
         :hidden = "panels.length <= 0"
@@ -1215,6 +1217,46 @@ export default {
      */
     toggleSidebar() {
       GUI.toggleSidebar();
+      this.$nextTick(() => {
+        this.syncMobileNavLinksPlacement();
+        window.requestAnimationFrame(() => {
+          this.syncMobileNavLinksPlacement();
+        });
+        window.setTimeout(() => {
+          this.syncMobileNavLinksPlacement();
+        }, 320);
+      });
+    },
+
+    /**
+     * Move nav-links into sidebar on mobile open state to share the same scrollbar.
+     */
+    syncMobileNavLinksPlacement() {
+      const navLinks = this.$refs.navLinks;
+      const anchor   = this.$refs.navLinksAnchor;
+      const sidebar  = this.$refs.mainSidebar;
+      const navbar   = this.$refs.navbar;
+
+      if (!navLinks || !anchor || !sidebar || !navbar) {
+        return;
+      }
+
+      const isMobile      = window.innerWidth <= 767;
+      const isSidebarOpen = document.body.classList.contains('sidebar-open');
+
+      if (isMobile && isSidebarOpen) {
+        const menu = document.getElementById('g3w-menu');
+        if (menu?.parentNode === sidebar && navLinks.parentNode !== sidebar) {
+          sidebar.insertBefore(navLinks, menu);
+        } else if (navLinks.parentNode !== sidebar) {
+          sidebar.prepend(navLinks);
+        }
+        return;
+      }
+
+      if (navLinks.parentNode !== navbar) {
+        anchor.parentNode.insertBefore(navLinks, anchor);
+      }
     },
 
     /**
@@ -1222,6 +1264,13 @@ export default {
      */
     showSidebar() {
       GUI.showSidebar();
+      this.$nextTick(() => {
+        this.syncMobileNavLinksPlacement();
+      });
+    },
+
+    onViewportChange() {
+      this.syncMobileNavLinksPlacement();
     },
 
     /**
@@ -1775,6 +1824,12 @@ export default {
     document.body.classList.toggle('is-mobile', this.isMobile());
     document.body.classList.toggle('is-iframe', ApplicationState.iframe);
 
+    this.syncMobileNavLinksPlacement();
+    window.addEventListener('resize', this.onViewportChange, { passive: true });
+
+    this._bodyClassObserver = new MutationObserver(() => this.onViewportChange());
+    this._bodyClassObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
     if (!ApplicationState.iframe) {
       document.body.classList.add('sidebar-mini');
     }
@@ -1805,6 +1860,13 @@ export default {
     if ('legend' === ApplicationState.project.state.catalog_tab) {
       GUI.showLegendPanel();
     }
+  },
+
+  beforeDestroy() {
+    window.removeEventListener('resize', this.onViewportChange);
+    this._bodyClassObserver?.disconnect();
+    this._bodyClassObserver = null;
+    this.syncMobileNavLinksPlacement();
   },
 
 };
