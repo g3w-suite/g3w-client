@@ -676,7 +676,13 @@ export default new (class GUI extends Emitter {
       });
     })();
     resize_observer.observe(document.querySelector('#app'));
-    document.querySelector('.main-sidebar').addEventListener('transitionend', () => this._layout());
+    document.querySelector('.main-sidebar').addEventListener('transitionend', () => {
+      // On mobile the sidebar is an overlay; avoid relayout on open/close transitions.
+      if (window.innerWidth <= 767) {
+        return;
+      }
+      this._layout();
+    });
 
     this._layout();
 
@@ -1714,6 +1720,9 @@ export default new (class GUI extends Emitter {
     document.body.classList.remove('sidebar-collapse');
     ApplicationState.sidebar.open = true;
     const left = this.#syncSidebarLeftOffset();
+    if (window.innerWidth <= 767) {
+      return;
+    }
     this.getMap()?.getView()?.set('padding', [
       0,
       parseFloat(document.body.style.getPropertyValue('--sidebar-right')) || 0,
@@ -1727,6 +1736,9 @@ export default new (class GUI extends Emitter {
     document.body.classList.add('sidebar-collapse');
     ApplicationState.sidebar.open = false;
     const left = this.#syncSidebarLeftOffset();
+    if (window.innerWidth <= 767) {
+      return;
+    }
     this.getMap()?.getView()?.set('padding', [
       0,
       parseFloat(document.body.style.getPropertyValue('--sidebar-right')) || 0,
