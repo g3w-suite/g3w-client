@@ -663,7 +663,7 @@ export default new (class GUI extends Emitter {
     /** @since 3.8.0 */
     this.onbefore('online', () => this.#offlineids.forEach(({ id, enable }) => this.#controls.find(control => id === control.type)?.control?.setEnable(enable)));
 
-    this.getComponent('contents').mount('#g3w-view-content', true);
+    this.getComponent('contents').mount('#g3w-content', true);
 
     ApplicationState.sidebar.width = document.querySelector('.main-sidebar').offsetWidth;;
 
@@ -1041,7 +1041,7 @@ export default new (class GUI extends Emitter {
       };
       const getFallbackMarginLeft = () => document.body.classList.contains('sidebar-collapse') ? '5px' : '40px';
       const getRightPanelOffsetWithinWrapper = () => {
-        const contentPanel = document.querySelector('#g3w-view-content.split-h:not(.g3w-disabled)');
+        const contentPanel = document.querySelector('#g3w-content.split-h:not(.g3w-disabled)');
         const wrapper = document.querySelector('.content-wrapper');
         if (!contentPanel || !wrapper) {
           return 0;
@@ -1070,8 +1070,8 @@ export default new (class GUI extends Emitter {
           border: unset;
           inset: unset;
           margin: unset;
-          ${ can_anchor ? 'top: anchor(--g3w-view-map top);' : '' }
-          ${ can_anchor ? 'left: anchor(--g3w-view-map left);' : '' }
+          ${ can_anchor ? 'top: anchor(--g3w-map top);' : '' }
+          ${ can_anchor ? 'left: anchor(--g3w-map left);' : '' }
           ${ `margin-left: ${can_anchor ? `${getSidebarOffsetWithinWrapper()}px` : getFallbackMarginLeft()};` }
           width: ${getDialogWidth()}px;
           animation: fade 0.3s ease-in;
@@ -2018,13 +2018,10 @@ export default new (class GUI extends Emitter {
     await Vue.nextTick();
 
     // resize "map"
-    this.layout({
-      width:  ApplicationState.map.sizes.width,
-      height: ApplicationState.map.sizes.height
-    });
+    this.layout();
 
     // sidebar panel fix
-    const panel_el = document.querySelector('#g3w-view-content');
+    const panel_el = document.querySelector('#g3w-content');
     if (panel_el) {
       contents.style.height = panel_el.offsetHeight
         - (panel_el.querySelector('.close-panel-block')?.offsetHeight || 0)
@@ -2612,7 +2609,7 @@ export default new (class GUI extends Emitter {
             if (!feature.geometry) {
               return;
             }
-            const async = document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size');
+            const async = document.querySelector('#g3w-content')?.classList?.contains?.('full-size');
             this.once('asyncFnc.todo', () => {
               if (this.isOneLayerResult()) {
                 this.zoomToFeatures([feature], {});
@@ -4447,7 +4444,7 @@ export default new (class GUI extends Emitter {
    */
   zoomToLayer(layer, options = {}) {
     options.highlight = !this.isOneLayerResult();
-    const async       = document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size');
+    const async       = document.querySelector('#g3w-content')?.classList?.contains?.('full-size');
     const features    = (layer.features || []).filter(f => this.showFeature(layer, f));
     this.once('asyncFnc.todo', () => { this.zoomToFeatures(features, options); });
     if (async) {
@@ -4696,13 +4693,9 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  async layout({ width, height }) {
-    const el = document.querySelector('#map');
+  async layout() {
 
-    if (el) {
-      el.style.height = height + 'px';
-      el.style.width  = width + 'px';
-    }
+    const { width, height } = ApplicationState.map.sizes;
 
     if (this.#map && width > 0 && height > 0) {
       this.getMap().updateSize();
@@ -4863,7 +4856,7 @@ export default new (class GUI extends Emitter {
     this.state.mapUnits = this.#map.getView().getProjection().getUnits();
 
     if (window.initConfig.background_color) {
-      document.querySelector('#map').style.backgroundColor = window.initConfig.background_color;
+      document.querySelector('.ol-viewport').style.backgroundColor = window.initConfig.background_color;
     }
 
     this.#map.getViewport().insertAdjacentHTML(

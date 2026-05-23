@@ -725,9 +725,9 @@
     </div>
 
     <div
-      id         = "g3w-view-content"
+      id         = "g3w-content"
       :class     = "`split-${state.split}`"
-      class      = "g3w-view content"
+      class      = "g3w-content"
       :style     = "styles.content"
       v-disabled = "state.content.disabled"
     >
@@ -1125,7 +1125,7 @@ export default {
     },
 
     async onResize(e) {
-      const sidebar = document.getElementById('g3w-view-content');
+      const sidebar = document.querySelector('#g3w-content');
       const panel   = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
       let rect, dx, dy;
 
