@@ -1180,11 +1180,11 @@ input[type="range"]                                                       { acce
 .usermessage-warning   { background-color: #f29e1d; }
 .usermessage-alert     { background-color: #c34943; }
 
-dialog[class^="usermessage-"]           { color: #FFF; line-height: normal; padding: 3px; border: unset; inset: unset; margin: unset; animation: fade 0.3s ease-in; }
-dialog[class^="usermessage-"]::backdrop { opacity: 0; }
+dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermessage-alert)           { color: #FFF; line-height: normal; padding: 3px; border: unset; inset: unset; margin: unset; animation: fade 0.3s ease-in; }
+dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermessage-alert)::backdrop { opacity: 0; }
 
 @supports (position-area: top left) {
-  dialog[class^="usermessage-"] {
+  dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermessage-alert) {
     top: anchor(--g3w-map top);
     left: anchor(--g3w-map left);
     margin-left: var(--sidebar-left);
