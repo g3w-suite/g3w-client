@@ -1120,9 +1120,9 @@ export default new (class GUI extends Emitter {
       }).content.firstChild;
 
     // inject custom components
-    ['header', 'body', 'footer'].forEach(hook => {
-      if (hooks[hook]) {
-        dialog.appendChild((new (Vue.extend(hooks[hook]))().$mount()).$el);
+    [hooks['header'], hooks['body'], hooks['footer']].forEach(hook => {
+      if (hook) {
+        dialog.appendChild((new (Vue.extend(hook))().$mount()).$el);
       }
     });
 
