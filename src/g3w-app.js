@@ -1090,7 +1090,7 @@ export default new (class GUI extends Emitter {
     title,
     subtitle,
     message = '',
-    type,
+    type = 'tool',
     duration = 3000,
     textMessage = false,
     closable = true,
@@ -1099,50 +1099,25 @@ export default new (class GUI extends Emitter {
     hooks = {},
     iconClass = null, //@since 3.11.0
   } = {}) {
-    let dialog;
 
-    if ('tool' === type) {
-      dialog = Object.assign(document.createElement('template'), {
-        innerHTML: /* html */ `
-          <dialog class="usermessage-tool" popover="manual">
-            <div class = "usermessage-tool-header">
-              <i class  = "usermessage-tool-icon ${Vue.prototype.$fa(iconClass || 'tool')}"></i>
-              <div class = "usermessage-tool-title">
-                <h4>${ title ? _(title) : 'TOOL' }</h4>
-                ${ subtitle ? `<h5>${_(subtitle)}</h5>` : '' }
-              </div>
-              <button type="button" value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
-            </div>
-            <div>${ textMessage ? message : _(message) }</div>
-          </dialog>
-      `.trim()
-      }).content.firstChild;
-    } else {
-      dialog = Object.assign(document.createElement('template'), {
+    const dialog = Object.assign(document.createElement('template'), {
         innerHTML: /* html */ `
           <dialog class="usermessage-${type}" popover="manual">
             <form>
-              <div style = "
-                  display: flex;
-                  align-items: baseline;
-                  justify-content: space-between;
-                  width: 100%;
-                  border-bottom: 2px solid #eee;
-                  margin-bottom: 14px;
-                ">
-                <i class = "${g3w.app.getFontClass(iconClass || type)}"></i>
+              <header>
+                <i class  = "${g3w.app.getFontClass(iconClass || type)}"></i>
                 <div>
                   <h4 style="font-weight: bold;">${title ? _(title): type.toUpperCase()}</h4>
                   <h5>${subtitle ? _(subtitle): ''}</h5>
+                  ${ subtitle ? `<h5>${_(subtitle)}</h5>` : '' }
                 </div>
                 <button type="button" value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
-              </div>
+              </header>
               <div>${ textMessage ? message : _(message) }</div>
             </form>
           </dialog>
       `.trim()
       }).content.firstChild;
-    }
 
     // inject custom components
     ['header', 'body', 'footer'].forEach(hook => {
