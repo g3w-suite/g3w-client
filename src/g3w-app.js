@@ -676,22 +676,38 @@ export default new (class GUI extends Emitter {
 
     ApplicationState.sidebar.width = document.querySelector('.main-sidebar').offsetWidth;;
 
-    // handle window and sidebar resize
-    const resize_observer = (() => {
+    // handle window resize
+    const resize_observer1 = (() => {
       let frame;
       return new ResizeObserver(() => {
         cancelAnimationFrame(frame);
         frame = requestAnimationFrame(() => { this._layout(); });
       });
     })();
-    resize_observer.observe(document.querySelector('#app'));
-    document.querySelector('.main-sidebar').addEventListener('transitionend', () => {
-      // On mobile the sidebar is an overlay; avoid relayout on open/close transitions.
-      if (window.innerWidth <= 767) {
-        return;
+    resize_observer1.observe(document.querySelector('#app'));
+
+    const resize_observer2 = (() => {
+      let frame;
+      return new ResizeObserver(() => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => { this._layout(); });
+      });
+    })();
+    resize_observer2.observe(document.querySelector('.main-sidebar'));
+
+    // update map state on sidebar toggle 
+    (new MutationObserver(() => {
+      const isOpen = document.body.classList.contains('sidebar-open');
+      ApplicationState.sidebar.open = isOpen;
+      if (window.innerWidth > 767) {
+        this.getMap()?.getView()?.set('padding', [
+          0,
+          parseFloat(document.body.style.getPropertyValue('--sidebar-right')) || 0,
+          0,
+          parseFloat(document.body.style.getPropertyValue('--sidebar-left')) || 0,
+        ]);
       }
-      this._layout();
-    });
+    })).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
     this._layout();
 
@@ -1638,46 +1654,11 @@ export default new (class GUI extends Emitter {
   showSidebar() {
     document.body.classList.add('sidebar-open');
     document.body.classList.remove('sidebar-collapse');
-    ApplicationState.sidebar.open = true;
-    const left = this.#syncSidebarLeftOffset();
-    if (window.innerWidth <= 767) {
-      return;
-    }
-    this.getMap()?.getView()?.set('padding', [0, parseFloat(document.body.style.getPropertyValue('--sidebar-right')) || 0, 0, left ]);
   }
 
   hideSidebar() {
     document.body.classList.remove('sidebar-open');
     document.body.classList.add('sidebar-collapse');
-    ApplicationState.sidebar.open = false;
-    const left = this.#syncSidebarLeftOffset();
-    if (window.innerWidth <= 767) {
-      return;
-    }
-    this.getMap()?.getView()?.set('padding', [0,parseFloat(document.body.style.getPropertyValue('--sidebar-right')) || 0, 0, left ]);
-  }
-
-  /**
-   * Keep --sidebar-left aligned with sidebar target state so map controls
-   * anchored to this variable do not overlap during/after sidebar toggles.
-   */
-  #syncSidebarLeftOffset() {
-    const sidebar = document.querySelector('.main-sidebar');
-
-    if (!sidebar || window.innerWidth <= 767) {
-      document.body.style.setProperty('--sidebar-left', '0px');
-      return 0;
-    }
-
-    const collapsed = document.body.classList.contains('sidebar-collapse');
-    const mini      = document.body.classList.contains('sidebar-mini');
-
-    const left = collapsed
-      ? (mini ? 35 : 0)
-      : (sidebar.classList.contains('mobile') ? 300 : 350);
-
-    document.body.style.setProperty('--sidebar-left', `${left}px`);
-    return left;
   }
 
   getSize({ element, what }) {
@@ -1878,30 +1859,22 @@ export default new (class GUI extends Emitter {
    * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
    */
   async _layout() {
-    const app              = document.querySelector('#app');
-    const content          = document.querySelector('#g3w-content');
-    const navbar           = document.querySelector('.navbar');
-    const contents         = document.querySelector('#contents');
+    const app      = document.querySelector('#app');
+    const content  = document.querySelector('#g3w-content');
+    const navbar   = document.querySelector('.navbar');
+    const contents = document.querySelector('#contents');
 
-    const layout          = ApplicationState.layout;
+    const viewW    = app.getBoundingClientRect().width || window.innerWidth;
+    const viewH    = window.innerHeight - navbar.offsetHeight;
 
-    const viewW            = app.getBoundingClientRect().width || window.innerWidth;
-    const viewH            = window.innerHeight - navbar.offsetHeight;
+    const panel    = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
 
-    const panel            = layout[layout.__current].rightpanel;
-
-    const opts = {
-      split: ApplicationState.split,
-      ...(ApplicationState.contentsdata.at(-1)?.options || {}),
-    };
-
-    const h_split = 'h' === opts.split;
-    const v_split = 'v' === opts.split;
-
-    const is_full = 100 === opts.perc || (h_split ? panel.width_100 : panel.height_100);
+    const h_split  = 'h' === (ApplicationState.contentsdata.at(-1)?.options?.split ?? ApplicationState.split);
+    const v_split  = 'v' === (ApplicationState.contentsdata.at(-1)?.options?.split ?? ApplicationState.split);
+    const is_full  = 100 === ApplicationState.contentsdata.at(-1)?.options?.perc || (h_split ? panel.width_100 : panel.height_100);
 
     // percentage of secondary view (content)
-    const scale = is_full ? 1 : ((h_split ? panel.width: panel.height) /100);
+    const scale    = is_full ? 1 : ((h_split ? panel.width: panel.height) /100);
 
     contents.parentElement.classList.toggle('full-size', is_full);
 
@@ -1912,8 +1885,8 @@ export default new (class GUI extends Emitter {
     );
 
     // handle sidebars
-    document.body.style.setProperty('--sidebar-right', `${(h_split && !content.hidden) ? ApplicationState.content.sizes.width : 0}px`);
-    this.#syncSidebarLeftOffset();
+    document.body.style.setProperty('--sidebar-right', `${h_split && !content.hidden ? ApplicationState.content.sizes.width                : 0}px`);
+    document.body.style.setProperty('--sidebar-left',  `${window.innerWidth > 767    ? document.querySelector('.main-sidebar').offsetWidth : 0}px`);
 
     // resize "content" (after vue state is updated)
     await Vue.nextTick();
@@ -1922,24 +1895,21 @@ export default new (class GUI extends Emitter {
     this.layout();
 
     // sidebar panel fix
-    const panel_el = document.querySelector('#g3w-content');
-    if (panel_el) {
-      contents.style.height = panel_el.offsetHeight
-        - (panel_el.querySelector('.close-panel-block')?.offsetHeight || 0)
-        - (panel_el.querySelector('.content_breadcrumb')?.offsetHeight || 0)
-        - (contents.children[0] ? 50 : 0) + 'px'; // vertical padding
+    contents.style.height = content.offsetHeight
+      - (content.querySelector('.close-panel-block')?.offsetHeight || 0)
+      - (content.querySelector('.content_breadcrumb')?.offsetHeight || 0)
+      - (contents.children[0] ? 50 : 0) + 'px'; // vertical padding
 
-      // workaround for qplotly?
-      if (contents.children[0]) {
-        contents.children[0].style.height = contents.style.height;
-      }
-
-      document.querySelector(".main-sidebar").style.height  = `${viewH}px`;
-      document.querySelector(".sidebar-panel").style.height = `${viewH}px`;
+    // workaround for qplotly?
+    if (contents.children[0]) {
+      contents.children[0].style.height = contents.style.height;
     }
 
+    document.querySelector(".main-sidebar").style.height  = `${viewH}px`;
+    document.querySelector(".sidebar-panel").style.height = `${viewH}px`;
+
     // update map padding
-    this.getMap().getView().set('padding',  [
+    this.getMap().getView().set('padding', [
       0,
       parseFloat(document.body.style.getPropertyValue('--sidebar-right')),
       0,

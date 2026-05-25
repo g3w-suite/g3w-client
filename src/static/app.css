@@ -629,7 +629,7 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
 #content-resizer.split-v::after                                             { height: 3px; width: 40px; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 .sidebar-mini:not(.sidebar-collapse) .g3w-content.full-size                 { padding-left: 45px !important; }
 
-.g3w-content                                                                { z-index: 1; container-name: g3w-content; container-type: size; }
+.g3w-content                                                                { z-index: 1; container-name: g3w-content; container-type: size; line-height: normal; overflow-wrap: break-word; height: 0; width: 0; background-color: #eee; overflow:hidden; position: fixed; }
 .g3w-content:has(> .contents:not(:empty))                                   { padding: 15px; }
 .g3w-content.split-h:not(.g3w-disabled)                                     { transition: width .3s ease-in-out; }
 .g3w-content.split-v:not(.g3w-disabled)                                     { transition: height .3s ease-in-out, left .3s ease-in-out; }
@@ -659,7 +659,6 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
 .g3w-content .action-button-icon                                            { padding-top: 2px; font-weight: bold; text-decoration: none; }
 .g3w-content .action-button.action-button-icon                              { padding-top: 6px; }
 .is-mobile .g3w-content.full-size :is(.action-button-resize, .action-button-dock) { display: none; }
-.g3w-content                                                                { line-height: normal; overflow-wrap: break-word; height: 0; width: 0; background-color: #eee; overflow:hidden; position: fixed; z-index: 10; }
 .g3w-content.split-h                                                        { right: 0; top: 50px; }
 .g3w-content.split-v                                                        { bottom: 30px; left: var(--sidebar-left); right: 0; width: auto !important }
 .g3w-content .contents                                                      { height: 100%; padding-left: 0; padding-right: 0; }
