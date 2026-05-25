@@ -1034,54 +1034,9 @@ export default new (class GUI extends Emitter {
     iconClass = null, //@since 3.11.0
   } = {}) {
     if ('tool' !== type) {
-      const can_anchor = 'position-area' in document.body.style;
-      const getSidebarOffsetWithinWrapper = () => {
-        const sidebar = document.querySelector('.main-sidebar');
-        const wrapper = document.querySelector('.content-wrapper');
-        if (!sidebar || !wrapper) {
-          return 0;
-        }
-        const sidebarRect = sidebar.getBoundingClientRect();
-        const wrapperRect = wrapper.getBoundingClientRect();
-        return Math.max(0, sidebarRect.right - wrapperRect.left);
-      };
-      const getFallbackMarginLeft = () => document.body.classList.contains('sidebar-collapse') ? '5px' : '40px';
-      const getRightPanelOffsetWithinWrapper = () => {
-        const contentPanel = document.querySelector('#g3w-content.split-h:not(.g3w-disabled)');
-        const wrapper = document.querySelector('.content-wrapper');
-        if (!contentPanel || !wrapper) {
-          return 0;
-        }
-        const contentRect = contentPanel.getBoundingClientRect();
-        const wrapperRect = wrapper.getBoundingClientRect();
-        return Math.max(0, wrapperRect.right - Math.max(contentRect.left, wrapperRect.left));
-      };
-      const getDialogWidth = () => {
-        const wrapper = document.querySelector('.content-wrapper');
-        if (!wrapper) {
-          return ApplicationState.map.sizes.width;
-        }
-        const wrapperRect = wrapper.getBoundingClientRect();
-        const leftOffset = (can_anchor ? getSidebarOffsetWithinWrapper() : parseInt(getFallbackMarginLeft(), 10) || 0);
-        const rightOffset = getRightPanelOffsetWithinWrapper();
-        return Math.max(wrapperRect.width - leftOffset - rightOffset, 0);
-      };
-
       const dialog = Object.assign(document.createElement('template'), {
       innerHTML: /* html */ `
-        <dialog class="usermessage-${type}" popover="manual" style = "
-          color: #FFF;
-          line-height: normal;
-          padding: 3px;
-          border: unset;
-          inset: unset;
-          margin: unset;
-          ${ can_anchor ? 'top: anchor(--g3w-map top);' : '' }
-          ${ can_anchor ? 'left: anchor(--g3w-map left);' : '' }
-          ${ `margin-left: ${can_anchor ? `${getSidebarOffsetWithinWrapper()}px` : getFallbackMarginLeft()};` }
-          width: ${getDialogWidth()}px;
-          animation: fade 0.3s ease-in;
-        ">
+        <dialog class="usermessage-${type}" popover="manual">
           <form>
             <div style = "
                 display: flex;
@@ -1104,56 +1059,12 @@ export default new (class GUI extends Emitter {
       `.trim()
       }).content.firstChild;
 
-      const updateDialogLayout = () => {
-        if (!dialog.isConnected) {
-          return;
-        }
-      
-        dialog.style.marginLeft = can_anchor ? `${getSidebarOffsetWithinWrapper()}px` : getFallbackMarginLeft();
-        
-        dialog.style.width = `${getDialogWidth()}px`;
-      };
-
-      const unwatchMapWidth = Vue.watch(
-        () => ApplicationState.map.sizes.width,
-        updateDialogLayout
-      );
-      const unwatchContentWidth = Vue.watch(
-        () => ApplicationState.content.sizes.width,
-        updateDialogLayout
-      );
-
-      let observer = null;
-      const cleanup = () => {
-        if (observer) {
-          observer.disconnect();
-          observer = null;
-        }
-        window.removeEventListener('resize', updateDialogLayout);
-        unwatchMapWidth();
-        unwatchContentWidth();
-      };
-
-      dialog.addEventListener('toggle', () => {
-        if (!dialog.matches(':popover-open')) {
-          cleanup();
-          dialog.remove();
-        }
+      dialog.addEventListener('close', () => {
+        dialog.remove();
       });
 
       document.body.append(dialog);
       dialog.showPopover();
-
-      updateDialogLayout();
-      observer = new MutationObserver(mutations => {
-        mutations.forEach(mutation => {
-          if ('class' === mutation.attributeName) {
-            updateDialogLayout();
-          }
-        });
-      });
-      observer.observe(document.body, { attributes: true });
-      window.addEventListener('resize', updateDialogLayout);
 
       // close dialog on x icon
       dialog.querySelector('button[value="cancel"]').addEventListener('click', () => {
