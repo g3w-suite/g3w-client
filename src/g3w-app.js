@@ -1878,14 +1878,11 @@ export default new (class GUI extends Emitter {
    * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
    */
   async _layout() {
-
     const content          = document.querySelector('#g3w-content');
     const navbar           = document.querySelector('.navbar');
     const contents         = document.querySelector('#contents');
     const content_wrapper  = document.querySelector('.content-wrapper');
 
-    const sec              = !content.hidden;
-    
     const layout          = ApplicationState.layout;
 
     const viewW            = content_wrapper.getBoundingClientRect().width || window.innerWidth;
@@ -1910,12 +1907,12 @@ export default new (class GUI extends Emitter {
 
     // size "content" - content floats on top, map always fills the full viewport
     Object.assign(ApplicationState.content.sizes, {
-      width:  h_split ? (sec ? Math.max((viewW * scale), 200) : 0) : (sec ? viewW : 0),
-      height: v_split ? (sec ? Math.max(((viewH - 30) * scale), 200) : 0) : (sec ? (viewH - 30) : 0),
-    });
+      width:  content.hidden ? 0 : (h_split ? Math.max(viewW * scale, 200) : viewW),
+      height: content.hidden ? 0 : (v_split ? Math.max((viewH - 30) * scale, 200) : viewH - 30) }
+    );
 
     // handle sidebars
-    document.body.style.setProperty('--sidebar-right', `${(h_split && sec) ? ApplicationState.content.sizes.width : 0}px`);
+    document.body.style.setProperty('--sidebar-right', `${(h_split && !content.hidden) ? ApplicationState.content.sizes.width : 0}px`);
     this.#syncSidebarLeftOffset();
 
     // size "map" - content floats on top, map always fills the full viewport
