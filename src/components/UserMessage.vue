@@ -156,87 +156,23 @@
 </script>
 
 <style>
-.usermessage-content {
-  width: 325px;
-  margin-left: calc(var(--sidebar-left) + 40px) !important;
-}
-
-body.sidebar-collapse .usermessage-content {
-  margin-left: calc(var(--sidebar-left) + 5px) !important;
-}
-
+.usermessage-content                       { color: #FFF; line-height: normal; padding: 3px; min-width: 250px; border: unset; inset: unset; margin: unset; }
+.usermessage-tool                          { background-color: #FFF; color: #222d32; cursor: move; border: thin solid #ccc; }
+.usermessage-header-content                { display: flex; align-items: baseline; justify-content: space-between; width: 100%; border-bottom: 2px solid #eee; }
+.usermessage-header-icontype               { padding: 10px 0 0 5px; font-weight: bold; font-size: 1.3em; }
+.usermessage-header-title,
+.usermessage-header-title h4               { font-weight: bold; text-align: center; }
+.usermessage-header-subtitle               { font-weight: bold; margin: 5px; }
+.usermessage-header-right                  { padding: 5px; }
+.usermessage-header-right-item             { font-weight: bold !important; font-size: 1.2em; cursor: pointer; }
+.usermessage-message                       { width: 100%; padding: 10px; max-height: 100px; font-size: 1.1em; align-self: flex-start; overflow-y: auto; }
+.usermessage-content                       { width: 325px; margin-left: calc(var(--sidebar-left) + 40px) !important; }
+body.sidebar-collapse .usermessage-content { margin-left: calc(var(--sidebar-left) + 5px) !important; }
+:root .usermessage-content[style*="left"]  { margin-left: unset !important; }
 @supports (position-area: top left) {
   .usermessage-content {
     top: anchor(--g3w-map top);
     left: anchor(--g3w-map left);
   }
 }
-
-:root .usermessage-content[style*="left"] {
-  margin-left: unset !important;
-}
-
-</style>
-<style scoped>
-
-  .usermessage-content {
-    color: #FFF;
-    line-height: normal;
-    padding: 3px;
-    min-width: 250px;
-    border: unset;
-    inset: unset;
-    margin: unset;
-  }
-
-  .usermessage-tool {
-    background-color: #FFF;
-    color: #222d32;
-    cursor: move;
-    border: thin solid #ccc;
-  }
-
-  .usermessage-header-content {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    width: 100%;
-    border-bottom: 2px solid #eeeeee;
-  }
-
-  .usermessage-header-icontype {
-    padding: 10px 0 0 5px;
-    font-weight: bold;
-    font-size: 1.3em;
-  }
-
-  .usermessage-header-title, .usermessage-header-title h4 {
-    font-weight: bold;
-    text-align: center;
-  }
-
-  .usermessage-header-subtitle {
-    font-weight: bold;
-    margin: 5px;
-  }
-
-  .usermessage-header-right {
-    padding: 5px;
-  }
-
-  .usermessage-header-right-item {
-    font-weight: bold !important;
-    font-size: 1.2em;
-    cursor: pointer;
-  }
-
-  .usermessage-message {
-    width: 100%;
-    padding: 10px;
-    max-height: 100px;
-    font-size: 1.1em;
-    align-self: flex-start;
-    overflow-y: auto;
-  }
-
 </style>
