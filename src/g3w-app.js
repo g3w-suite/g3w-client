@@ -1099,7 +1099,32 @@ export default new (class GUI extends Emitter {
     iconClass = null, //@since 3.11.0
   } = {}) {
     let dialog;
-    if ('tool' !== type) {
+    if ('tool' === type) {
+      dialog = Object.assign(document.createElement('template'), {
+        innerHTML: /* html */ `
+          <dialog class="usermessage-tool" popover="manual">
+            <div class = "usermessage-tool-header">
+              <i class  = "usermessage-tool-icon ${Vue.prototype.$fa(iconClass || 'tool')}"></i>
+              <div class = "usermessage-tool-title">
+                <h4>${ title ? _(title) : 'TOOL' }</h4>
+                ${ subtitle ? `<h5>${_(subtitle)}</h5>` : '' }
+              </div>
+              <button type="button" value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
+            </div>
+            <div>${ textMessage ? message : _(message) }</div>
+          </dialog>
+      `.trim()
+      }).content.firstChild;
+
+      // inject custom components
+      ['header', 'body', 'footer'].forEach(hook => {
+        if (hooks[hook]) {
+          dialog.appendChild((new (Vue.extend(hooks[hook]))().$mount()).$el);
+        }
+      });
+
+      this.#makeDraggable(dialog);
+    } else {
       dialog = Object.assign(document.createElement('template'), {
         innerHTML: /* html */ `
           <dialog class="usermessage-${type}" popover="manual">
@@ -1124,29 +1149,6 @@ export default new (class GUI extends Emitter {
           </dialog>
       `.trim()
       }).content.firstChild;
-    } else {
-      dialog = Object.assign(document.createElement('template'), {
-        innerHTML: /* html */ `
-          <dialog class="usermessage-tool" popover="manual">
-            <div class = "usermessage-tool-header">
-              <i class  = "usermessage-tool-icon ${Vue.prototype.$fa(iconClass || 'tool')}"></i>
-              <div class = "usermessage-tool-title">
-                <h4>${ title ? _(title) : 'TOOL' }</h4>
-                ${ subtitle ? `<h5>${_(subtitle)}</h5>` : '' }
-              </div>
-              <button type="button" value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
-            </div>
-            <div>${ textMessage ? message : _(message) }</div>
-          </dialog>
-      `.trim()
-      }).content.firstChild;
-
-      // inject custom components
-      ['header', 'body', 'footer'].forEach(hook => {
-        if (hooks[hook]) {
-          dialog.appendChild((new (Vue.extend(hooks[hook]))().$mount()).$el);
-        }
-      });
     }
 
     dialog.addEventListener('beforetoggle', e => {
@@ -1167,10 +1169,6 @@ export default new (class GUI extends Emitter {
     dialog.querySelector('button[value="cancel"]').addEventListener('click', () => {
       dialog.hidePopover();
     });
-
-    if ('tool' === type) {
-      this.#makeDraggable(dialog);
-    }
 
     if (autoclose) {
       const timer = setTimeout(() => {
