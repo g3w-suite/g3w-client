@@ -1138,15 +1138,15 @@ export default new (class GUI extends Emitter {
               <button type="button" value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
             </div>
             <div>${ textMessage ? message : _(message) }</div>
-            <slot name = "header"></slot>
-            <slot name = "body"></slot>
-            <slot name = "footer"></slot>
           </dialog>
       `.trim()
       }).content.firstChild;
 
-      Object.entries(hooks).filter(Boolean).forEach(([hook, component]) => {
-        dialog.querySelector(`slot[name="${hook}"]`)?.replaceWith((new (Vue.extend(component))()).$mount().$el);
+      // inject custom components
+      ['header', 'body', 'footer'].forEach(hook => {
+        if (hooks[hook]) {
+          dialog.appendChild((new (Vue.extend(hooks[hook]))().$mount()).$el);
+        }
       });
     }
 
