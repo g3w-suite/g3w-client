@@ -387,6 +387,9 @@ export default new (class GUI extends Emitter {
     this.onLayerLoadError    = this.onLayerLoadError.bind(this);
 
     this._setLegendParams = debounce(this._setLegendParams.bind(this), 1000);
+
+    // BACKOMP for v4.1.x
+    this.hideContent = this.toggleContent.bind(this);
   }
 
   /**
@@ -1469,7 +1472,7 @@ export default new (class GUI extends Emitter {
   }
 
   // hide content
-  hideContent(bool) {
+  toggleContent(bool) {
     const content_perc = ApplicationState.layout[ApplicationState.layout.__current].rightpanel['h' === ApplicationState.split ? 'width': 'height'];
     this._layout(!bool);
     // return previous percentage
