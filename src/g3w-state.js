@@ -271,14 +271,6 @@ const STATE = {
   split: 'h',
 
   /** @since 4.1.0 */
-  map: {
-    sizes: {
-      width:  0,
-      height: 0
-    },
-  },
-
-  /** @since 4.1.0 */
   content: {
     loading:  false,
     disabled: false,

@@ -1878,14 +1878,14 @@ export default new (class GUI extends Emitter {
    * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
    */
   async _layout() {
+    const app              = document.querySelector('#app');
     const content          = document.querySelector('#g3w-content');
     const navbar           = document.querySelector('.navbar');
     const contents         = document.querySelector('#contents');
-    const content_wrapper  = document.querySelector('.content-wrapper');
 
     const layout          = ApplicationState.layout;
 
-    const viewW            = content_wrapper.getBoundingClientRect().width || window.innerWidth;
+    const viewW            = app.getBoundingClientRect().width || window.innerWidth;
     const viewH            = window.innerHeight - navbar.offsetHeight;
 
     const panel            = layout[layout.__current].rightpanel;
@@ -1914,20 +1914,6 @@ export default new (class GUI extends Emitter {
     // handle sidebars
     document.body.style.setProperty('--sidebar-right', `${(h_split && !content.hidden) ? ApplicationState.content.sizes.width : 0}px`);
     this.#syncSidebarLeftOffset();
-
-    // size "map" - content floats on top, map always fills the full viewport
-    Object.assign(ApplicationState.map.sizes, {
-      width:  viewW,
-      height: viewH,
-    });
-
-    // size full (when mobile menu is open) 
-    if (document.body.classList.contains('sidebar-open') && window.innerWidth < 767) {
-      Object.assign(ApplicationState.map.sizes, {
-        width:  window.innerWidth,
-        height: window.innerHeight,
-      });
-    }
 
     // resize "content" (after vue state is updated)
     await Vue.nextTick();
@@ -4610,7 +4596,8 @@ export default new (class GUI extends Emitter {
    */
   async layout() {
 
-    const { width, height } = ApplicationState.map.sizes;
+    const width  = document.querySelector('#app').getBoundingClientRect().width;
+    const height = window.innerHeight - document.querySelector('.navbar').offsetHeight;
 
     if (this.#map && width > 0 && height > 0) {
       this.getMap().updateSize();
