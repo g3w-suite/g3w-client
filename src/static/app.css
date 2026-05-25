@@ -1179,7 +1179,8 @@ input[type="range"]                                                       { acce
 .usermessage-warning   { background-color: #f29e1d; }
 .usermessage-alert     { background-color: #c34943; }
 
-.usermessage-tool                       { color: #FFF; line-height: normal; padding: 3px; min-width: 250px; border: unset; inset: unset; margin: unset; background-color: #FFF; color: #222d32; cursor: move; border: thin solid #ccc; width: 325px;  margin-left: calc(var(--sidebar-left) + 40px) !important; }
+.usermessage-tool                       { color: #FFF; line-height: normal; padding: 3px; min-width: 250px; border: unset; inset: unset; margin: unset; background-color: #FFF; color: #222d32; cursor: move; border: thin solid #ccc; width: 325px;  margin-left: calc(var(--sidebar-left) + 40px) !important; animation: unset; }
+.usermessage-tool::backdrop             { display: none; }
 .usermessage-tool-header                { display: flex; align-items: baseline; justify-content: space-between; width: 100%; border-bottom: 2px solid #eee; }
 .usermessage-tool-icon                  { padding: 10px 0 0 5px; font-weight: bold; font-size: 1.3em; }
 .usermessage-tool-title,

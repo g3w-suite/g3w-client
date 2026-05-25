@@ -1126,7 +1126,6 @@ export default new (class GUI extends Emitter {
       `.trim()
       }).content.firstChild;
     } else {
-      
       dialog = Object.assign(document.createElement('template'), {
         innerHTML: /* html */ `
           <dialog class="usermessage-tool" popover="manual">

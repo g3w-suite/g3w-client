@@ -1102,10 +1102,6 @@ export default {
       }
     },
 
-    closeUserMessage() {
-      GUI.closeUserMessage();
-    },
-
     async onResize(e) {
       const sidebar = document.querySelector('#g3w-content');
       const panel   = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
