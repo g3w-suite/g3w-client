@@ -1471,7 +1471,9 @@ export default new (class GUI extends Emitter {
     }  
   }
 
-  // hide content
+  /**
+   * @param bool whether to show content (right sidebar)
+   */
   toggleContent(bool) {
     const content_perc = ApplicationState.layout[ApplicationState.layout.__current].rightpanel['h' === ApplicationState.split ? 'width': 'height'];
     this._layout(!bool);
