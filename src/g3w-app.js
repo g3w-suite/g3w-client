@@ -1094,11 +1094,13 @@ export default new (class GUI extends Emitter {
     duration = 3000,
     textMessage = false,
     closable = true,
+    draggable = false,
     autoclose,
     hooks = {},
     iconClass = null, //@since 3.11.0
   } = {}) {
     let dialog;
+
     if ('tool' === type) {
       dialog = Object.assign(document.createElement('template'), {
         innerHTML: /* html */ `
@@ -1115,15 +1117,6 @@ export default new (class GUI extends Emitter {
           </dialog>
       `.trim()
       }).content.firstChild;
-
-      // inject custom components
-      ['header', 'body', 'footer'].forEach(hook => {
-        if (hooks[hook]) {
-          dialog.appendChild((new (Vue.extend(hooks[hook]))().$mount()).$el);
-        }
-      });
-
-      this.#makeDraggable(dialog);
     } else {
       dialog = Object.assign(document.createElement('template'), {
         innerHTML: /* html */ `
@@ -1149,6 +1142,17 @@ export default new (class GUI extends Emitter {
           </dialog>
       `.trim()
       }).content.firstChild;
+    }
+
+    // inject custom components
+    ['header', 'body', 'footer'].forEach(hook => {
+      if (hooks[hook]) {
+        dialog.appendChild((new (Vue.extend(hooks[hook]))().$mount()).$el);
+      }
+    });
+
+    if (draggable || 'tool' === type) {
+      this.#makeDraggable(dialog);
     }
 
     dialog.addEventListener('beforetoggle', e => {
