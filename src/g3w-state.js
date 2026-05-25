@@ -290,25 +290,6 @@ const STATE = {
     contentsdata: [], // content data array
   },
 
-  /** @since 4.1.0 */
-  usermessage: {
-    id:          null, // unique identify
-    show:        false,
-    title:       null,
-    message:     null,
-    position:    null,
-    type:        null,
-    draggable:   null,
-    cloasable:   null,
-    autoclose:   null,
-    textMessage: false,
-    hooks: {
-      header: null,
-      body:   null,
-      footer: null
-    }
-  },
-
   /** @since 3.11.0 */
   project: new Emitter,
 

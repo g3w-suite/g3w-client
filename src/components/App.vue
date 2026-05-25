@@ -946,10 +946,6 @@ export default {
       return this.state.content.contentsdata.length > 0;
     },
 
-    usermessage() {
-      return this.state.usermessage;
-    },
-
     showtitle() {
       if (this.state.content.contentsdata.length > 0) {
         const options = this.state.content.contentsdata.at(-1).options;

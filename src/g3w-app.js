@@ -1048,7 +1048,7 @@ export default new (class GUI extends Emitter {
   /**
    * @see https://www.w3schools.com/howto/howto_js_draggable.asp 
    */
-  _makeDraggable(el) {
+  #makeDraggable(el) {
     let x2 = 0, y2 = 0, x1 = 0, y1 = 0;
 
     el.addEventListener('mousedown', e => {
@@ -1091,7 +1091,6 @@ export default new (class GUI extends Emitter {
     subtitle,
     message = '',
     type,
-    position,
     duration = 3000,
     textMessage = false,
     closable = true,
@@ -1157,17 +1156,14 @@ export default new (class GUI extends Emitter {
     document.body.append(dialog);
     dialog.showPopover();
 
-    if ('tool' === type) {
-      dialog.style.position = 'fixed';
-      dialog.style.margin   = '0';
-
-      this._makeDraggable(dialog);
-    }
-
     // close dialog on x icon
     dialog.querySelector('button[value="cancel"]').addEventListener('click', () => {
       dialog.hidePopover();
     });
+
+    if ('tool' === type) {
+      this.#makeDraggable(dialog);
+    }
 
     if (autoclose) {
       const timer = setTimeout(() => {
