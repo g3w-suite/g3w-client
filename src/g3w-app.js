@@ -1129,21 +1129,18 @@ export default new (class GUI extends Emitter {
       dialog = Object.assign(document.createElement('template'), {
         innerHTML: /* html */ `
           <dialog class="usermessage-tool" popover="manual">
-             <div class   = "usermessage-tool"
-             >
-              <div class = "usermessage-tool-header">
-                <i class  = "usermessage-tool-icon ${Vue.prototype.$fa(iconClass || 'tool')}"></i>
-                <div class = "usermessage-tool-title">
-                  <h4>${ title ? _(title) : 'TOOL' }</h4>
-                  ${ subtitle ? `<h5>${_(subtitle)}</h5>` : '' }
-                </div>
-                <button type="button" value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
+            <div class = "usermessage-tool-header">
+              <i class  = "usermessage-tool-icon ${Vue.prototype.$fa(iconClass || 'tool')}"></i>
+              <div class = "usermessage-tool-title">
+                <h4>${ title ? _(title) : 'TOOL' }</h4>
+                ${ subtitle ? `<h5>${_(subtitle)}</h5>` : '' }
               </div>
-              <div>${ textMessage ? message : _(message) }</div>
-              <slot name = "header"></slot>
-              <slot name = "body"></slot>
-              <slot name = "footer"></slot>
+              <button type="button" value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
             </div>
+            <div>${ textMessage ? message : _(message) }</div>
+            <slot name = "header"></slot>
+            <slot name = "body"></slot>
+            <slot name = "footer"></slot>
           </dialog>
       `.trim()
       }).content.firstChild;
