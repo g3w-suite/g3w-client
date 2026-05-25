@@ -5,18 +5,18 @@
 
 <template>
   <div
-    class   = "usermessage-content usermessage-tool"
+    class   = "usermessage-tool"
     :id     = "id"
     popover = "manual"
   >
     <div
-      class = "usermessage-header-content"
+      class = "usermessage-tool-header"
     >
       <i
-        class  = "usermessage-header-icontype"
+        class  = "usermessage-tool-icon"
         :class = "$fa(iconClass || 'tool')">
       </i>
-      <div class = "usermessage-header-title">
+      <div class = "usermessage-tool-title">
         <slot name = "header">
           <h4
             v-if = "title"
@@ -25,12 +25,12 @@
           <h4 v-else> TOOL</h4>
           <h5
             v-if  = "subtitle"
-            class = "usermessage-header-subtitle"
+            class = "usermessage-tool-subtitle"
             v-t   = "subtitle">
           </h5>
         </slot>
       </div>
-      <div class = "usermessage-header-right">
+      <div class = "usermessage-tool-right">
         <button
           v-if           = "closable"
           title          = "close"
@@ -39,18 +39,18 @@
           style          = "border: none;background: none;"
           data-placement = "right"
         >
-          <i aria-hidden = "true" class = "usermessage-header-right-item fas fa-times"></i>
+          <i aria-hidden = "true" class = "usermessage-tool-right-item fas fa-times"></i>
         </button>
       </div>
     </div>
     <slot name = "body">
       <div
         v-if  = "textMessage"
-        class = "usermessage-message"
+        class = "usermessage-tool-message"
       >{{ message }}</div>
       <div
         v-else
-        class = "usermessage-message"
+        class = "usermessage-tool-message"
         v-t   = "message"
       ></div>
     </slot>
@@ -156,21 +156,20 @@
 </script>
 
 <style>
-.usermessage-content                       { color: #FFF; line-height: normal; padding: 3px; min-width: 250px; border: unset; inset: unset; margin: unset; }
-.usermessage-tool                          { background-color: #FFF; color: #222d32; cursor: move; border: thin solid #ccc; }
-.usermessage-header-content                { display: flex; align-items: baseline; justify-content: space-between; width: 100%; border-bottom: 2px solid #eee; }
-.usermessage-header-icontype               { padding: 10px 0 0 5px; font-weight: bold; font-size: 1.3em; }
-.usermessage-header-title,
-.usermessage-header-title h4               { font-weight: bold; text-align: center; }
-.usermessage-header-subtitle               { font-weight: bold; margin: 5px; }
-.usermessage-header-right                  { padding: 5px; }
-.usermessage-header-right-item             { font-weight: bold !important; font-size: 1.2em; cursor: pointer; }
-.usermessage-message                       { width: 100%; padding: 10px; max-height: 100px; font-size: 1.1em; align-self: flex-start; overflow-y: auto; }
-.usermessage-content                       { width: 325px; margin-left: calc(var(--sidebar-left) + 40px) !important; }
-body.sidebar-collapse .usermessage-content { margin-left: calc(var(--sidebar-left) + 5px) !important; }
-:root .usermessage-content[style*="left"]  { margin-left: unset !important; }
+.usermessage-tool                       { color: #FFF; line-height: normal; padding: 3px; min-width: 250px; border: unset; inset: unset; margin: unset; background-color: #FFF; color: #222d32; cursor: move; border: thin solid #ccc; width: 325px;  margin-left: calc(var(--sidebar-left) + 40px) !important; }
+.usermessage-tool-header                { display: flex; align-items: baseline; justify-content: space-between; width: 100%; border-bottom: 2px solid #eee; }
+.usermessage-tool-icon                  { padding: 10px 0 0 5px; font-weight: bold; font-size: 1.3em; }
+.usermessage-tool-title,
+.usermessage-tool-title h4              { font-weight: bold; text-align: center; }
+.usermessage-tool-subtitle              { font-weight: bold; margin: 5px; }
+.usermessage-tool-right                 { padding: 5px; }
+.usermessage-tool-right-item            { font-weight: bold !important; font-size: 1.2em; cursor: pointer; }
+.usermessage-tool-message               { width: 100%; padding: 10px; max-height: 100px; font-size: 1.1em; align-self: flex-start; overflow-y: auto; }
+.usermessage-tool:not([style*="left"])  { transition: margin-left .3s ease-in-out; }
+body.sidebar-collapse .usermessage-tool { margin-left: calc(var(--sidebar-left) + 5px) !important; }
+:root .usermessage-tool[style*="left"]  { margin-left: unset !important; }
 @supports (position-area: top left) {
-  .usermessage-content {
+  .usermessage-tool {
     top: anchor(--g3w-map top);
     left: anchor(--g3w-map left);
   }

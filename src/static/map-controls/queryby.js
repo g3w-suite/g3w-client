@@ -517,7 +517,7 @@ export class QueryBy extends MapControl {
    */
   onSelectLayer(layer) {
 
-    const btn = document.querySelector('.usermessage-content .clear-selected-layer');
+    const btn = document.querySelector('.usermessage-tool .clear-selected-layer');
     if (btn) {
       btn.classList.toggle('hidden', !layer);
     }
