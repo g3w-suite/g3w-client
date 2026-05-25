@@ -1179,6 +1179,25 @@ input[type="range"]                                                       { acce
 .usermessage-warning   { background-color: #f29e1d; }
 .usermessage-alert     { background-color: #c34943; }
 
+.usermessage-tool                       { color: #FFF; line-height: normal; padding: 3px; min-width: 250px; border: unset; inset: unset; margin: unset; background-color: #FFF; color: #222d32; cursor: move; border: thin solid #ccc; width: 325px;  margin-left: calc(var(--sidebar-left) + 40px) !important; }
+.usermessage-tool-header                { display: flex; align-items: baseline; justify-content: space-between; width: 100%; border-bottom: 2px solid #eee; }
+.usermessage-tool-icon                  { padding: 10px 0 0 5px; font-weight: bold; font-size: 1.3em; }
+.usermessage-tool-title,
+.usermessage-tool-title h4              { font-weight: bold; text-align: center; }
+.usermessage-tool-subtitle              { font-weight: bold; margin: 5px; }
+.usermessage-tool-right                 { padding: 5px; }
+.usermessage-tool-right-item            { font-weight: bold !important; font-size: 1.2em; cursor: pointer; }
+.usermessage-tool-message               { width: 100%; padding: 10px; max-height: 100px; font-size: 1.1em; align-self: flex-start; overflow-y: auto; }
+.usermessage-tool:not([style*="left"])  { transition: margin-left .3s ease-in-out; }
+body.sidebar-collapse .usermessage-tool { margin-left: calc(var(--sidebar-left) + 5px) !important; }
+:root .usermessage-tool[style*="left"]  { margin-left: unset !important; }
+@supports (position-area: top left) {
+  .usermessage-tool {
+    top: anchor(--g3w-map top);
+    left: anchor(--g3w-map left);
+  }
+}
+
 dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermessage-alert)           { color: #FFF; line-height: normal; padding: 3px; border: unset; inset: unset; margin: unset; animation: fade 0.3s ease-in; }
 dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermessage-alert)::backdrop { opacity: 0; }
 

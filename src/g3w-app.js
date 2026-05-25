@@ -1045,6 +1045,47 @@ export default new (class GUI extends Emitter {
     }
   }
 
+  /**
+   * @see https://www.w3schools.com/howto/howto_js_draggable.asp 
+   */
+  _makeDraggable(el) {
+    let x2 = 0, y2 = 0, x1 = 0, y1 = 0;
+
+    el.addEventListener('mousedown', e => {
+      // skip dragging on form elements
+      if (['.select2-container', 'button', 'select', 'input', 'textarea', 'x-select'].some(i => e.target.closest(i))) {
+        return;
+      }
+      e.preventDefault();
+
+      const rect = el.getBoundingClientRect();
+      if (!el.style.top)  el.style.top  = rect.top + "px";
+      if (!el.style.left) el.style.left = rect.left + "px";
+
+      x1 = e.clientX;
+      y1 = e.clientY;
+
+      document.addEventListener('mouseup', mouseUp);
+      document.addEventListener('mousemove', mouseMove);
+    });
+
+    function mouseUp() {
+      document.removeEventListener('mouseup', mouseUp);
+      document.removeEventListener('mousemove', mouseMove);
+    }
+    
+    function mouseMove(e) {
+      e.preventDefault();
+      x2 = x1 - e.clientX;
+      y2 = y1 - e.clientY;
+      x1 = e.clientX;
+      y1 = e.clientY;
+
+      el.style.top  = (parseFloat(el.style.top)  - y2) + "px";
+      el.style.left = (parseFloat(el.style.left) - x2) + "px";
+    }
+  }
+
   async showUserMessage({
     title,
     subtitle,
@@ -1058,90 +1099,94 @@ export default new (class GUI extends Emitter {
     hooks = {},
     iconClass = null, //@since 3.11.0
   } = {}) {
+    let dialog;
     if ('tool' !== type) {
-      const dialog = Object.assign(document.createElement('template'), {
-      innerHTML: /* html */ `
-        <dialog class="usermessage-${type}" popover="manual">
-          <form>
-            <div style = "
-                display: flex;
-                align-items: baseline;
-                justify-content: space-between;
-                width: 100%;
-                border-bottom: 2px solid #eee;
-                margin-bottom: 14px;
-              ">
-              <i class = "${g3w.app.getFontClass(iconClass || type)}"></i>
-              <div>
-                <h4 style="font-weight: bold;">${title ? _(title): type.toUpperCase()}</h4>
-                <h5>${subtitle ? _(subtitle): ''}</h5>
+      dialog = Object.assign(document.createElement('template'), {
+        innerHTML: /* html */ `
+          <dialog class="usermessage-${type}" popover="manual">
+            <form>
+              <div style = "
+                  display: flex;
+                  align-items: baseline;
+                  justify-content: space-between;
+                  width: 100%;
+                  border-bottom: 2px solid #eee;
+                  margin-bottom: 14px;
+                ">
+                <i class = "${g3w.app.getFontClass(iconClass || type)}"></i>
+                <div>
+                  <h4 style="font-weight: bold;">${title ? _(title): type.toUpperCase()}</h4>
+                  <h5>${subtitle ? _(subtitle): ''}</h5>
+                </div>
+                <button type="button" value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
               </div>
-              <button type="button" value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
+              <div>${ textMessage ? message : _(message) }</div>
+            </form>
+          </dialog>
+      `.trim()
+      }).content.firstChild;
+    } else {
+      
+      dialog = Object.assign(document.createElement('template'), {
+        innerHTML: /* html */ `
+          <dialog class="usermessage-tool" popover="manual">
+             <div class   = "usermessage-tool"
+             >
+              <div class = "usermessage-tool-header">
+                <i class  = "usermessage-tool-icon ${Vue.prototype.$fa(iconClass || 'tool')}"></i>
+                <div class = "usermessage-tool-title">
+                  <h4>${ title ? _(title) : 'TOOL' }</h4>
+                  ${ subtitle ? `<h5>${_(subtitle)}</h5>` : '' }
+                </div>
+                <button type="button" value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
+              </div>
+              <div>${ textMessage ? message : _(message) }</div>
+              <slot name = "header"></slot>
+              <slot name = "body"></slot>
+              <slot name = "footer"></slot>
             </div>
-            <div>${ textMessage ? message : _(message) }</div>
-          </form>
-        </dialog>
+          </dialog>
       `.trim()
       }).content.firstChild;
 
-      dialog.addEventListener('close', () => {
-        dialog.remove();
+      Object.entries(hooks).filter(Boolean).forEach(([hook, component]) => {
+        dialog.querySelector(`slot[name="${hook}"]`)?.replaceWith((new (Vue.extend(component))()).$mount().$el);
       });
-
-      document.body.append(dialog);
-      dialog.showPopover();
-
-      // close dialog on x icon
-      dialog.querySelector('button[value="cancel"]').addEventListener('click', () => {
-        dialog.hidePopover();
-      });
-
-      if (autoclose) {
-        const timer = setTimeout(() => {
-          dialog.hidePopover();
-          clearTimeout(timer)
-        }, duration);
-      }
-
-      if (autoclose || closable) {
-        dialog.style.cursor = 'pointer';
-        dialog.addEventListener('click', () => {
-          dialog.hidePopover();
-        });
-      }
-
-      return;
     }
 
-    this.closeUserMessage();
-
-    await new Promise(res => setTimeout(() => {
-      Object.assign(ApplicationState.usermessage, {
-        id: getUniqueDomId(),
-        show: true,
-        message,
-        textMessage,
-        title,
-        subtitle,
-        position,
-        type,
-        closable,
-        hooks,
-        iconClass,
-      });
-      res();
-    }));
-
-    return ApplicationState.usermessage;
-  }
-
-  closeUserMessage() {
-    Object.assign(ApplicationState.usermessage, {
-      id:          null,
-      show:        false,
-      textMessage: false,
-      message:     '',
+    dialog.addEventListener('close', () => {
+      dialog.remove();
     });
+
+    document.body.append(dialog);
+    dialog.showPopover();
+
+    if ('tool' === type) {
+      dialog.style.position = 'fixed';
+      dialog.style.margin   = '0';
+
+      this._makeDraggable(dialog);
+    }
+
+    // close dialog on x icon
+    dialog.querySelector('button[value="cancel"]').addEventListener('click', () => {
+      dialog.hidePopover();
+    });
+
+    if (autoclose) {
+      const timer = setTimeout(() => {
+        dialog.hidePopover();
+        clearTimeout(timer)
+      }, duration);
+    }
+
+    if ((autoclose || closable) && 'tool' !== type) {
+      dialog.style.cursor = 'pointer';
+      dialog.addEventListener('click', () => {
+        dialog.hidePopover();
+      });
+    }
+
   }
 
   /**

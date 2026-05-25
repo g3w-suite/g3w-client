@@ -569,24 +569,7 @@
 
     <!-- MAIN (content) -->
     <bar-loader style = "position: absolute; z-index: 1;" :loading = "state.content.loading && 0 === state.contentsdata.length"/>
-    <transition name = "fade" :duration = "{ enter: 500, leave: 500 }">
-      <user-message
-        v-if               = "usermessage.show"
-        @close-usermessage = "closeUserMessage"
-        :title             = "usermessage.title"
-        :subtitle          = "usermessage.subtitle"
-        :id                = "usermessage.id"
-        :message           = "usermessage.message"
-        :closable          = "usermessage.closable"
-        :textMessage       = "usermessage.textMessage"
-        :icon-class        = "usermessage.iconClass"
-      >
-        <template v-if = "usermessage.hooks.header" slot = "header"><component :is = "usermessage.hooks.header" /></template>
-        <template v-if = "usermessage.hooks.body"   slot = "body"><component   :is = "usermessage.hooks.body" /></template>
-        <template v-if = "usermessage.hooks.footer" slot = "footer"><component :is = "usermessage.hooks.footer" /></template>
-      </user-message>
-    </transition>
-
+    
     <!-- ORIGINAL SOURCE: src/components/Map.vue -->
     <div
       v-for = "hidemap in ApplicationState.hidemaps"
@@ -854,7 +837,6 @@ import { waitFor }             from 'utils/waitFor';
 import { XHR }                 from 'utils/XHR';
 import { getCatalogLayerById } from 'utils/getCatalogLayerById';
 
-import userMessage             from 'components/UserMessage.vue';
 import ContextMenu             from 'components/ContextMenu.vue';
 import ModalLogin              from 'components/ModalLogin.vue';
 import ModalAddlayer           from 'components/ModalAddLayer.vue';
@@ -895,7 +877,6 @@ export default {
   },
 
   components: {
-    userMessage,
     ContextMenu,
     ModalLogin,
     ModalAddlayer,
