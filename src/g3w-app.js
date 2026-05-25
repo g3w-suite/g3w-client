@@ -1150,6 +1150,11 @@ export default new (class GUI extends Emitter {
     }
 
     dialog.addEventListener('close', () => {
+      // clean up childs (vue)
+      Array.from(dialog.children).forEach(el => {
+        el.__vue__?.$destroy();
+        el.remove();
+      });
       dialog.remove();
     });
 
@@ -1182,7 +1187,7 @@ export default new (class GUI extends Emitter {
   }
 
   closeUserMessage() {
-    document.querySelector('.usermessage-tool').remove();
+    document.querySelector('.usermessage-tool')?.hidePopover();
   }
 
   /**
