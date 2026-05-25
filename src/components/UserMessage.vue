@@ -168,7 +168,7 @@ body.sidebar-collapse .usermessage-content {
 @supports (position-area: top left) {
   .usermessage-content {
     top: anchor(--g3w-map top);
-    left: anchor(--g3w-view-map left);
+    left: anchor(--g3w-map left);
   }
 }
 
