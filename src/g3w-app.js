@@ -1149,13 +1149,15 @@ export default new (class GUI extends Emitter {
       });
     }
 
-    dialog.addEventListener('close', () => {
-      // clean up childs (vue)
-      Array.from(dialog.children).forEach(el => {
-        el.__vue__?.$destroy();
-        el.remove();
-      });
-      dialog.remove();
+    dialog.addEventListener('beforetoggle', e => {
+      if (e.newState === 'closed') {
+        // clean up childs (vue)
+        Array.from(dialog.children).forEach(el => {
+          el.__vue__?.$destroy();
+          el.remove();
+        });
+        dialog.remove();
+      }
     });
 
     document.body.append(dialog);
