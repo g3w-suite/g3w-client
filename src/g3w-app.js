@@ -681,7 +681,7 @@ export default new (class GUI extends Emitter {
       let frame;
       return new ResizeObserver(() => {
         cancelAnimationFrame(frame);
-        frame = requestAnimationFrame(() => { this._layout(); });
+        frame = requestAnimationFrame(() => { this.resize(); });
       });
     })();
     resize_observer1.observe(document.querySelector('#app'));
@@ -690,7 +690,7 @@ export default new (class GUI extends Emitter {
       let frame;
       return new ResizeObserver(() => {
         cancelAnimationFrame(frame);
-        frame = requestAnimationFrame(() => { this._layout(); });
+        frame = requestAnimationFrame(() => { this.resize(); });
       });
     })();
     resize_observer2.observe(document.querySelector('.main-sidebar'));
@@ -709,7 +709,7 @@ export default new (class GUI extends Emitter {
       }
     })).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
-    this._layout();
+    this.resize();
 
     // remove "permalink_code" from URL
     const url = new URL(window.location);
@@ -1498,7 +1498,7 @@ export default new (class GUI extends Emitter {
    */
   async toggleContent(bool) {
     document.querySelector('#g3w-content').toggleAttribute('hidden', !bool);
-    await this._layout();
+    await this.resize();
   }
 
   async closeContent() {
@@ -1566,7 +1566,7 @@ export default new (class GUI extends Emitter {
       .from(this.getComponent('contents').internalComponent.$el.children)       // hide other elements but not the last one
       .forEach((el, i, a) => el.style.display = (i === a.length - 1) ? 'block' : 'none');
 
-    this._layout();
+    this.resize();
 
     return ApplicationState.contentsdata.at(-1);
   }
@@ -1854,17 +1854,15 @@ export default new (class GUI extends Emitter {
   }
 
   /**
-   * load components of viewport after right size setting
-   * 
-   * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
+   * Called on DOM resize
    */
-  async _layout() {
+  async resize() {
     const app      = document.querySelector('#app');
     const content  = document.querySelector('#g3w-content');
     const navbar   = document.querySelector('.navbar');
     const contents = document.querySelector('#contents');
 
-    const viewW    = app.getBoundingClientRect().width || window.innerWidth;
+    const viewW    = app.getBoundingClientRect().width;
     const viewH    = window.innerHeight - navbar.offsetHeight;
 
     const panel    = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
@@ -1892,7 +1890,20 @@ export default new (class GUI extends Emitter {
     await Vue.nextTick();
 
     // resize "map"
-    this.layout();
+    if (this.#map && viewW > 0 && viewH > 0) {
+      this.getMap().updateSize();
+      this.state.hidemaps.forEach(h => h.map.updateSize());
+      this.state.bbox       = this.getMapBBOX();
+      this.state.resolution = this.#map.getView().getResolution();
+      this.state.center     = this.#map.getView().getCenter();
+    }
+
+    this.setHidden(viewW <= 0 || viewH <= 0);
+
+    // init "map"
+    if (!this.#map) {
+      await this.#initMap();
+    }
 
     // sidebar panel fix
     contents.style.height = content.offsetHeight
@@ -1909,7 +1920,7 @@ export default new (class GUI extends Emitter {
     document.querySelector(".sidebar-panel").style.height = `${viewH}px`;
 
     // update map padding
-    this.getMap().getView().set('padding', [
+    this.getMap()?.getView()?.set('padding', [
       0,
       parseFloat(document.body.style.getPropertyValue('--sidebar-right')),
       0,
@@ -1924,7 +1935,7 @@ export default new (class GUI extends Emitter {
         }
       } catch(e) {
         this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
-        setTimeout(() => this._layout(), 1000);
+        setTimeout(() => this.resize(), 1000);
       }
     });
 
@@ -4557,31 +4568,10 @@ export default new (class GUI extends Emitter {
     this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, { force: true }));
   }
 
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * called when layout (window) resizes
-   * 
-   * @since 4.1.0
-   */
-  async layout() {
+  async #initMap() {
 
     const width  = document.querySelector('#app').getBoundingClientRect().width;
     const height = window.innerHeight - document.querySelector('.navbar').offsetHeight;
-
-    if (this.#map && width > 0 && height > 0) {
-      this.getMap().updateSize();
-      this.state.hidemaps.forEach(h => h.map.updateSize());
-      this.state.bbox       = this.getMapBBOX();
-      this.state.resolution = this.#map.getView().getResolution();
-      this.state.center     = this.#map.getView().getCenter();
-    }
-
-    this.setHidden(width <= 0 || height <= 0);
-
-    if (this.#map) {
-      return;
-    }
 
     this.emit('before:setupViewer');
 
@@ -4924,6 +4914,7 @@ export default new (class GUI extends Emitter {
     this.emit('after:setupControls');
 
     this.emit('after:setupViewer');
+
   }
 
   /**
