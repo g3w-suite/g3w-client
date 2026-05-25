@@ -7,7 +7,6 @@
   <div
     class   = "usermessage-content usermessage-tool"
     :id     = "id"
-    :style  = "style"
     popover = "manual"
   >
     <div
@@ -66,14 +65,21 @@
    */
   function _makeDraggable(el) {
     let x2 = 0, y2 = 0, x1 = 0, y1 = 0;
+
     el.addEventListener('mousedown', e => {
       // skip dragging on form elements
       if (['.select2-container', 'button', 'select', 'input', 'textarea', 'x-select'].some(i => e.target.closest(i))) {
         return;
       }
       e.preventDefault();
+
+      const rect = el.getBoundingClientRect();
+      if (!el.style.top)  el.style.top  = rect.top + "px";
+      if (!el.style.left) el.style.left = rect.left + "px";
+
       x1 = e.clientX;
       y1 = e.clientY;
+
       document.addEventListener('mouseup', mouseUp);
       document.addEventListener('mousemove', mouseMove);
     });
@@ -89,22 +95,10 @@
       y2 = y1 - e.clientY;
       x1 = e.clientX;
       y1 = e.clientY;
-      if (el.style.marginLeft) { x2 -= parseInt(el.style.marginLeft); el.style.marginLeft = null; }
-      if (el.style.marginTop)  { y2 -= parseInt(el.style.marginTop);  el.style.marginTop  = null; }
-      el.style.top  = (el.offsetTop - y2)  + "px";
-      el.style.left = (el.offsetLeft - x2) + "px";
-    }
-  }
 
-  function _getSidebarOffsetWithinWrapper() {
-    const sidebar = document.querySelector('.main-sidebar');
-    const wrapper = document.querySelector('.content-wrapper');
-    if (!sidebar || !wrapper) {
-      return 0;
+      el.style.top  = (parseFloat(el.style.top)  - y2) + "px";
+      el.style.left = (parseFloat(el.style.left) - x2) + "px";
     }
-    const sidebarRect = sidebar.getBoundingClientRect();
-    const wrapperRect = wrapper.getBoundingClientRect();
-    return Math.max(0, sidebarRect.right - wrapperRect.left);
   }
 
   export default {
@@ -137,24 +131,8 @@
         default: null
       }
     },
-    data() {
-      const can_anchor = 'position-area' in document.body.style;
-      const offset = _getSidebarOffsetWithinWrapper();
-      return {
-        style: {
-          top:        can_anchor ? 'anchor(--g3w-map top)' : null,
-          left:       can_anchor ? 'anchor(--g3w-map left)' : null,
-          width:      '325px',
-          marginLeft: can_anchor ? `${offset}px` : (document.body.classList.contains('sidebar-collapse') ? '5px' : '40px'),
-        }
-      }
-    },
+
     methods: {
-      updateLeftOffset() {
-        this.style.marginLeft = 'position-area' in document.body.style
-          ? `${_getSidebarOffsetWithinWrapper()}px`
-          : (document.body.classList.contains('sidebar-collapse') ? '5px' : '40px');
-      },
       closeUserMessage() {
         if (this.$el.popover) {
           this.$el.hidePopover();
@@ -166,26 +144,39 @@
     async mounted() {
       this.$el.showPopover();
       _makeDraggable(this.$el);
-      this.updateLeftOffset();
-      this.observer = new MutationObserver(mutations => {
-        mutations.forEach(mutation => {
-          if ("class" === mutation.attributeName) {
-            this.updateLeftOffset();
-          }
-        });
-      });
-      this.observer.observe(document.body, { attributes: true });
-      window.addEventListener('resize', this.updateLeftOffset);
     },
+
     beforeDestroy() {
       if (this.observer) {
         this.observer.disconnect();
         this.observer = null;
       }
-      window.removeEventListener('resize', this.updateLeftOffset);
     }
   }
 </script>
+
+<style>
+.usermessage-content {
+  width: 325px;
+  margin-left: calc(var(--sidebar-left) + 40px) !important;
+}
+
+body.sidebar-collapse .usermessage-content {
+  margin-left: calc(var(--sidebar-left) + 5px) !important;
+}
+
+@supports (position-area: top left) {
+  .usermessage-content {
+    top: anchor(--g3w-map top);
+    left: anchor(--g3w-view-map left);
+  }
+}
+
+:root .usermessage-content[style*="left"] {
+  margin-left: unset !important;
+}
+
+</style>
 <style scoped>
 
   .usermessage-content {
