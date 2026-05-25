@@ -1185,6 +1185,10 @@ export default new (class GUI extends Emitter {
 
   }
 
+  closeUserMessage() {
+    document.querySelector('.usermessage-tool').remove();
+  }
+
   /**
    * used by the following plugins: "qps_timeseries"
    * 
