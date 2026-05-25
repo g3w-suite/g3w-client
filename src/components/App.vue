@@ -730,6 +730,7 @@
       class      = "g3w-content"
       :style     = "styles.content"
       v-disabled = "state.content.disabled"
+      hidden
     >
       <div
         v-show          = "has_panel"

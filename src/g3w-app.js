@@ -389,7 +389,13 @@ export default new (class GUI extends Emitter {
     this._setLegendParams = debounce(this._setLegendParams.bind(this), 1000);
 
     // BACKOMP for v4.1.x
-    this.hideContent = this.toggleContent.bind(this);
+    this.hideContent = bool => {
+      console.warn('GUI.hideContent is deprecated. Use GUI.toggleContent instead');
+      const perc = ApplicationState.layout[ApplicationState.layout.__current].rightpanel['h' === ApplicationState.split ? 'width': 'height'];
+      this.toggleContent(!bool);
+      // return previous percentage
+      return perc;
+    };
   }
 
   /**
@@ -1463,7 +1469,7 @@ export default new (class GUI extends Emitter {
 
     contents.setOpen(true);
 
-    await this._layout(true);
+    await this.toggleContent(true);
 
     // automatically hide sidebar on mobile
     if (window.innerWidth < 767) {
@@ -1474,11 +1480,9 @@ export default new (class GUI extends Emitter {
   /**
    * @param bool whether to show content (right sidebar)
    */
-  toggleContent(bool) {
-    const content_perc = ApplicationState.layout[ApplicationState.layout.__current].rightpanel['h' === ApplicationState.split ? 'width': 'height'];
-    this._layout(!bool);
-    // return previous percentage
-    return content_perc;
+  async toggleContent(bool) {
+    document.querySelector('#g3w-content').toggleAttribute('hidden', !bool);
+    await this._layout();
   }
 
   async closeContent() {
@@ -1490,7 +1494,7 @@ export default new (class GUI extends Emitter {
     if (open) {
       this.getComponent('contents').setOpen(false);
       await this.#clearContents();
-      this._layout(false);
+      this.toggleContent(false);
       await Vue.nextTick();
     }
   }
@@ -1523,7 +1527,7 @@ export default new (class GUI extends Emitter {
       await this.#clearContents();
     }
 
-    this._layout(!!opts.perc);
+    this.toggleContent(!!opts.perc);
 
     await Vue.nextTick();
 
@@ -1873,20 +1877,16 @@ export default new (class GUI extends Emitter {
    * 
    * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
    */
-  async _layout(param) {
+  async _layout() {
 
-    // whether to show secondary (content)
-    if ('boolean' === typeof param) {
-      this._layout.secondary = param;
-    }
-
-    const sec             = this._layout.secondary;
-    
-    const layout          = ApplicationState.layout;
-
+    const content          = document.querySelector('#g3w-content');
     const navbar           = document.querySelector('.navbar');
     const contents         = document.querySelector('#contents');
     const content_wrapper  = document.querySelector('.content-wrapper');
+
+    const sec              = !content.hidden;
+    
+    const layout          = ApplicationState.layout;
 
     const viewW            = content_wrapper.getBoundingClientRect().width || window.innerWidth;
     const viewH            = window.innerHeight - navbar.offsetHeight;
