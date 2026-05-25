@@ -1630,55 +1630,12 @@ export default new (class GUI extends Emitter {
     document.body.classList.add('sidebar-open');
     document.body.classList.remove('sidebar-collapse');
     ApplicationState.sidebar.open = true;
-    const left = this.#syncSidebarLeftOffset();
-    if (window.innerWidth <= 767) {
-      return;
-    }
-    this.getMap()?.getView()?.set('padding', [
-      0,
-      parseFloat(document.body.style.getPropertyValue('--sidebar-right')) || 0,
-      0,
-      left,
-    ]);
   }
 
   hideSidebar() {
     document.body.classList.remove('sidebar-open');
     document.body.classList.add('sidebar-collapse');
     ApplicationState.sidebar.open = false;
-    const left = this.#syncSidebarLeftOffset();
-    if (window.innerWidth <= 767) {
-      return;
-    }
-    this.getMap()?.getView()?.set('padding', [
-      0,
-      parseFloat(document.body.style.getPropertyValue('--sidebar-right')) || 0,
-      0,
-      left,
-    ]);
-  }
-
-  /**
-   * Keep --sidebar-left aligned with sidebar target state so map controls
-   * anchored to this variable do not overlap during/after sidebar toggles.
-   */
-  #syncSidebarLeftOffset() {
-    const sidebar = document.querySelector('.main-sidebar');
-
-    if (!sidebar || window.innerWidth <= 767) {
-      document.body.style.setProperty('--sidebar-left', '0px');
-      return 0;
-    }
-
-    const collapsed = document.body.classList.contains('sidebar-collapse');
-    const mini      = document.body.classList.contains('sidebar-mini');
-
-    const left = collapsed
-      ? (mini ? 35 : 0)
-      : (sidebar.classList.contains('mobile') ? 300 : 350);
-
-    document.body.style.setProperty('--sidebar-left', `${left}px`);
-    return left;
   }
 
   getSize({ element, what }) {
