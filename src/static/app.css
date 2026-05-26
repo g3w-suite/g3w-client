@@ -627,7 +627,6 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
 #content-resizer.split-v                                                    { cursor: ns-resize; height: 18px; width: 100%; left: 0; top: 0; }
 #content-resizer.split-v::after                                             { height: 3px; width: 40px; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 .sidebar-mini:not(.sidebar-collapse) .g3w-content.full-size                 { padding-left: 45px !important; }
-.sidebar-mini.sidebar-open .g3w-content.full-size                           { display: none; }
 
 .g3w-content                                                                { z-index: 1; container-name: g3w-content; container-type: size; line-height: normal; overflow-wrap: break-word; height: 0; width: 0; background-color: #eee; overflow:hidden; position: fixed; display: flex; flex-direction: column; }
 .g3w-content:has(> .contents:not(:empty))                                   { padding: 15px; }
@@ -673,6 +672,11 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
 .g3w-content .table-header-tool                                             { background-color: var(--skin-color); }
 .g3w-content .action-button.toggled                                         { border: 2px solid hsl(from var(--skin-color) h s calc(l + 30)); }
 #g3w-content #layer_attribute_table tbody tr.feature_attribute[selected="selected"] td { background: hsl(from var(--skin-color) h s calc(l + 30)) !important; }
+
+/** Hide right panel when mobile menu is open */
+@media (max-width: 767px) {
+ .sidebar-open .g3w-content { display: none; }
+}
 
 /**************************************************************************************
  * 6. Tools
