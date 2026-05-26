@@ -697,15 +697,8 @@ export default new (class GUI extends Emitter {
 
     // update map state on sidebar toggle 
     (new MutationObserver(() => {
-      ApplicationState.sidebar.open = !document.body.classList.contains('sidebar-collapse');
-      document.querySelector('#app').scrollTo(0,0); // reset page scrollbars position
-      if (window.innerWidth > 767) {
-        this.getMap()?.getView()?.set('padding', [
-          0,
-          parseFloat(document.body.style.getPropertyValue('--sidebar-right')) || 0,
-          0,
-          parseFloat(document.body.style.getPropertyValue('--sidebar-left')) || 0,
-        ]);
+      if (ApplicationState.sidebar.open !== !document.body.classList.contains('sidebar-collapse')) {
+        this.resize();
       }
     })).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
@@ -1888,34 +1881,38 @@ export default new (class GUI extends Emitter {
     const contents   = document.querySelector('#contents');
     const map_footer = document.querySelector('#map_footer');
 
-    const viewW    = app.getBoundingClientRect().width;
-    const viewH    = window.innerHeight - navbar.offsetHeight;
+    const W          = app.getBoundingClientRect().width;
+    const H          = window.innerHeight - navbar.offsetHeight;
 
-    const panel    = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
+    const panel      = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
 
-    const h_split  = 'h' === (ApplicationState.contentsdata.at(-1)?.options?.split ?? ApplicationState.split);
-    const v_split  = 'v' === (ApplicationState.contentsdata.at(-1)?.options?.split ?? ApplicationState.split);
-    const is_full  = 100 === ApplicationState.contentsdata.at(-1)?.options?.perc || (h_split ? panel.width_100 : panel.height_100);
+    const h_split    = 'h' === (ApplicationState.contentsdata.at(-1)?.options?.split ?? ApplicationState.split);
+    const v_split    = 'v' === (ApplicationState.contentsdata.at(-1)?.options?.split ?? ApplicationState.split);
+    const is_full    = 100 === ApplicationState.contentsdata.at(-1)?.options?.perc || (h_split ? panel.width_100 : panel.height_100);
 
     // percentage of secondary view (content)
     const scale    = is_full ? 1 : ((h_split ? panel.width: panel.height) /100);
 
     contents.parentElement.classList.toggle('full-size', is_full);
 
+    // reset scrollbars position (mobile ⇄ desktop)
+    app.scrollTo(0,0);
+
     // size "content" - content floats on top, map always fills the full viewport
     Object.assign(ApplicationState.content.sizes, {
-      width:  content.hidden ? 0 : (h_split ? Math.max(viewW * scale, 200) - (is_full && !this.isMobile() * document.querySelector('.main-sidebar').offsetWidth ) : viewW),
-      height: content.hidden ? 0 : (v_split ? Math.max(viewH * scale, 200) - (is_full && !this.isMobile() * map_footer.offsetHeight) : viewH - map_footer.offsetHeight) } 
+      width:  content.hidden ? 0 : (h_split ? Math.max(W * scale, 200) - (is_full && window.innerWidth > 767 ? document.querySelector('.main-sidebar').offsetWidth : 0) : W),
+      height: content.hidden ? 0 : (v_split ? Math.max(H * scale, 200) - (is_full && window.innerWidth > 767 ? map_footer.offsetHeight : 0) : H - map_footer.offsetHeight) } 
     );
 
     // handle sidebars
     document.body.style.setProperty('--sidebar-right', `${h_split && !content.hidden ? ApplicationState.content.sizes.width                : 0}px`);
     document.body.style.setProperty('--sidebar-left',  `${window.innerWidth > 767    ? document.querySelector('.main-sidebar').offsetWidth : 0}px`);
+
     // resize "content" (after vue state is updated)
     await Vue.nextTick();
 
     // resize "map"
-    if (this.#map && viewW > 0 && viewH > 0) {
+    if (this.#map && W > 0 && H > 0) {
       this.getMap().updateSize();
       this.state.hidemaps.forEach(h => h.map.updateSize());
       this.state.bbox       = this.getMapBBOX();
@@ -1923,15 +1920,12 @@ export default new (class GUI extends Emitter {
       this.state.center     = this.#map.getView().getCenter();
     }
 
-    this.setHidden(viewW <= 0 || viewH <= 0);
+    this.setHidden(W <= 0 || H <= 0);
 
     // init "map"
     if (!this.#map) {
       await this.#initMap();
     }
-
-    document.querySelector(".main-sidebar").style.height  = `${viewH}px`;
-    document.querySelector(".sidebar-panel").style.height = `${viewH}px`;
 
     ApplicationState.sidebar.open = !document.body.classList.contains('sidebar-collapse');
 

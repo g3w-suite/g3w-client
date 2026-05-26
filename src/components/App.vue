@@ -955,8 +955,8 @@ export default {
     styles() {
       return {
         content: {
-          width:         `${this.state.content.sizes.width}px`,
-          height:        `${this.state.content.sizes.height}px`,
+          width:  `${this.state.content.sizes.width}px`,
+          height: `${this.state.content.sizes.height}px`,
         },
       }
     },
@@ -1105,6 +1105,11 @@ export default {
 
       this.state.content.disabled = true;
 
+      // drag to exit "full-size" mode
+      sidebar.classList.remove('full-size');
+      panel.width_100 = false;
+      panel.height_100 = false;
+
       const mousemove = e => {
         e.preventDefault();
         rect = sidebar.getBoundingClientRect();
@@ -1124,8 +1129,8 @@ export default {
           Math.round(((rect.height -dy) / wrapper.clientHeight) * 100),
         ), 90);
 
-        const viewW = wrapper.getBoundingClientRect().width || window.innerWidth;
-        const viewH = window.innerHeight - document.querySelector('.navbar').offsetHeight;
+        const W = wrapper.getBoundingClientRect().width || window.innerWidth;
+        const H = window.innerHeight - document.querySelector('.navbar').offsetHeight;
 
         const h_split = 'h' === this.state.split;
         const v_split = 'v' === this.state.split;
@@ -1135,8 +1140,8 @@ export default {
 
         // size "content"
         Object.assign(this.state.content.sizes, {
-          width:  (h_split ?  (viewW * scale) : viewW),
-          height: (v_split ? (viewH * scale) : viewH - map_footer.offsetHeight),
+          width:  (h_split ? (W * scale) : W),
+          height: (v_split ? (H * scale) : H - map_footer.offsetHeight),
         });
       };
 
