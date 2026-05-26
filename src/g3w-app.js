@@ -697,8 +697,7 @@ export default new (class GUI extends Emitter {
 
     // update map state on sidebar toggle 
     (new MutationObserver(() => {
-      const isOpen = document.body.classList.contains('sidebar-open');
-      ApplicationState.sidebar.open = isOpen;
+      ApplicationState.sidebar.open = !document.body.classList.contains('sidebar-collapse');
       if (window.innerWidth > 767) {
         this.getMap()?.getView()?.set('padding', [
           0,
@@ -1933,6 +1932,8 @@ export default new (class GUI extends Emitter {
 
     document.querySelector(".main-sidebar").style.height  = `${viewH}px`;
     document.querySelector(".sidebar-panel").style.height = `${viewH}px`;
+
+    ApplicationState.sidebar.open = !document.body.classList.contains('sidebar-collapse');
 
     // update map padding
     this.getMap()?.getView()?.set('padding', [
