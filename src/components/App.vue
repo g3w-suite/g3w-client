@@ -1099,7 +1099,9 @@ export default {
     },
 
     async onResize(e) {
-      const sidebar = document.querySelector('#g3w-content');
+      const sidebar    = document.querySelector('#g3w-content');
+      const map_footer = document.querySelector('#map_footer');
+
       const panel   = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
       let rect, dx, dy;
 
@@ -1136,7 +1138,7 @@ export default {
         // size "content"
         Object.assign(this.state.content.sizes, {
           width:  (h_split ?  (viewW * scale) : viewW),
-          height: (v_split ? (viewH * scale) : viewH),
+          height: (v_split ? (viewH * scale) : viewH - map_footer.offsetHeight),
         });
       };
 
@@ -1146,6 +1148,7 @@ export default {
           GUI.hideSidebar();
         }
         this.state.content.disabled = false;
+        GUI.resize();
       };
 
       document.addEventListener('mousemove', mousemove);

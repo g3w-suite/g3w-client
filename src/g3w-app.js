@@ -1882,10 +1882,11 @@ export default new (class GUI extends Emitter {
    * Called on DOM resize
    */
   async resize() {
-    const app      = document.querySelector('#app');
-    const content  = document.querySelector('#g3w-content');
-    const navbar   = document.querySelector('.navbar');
-    const contents = document.querySelector('#contents');
+    const app        = document.querySelector('#app');
+    const content    = document.querySelector('#g3w-content');
+    const navbar     = document.querySelector('.navbar');
+    const contents   = document.querySelector('#contents');
+    const map_footer = document.querySelector('#map_footer');
 
     const viewW    = app.getBoundingClientRect().width;
     const viewH    = window.innerHeight - navbar.offsetHeight;
@@ -1904,7 +1905,7 @@ export default new (class GUI extends Emitter {
     // size "content" - content floats on top, map always fills the full viewport
     Object.assign(ApplicationState.content.sizes, {
       width:  content.hidden ? 0 : (h_split ? Math.max(viewW * scale, 200) : viewW),
-      height: content.hidden ? 0 : (v_split ? Math.max((viewH - 30) * scale, 200) : viewH - 30) }
+      height: content.hidden ? 0 : (v_split ? Math.max(viewH * scale, 200) : viewH - map_footer.offsetHeight) } 
     );
 
     // handle sidebars
