@@ -698,6 +698,7 @@ export default new (class GUI extends Emitter {
     // update map state on sidebar toggle 
     (new MutationObserver(() => {
       ApplicationState.sidebar.open = !document.body.classList.contains('sidebar-collapse');
+      document.querySelector('#app').scrollTo(0,0); // reset page scrollbars position
       if (window.innerWidth > 767) {
         this.getMap()?.getView()?.set('padding', [
           0,
