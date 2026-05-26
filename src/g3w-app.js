@@ -1875,42 +1875,45 @@ export default new (class GUI extends Emitter {
    * Called on DOM resize
    */
   async resize() {
-    const app        = document.querySelector('#app');
-    const content    = document.querySelector('#g3w-content');
-    const navbar     = document.querySelector('.navbar');
-    const contents   = document.querySelector('#contents');
-    const map_footer = document.querySelector('#map_footer');
+    const app      = document.querySelector('#app');
+    const content  = document.querySelector('#g3w-content');
+    const navbar   = document.querySelector('.navbar');
+    const contents = document.querySelector('#contents');
+    const sidebar  = document.querySelector('.main-sidebar');
+    const footer   = document.querySelector('#map_footer');
 
-    const W          = app.getBoundingClientRect().width;
-    const H          = window.innerHeight - navbar.offsetHeight;
+    const W        = app.getBoundingClientRect().width;
+    const H        = window.innerHeight - navbar.offsetHeight;
 
-    const panel      = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
+    const panel    = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
 
-    const h_split    = 'h' === (ApplicationState.contentsdata.at(-1)?.options?.split ?? ApplicationState.split);
-    const v_split    = 'v' === (ApplicationState.contentsdata.at(-1)?.options?.split ?? ApplicationState.split);
-    const is_full    = 100 === ApplicationState.contentsdata.at(-1)?.options?.perc || (h_split ? panel.width_100 : panel.height_100);
+    const h_split  = 'h' === (ApplicationState.contentsdata.at(-1)?.options?.split ?? ApplicationState.split);
+    const v_split  = 'v' === (ApplicationState.contentsdata.at(-1)?.options?.split ?? ApplicationState.split);
+    const is_full  = 100 === ApplicationState.contentsdata.at(-1)?.options?.perc || (h_split ? panel.width_100 : panel.height_100);
 
     // percentage of secondary view (content)
     const scale    = is_full ? 1 : ((h_split ? panel.width: panel.height) /100);
 
     contents.parentElement.classList.toggle('full-size', is_full);
 
+    ApplicationState.sidebar.open = !document.body.classList.contains('sidebar-collapse');
+
     // reset scrollbars position (mobile ⇄ desktop)
     app.scrollTo(0,0);
 
-    // size "content" - content floats on top, map always fills the full viewport
+    // resize "content" (state)
     Object.assign(ApplicationState.content.sizes, {
-      width:  content.hidden ? 0 : (h_split ? Math.max(W * scale, 200) - (is_full && window.innerWidth > 767 ? document.querySelector('.main-sidebar').offsetWidth : 0) : W),
-      height: content.hidden ? 0 : (v_split ? Math.max(H * scale, 200) - (is_full && window.innerWidth > 767 ? map_footer.offsetHeight : 0) : H - map_footer.offsetHeight) } 
+      width:  content.hidden ? 0 : (h_split ? Math.max(W * scale, 200) - (is_full && window.innerWidth > 767 ? sidebar.offsetWidth : 0) : W),
+      height: content.hidden ? 0 : (v_split ? Math.max(H * scale, 200) - (is_full && window.innerWidth > 767 ? footer.offsetHeight : 0) : H - footer.offsetHeight) } 
     );
 
-    // handle sidebars
-    document.body.style.setProperty('--mt', `${!ApplicationState.iframe   ? 50                                                  : 0}px`); // 50 = navbar height
-    document.body.style.setProperty('--mr', `${h_split && !content.hidden ? ApplicationState.content.sizes.width                : 0}px`);
-    document.body.style.setProperty('--mb', `${v_split                    ? ApplicationState.content.sizes.height               : 0}px`);
-    document.body.style.setProperty('--ml', `${window.innerWidth > 767    ? document.querySelector('.main-sidebar').offsetWidth : 0}px`);
+    // resize floating elements (sidebars, navbar, footer)
+    document.body.style.setProperty('--mt', `${window.innerWidth < 767 && ApplicationState.sidebar.open    ? 0                                                           : navbar.offsetHeight}px`);
+    document.body.style.setProperty('--mr', `${h_split && !content.hidden                                  ? ApplicationState.content.sizes.width                        : 0}px`);
+    document.body.style.setProperty('--mb', `${v_split                                                     ? ApplicationState.content.sizes.height + footer.offsetHeight : footer.offsetHeight}px`);
+    document.body.style.setProperty('--ml', `${window.innerWidth > 767                                     ? sidebar.offsetWidth                                         : 0}px`);
 
-    // resize "content" (after vue state is updated)
+    // wait DOM repaint (after vue state is updated)
     await Vue.nextTick();
 
     // resize "map"
@@ -1928,8 +1931,6 @@ export default new (class GUI extends Emitter {
     if (!this.#map) {
       await this.#initMap();
     }
-
-    ApplicationState.sidebar.open = !document.body.classList.contains('sidebar-collapse');
 
     // update map padding
     this.getMap()?.getView()?.set('padding', [
