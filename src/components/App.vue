@@ -1146,7 +1146,6 @@ export default {
           GUI.hideSidebar();
         }
         this.state.content.disabled = false;
-        GUI.resize();
       };
 
       document.addEventListener('mousemove', mousemove);
