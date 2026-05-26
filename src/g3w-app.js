@@ -1904,8 +1904,8 @@ export default new (class GUI extends Emitter {
 
     // size "content" - content floats on top, map always fills the full viewport
     Object.assign(ApplicationState.content.sizes, {
-      width:  content.hidden ? 0 : (h_split ? Math.max(viewW * scale, 200) - is_full * document.querySelector('.main-sidebar').offsetWidth : viewW),
-      height: content.hidden ? 0 : (v_split ? Math.max(viewH * scale, 200) - is_full * map_footer.offsetHeight : viewH - map_footer.offsetHeight) } 
+      width:  content.hidden ? 0 : (h_split ? Math.max(viewW * scale, 200) - (is_full && !this.isMobile() * document.querySelector('.main-sidebar').offsetWidth ) : viewW),
+      height: content.hidden ? 0 : (v_split ? Math.max(viewH * scale, 200) - (is_full && !this.isMobile() * map_footer.offsetHeight) : viewH - map_footer.offsetHeight) } 
     );
 
     // handle sidebars
