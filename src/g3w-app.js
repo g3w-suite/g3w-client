@@ -1904,14 +1904,13 @@ export default new (class GUI extends Emitter {
 
     // size "content" - content floats on top, map always fills the full viewport
     Object.assign(ApplicationState.content.sizes, {
-      width:  content.hidden ? 0 : (h_split ? Math.max(viewW * scale, 200) : viewW),
-      height: content.hidden ? 0 : (v_split ? Math.max(viewH * scale, 200) : viewH - map_footer.offsetHeight) } 
+      width:  content.hidden ? 0 : (h_split ? Math.max(viewW * scale, 200) - is_full * document.querySelector('.main-sidebar').offsetWidth : viewW),
+      height: content.hidden ? 0 : (v_split ? Math.max(viewH * scale, 200) - is_full * map_footer.offsetHeight : viewH - map_footer.offsetHeight) } 
     );
 
     // handle sidebars
     document.body.style.setProperty('--sidebar-right', `${h_split && !content.hidden ? ApplicationState.content.sizes.width                : 0}px`);
     document.body.style.setProperty('--sidebar-left',  `${window.innerWidth > 767    ? document.querySelector('.main-sidebar').offsetWidth : 0}px`);
-
     // resize "content" (after vue state is updated)
     await Vue.nextTick();
 
