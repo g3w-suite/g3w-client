@@ -492,11 +492,10 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
 .title-box .title                                            { font-size: 2em; font-weight: bold; color: white }
 
 @media (max-width: 767px) {
-  .nav-links                                                 { flex-direction: column; align-items: stretch; padding: 6px 0 4px; gap: 2px; }
   .nav-links a                                               { color: inherit; background: transparent; }
   .nav-links > li                                            { color: inherit; border: 0; }
-  .nav-links > li > :is(a, button):not(.dropdown-toggle) [hidden] { display: inline-block; position: static; width: auto; height: auto; margin: 0; overflow: visible; clip-path: none; white-space: normal; }
-  .nav-links > li > :is(a, button):not(.dropdown-toggle)    { margin: 5px 8px; padding: 10px; border: 1px dashed #fff; display: flex; flex-direction: row; justify-content: left; align-items: center; gap: 8px; width: calc(100% - 16px); text-align: left; }
+  .nav-links > li > a:not(.nav-user) [hidden]                { display: inline-block; position: static; width: auto; height: auto; margin: 0; overflow: visible; clip-path: none; white-space: normal; }
+  .nav-links > li > a:not(.nav-user)                         { margin: 5px 8px; padding: 10px; border: 1px dashed #fff; display: flex; flex-direction: row; justify-content: left; align-items: center; gap: 8px; }
   .nav-lang button                                           { width: 100%; }
   .navbar .dropdown-menu li.divider                          { background-color: rgba(255, 255, 255, 0.1); }
   .navbar .dropdown-menu li a                                { color: #fff; }
@@ -596,11 +595,11 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
   .sidebar-open .navbar-toggler                               { position: fixed; }
   .sidebar-open .nav-links                                    { --bgcolor: #212c31; background-color: var(--bgcolor)!important; flex-direction: column !important; }
   .sidebar-open .project_title                                { position: fixed !important; inset: 0 !important; background-color: var(--skin-color); padding-left: 4px; max-width: calc(100% - 18px); padding-right: 105px; z-index: 2; }
-  .sidebar-open .main-sidebar                                 { position: fixed !important; left: 0 !important; right: 0 !important; top: 50px !important; bottom: 0 !important; overflow-y: auto; }
-  .sidebar-open, .sidebar-open #app                           { overflow-y: hidden; }
+  .sidebar-open .main-sidebar                                 { position: relative !important; inset: 0 !important; }
+  .sidebar-open, .sidebar-open #app                           { overflow-y: visible; }
   .sidebar-open:has(#g3w-menu:not([hidden])) .sidebar-panel:not([hidden]),
-  .sidebar-open .main-sidebar                                 { height: calc(100dvh - 50px) !important; }
-  .sidebar-open .navbar                                       { display: block !important; height: auto !important; position: relative; z-index: 3; }
+  .sidebar-open .main-sidebar                                 { height: auto !important; }
+  .sidebar-open .navbar                                       { display: block !important; height: auto !important; }
   .sidebar-open .nav-links :is(.nav-changemap, .nav-addlayer),
   .sidebar-open:has(#g3w-menu[hidden]) .nav-links             { display: none !important; }
 }
@@ -1287,7 +1286,7 @@ i.triangle                             { border-color: currentColor transparent 
   .nav-user > .dropdown-toggle,
   .user-header                        { display: none !important; }
   .navbar-nav                         { flex-direction: column; }
-  .user-footer .btn-default           { padding: 10px; border-color: rgba(255, 255, 255, 0.85); }
+  .user-footer .btn-default           { padding: 10px; }
   .user-footer                        { background-color: transparent; border: none; }
   .nav-user > ul                      { display: block; position: static; float:none; border: none; background-color: transparent; }
   .nav-user .btn                      { color: #fff !important; }
@@ -1303,3 +1302,17 @@ i.triangle                             { border-color: currentColor transparent 
 .drop-area:not([hidden])      { display: flex; }
 .drop-area                    { justify-content: center; align-items: center; width: 100%; height: 100%; color: #fff; font-size: 4em; position: absolute; z-index: 100; background-color: var(--bgcolor); pointer-events: none; }
 .drop-area::before            { border: 5px dashed #fff; content: ""; bottom: 60px; left: 60px;  position: absolute; right: 60px; top: 60px; }
+
+
+@media (max-width: 767px) {
+  #map {
+    margin-left:0
+  }
+  .sidebar-open #map {
+    --sidebar-left: 0;
+    transform:translate(var(--sidebar-left));
+    position:absolute;
+    inset:0;
+    z-index:-1;
+  }
+}
