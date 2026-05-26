@@ -1311,14 +1311,7 @@ i.triangle                             { border-color: currentColor transparent 
 
 
 @media (max-width: 767px) {
-  #map {
-    margin-left:0
-  }
-  .sidebar-open #map {
-    --sidebar-left: 0;
-    transform:translate(var(--sidebar-left));
-    position:absolute;
-    inset:0;
-    z-index:-1;
-  }
+  #map { margin-left:0 }
+  .sidebar-open #map { --sidebar-left: 0; transform:translate(var(--sidebar-left)); position:absolute; inset:0; z-index:-1; }
+  .sidebar-open #map_footer { display: none; }
 }
