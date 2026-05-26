@@ -1310,7 +1310,6 @@ i.triangle                             { border-color: currentColor transparent 
 
 
 @media (max-width: 767px) {
-  #map { margin-left:0 }
-  .sidebar-open #map { --ml: 0; transform:translate(var(--ml)); position:absolute; inset:0; z-index:-1; }
+  .sidebar-open #map,
   .sidebar-open #map_footer { display: none; }
 }
