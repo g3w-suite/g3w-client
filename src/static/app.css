@@ -594,7 +594,8 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
   .sidebar-aside-toggle                                       { transition: none !important; }
   .sidebar-open .navbar-toggler                               { position: fixed; }
   .sidebar-open .nav-links                                    { --bgcolor: #212c31; background-color: var(--bgcolor)!important; flex-direction: column !important; }
-  .sidebar-open .project_title                                { position: fixed !important; inset: 0 !important; background-color: var(--skin-color); padding-left: 4px; max-width: calc(100% - 18px); padding-right: 105px; z-index: 2; }
+  .sidebar-open .project_title                                { position: fixed !important; inset: 0 !important; background-color: var(--skin-color); padding-left: 4px; max-width: calc(100% - 18px); padding-right: 105px; z-index: 3; }
+  .sidebar-open .navbar a[aria-label="logo"]                  { visibility: hidden; }
   .sidebar-open .main-sidebar                                 { position: relative !important; inset: 0 !important; }
   .sidebar-open, .sidebar-open #app                           { overflow-y: visible; }
   .sidebar-open:has(#g3w-menu:not([hidden])) .sidebar-panel:not([hidden]),
