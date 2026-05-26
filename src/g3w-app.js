@@ -1930,17 +1930,6 @@ export default new (class GUI extends Emitter {
       await this.#initMap();
     }
 
-    // sidebar panel fix
-    contents.style.height = content.offsetHeight
-      - (content.querySelector('.close-panel-block')?.offsetHeight || 0)
-      - (content.querySelector('.content_breadcrumb')?.offsetHeight || 0)
-      - (contents.children[0] ? 50 : 0) + 'px'; // vertical padding
-
-    // workaround for qplotly?
-    if (contents.children[0]) {
-      contents.children[0].style.height = contents.style.height;
-    }
-
     document.querySelector(".main-sidebar").style.height  = `${viewH}px`;
     document.querySelector(".sidebar-panel").style.height = `${viewH}px`;
 

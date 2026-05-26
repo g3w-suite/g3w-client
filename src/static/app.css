@@ -629,7 +629,7 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
 #content-resizer.split-v::after                                             { height: 3px; width: 40px; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 .sidebar-mini:not(.sidebar-collapse) .g3w-content.full-size                 { padding-left: 45px !important; }
 
-.g3w-content                                                                { z-index: 1; container-name: g3w-content; container-type: size; line-height: normal; overflow-wrap: break-word; height: 0; width: 0; background-color: #eee; overflow:hidden; position: fixed; }
+.g3w-content                                                                { z-index: 1; container-name: g3w-content; container-type: size; line-height: normal; overflow-wrap: break-word; height: 0; width: 0; background-color: #eee; overflow:hidden; position: fixed; display: flex; flex-direction: column; }
 .g3w-content:has(> .contents:not(:empty))                                   { padding: 15px; }
 .g3w-content.split-h:not(.g3w-disabled)                                     { transition: width .3s ease-in-out; }
 .g3w-content.split-v:not(.g3w-disabled)                                     { transition: height .3s ease-in-out, left .3s ease-in-out; }
@@ -1048,7 +1048,8 @@ textarea.form-control                     { height: auto; }
 /**************************************************************************************
  * 10. Contents
  **************************************************************************************/
-.contents                            { padding: 0 10px; height: 100%; }
+.contents                            { padding: 0 10px; height: auto; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; }
+.contents > :first-child             { flex-grow: 1; height: auto !important; display: flex !important; flex-direction: column; min-height: 0; }
 .contents > div                      { height: 100%; }
 .contents table                      { empty-cells: show; width: 100%; background-color: #fff !important; }
 .contents .node-row > div + div,
@@ -1265,7 +1266,7 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 #g3w-content:has(.g3wform_content) .content_breadcrumb { pointer-events: none; }
 
 
-.close-panel-block                     { overflow: hidden; margin-top: 2px; margin-bottom: 2px; font-size: 1.4em; }
+.close-panel-block                     { overflow: hidden; margin-top: 2px; margin-bottom: 2px; font-size: 1.4em; align-items: center; flex-shrink: 0; }
 
 .user-header                           { padding: 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,.3); }
 .user-footer                           { padding: 8px; display: flex; justify-content: space-between; flex-direction: column; gap: 8px; }
