@@ -1905,8 +1905,8 @@ export default new (class GUI extends Emitter {
     );
 
     // handle sidebars
-    document.body.style.setProperty('--sidebar-right', `${h_split && !content.hidden ? ApplicationState.content.sizes.width                : 0}px`);
-    document.body.style.setProperty('--sidebar-left',  `${window.innerWidth > 767    ? document.querySelector('.main-sidebar').offsetWidth : 0}px`);
+    document.body.style.setProperty('--mr', `${h_split && !content.hidden ? ApplicationState.content.sizes.width                : 0}px`);
+    document.body.style.setProperty('--ml',  `${window.innerWidth > 767    ? document.querySelector('.main-sidebar').offsetWidth : 0}px`);
 
     // resize "content" (after vue state is updated)
     await Vue.nextTick();
@@ -1932,9 +1932,9 @@ export default new (class GUI extends Emitter {
     // update map padding
     this.getMap()?.getView()?.set('padding', [
       0,
-      parseFloat(document.body.style.getPropertyValue('--sidebar-right')),
+      parseFloat(document.body.style.getPropertyValue('--mr')),
       0,
-      parseFloat(document.body.style.getPropertyValue('--sidebar-left'))
+      parseFloat(document.body.style.getPropertyValue('--ml'))
     ]);
 
     // re-layout each component stored into the stack

@@ -227,7 +227,7 @@ button.close                { padding: 0; cursor: pointer; background: transpare
 .g3w-map-controls-left-bottom,
 #map_footer,
 #aria-live,
-.ol-overlaycontainer-stopevent > *:not(.ol-control-br) { transition: width .3s ease-in-out, margin .3s ease-in-out; margin-left: var(--sidebar-left); }
+.ol-overlaycontainer-stopevent > *:not(.ol-control-br) { transition: width .3s ease-in-out, margin .3s ease-in-out; margin-left: var(--ml); }
 
 .cookie-banner       { position:fixed; overflow:hidden; box-sizing:border-box; z-index:9999; width:100%; display:flex; justify-content:space-between; background:#424851; color:#fff; padding:1.250em; bottom:0; left:0; right:0; gap: 1em;}
 .cookie-button       { cursor:pointer; align-self:center; white-space:nowrap; background:#97D058; padding:0.625em 3.125em; color:#fff; border-radius:0; border:0; font-size:1em }
@@ -659,7 +659,7 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
 .g3w-content .action-button.action-button-icon                              { padding-top: 6px; }
 .is-mobile .g3w-content.full-size :is(.action-button-resize, .action-button-dock) { display: none; }
 .g3w-content.split-h                                                        { right: 0; top: 50px; }
-.g3w-content.split-v                                                        { bottom: 30px; left: var(--sidebar-left); right: 0; width: auto !important }
+.g3w-content.split-v                                                        { bottom: 30px; left: var(--ml); right: 0; width: auto !important }
 .g3w-content .contents                                                      { height: 100%; padding-left: 0; padding-right: 0; }
 .g3w-content                                                                { border-bottom: 1px solid #ccc; }
 .g3w-content.split-h                                                        { border-left: 1px solid #d6d6d6; }
@@ -768,7 +768,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .ol-attribution ul                                                     { font-size: 1.0em !important; }
 .ol-attribution.ol-uncollapsible                                       { height: 1.3em !important; }
 .g3w-map-controls                                                      { position: absolute; flex-wrap: wrap; z-index: 1; display: flex; top: 60px; left: 0; align-items: flex-start; flex-direction: column;}
-.g3w-map-controls.rv                                                   { top: 0; right: calc(var(--sidebar-right) + 5px); left: unset; max-height: calc(100% - 65px); flex-flow: column wrap-reverse; align-content: end; }
+.g3w-map-controls.rv                                                   { top: 0; right: calc(var(--mr) + 5px); left: unset; max-height: calc(100% - 65px); flex-flow: column wrap-reverse; align-content: end; }
 .g3w-map-controls.lv                                                   { top:60px; left: 0; align-items: flex-start; }
 .g3w-map-controls.lh                                                   { top:60px; left: 0; flex-direction: row; }
 .g3w-map-controls.rh                                                   { top:8px; right: 0; flex-direction: row; }
@@ -1187,10 +1187,10 @@ input[type="range"]                                                       { acce
 [class^="usermessage-"] > form > header     { display: flex; align-items: baseline; justify-content: space-between; width: 100%; border-bottom: 2px solid #eee; }
 [class^="usermessage-"] > form > header > i { padding: 10px 0 0 5px; font-weight: bold; font-size: 1.3em; }
 
-.usermessage-tool                       { color: #FFF; line-height: normal; padding: 3px; min-width: 250px; border: unset; inset: unset; margin: unset; background-color: #FFF; color: #222d32; cursor: move; border: thin solid #ccc; width: 325px;  margin-left: calc(var(--sidebar-left) + 40px) !important; margin-top: 3px; animation: unset; }
+.usermessage-tool                       { color: #FFF; line-height: normal; padding: 3px; min-width: 250px; border: unset; inset: unset; margin: unset; background-color: #FFF; color: #222d32; cursor: move; border: thin solid #ccc; width: 325px;  margin-left: calc(var(--ml) + 40px) !important; margin-top: 3px; animation: unset; }
 .usermessage-tool::backdrop             { display: none; }
 .usermessage-tool:not([style*="left"])  { transition: margin-left .3s ease-in-out; }
-body.sidebar-collapse .usermessage-tool { margin-left: calc(var(--sidebar-left) + 5px) !important; }
+body.sidebar-collapse .usermessage-tool { margin-left: calc(var(--ml) + 5px) !important; }
 :root .usermessage-tool[style*="left"]  { margin-left: unset !important; }
 @supports (position-area: top left) {
   .usermessage-tool {
@@ -1206,9 +1206,9 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
   dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermessage-alert) {
     top: anchor(--g3w-map top);
     left: anchor(--g3w-map left);
-    margin-left: var(--sidebar-left);
-    margin-right: var(--sidebar-right);
-    width: calc(100% - var(--sidebar-left) - var(--sidebar-right));
+    margin-left: var(--ml);
+    margin-right: var(--mr);
+    width: calc(100% - var(--ml) - var(--mr));
   }
 }
 
@@ -1311,6 +1311,6 @@ i.triangle                             { border-color: currentColor transparent 
 
 @media (max-width: 767px) {
   #map { margin-left:0 }
-  .sidebar-open #map { --sidebar-left: 0; transform:translate(var(--sidebar-left)); position:absolute; inset:0; z-index:-1; }
+  .sidebar-open #map { --ml: 0; transform:translate(var(--ml)); position:absolute; inset:0; z-index:-1; }
   .sidebar-open #map_footer { display: none; }
 }
