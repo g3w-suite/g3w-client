@@ -1905,9 +1905,10 @@ export default new (class GUI extends Emitter {
     );
 
     // handle sidebars
-    document.body.style.setProperty('--mr',  `${h_split && !content.hidden ? ApplicationState.content.sizes.width                : 0}px`);
-    document.body.style.setProperty('--ml',  `${window.innerWidth > 767   ? document.querySelector('.main-sidebar').offsetWidth : 0}px`);
-    document.body.style.setProperty('--cvh', `${v_split ? ApplicationState.content.sizes.height : 0}px`);
+    document.body.style.setProperty('--mt', `${!ApplicationState.iframe   ? 50                                                  : 0}px`); // 50 = navbar height
+    document.body.style.setProperty('--mr', `${h_split && !content.hidden ? ApplicationState.content.sizes.width                : 0}px`);
+    document.body.style.setProperty('--mb', `${v_split                    ? ApplicationState.content.sizes.height               : 0}px`);
+    document.body.style.setProperty('--ml', `${window.innerWidth > 767    ? document.querySelector('.main-sidebar').offsetWidth : 0}px`);
 
     // resize "content" (after vue state is updated)
     await Vue.nextTick();
