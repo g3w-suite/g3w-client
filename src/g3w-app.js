@@ -4503,63 +4503,30 @@ export default new (class GUI extends Emitter {
     const view    = map.getView();
     const mapSize = map.getSize();
 
-    // Respect the same visible area already used by the map view:
-    // [top, right, bottom, left].
-    const [top, right, bottom, left] = [
-      ...(view.getPadding?.() ?? view.get('padding') ?? []),
-      0,0,0,0,
-    ]
-      .slice(0, 4)
-      .map(v => Math.max(0, Number(v) || 0));
-
-    const visibleSize = [
-      Math.max(1, mapSize[0] - left - right),
-      Math.max(1, mapSize[1] - top - bottom),
-    ];
-
-    const vis_px = (mapSize[0] + left - right) / 2;
-    const vis_py = (mapSize[1] + top  - bottom) / 2;
-
+    
     let resolution;
 
     // if outside project extent, return max resolution
     if (false === ol.extent.containsExtent(ApplicationState.project.state.extent, extent)) {
-      resolution = view.getResolutionForExtent(ApplicationState.project.state.extent, visibleSize);
+      resolution = view.getResolutionForExtent(ApplicationState.project.state.extent, mapSize);
     }
 
     // retrieve resolution from given `extent`
     else if (true === options.force) {
-      resolution = view.getResolutionForExtent(extent, visibleSize); // resolution of request extent
+      resolution = view.getResolutionForExtent(extent, mapSize); // resolution of request extent
     }
 
     // calculate main resolutions from map
     else {
       const curr = view.getResolution();
       // max resolution of the map
-      resolution = Math.max(view.getResolutionForExtent(extent, visibleSize), getResolutionFromScale(this.#maxZoom, this.getMapUnits()));
+      resolution = Math.max(view.getResolutionForExtent(extent, mapSize), getResolutionFromScale(this.#maxZoom, this.getMapUnits()));
       resolution = (curr < resolution) && (curr > resolution) ? curr : resolution;
     }
 
-    // Shift the OL view center so the feature appears at the visible center
-    // rather than the full viewport center.
-    //
-    // Formula derivation (OL pixel conventions, Y-down on screen, Y-up in map coords):
-    //   pixel_x = viewportW/2 + (feature_x - center_x) / res
-    //   pixel_y = viewportH/2 - (feature_y - center_y) / res
-    // Solving for center where feature must appear at [vis_px, vis_py]:
-    //   center_x = feature_x - (vis_px - viewportW/2) * res  → for split-h (right panel): vis_px < viewportW/2 → center_x > feature_x (shift right)
-    //   center_y = feature_y + (vis_py - viewportH/2) * res  → for split-v (bottom panel): vis_py < viewportH/2 → center_y < feature_y (shift south)
-    const res    = resolution || view.getResolution();
-    const center = ol.extent.getCenter(extent);
-    center[0]   -= (vis_px - mapSize[0] / 2) * res;
-    center[1]   += (vis_py - mapSize[1] / 2) * res;
-
     await (new Promise(done => {
       view.once('change:center', () => setTimeout(done, 500));
-      view.animate(
-        { duration: 200, center },
-        { duration: 200, resolution: res }
-      );
+      view.fit(ol.geom.Polygon.fromExtent(extent), { minResolution: resolution });
     }));
 
     if (options.highLightGeometry) {
