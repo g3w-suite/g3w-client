@@ -74,22 +74,6 @@ Vue.extend = function(opts) {
 };
 
 /**
- * Monkey patch `ol.View.fit` to accumulate default and custom padding.
- * 
- * @see https://openlayers.org/en/v10.9.0/apidoc/module-ol_View-View.html#fit
- * @see https://openlayers.org/en/v10.9.0/apidoc/module-ol_View-View.html#padding
- */
-(() => {
-  const fitProto = ol.View.prototype.fit;
-  ol.View.prototype.fit = function (geom, opt = {}) {
-    const default_padding = this.get('padding') || [0, 0, 0, 0];
-    const custom_padding  = opt.padding || [0, 0, 0, 0];
-    opt.padding = default_padding.map((val, index) => val + custom_padding[index]);
-    return fitProto.call(this, geom, opt);
-  };
-})();
-
-/**
  * Monkey patch `ol.View.fitInternal` to accumulate default and custom padding.
  * 
  * @see https://openlayers.org/en/v10.9.0/apidoc/module-ol_View.html#~FitOptions
