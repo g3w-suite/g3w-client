@@ -1927,18 +1927,20 @@ export default new (class GUI extends Emitter {
 
     this.setHidden(W <= 0 || H <= 0);
 
-    // init "map"
-    if (!this.#map) {
-      await this.#initMap();
-    }
-
-    // update map padding
-    this.getMap()?.getView()?.set('padding', [
+    const padding = [
       0,
       parseFloat(document.body.style.getPropertyValue('--mr')),
       parseFloat(document.body.style.getPropertyValue('--mb')),
       parseFloat(document.body.style.getPropertyValue('--ml'))
-    ]);
+    ]
+
+    // init "map"
+    if (!this.#map) {
+      await this.#initMap({ padding });
+    }
+
+    // update map padding
+    this.getMap()?.getView()?.set('padding', padding);
 
     // re-layout each component stored into the stack
     ApplicationState.contentsdata.forEach(d => {
@@ -4581,7 +4583,7 @@ export default new (class GUI extends Emitter {
     this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, { force: true }));
   }
 
-  async #initMap() {
+  async #initMap({ padding }) {
 
     const width  = document.querySelector('#app').getBoundingClientRect().width;
     const height = window.innerHeight - document.querySelector('.navbar').offsetHeight;
@@ -4628,6 +4630,7 @@ export default new (class GUI extends Emitter {
       keyboardEventTarget: document,
       target:              'map',
       view:                new ol.View({
+        padding:       padding ?? [0,0,0,0],
         extent,
         projection:    this.getProjection(),
         center:        ol.extent.getCenter(initextent),
