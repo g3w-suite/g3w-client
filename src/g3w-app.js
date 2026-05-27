@@ -4523,14 +4523,10 @@ export default new (class GUI extends Emitter {
       resolution = Math.max(view.getResolutionForExtent(extent, mapSize), getResolutionFromScale(this.#maxZoom, this.getMapUnits()));
       resolution = (curr < resolution) && (curr > resolution) ? curr : resolution;
     }
-
-
-    const center = ol.extent.getCenter(extent);
   
-    console.log(mapSize)
     await (new Promise(done => {
       view.once('change:center', () => setTimeout(done, 500));
-      view.fit(extent, { duration: 1000, minResolution: resolution });
+      view.fit(extent, { duration: 200, minResolution: resolution });
     }));
 
     if (options.highLightGeometry) {
