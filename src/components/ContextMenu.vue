@@ -572,7 +572,7 @@
             { duration: 200, center:     view.getCenter() },
             { duration: 200, resolution: view.getResolution() }
           );
-          view.fit(geometry, { constrainResolution: true, size: GUI.getMap().getSize() });
+          view.fit(geometry, { constrainResolution: true, size: GUI.getMap().getSize(), padding: view.get('padding') });
         } catch(e) {
           console.warn(e);
           GUI.showUserMessage({
