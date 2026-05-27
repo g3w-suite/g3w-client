@@ -74,9 +74,11 @@ Vue.extend = function(opts) {
 };
 
 /**
- * Monkey patch `ol.View.fitInternal` to accumulate default and custom padding.
+ * Monkey patch `ol.View.fitInternal` to accumulate default and custom padding (also used by `ol.View.fit`).
  * 
  * @see https://openlayers.org/en/v10.9.0/apidoc/module-ol_View.html#~FitOptions
+ * @see https://openlayers.org/en/v10.9.0/apidoc/module-ol_View-View.html#fit
+ * @see https://openlayers.org/en/v10.9.0/apidoc/module-ol_View-View.html#padding
  */
 (() => {
   const fitInternalProto = ol.View.prototype.fitInternal;
