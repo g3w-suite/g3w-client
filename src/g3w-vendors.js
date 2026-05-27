@@ -97,10 +97,10 @@ Vue.extend = function(opts) {
 (() => {
   const fitInternalProto = ol.View.prototype.fitInternal;
    ol.View.prototype.fitInternal = function (geom, opt = {}) {
-    opt.fitOptions = { 
-      ...(opt.fitOptions || {}),
-      padding: this.get('padding') || [0, 0, 0, 0] 
-    };
+    const default_padding = this.get('padding') || [0, 0, 0, 0];
+    const custom_padding  = opt?.fitOptions?.padding || [0, 0, 0, 0];
+    opt.fitOptions = opt.fitOptions || {};
+    opt.fitOptions.padding = default_padding.map((val, index) => val + custom_padding[index]);
     return fitInternalProto.call(this, geom, opt);
   };
 })();
