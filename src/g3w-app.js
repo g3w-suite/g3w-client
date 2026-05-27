@@ -4524,9 +4524,15 @@ export default new (class GUI extends Emitter {
       resolution = (curr < resolution) && (curr > resolution) ? curr : resolution;
     }
 
+
+    const center = ol.extent.getCenter(extent);
+  
     await (new Promise(done => {
       view.once('change:center', () => setTimeout(done, 500));
-      view.fit(ol.geom.Polygon.fromExtent(extent), { minResolution: resolution });
+      view.animate(
+        { duration: 200, center },
+        { duration: 200, resolution }
+      );
     }));
 
     if (options.highLightGeometry) {
