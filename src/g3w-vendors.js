@@ -87,13 +87,14 @@ Vue.extend = function(opts) {
     opt.padding = default_padding.map((val, index) => val + custom_padding[index]);
     return fitProto.call(this, geom, opt);
   };
+})();
 
-  /**
+/**
  * Monkey patch `ol.View.fitInternal` to accumulate default and custom padding.
  * 
- * @see https://openlayers.org/en/latest/apidoc/module-ol_View.html#~FitOptions
+ * @see https://openlayers.org/en/v10.9.0/apidoc/module-ol_View.html#~FitOptions
  */
-  
+(() => {
   const fitInternalProto = ol.View.prototype.fitInternal;
    ol.View.prototype.fitInternal = function (geom, opt = {}) {
     opt.fitOptions = { 
