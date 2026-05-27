@@ -1928,15 +1928,15 @@ export default new (class GUI extends Emitter {
     this.setHidden(W <= 0 || H <= 0);
 
     const padding = [
-      0,
+      parseFloat(document.body.style.getPropertyValue('--mt')),
       parseFloat(document.body.style.getPropertyValue('--mr')),
       parseFloat(document.body.style.getPropertyValue('--mb')),
       parseFloat(document.body.style.getPropertyValue('--ml'))
-    ]
+    ];
 
     // init "map"
     if (!this.#map) {
-      await this.#initMap({ padding });
+      await this.#initMap({  });
     }
 
     // update map padding
@@ -4527,12 +4527,10 @@ export default new (class GUI extends Emitter {
 
     const center = ol.extent.getCenter(extent);
   
+    console.log(mapSize)
     await (new Promise(done => {
       view.once('change:center', () => setTimeout(done, 500));
-      view.animate(
-        { duration: 200, center },
-        { duration: 200, resolution }
-      );
+      view.fit(extent, { duration: 1000, minResolution: resolution });
     }));
 
     if (options.highLightGeometry) {
