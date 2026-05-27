@@ -1936,7 +1936,7 @@ export default new (class GUI extends Emitter {
     this.getMap()?.getView()?.set('padding', [
       0,
       parseFloat(document.body.style.getPropertyValue('--mr')),
-      0,
+      parseFloat(document.body.style.getPropertyValue('--mb')),
       parseFloat(document.body.style.getPropertyValue('--ml'))
     ]);
 
