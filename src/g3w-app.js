@@ -9,7 +9,11 @@
  * @since 4.1.0
  */
 
-import { G3W_FID, QUERY_POINT_TOLERANCE }       from 'g3w-constants';
+import { 
+  G3W_FID,
+  QUERY_POINT_TOLERANCE,
+  GEOMETRY_FIELDS 
+}                                               from 'g3w-constants';
 import Emitter                                  from 'g3w-emitter';
 import Component                                from 'g3w-component';
 import Panel                                    from 'g3w-panel';
@@ -2132,7 +2136,12 @@ export default new (class GUI extends Emitter {
     
         // Sanitize OWS Layer attributes
         if (!attributes && layer instanceof g3w.Layer) {
-          layerAttrs = layer.getAttributes().map(attr => 'ows' === this.state.type ? ({ ...attr, name: attr.name.replace(/ /g, '_') }) : attr);
+          layerAttrs = (
+            layer.getAttributes().length 
+              ? layer.getAttributes()
+              : Object.entries(features?.[0].getProperties() ?? {}) //No fields set by server on layer https://github.com/g3w-suite/g3w-client/issues/936
+                  .map(([key, value]) => ({ name: key, value, label: key, show: !GEOMETRY_FIELDS.concat(G3W_FID).includes(key) }))
+          ).map(attr => 'ows' === this.state.type ? ({ ...attr, name: attr.name.replace(/ /g, '_') }) : attr);
         }
     
         if (!attributes && layer instanceof ol.layer.Vector) {
@@ -2219,9 +2228,11 @@ export default new (class GUI extends Emitter {
           downloads:              is_layer   ? layer.getDownloadFormats()                          : [],
           formStructure:          structure  ? {
             structure,
-            // get field show
-            fields: layer.getFields().filter(f => f.show).concat(
-              (Array.isArray(features) && !rawdata && features.length > 0 && attributes || []).filter(attr => layer.getFields().some(f => f.name === attr.name))
+            // get field show. 
+            fields: (
+              layer.getFields().length //set fields from server
+                ? layer.getFields().filter(f => f.show).concat((Array.isArray(features) && !rawdata && features.length > 0 && attributes || []).filter(attr => layer.getFields().some(f => f.name === attr.name))
+              ) : (Array.isArray(features) && !rawdata && features.length > 0 && attributes || []) //no fields set by server https://github.com/g3w-suite/g3w-client/issues/936
             ),
           } : undefined,
           relationsattributes:       (is_layer || is_vector || is_string)                       ? []                     : undefined,
@@ -2255,6 +2266,7 @@ export default new (class GUI extends Emitter {
 
     this.setActionsForLayers(layers, { add: options.add, update: options.update });
     this.state.changed = true;
+
 
     // used by the following plugins: "bforest"
     this.emit('onafter:setLayersData', layers, options);
