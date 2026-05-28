@@ -1936,12 +1936,11 @@ export default new (class GUI extends Emitter {
 
     // init "map"
     if (!this.#map) {
-      await this.#initMap();
+      await this.#initMap({ padding });
     }
 
     // update map padding
-    this.getMap()?.getView()?.set('padding', padding);
-
+    this.getMap().getView().padding = padding;
     // re-layout each component stored into the stack
     ApplicationState.contentsdata.forEach(d => {
       try {
@@ -4550,7 +4549,7 @@ export default new (class GUI extends Emitter {
     this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, { force: true }));
   }
 
-  async #initMap() {
+  async #initMap({ padding }) {
 
     const width  = document.querySelector('#app').getBoundingClientRect().width;
     const height = window.innerHeight - document.querySelector('.navbar').offsetHeight;
@@ -4597,14 +4596,13 @@ export default new (class GUI extends Emitter {
       keyboardEventTarget: document,
       target:              'map',
       view:                new ol.View({
+        padding,
         extent,
         projection:    this.getProjection(),
         center:        ol.extent.getCenter(initextent),
         resolution:    Math.max(ol.extent.getWidth(initextent) / width, ol.extent.getHeight(initextent) / height), // max(xInitRes, yInitRes)
       }),
     });
-
-    this.#map.once('rendercomplete', () => this.#map.getView().fit(initextent));
 
     //set application epsg and map unit
     ApplicationState.map_epsg = this.getEpsg();
