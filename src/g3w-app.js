@@ -1913,6 +1913,17 @@ export default new (class GUI extends Emitter {
     document.body.style.setProperty('--mb', `${v_split                                                     ? ApplicationState.content.sizes.height + footer.offsetHeight : footer.offsetHeight}px`);
     document.body.style.setProperty('--ml', `${window.innerWidth > 767                                     ? sidebar.offsetWidth                                         : 0}px`);
 
+    // map controls layout vars (decoupled from map view padding vars)
+    const controls_top       = 5;
+    const controls_right     = (h_split && !content.hidden ? ApplicationState.content.sizes.width : 0) + 5;
+    const controls_bottom    = v_split ? ApplicationState.content.sizes.height + footer.offsetHeight : footer.offsetHeight;
+    const controls_maxheight = Math.max(H - controls_top - controls_bottom, 0);
+
+    document.body.style.setProperty('--g3w-controls-top', `${controls_top}px`);
+    document.body.style.setProperty('--g3w-controls-right', `${controls_right}px`);
+    document.body.style.setProperty('--g3w-controls-bottom', `${controls_bottom}px`);
+    document.body.style.setProperty('--g3w-controls-max-height', `${controls_maxheight}px`);
+
     // wait DOM repaint (after vue state is updated)
     await Vue.nextTick();
 
