@@ -1928,7 +1928,8 @@ export default new (class GUI extends Emitter {
     this.setHidden(W <= 0 || H <= 0);
 
     const padding = [
-      parseFloat(document.body.style.getPropertyValue('--mt')),
+      // TODO: move `#map` container underneath the top `.navbar` element (NB: it will break `--g3w-map` anchor?) 
+      0, // parseFloat(document.body.style.getPropertyValue('--mt'))
       parseFloat(document.body.style.getPropertyValue('--mr')),
       parseFloat(document.body.style.getPropertyValue('--mb')),
       parseFloat(document.body.style.getPropertyValue('--ml'))
