@@ -747,7 +747,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .ol-control-br                                                         { bottom: 7px;  right: 7px; min-height: 20px; }
 .ol-zoom :is(.ol-zoom-in, .ol-zoom-out)                                { border-radius: 3px; display: block; }
 .ol-scale-control                                                      { bottom: 15px; }
-.ol-scale-line                                                         { left: auto; font-weight: bold; bottom: 35px; }
+.ol-scale-line                                                         { left: auto; font-weight: bold; bottom: 85px; }
 #scale-control .x-select-trigger                                       { border: none; font-weight: bold; background-color: transparent; min-height: 30px; line-height: 1; }
 .ol-rotate                                                             { top: 55px; left: 0; }
 .ol-rotate button span                                                 { font-weight: bold; }
