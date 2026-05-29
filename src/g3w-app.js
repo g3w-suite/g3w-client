@@ -2137,7 +2137,7 @@ export default new (class GUI extends Emitter {
         // Sanitize OWS Layer attributes
         if (!attributes && layer instanceof g3w.Layer) {
           layerAttrs = (
-            layer.getAttributes().length 
+            layer.getAttributes()?.length 
               ? layer.getAttributes()
               : Object.entries(features?.[0].getProperties() ?? {}) //No fields set by server on layer https://github.com/g3w-suite/g3w-client/issues/936
                   .map(([key, value]) => ({ name: key, value, label: key, show: !GEOMETRY_FIELDS.concat(G3W_FID).includes(key) }))
@@ -2230,7 +2230,7 @@ export default new (class GUI extends Emitter {
             structure,
             // get field show. 
             fields: (
-              layer.getFields().length //set fields from server
+              layer.getFields()?.length //set fields from server
                 ? layer.getFields().filter(f => f.show).concat((Array.isArray(features) && !rawdata && features.length > 0 && attributes || []).filter(attr => layer.getFields().some(f => f.name === attr.name))
               ) : (Array.isArray(features) && !rawdata && features.length > 0 && attributes || []) //no fields set by server https://github.com/g3w-suite/g3w-client/issues/936
             ),
