@@ -1874,7 +1874,7 @@ export class Layer extends Emitter {
    * @returns {*}
    */
   getAttributeLabel(name) {
-    return (this.getAttributes().find(a => name === a.name) || {}).label;
+    return (this.getAttributes().find(a => name === a.name) || {})?.label;
   }
 
   /**
