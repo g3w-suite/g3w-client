@@ -84,6 +84,7 @@ label                                       { display: inline-block; max-width: 
 input[disabled], fieldset[disabled] input   { cursor: not-allowed; }
 input[type="file"]                          { display: block; }
 input[type="range"]                         { display: block; width: 100%; }
+input:is([type="file"], [type="radio"], [type="checkbox"]):focus   { outline: 5px auto -webkit-focus-ring-color; outline-offset: -2px; }
 button, input :is([type="button"], [type="reset"], [type="submit"]) { cursor: pointer; }
 select:is([multiple], [size])               { height: auto; }
 textarea                                    { overflow: auto; }
@@ -1208,17 +1209,14 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 .tree-legend                                        { padding: 0 0 0 43px; width:100%; background-color: var(--bgcolor); margin-top: -1ch; }
 .tree-root + .tree-root                             { border-top: 2px solid var(--skin-color); padding-top: 12px; }
 
-.tree-item button.toggle-context-menu               { opacity: 0; padding: 0; border: 1px solid; border-radius: 3px; }
-.tree-item button.toggle-context-menu > i           { padding: 4px 8px; }
+.tree-item button.toggle-context-menu             { opacity: 0; padding: 0; border: 1px solid; border-radius: 3px; }
+.tree-item button.toggle-context-menu > i         { padding: 4px 8px; }
 .tree-item:not(.group):hover > button.toggle-context-menu,
 .tree-item:not(.group) > button.toggle-context-menu:focus-visible { opacity: 1; }
 .tree-item button                                   { border: unset; background-color: unset; box-shadow: rgba(0,0,0,0.3) 0 2px 5px; padding: 0; border-radius: 3px; margin: 0 3px; font-weight: bold; color: #fff !important; }
 .tree-item button > i                               { padding: 5px; }
-
 .tree-item button.active                            { box-shadow: none; background-color: #384247; }
-.tree-item input[type="checkbox"]                   { accent-color: currentColor; width: unset; margin: unset; margin-top: 5px; -webkit-appearance: none; appearance: none; width: 1em; height: 1em; margin: 5px 0 0 0; border: 1px solid #d9d9d9; border-radius: 2px; background-color: #fff; display: inline-grid; place-content: center; }
-.tree-item input[type="checkbox"]::before           { content: ""; width: 0.65em; height: 0.65em; transform: scale(0); transform-origin: center; clip-path: polygon(14% 44%, 0 59%, 41% 100%, 100% 20%, 84% 6%, 39% 62%); background-color: #000; }
-.tree-item input[type="checkbox"]:checked::before   { transform: scale(1); }
+.tree-item input[type="checkbox"]                   { accent-color: currentColor; width: unset; margin: unset; margin-top: 5px; }
 
 #g3w-themes                            { display: none; padding: 0; }
 #g3w-themes.menu-open                  { display: block; }
