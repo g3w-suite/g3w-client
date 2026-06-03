@@ -127,7 +127,7 @@
 
                 <!-- TOGGLE LAYER FEATURES -->
                 <button
-                  v-if           = "layer.external || (!layer.filter.active && layer.source && 'wms' !== layer.source.type && !(state.query && state.query.pagination))"
+                  v-if           = "layer.external || (!layer.filter.active && layer.source && !['wms', 'arcgismapserver'].includes(layer.source.type) && !(state.query && state.query.pagination))"
                   type           = "button"
                   @click.stop    = "addLayerFeaturesToResults(layer)"
                   class          = "action-button"
