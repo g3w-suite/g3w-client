@@ -2955,7 +2955,7 @@ export class Layer extends Emitter {
         __('LAYERFONTSIZE=',    layerfontsize),    //@since 3.11.3
         __('SHOWFEATURECOUNT=', showfeaturecount), //@since 3.11.3
         __('ITEMFONTITALIC=',   itemfontitalic),
-        __('RULELABEL=',        rulelabel),
+        __('RULELABEL=',        rulelabel ?? 'auto'),
         __('LEGEND_ON=',        ctx_legend && ctx_legend.LEGEND_ON),
         __('LEGEND_OFF=',       ctx_legend && ctx_legend.LEGEND_OFF),
         __('STYLES=',           (opts.categories && 'application/json' === opts.format ? encodeURIComponent(this.getCurrentStyle().name) : undefined)),
