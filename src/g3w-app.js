@@ -859,8 +859,7 @@ export default new (class GUI extends Emitter {
       }
 
       // check if data can be shown on query result content
-      if (last && show) {
-        this.#clearState();
+      if (last && show && !output.add) {
         this.setContent({
           content:    new Component({
             id:                 'queryresults',
@@ -872,6 +871,9 @@ export default new (class GUI extends Emitter {
           post_title: output.title || '',
           perc:       isMobile.any ? 100 : undefined,
         });
+      }
+
+      if (last && show) {
         this.setQueryResponse(data, { add: !!output.add });
       }
 
