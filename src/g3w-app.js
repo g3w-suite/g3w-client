@@ -2178,7 +2178,7 @@ export default new (class GUI extends Emitter {
             : attrs.map(featureAttr => ({
               name:  featureAttr,
               label: featureAttr,
-              show:  G3W_FID !== featureAttr && [undefined, 'gdal', 'wms', 'wcs', 'wmst', 'postgresraster'].includes(sourceType),
+              show:  G3W_FID !== featureAttr && [undefined, 'gdal', 'wms', 'wcs', 'wmst', 'postgresraster', 'arcgismapserver'].includes(sourceType),
               type:  'varchar'
             }));
         }
@@ -2219,11 +2219,9 @@ export default new (class GUI extends Emitter {
           downloads:              is_layer   ? layer.getDownloadFormats()                          : [],
           formStructure:          structure  ? {
             structure,
-            // get field show. 
-            fields: (
-              layer.getFields().length //set fields from server
-                ? layer.getFields().filter(f => f.show).concat((Array.isArray(features) && !rawdata && features.length > 0 && attributes || []).filter(attr => layer.getFields().some(f => f.name === attr.name))
-              ) : (Array.isArray(features) && !rawdata && features.length > 0 && attributes || []) //no fields set by server https://github.com/g3w-suite/g3w-client/issues/936
+            // get field show
+            fields: layer.getFields().filter(f => f.show).concat(
+              (Array.isArray(features) && !rawdata && features.length > 0 && attributes || []).filter(attr => layer.getFields().some(f => f.name === attr.name))
             ),
           } : undefined,
           relationsattributes:       (is_layer || is_vector || is_string)                       ? []                     : undefined,
