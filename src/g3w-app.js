@@ -2822,6 +2822,9 @@ export default new (class GUI extends Emitter {
 
     layer.addfeaturesresults.active = !layer.addfeaturesresults.active;
 
+    //@since 4.1.1 disable context menu on map when interaction to add feature is active
+    this.getMap().set('can_show_context_menu', !layer.addfeaturesresults.active);
+
     if (false === layer.addfeaturesresults.active) {
       this.removeAddFeaturesLayerResultInteraction(true);
     } else {
