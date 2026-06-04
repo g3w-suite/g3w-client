@@ -48,7 +48,7 @@
               >
                 <!-- OPEN ATTRIBUTE TABLE -->
                 <button
-                  v-if           = "!layer.external"
+                  v-if           = "canOpenAttibuteTable(layer)"
                   type           = "button"
                   @click.stop    = "openAttributeTable(layer)"
                   class          = "action-button"
@@ -878,6 +878,15 @@
        */
        isJSON(field) {
         return !this.isVue(field) && this.isSimple(field) && 'Object' === toRawType(field.value);
+      },
+
+      /**
+       * @since 4.1.1 
+       * @param layer 
+       * @return { boolean } whether can open attribute table for layer
+       */
+      canOpenAttibuteTable(layer) {
+        return !layer.external && !getCatalogLayerById(layer.id)?.state?.not_show_attributes_table;
       },
 
       /**
