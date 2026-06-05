@@ -2062,8 +2062,15 @@ export class Layer extends Emitter {
       tolerance:    'map' === tolerance.unit ? undefined : tolerance.value
     }
 
-     const { results: response } = await layer.fetchProxyData('arcgismapserver', { url, params, method, headers: { 'Content-Type': layer.getInfoFormat() } });
-     return {
+    let response = [];
+
+    try {
+      response = (await layer.fetchProxyData('arcgismapserver', { url, params, method, headers: { 'Content-Type': layer.getInfoFormat() } }))?.results ?? [];
+    } catch(e) {
+      console.warn(e);
+    }
+
+    return {
       data: Layer._parse(layer.getInfoFormat(), {
         response,
         layers: [layer],
@@ -2181,7 +2188,7 @@ export class Layer extends Emitter {
     if (this.#providers[type]) {
       return this.#providers[type]; 
     }
-    const providerType = `${type} ${this.state.servertype} ${this.state?.source?.type}}`;
+    const providerType = `${type} ${this.state.servertype} ${this.state?.source?.type}`;
     const provider = {
       getLayer:    () => this,
       query:       () => [],
