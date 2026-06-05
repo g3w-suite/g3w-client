@@ -2051,6 +2051,7 @@ export class Layer extends Emitter {
      const [x, y]     = ('ne' === projection.getAxisOrientation().substr(0, 2) ? [coordinates[1], coordinates[0]] : coordinates);
      const tolerance  = opts.query_point_tolerance ?? QUERY_POINT_TOLERANCE;
 
+     //https://developers.arcgis.com/rest/services-reference/enterprise/identify-map-service/
      const params = {
       f:            "json",
       geometryType: "esriGeometryPoint",
