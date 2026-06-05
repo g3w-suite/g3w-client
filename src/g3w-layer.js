@@ -2062,7 +2062,6 @@ export class Layer extends Emitter {
       tolerance:    'map' === tolerance.unit ? undefined : tolerance.value
     }
 
-
      const { results: response } = await layer.fetchProxyData('arcgismapserver', { url, params, method, headers: { 'Content-Type': layer.getInfoFormat() } });
      return {
       data: Layer._parse(layer.getInfoFormat(), {
