@@ -2181,7 +2181,7 @@ export class Layer extends Emitter {
     if (this.#providers[type]) {
       return this.#providers[type]; 
     }
-    const providerType = `${type} ${this.state.servertype} ${this.state?.source?.type}${this.isArcgisMapserver() ? ' proxy' : ''}`;
+    const providerType = `${type} ${this.state.servertype} ${this.state?.source?.type}}`;
     const provider = {
       getLayer:    () => this,
       query:       () => [],
@@ -2246,7 +2246,6 @@ export class Layer extends Emitter {
       'query QGIS postgresraster',
       'query QGIS vector-tile',
       'query QGIS vectortile',
-      'query QGIS arcgismapserver',
       /** @since 4.0.0 */
       'query QGIS arcgisfeatureserver',
       'query QGIS mdal',
@@ -2257,9 +2256,15 @@ export class Layer extends Emitter {
 
     if ([
       /** @since 4.1.1 */
-      'query QGIS arcgismapserver proxy',
+      'query QGIS arcgismapserver',
     ].includes(providerType)) {
-      provider.query = this.#queryArcgisMapserver.bind(this);
+      //In case of external arcgis mapserver use specific query since arcgis server only return json format for getfeatureinfo request, otherwise use wms query
+      if (this.state?.source?.external) {
+        provider.query = this.#queryArcgisMapserver.bind(this);
+      } else {
+        provider.query = this.#queryWMS.bind(this);
+      }
+      
     }
 
     return (this.#providers[type] = provider);
