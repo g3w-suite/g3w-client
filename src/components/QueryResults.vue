@@ -314,8 +314,17 @@
                 v-if   = "layer.rawdata"
                 class  = "queryresults-text-html"
                 :class = "{ text: layer.infoformat === 'text/plain' }"
-                v-html = "layer.rawdata"
-              ></div>
+              >
+                <iframe
+                  v-if         = "layer.infoformat === 'text/html'"
+                  :key         = "`${layer.id}_${layer.infoformat}`"
+                  style        = "width: 100%; border: none;"
+                  :srcdoc      = "layer.rawdata"
+                  sandbox      = "allow-same-origin"
+                  @load        = "setRawdataIframeHeight"
+                ></iframe>
+                <div v-else v-html="layer.rawdata"></div>
+              </div>
 
               <table v-else class = "table" :class = "{'mobile': isMobile()}">
                 <tbody v-for = "(feature, index) in layer.features.filter(f => showFeature(layer, f))" :key = "feature.id">
@@ -647,6 +656,32 @@
     },
 
     methods: {
+
+      /**
+       * @since 4.1.1
+       * Auto-resize iframe to show full proxy HTML response without internal scrollbars.
+       */
+      setRawdataIframeHeight(event) {
+        try {
+          const iframe = event?.target;
+          const doc    = iframe?.contentDocument;
+          if (!iframe || !doc) {
+            return;
+          }
+          const body   = doc.body;
+          const html   = doc.documentElement;
+          const height = Math.max(
+            body?.scrollHeight || 0,
+            body?.offsetHeight || 0,
+            html?.clientHeight || 0,
+            html?.scrollHeight || 0,
+            html?.offsetHeight || 0,
+          );
+          iframe.style.height = `${Math.max(height, 120)}px`;
+        } catch(e) {
+          console.warn(e);
+        }
+      },
 
       /**
        * @returns { boolean } whether can paginate layer results
@@ -1213,4 +1248,5 @@
   cursor: not-allowed;
   opacity: 0.5;
 }
+
 </style>
