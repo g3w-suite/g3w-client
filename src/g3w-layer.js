@@ -2055,7 +2055,7 @@ export class Layer extends Emitter {
       f:            "json",
       geometryType: "esriGeometryPoint",
       geometry:     `{x: ${x}, y: ${y}}`,
-      layers:       `${(layer.getWMSInfoLayerName() ?? []).join(',')}`,
+      layers:       `all:${(layer.getWMSInfoLayerName() ?? []).join(',')}`,
       imageDisplay: `${GUI.getMap().getSize().join(',')},${DOTS_PER_INCH}`,
       mapExtent:    ('ne' === projection.getAxisOrientation().substr(0, 2) ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox).join(','),
       tolerance:    'map' === tolerance.unit ? undefined : tolerance.value
