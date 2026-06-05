@@ -377,8 +377,8 @@ export class Layer extends Emitter {
       /** @type {number} opacity range = [0, 100] (since 3.8) */
       opacity: config.opacity || 100,
 
-      /** cached proxy params (eg. external wms server) */
-      proxyData: { wms: null },
+      /** cached proxy params (eg. external wms/arcgismapserver server) */
+      proxyData: { wms: null, arcgismapserver: null }, 
 
       /** @since 4.0.0 @type {number } number of preview fields on result */
       max_preview_fields: config.max_preview_fields,
@@ -2062,10 +2062,10 @@ export class Layer extends Emitter {
       tolerance:    'map' === tolerance.unit ? undefined : tolerance.value
     }
 
-    let response = [];
+    let response;
 
     try {
-      response = (await layer.fetchProxyData('arcgismapserver', { url, params, method, headers: { 'Content-Type': layer.getInfoFormat() } }))?.results ?? [];
+      response = await layer.fetchProxyData('arcgismapserver', { url, params, method, headers: { 'Content-Type': layer.getInfoFormat() } });
     } catch(e) {
       console.warn(e);
     }
@@ -3746,14 +3746,57 @@ Layer._parse = function(type, params, opts) {
     },
 
     //@since 4.1.1 handle "esri/json" format for ArcGIS MapServer layers
-    'esri/json'({ response, projections, layers } = {}) {
+    /**
+     * https://developers.arcgis.com/rest/services-reference/enterprise/identify-map-service/#json-response-syntax
+     * {
+        "results": [
+          {
+            "layerId": <layerId1>,
+            "layerName": "<layerName1>",
+            "value": "<value1>",
+            "displayFieldName": "<displayFieldName1>",
+            "attributes": {
+              "<fieldName11>": <fieldValue11>,
+              "<fieldName12>": <fieldValue12>
+            },
+            "geometryType": "<geometryType1>",
+            "hasZ": <true|false>, //added in 10.1
+            "hasM": <true|false>, //added in 10.1
+            "geometry": {<geometry1>}
+          },
+          {
+            "layerId": <layerId2>,
+            "layerName": "<layerName2>",
+            "value": "<value2>",
+            "displayFieldName": "<displayFieldName1>",
+            "attributes": {
+              "<fieldName21>": <fieldValue21>,
+              "<fieldName22>": <fieldValue22>
+            },
+            "geometryType": "<geometryType2>",
+            "hasZ": <true|false>, //added in 10.1
+            "hasM": <true|false>, //added in 10.1
+            "geometry" : {<geometry2>}
+          }
+        ]
+      }
+     * 
+     */
+    'esri/json'({ response = { results: [], error: undefined }, projections, layers } = {}) {
       const layersFeatures = layers.map(layer => ({ layer, features: [] }));
       const layersId       = layers.map(l => l.getWMSLayerName());
-
-      // features
+      // handle server errors
+      if (response.error) {
+        GUI.showUserMessage({
+          type:        'warning',
+          textMessage: true,
+          message:     `${layersId.join(',')}: ${response.error.message}`
+        })
+      }
+      //handle features
       (
-        response
-          ? (Array.isArray(response) ? response : [response]).map((r) => (new ol.format.EsriJSON({
+        response?.results
+          ? response.results.map((r) => (new ol.format.EsriJSON({
               geometryName:          'geometry',
               defaultDataProjection: projections.layer || projections.map,
             })).readFeature(r)) 
