@@ -4808,6 +4808,7 @@ export default new (class GUI extends Emitter {
           } else if (undefined !== this.#layers.index[`qtimeseries_${id}`]) {
             id = `${id}_${this.#layers.index[`qtimeseries_${id}`] + 1}`;
           }
+          // if layer has the same "multilayerid" means that is part of a multilayer, so need to be grouped in a single map layer
           const mapLayer = this.#layers.index[id] || new g3w.Layer(l);
           mapLayer.addLayer(l, 'start');
           // listen change filter token
