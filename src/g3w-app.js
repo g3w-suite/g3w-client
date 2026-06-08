@@ -678,7 +678,6 @@ export default new (class GUI extends Emitter {
     resize_observer.observe(document.querySelector('.content-wrapper'));
     resize_observer.observe(document.querySelector('.navbar'));
     document.querySelector('.main-sidebar').addEventListener('transitionend', () => this._layout());
-    document.querySelector('.content-wrapper').addEventListener('transitionend', () => this._layout());
 
     this._layout();
 
