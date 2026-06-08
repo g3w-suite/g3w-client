@@ -726,7 +726,6 @@ $.ajaxSetup({
         }
       });
     };
-    console.log(project.state.layerstree)
     // compare all layer ids from server config with all layer nodes on layerstree server property
     _traverse(
       project.state.layerstree,
