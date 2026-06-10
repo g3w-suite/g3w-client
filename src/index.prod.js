@@ -641,23 +641,23 @@ $.ajaxSetup({
   const traverse = nodes => {
     for (let i = 0; i < nodes.length; i++) {
       let node = nodes[i];
-      //check if layer (node) of folder
+      // check if layer (node) of folder
       if (undefined !== node.id) {
         project.state.layers
           .forEach(l => {
-            //In case of layer
+            // in case of layer
             if (node.id === l.id) {
               node.name = l.name;
               l.wmsUrl  = project.state.WMSUrl;
               l.project = project;
-              node      = Object.assign(l, node); //replace node with layer configuration from server config
+              node      = Object.assign(l, node); // replace node with layer configuration (from server config)
               return false
             }
           });
       }
-      //iN case of group
+      // in case of group
       if (Array.isArray(node.nodes)) {
-        //add title to tree
+        // add title to tree
         node.title = node.name;
         traverse(node.nodes);
       }
