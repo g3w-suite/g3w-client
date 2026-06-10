@@ -1216,9 +1216,11 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 .tree-item button > i                               { padding: 5px; }
 
 .tree-item button.active                            { box-shadow: none; background-color: #384247; }
-.tree-item input[type="checkbox"]                   { accent-color: currentColor; width: unset; margin: unset; margin-top: 5px; -webkit-appearance: none; appearance: none; width: 1em; height: 1em; margin: 5px 0 0 0; border: 1px solid #d9d9d9; border-radius: 2px; background-color: #fff; display: inline-grid; place-content: center; }
-.tree-item input[type="checkbox"]::before           { content: ""; width: 0.65em; height: 0.65em; transform: scale(0); transform-origin: center; clip-path: polygon(14% 44%, 0 59%, 41% 100%, 100% 20%, 84% 6%, 39% 62%); background-color: #000; }
-.tree-item input[type="checkbox"]:checked::before   { transform: scale(1); }
+
+.tree-item input[type="checkbox"]                   { accent-color: currentColor; width: unset; margin: unset; margin-top: 5px; }
+
+/** Hotfix for mobile */
+body.is-mobile .tree-item input[type="checkbox"]    { accent-color: var(--skin-color); }
 
 #g3w-themes                            { display: none; padding: 0; }
 #g3w-themes.menu-open                  { display: block; }
