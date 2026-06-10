@@ -640,22 +640,24 @@ $.ajaxSetup({
   // Process layerstree and baselayers of the project (useful info for catalog)
   const traverse = nodes => {
     for (let i = 0; i < nodes.length; i++) {
-      const node = nodes[i];
-      //check if layer (node) of folder
+      let node = nodes[i];
+      // check if layer (node) of folder
       if (undefined !== node.id) {
         project.state.layers
           .forEach(l => {
+            // in case of layer
             if (node.id === l.id) {
               node.name = l.name;
               l.wmsUrl  = project.state.WMSUrl;
               l.project = project;
-              node[i]   = Object.assign(l, node);
+              node      = Object.assign(l, node); // replace node with layer configuration (from server config)
               return false
             }
           });
       }
+      // in case of group
       if (Array.isArray(node.nodes)) {
-        //add title to tree
+        // add title to tree
         node.title = node.name;
         traverse(node.nodes);
       }
