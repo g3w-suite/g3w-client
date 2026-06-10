@@ -1219,7 +1219,7 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 
 .tree-item input[type="checkbox"]                   { accent-color: currentColor; width: unset; margin: unset; margin-top: 5px; }
 
-/** Hotfix for mobile */
+/** Hotfix for mobile, ref: PR #939 */
 body.is-mobile .tree-item input[type="checkbox"]    { accent-color: var(--skin-color); }
 
 #g3w-themes                            { display: none; padding: 0; }
