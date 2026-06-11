@@ -916,9 +916,11 @@
       },
 
       /**
-       * @since 4.1.1 
-       * @param layer 
-       * @return { boolean } whether can open attribute table for layer
+       * @param layer
+       * 
+       * @returns { boolean } whether can open attribute table for layer
+       * 
+       * @since 4.1.1
        */
       canOpenAttibuteTable(layer) {
         return !layer.external && !getCatalogLayerById(layer.id)?.state?.not_show_attributes_table;
@@ -1248,5 +1250,4 @@
   cursor: not-allowed;
   opacity: 0.5;
 }
-
 </style>

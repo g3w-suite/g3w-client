@@ -2821,7 +2821,7 @@ export default new (class GUI extends Emitter {
 
     layer.addfeaturesresults.active = !layer.addfeaturesresults.active;
 
-    //@since 4.1.1 disable context menu on map when interaction to add feature is active
+    // disable map context menu when add feature interaction is active
     this.getMap().set('can_show_context_menu', !layer.addfeaturesresults.active);
 
     if (false === layer.addfeaturesresults.active) {
@@ -4807,7 +4807,6 @@ export default new (class GUI extends Emitter {
           } else if (undefined !== this.#layers.index[`qtimeseries_${id}`]) {
             id = `${id}_${this.#layers.index[`qtimeseries_${id}`] + 1}`;
           }
-          // if layer has the same "multilayerid" means that is part of a multilayer, so need to be grouped in a single map layer
           const mapLayer = this.#layers.index[id] || new g3w.Layer(l);
           mapLayer.addLayer(l, 'start');
           // listen change filter token

@@ -152,8 +152,10 @@ export class Layer extends Emitter {
             cache_grid_extent: layer.state.cache_grid_extent,
           }
         ),
-        servertype: layer.state.servertype, //@since 4.1.1
-        source:     layer.state.source,     //@since 4.1.1 
+        /** @since 4.1.1 */
+        servertype: layer.state.servertype,
+        /** @since 4.1.1 */
+        source:     layer.state.source,
       };
     }
 
@@ -1826,14 +1828,13 @@ export class Layer extends Emitter {
     if (this.isMulti() && !this.isXYZ()) {
       return 'application/vnd.ogc.gml';
     }
-    //@since 4.1.1 In case of external arcgismapserver, set infoformat to esri/json since arcgis server only return json format for getfeatureinfo request
+    // external arcgismapserver
     if (this.state.infoformat && '' !== this.state.infoformat && this.isArcgisMapserver()) {
       return 'esri/json';
     }
     if (this.state.infoformat && '' !== this.state.infoformat && 'wfs' !== ogcService) {
       return this.state.infoformat;
     }
-
     return 'application/vnd.ogc.gml';
   }
 
@@ -2030,10 +2031,11 @@ export class Layer extends Emitter {
   }
 
   /**
+   * Retrieve external features (remote ARCGIS Server)
+   *
    * @since 4.1.1
-   * Get features from arcgismapserver when external
    */
-  async #queryArcgisMapserver(opts = {}) {
+  async #queryArcGIS(opts = {}) {
      const {
       layer         = this,
       size          = [101, 101],
@@ -2041,8 +2043,6 @@ export class Layer extends Emitter {
       resolution,
     } = opts;
 
-     const url    = `${layer.getQueryUrl()}/identify`;
-     const method = layer.getOwsMethod();
      // get extent for view size
      const dx         = resolution * size[0] / 2;
      const dy         = resolution * size[1] / 2;
@@ -2051,21 +2051,26 @@ export class Layer extends Emitter {
      const [x, y]     = ('ne' === projection.getAxisOrientation().substr(0, 2) ? [coordinates[1], coordinates[0]] : coordinates);
      const tolerance  = opts.query_point_tolerance ?? QUERY_POINT_TOLERANCE;
 
-     //https://developers.arcgis.com/rest/services-reference/enterprise/identify-map-service/
-     const params = {
-      f:            "json",
-      geometryType: "esriGeometryPoint",
-      geometry:     `{x: ${x}, y: ${y}}`,
-      layers:       `all:${(layer.getWMSInfoLayerName() ?? []).join(',')}`,
-      imageDisplay: `${GUI.getMap().getSize().join(',')},${DOTS_PER_INCH}`,
-      mapExtent:    ('ne' === projection.getAxisOrientation().substr(0, 2) ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox).join(','),
-      tolerance:    'map' === tolerance.unit ? undefined : tolerance.value
-    }
-
     let response;
 
     try {
-      response = await layer.fetchProxyData('arcgismapserver', { url, params, method, headers: { 'Content-Type': layer.getInfoFormat() } });
+      response = await layer.fetchProxyData('arcgismapserver', {
+        // ref: https://developers.arcgis.com/rest/services-reference/enterprise/identify-map-service/
+        url: `${layer.getQueryUrl()}/identify`,
+        params: {
+          f:            "json",
+          geometryType: "esriGeometryPoint",
+          geometry:     `{x: ${x}, y: ${y}}`,
+          layers:       `all:${(layer.getWMSInfoLayerName() ?? []).join(',')}`,
+          imageDisplay: `${GUI.getMap().getSize().join(',')},${DOTS_PER_INCH}`,
+          mapExtent:    ('ne' === projection.getAxisOrientation().substr(0, 2) ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox).join(','),
+          tolerance:    'map' === tolerance.unit ? undefined : tolerance.value
+        },
+        method: layer.getOwsMethod(),
+        headers: {
+          'Content-Type': layer.getInfoFormat()
+        }
+      });
     } catch(e) {
       console.warn(e);
     }
@@ -2073,7 +2078,7 @@ export class Layer extends Emitter {
     return {
       data: Layer._parse(layer.getInfoFormat(), {
         response,
-        layers: [layer],
+        layers:      [layer],
         wms:         true,
         projections: { map: ApplicationState.project.getProjection(), layer: this.getProjection() },
       }),
@@ -2261,17 +2266,14 @@ export class Layer extends Emitter {
       provider.query = this.#queryWMS.bind(this);
     }
 
-    if ([
-      /** @since 4.1.1 */
-      'query QGIS arcgismapserver',
-    ].includes(providerType)) {
-      //In case of external arcgis mapserver use specific query since arcgis server only return json format for getfeatureinfo request, otherwise use wms query
-      if (this.state?.source?.external) {
-        provider.query = this.#queryArcgisMapserver.bind(this);
-      } else {
-        provider.query = this.#queryWMS.bind(this);
-      }
-      
+    // external arcgis mapserver
+    if ('query QGIS arcgismapserver' === providerType && this.state?.source?.external) {
+      provider.query = this.#queryArcGIS.bind(this);
+    }
+
+    // internal arcgis mapserver
+    if ('query QGIS arcgismapserver' === providerType && !this.state?.source?.external) {
+      provider.query = this.#queryWMS.bind(this);
     }
 
     return (this.#providers[type] = provider);
@@ -2893,10 +2895,8 @@ export class Layer extends Emitter {
     if (!this.isRaster()) {
       return;
     }
-
     if (this.useProxy()) {
-      //@since 4.1.1 for external ArcgisMapserver surce that hasn't layers attribute but only layer attribute
-      return this.getSource().layers ?? [this.getSource().layer];
+      return this.getSource().layers ?? [this.getSource().layer]; // FALLBACK: for external ArcGIS server (source)
     }
     if (this.state.wms_use_layer_ids) {
       return this.getId();
@@ -3745,42 +3745,12 @@ Layer._parse = function(type, params, opts) {
       return parsed;
     },
 
-    //@since 4.1.1 handle "esri/json" format for ArcGIS MapServer layers
     /**
-     * https://developers.arcgis.com/rest/services-reference/enterprise/identify-map-service/#json-response-syntax
-     * {
-        "results": [
-          {
-            "layerId": <layerId1>,
-            "layerName": "<layerName1>",
-            "value": "<value1>",
-            "displayFieldName": "<displayFieldName1>",
-            "attributes": {
-              "<fieldName11>": <fieldValue11>,
-              "<fieldName12>": <fieldValue12>
-            },
-            "geometryType": "<geometryType1>",
-            "hasZ": <true|false>, //added in 10.1
-            "hasM": <true|false>, //added in 10.1
-            "geometry": {<geometry1>}
-          },
-          {
-            "layerId": <layerId2>,
-            "layerName": "<layerName2>",
-            "value": "<value2>",
-            "displayFieldName": "<displayFieldName1>",
-            "attributes": {
-              "<fieldName21>": <fieldValue21>,
-              "<fieldName22>": <fieldValue22>
-            },
-            "geometryType": "<geometryType2>",
-            "hasZ": <true|false>, //added in 10.1
-            "hasM": <true|false>, //added in 10.1
-            "geometry" : {<geometry2>}
-          }
-        ]
-      }
+     * Handle "esri/json" response for ArcGIS layers
      * 
+     * @see https://developers.arcgis.com/rest/services-reference/enterprise/identify-map-service/#json-response-syntax
+     * 
+     * @since 4.1.1
      */
     'esri/json'({ response = { results: [], error: undefined }, projections, layers } = {}) {
       const layersFeatures = layers.map(layer => ({ layer, features: [] }));
