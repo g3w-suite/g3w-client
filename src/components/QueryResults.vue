@@ -311,21 +311,16 @@
             <div class = "box-body" :class = "{'mobile': isMobile()}">
 
               <!-- LAYER WITH RAW DATA -->
-              <div
+              <iframe
                 v-if   = "layer.rawdata"
                 class  = "queryresults-text-html"
                 :class = "{ text: layer.infoformat === 'text/plain' }"
-              >
-                <iframe
-                  v-if         = "layer.infoformat === 'text/html'"
-                  :key         = "`${layer.id}_${layer.infoformat}`"
-                  style        = "width: 100%; border: none;"
-                  :srcdoc      = "layer.rawdata"
-                  sandbox      = "allow-same-origin"
-                  @load        = "setRawdataIframeHeight"
-                ></iframe>
-                <div v-else v-html="layer.rawdata"></div>
-              </div>
+                :key         = "`${layer.id}_${layer.infoformat}`"
+                style        = "width: 100%; border: none;"
+                sandbox      = "allow-same-origin"
+                scrolling    = "no"
+                @load        = "setRawdataIframeContent($event, layer.rawdata, layer.infoformat)"
+              ></iframe>
 
               <table v-else class = "table" :class = "{'mobile': isMobile()}">
                 <tbody v-for = "(feature, index) in layer.features.filter(f => showFeature(layer, f))" :key = "feature.id">
@@ -659,26 +654,70 @@
     methods: {
 
       /**
-       * @since 4.1.1
-       * Auto-resize iframe to show full proxy HTML response without internal scrollbars.
+       * @since 4.1.1 - Inject layer data raw data within and <iframe>
        */
-      setRawdataIframeHeight(event) {
+      setRawdataIframeContent(event, rawdata, infoformat) {
         try {
           const iframe = event?.target;
           const doc    = iframe?.contentDocument;
           if (!iframe || !doc) {
             return;
           }
-          const body   = doc.body;
-          const html   = doc.documentElement;
-          const height = Math.max(
-            body?.scrollHeight || 0,
-            body?.offsetHeight || 0,
-            html?.clientHeight || 0,
-            html?.scrollHeight || 0,
-            html?.offsetHeight || 0,
-          );
-          iframe.style.height = `${Math.max(height, 120)}px`;
+
+          const toIframeMarkup = (data, format) => {
+            if ('text/plain' === format) {
+              let text = String(data || '');
+
+              const escaped = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+              return `<pre style="margin:0;white-space:pre-wrap;word-break:break-word;font-family:monospace;">${escaped}</pre>`;
+            }
+            return data || '';
+          };
+
+          const markup = toIframeMarkup(rawdata, infoformat);
+
+          const measure = () => {
+            const _doc = iframe.contentDocument;
+            if (!_doc) {
+              return;
+            }
+
+            const elements = [
+              _doc.scrollingElement,
+              _doc.documentElement,
+              _doc.body,
+            ].filter(Boolean);
+
+            if (0 === elements.length) {
+              return;
+            }
+
+            const height = Math.max(...elements.map(el => Math.max(
+              el.scrollHeight || 0,
+              el.offsetHeight || 0,
+              el.clientHeight || 0,
+            )));
+
+            iframe.style.height = `${Math.max(height, 120)}px`;
+          };
+
+          // First load: write iframe content and measure after DOM is rebuilt.
+          if (iframe.__g3wRawdata !== markup) {
+            iframe.__g3wRawdata = markup;
+            doc.open();
+            doc.write(markup);
+            doc.close();
+
+            requestAnimationFrame(measure);
+            setTimeout(measure, 50);
+            setTimeout(measure, 200);
+            return;
+          }
+
+          measure();
         } catch(e) {
           console.warn(e);
         }
