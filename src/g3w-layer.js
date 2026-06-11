@@ -2037,7 +2037,7 @@ export class Layer extends Emitter {
    */
   async #queryArcGIS(opts = {}) {
      const {
-      layer         = this,
+      layers         = [this],
       size          = [101, 101],
       coordinates   = [],
       resolution,
@@ -2054,21 +2054,21 @@ export class Layer extends Emitter {
     let response;
 
     try {
-      response = await layer.fetchProxyData('arcgismapserver', {
+      response = await layers[0].fetchProxyData('arcgismapserver', {
         // ref: https://developers.arcgis.com/rest/services-reference/enterprise/identify-map-service/
-        url: `${layer.getQueryUrl()}/identify`,
+        url: `${layers[0].getQueryUrl()}/identify`,
         params: {
           f:            "json",
           geometryType: "esriGeometryPoint",
           geometry:     `{x: ${x}, y: ${y}}`,
-          layers:       `all:${(layer.getWMSInfoLayerName() ?? []).join(',')}`,
+          layers:       `all:${(layers.map(l => l.getWMSInfoLayerName()) ?? []).join(',')}`,
           imageDisplay: `${GUI.getMap().getSize().join(',')},${DOTS_PER_INCH}`,
           mapExtent:    ('ne' === projection.getAxisOrientation().substr(0, 2) ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox).join(','),
           tolerance:    'map' === tolerance.unit ? undefined : tolerance.value
         },
-        method: layer.getOwsMethod(),
+        method: layers[0].getOwsMethod(),
         headers: {
-          'Content-Type': layer.getInfoFormat()
+          'Content-Type': layers[0].getInfoFormat()
         }
       });
     } catch(e) {
@@ -2076,9 +2076,9 @@ export class Layer extends Emitter {
     }
 
     return {
-      data: Layer._parse(layer.getInfoFormat(), {
+      data: Layer._parse(layers[0].getInfoFormat(), {
         response,
-        layers:      [layer],
+        layers,
         wms:         true,
         projections: { map: ApplicationState.project.getProjection(), layer: this.getProjection() },
       }),
