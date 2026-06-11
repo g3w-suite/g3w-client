@@ -71,10 +71,11 @@
               <div class="query-layer-actions" style = "display: flex; gap: 2.5px; padding-right: 10px;">
                 <!-- INFO FORMATS -->
                 <select
-                  v-if      = "(layer.infoformats || []).length"
-                  class     = "form-control"
-                  @change   = "changeInfoFormat(layer, $event.target.value)"
-                  :disabled = "layer.loading"
+                  v-if        = "(layer.infoformats || []).length"
+                  class       = "form-control"
+                  @change     = "changeInfoFormat(layer, $event.target.value)"
+                  @click.stop = ""
+                  :disabled   = "layer.loading"
                 >
                   <option
                     v-for     = "format in layer.infoformats"
