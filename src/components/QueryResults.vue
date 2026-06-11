@@ -1069,7 +1069,7 @@
        * @since 4.1.0 
        */
       async changeInfoFormat(layer, contenttype) {
-        layer.loading = true;
+        layer.loading     = true;
         try {
           const catalog_layer = getCatalogLayerById(layer.id);
 
@@ -1087,12 +1087,12 @@
           catalog_layer.setInfoFormat(layer.infoformat);
 
           const [data] = Layer._parse(contenttype, { layers: [catalog_layer], response });
-
           // parse as raw data
           if (!data.features) {
             layer.features.splice(0);
             await this.$nextTick();
-            layer.rawdata = data.rawdata;
+            layer.rawdata     = data.rawdata;
+            layer.hasgeometry = false;
           }
 
           // parse data
