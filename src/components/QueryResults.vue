@@ -314,12 +314,12 @@
               <iframe
                 v-if   = "layer.rawdata"
                 class  = "queryresults-text-html"
-                :class = "{ text: layer.infoformat === 'text/plain' }"
-                :key         = "`${layer.id}_${layer.infoformat}`"
+                :class    = "{ text: layer.infoformat === 'text/plain' }"
+                :key         = "`${layer.id}_${layer.infoformat}_${(layer.rawdata || '').length}_${(layer.rawdata || '').charCodeAt(0) || 0}`"
                 style        = "width: 100%; border: none;"
-                sandbox      = "allow-same-origin"
-                scrolling    = "no"
-                @load        = "setRawdataIframeContent($event, layer.rawdata, layer.infoformat)"
+                sandbox   = "allow-same-origin"
+                scrolling = "no"
+                @load     = "setRawdataIframeContent($event, layer)"
               ></iframe>
 
               <table v-else class = "table" :class = "{'mobile': isMobile()}">
@@ -656,28 +656,21 @@
       /**
        * @since 4.1.1 - Inject layer data raw data within and <iframe>
        */
-      setRawdataIframeContent(event, rawdata, infoformat) {
+      setRawdataIframeContent(event, layer) {
         try {
           const iframe = event?.target;
           const doc    = iframe?.contentDocument;
+
           if (!iframe || !doc) {
             return;
           }
 
-          const toIframeMarkup = (data, format) => {
-            if ('text/plain' === format) {
-              let text = String(data || '');
-
-              const escaped = text
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
-              return `<pre style="margin:0;white-space:pre-wrap;word-break:break-word;font-family:monospace;">${escaped}</pre>`;
-            }
-            return data || '';
-          };
-
-          const markup = toIframeMarkup(rawdata, infoformat);
+          const data = 'text/plain' === layer.infoformat
+            ? `<pre style="margin:0; white-space:pre; overflow-x:auto; overflow-y:hidden;">${String(layer.rawdata || '')
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')}</pre>`
+            : (layer.rawdata || '');
 
           const measure = () => {
             const _doc = iframe.contentDocument;
@@ -685,17 +678,21 @@
               return;
             }
 
-            const elements = [
+            // Keep only horizontal scrollbar inside iframe content.
+            if (_doc.documentElement) {
+              _doc.documentElement.style.overflowX = 'auto';
+              _doc.documentElement.style.overflowY = 'hidden'
+            }
+            if (_doc.body) {
+            _doc.body.style.overflowX = 'auto';
+            _doc.body.style.overflowY = 'hidden';
+            }
+
+            const height = Math.max(...[
               _doc.scrollingElement,
               _doc.documentElement,
               _doc.body,
-            ].filter(Boolean);
-
-            if (0 === elements.length) {
-              return;
-            }
-
-            const height = Math.max(...elements.map(el => Math.max(
+            ].filter(Boolean).map(el => Math.max(
               el.scrollHeight || 0,
               el.offsetHeight || 0,
               el.clientHeight || 0,
@@ -705,10 +702,10 @@
           };
 
           // First load: write iframe content and measure after DOM is rebuilt.
-          if (iframe.__g3wRawdata !== markup) {
-            iframe.__g3wRawdata = markup;
+          if (iframe.__g3wRawdata !== data) {
+            iframe.__g3wRawdata = data;
             doc.open();
-            doc.write(markup);
+            doc.write(data);
             doc.close();
 
             requestAnimationFrame(measure);
