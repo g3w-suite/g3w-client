@@ -1211,7 +1211,7 @@
               if (0 === layer.attributes.length) {
                 layer.hasgeometry = !!feature.geometry;
                 GUI.setActionsForLayers([layer]);
-                getAlphanumericProps(feature.attributes).forEach(name => layer.attributes.push({ name, label: name, show: true }));
+                getAlphanumericProps(feature.attributes).forEach(name => layer.attributes.push({ name, label: name, show: true, type: 'varchar' }));
               }
               layer.features.push(feature);
             });
