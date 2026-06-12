@@ -658,12 +658,9 @@
           const doc    = iframe?.contentDocument;
 
           // skip when iframe is not ready
-          if (!iframe || !doc) {
+          if (!doc) {
             return;
           }
-
-          // reset observer
-          iframe.__g3wObserver?.disconnect();
 
           // inject html or text contect (within ifram)
           doc.body.innerHTML = 'text/plain' === layer.infoformat
@@ -676,10 +673,9 @@
           </style>`;
 
           // watch for layout changes (within iframe)
-          iframe.__g3wObserver = new ResizeObserver(([entry]) => {
+          (new ResizeObserver(([entry]) => {
             iframe.style.height = `${Math.max(120, Math.ceil(entry.borderBoxSize?.[0]?.blockSize || entry.contentRect.height))}px`;
-          });
-          iframe.__g3wObserver.observe(doc.documentElement);
+          })).observe(doc.documentElement);
 
         } catch(e) {
           console.warn(e);
