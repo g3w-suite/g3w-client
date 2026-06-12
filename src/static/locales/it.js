@@ -391,4 +391,5 @@ export default {
   'Layers settings': 'Configura livelli',
   'layers selected': 'livelli selezionati',
   'Type to search layers': 'Inizia a digitare per cercare i livelli',
+  '(CSP) scripts and links are disabled in this frame': '(CSP) script e link sono disabilitati in questo frame',
 };

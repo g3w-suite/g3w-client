@@ -313,7 +313,7 @@
                 v-if   = "layer.rawdata"
                 :key      = "`${layer.id}_${layer.infoformat}_${(layer.rawdata || '').length}_${(layer.rawdata || '').charCodeAt(0) || 0}`"
                 style     = "width: 100%; border: none;"
-                sandbox   = "allow-same-origin allow-popups allow-scripts"
+                sandbox   = "allow-same-origin"
                 scrolling = "no"
                 @load     = "setRawdataIframeContent($event, layer)"
               ></iframe>
@@ -657,18 +657,23 @@
           const iframe = event?.target;
           const doc    = iframe?.contentDocument;
 
+          // skip when iframe content is not ready
           if (!iframe || !doc) {
             return;
           }
 
+          // plain text or html content
           const data = 'text/plain' === layer.infoformat
-            ? `<pre style="margin:0; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; overflow-x:hidden; overflow-y:hidden;">${String(layer.rawdata || '')
+            ? /* html */`<pre style="margin:0; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; overflow-x:hidden; overflow-y:hidden;">${String(layer.rawdata || '')
               .replace(/&/g, '&amp;')
               .replace(/</g, '&lt;')
               .replace(/>/g, '&gt;')}</pre>`
-            : (layer.rawdata || '');
+            : /* html */`<div style="box-sizing:border-box;width:100%;background:#fff3cd;color:#856404;border:1px solid #ffc107;border-radius:3px;padding:4px 8px;font-size:0.85em;font-family:sans-serif;margin-bottom:6px;">&#9888; ${this.$t('(CSP) scripts and links are disabled in this frame')}</div>` + (layer.rawdata || '');
 
+          // helper function to extract maximum height of an element
           const getHeight = el => Math.max(el?.scrollHeight || 0, el?.offsetHeight || 0, el?.clientHeight || 0, el?.getBoundingClientRect?.().height || 0);
+
+          // recalculate content height and update the iframe dimensions (to avoid vertical scrollbars within iframe)
           const measure   = () => {
             // Keep only horizontal scrollbar inside iframe content.
             if (doc.documentElement) {
@@ -680,6 +685,7 @@
               doc.body.style.overflowY = 'hidden';
             }
 
+            // Calculate absolute bottom position of the lowest child element in <body>
             const bodyRect = doc.body?.getBoundingClientRect?.();
             const contentBottom = !doc.body || !bodyRect
               ? 0
@@ -688,21 +694,26 @@
                 return Math.max(max, rect ? (rect.bottom - bodyRect.top) : 0);
               }, 0);
 
+            // Set iframe height matching the largest measured element (min: 120px)
             iframe.style.height = `${Math.max(120, Math.ceil(Math.max(getHeight(doc.scrollingElement), getHeight(doc.documentElement), getHeight(doc.body), contentBottom )))}px`;
           };
 
+          // inject HTML data within iframe 
           doc.open();
           doc.write(data);
           doc.close();
 
+          // adjust iframe size when images are loaded.
           Array.from(doc.images || []).forEach(img => {
             img.addEventListener('load', measure, { once: true });
             img.addEventListener('error', measure, { once: true });
           });
 
+          // prevent memory leaks by cleaning up any pre-existing observer
           iframe.__g3wResizeObserver?.disconnect?.();
           iframe.__g3wResizeObserverCleanup?.();
 
+          // watch for dynamic layout changes inside the iframe
           const observer = new ResizeObserver(measure);
 
           if (doc.documentElement) {
@@ -712,8 +723,10 @@
             observer.observe(doc.body);
           }
 
+          // store the observer instance on the iframe element for future cleanup access
           iframe.__g3wResizeObserver = observer;
 
+          // disconnect observer when the iframe document unloads to free up system memory
           const onUnload = () => {
             iframe.__g3wResizeObserver?.disconnect?.();
             iframe.__g3wResizeObserver = null;
@@ -722,10 +735,8 @@
           doc.defaultView?.addEventListener('unload', onUnload, { once: true });
           iframe.__g3wResizeObserverCleanup = () => { doc.defaultView?.removeEventListener('unload', onUnload); };
 
-          requestAnimationFrame(measure);
-          setTimeout(measure, 50);
-          setTimeout(measure, 200);
-          setTimeout(measure, 500);
+          // execute an immediate initial height measurement on the next Vue lifecycle tick
+          this.$nextTick().then(measure) ;
         } catch(e) {
           console.warn(e);
         }
