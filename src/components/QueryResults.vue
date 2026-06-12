@@ -657,77 +657,30 @@
           const iframe = event?.target;
           const doc    = iframe?.contentDocument;
 
-          // skip when iframe content is not ready
+          // skip when iframe is not ready
           if (!iframe || !doc) {
             return;
           }
 
-          // plain text or html content
-          const data = 'text/plain' === layer.infoformat
-            ? /* html */`<pre style="margin:0; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; overflow-x:hidden; overflow-y:hidden;">${String(layer.rawdata || '')
-              .replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;')}</pre>`
-            : /* html */`<div style="box-sizing:border-box;width:100%;background:#fff3cd;color:#856404;border:1px solid #ffc107;border-radius:3px;padding:4px 8px;font-size:0.85em;font-family:sans-serif;margin-bottom:6px;">&#9888; ${this.$t('(CSP) scripts and links are disabled in this frame')}</div>` + (layer.rawdata || '');
+          // reset observer
+          iframe.__g3wObserver?.disconnect();
 
-          // helper function to extract maximum height of an element
-          const getHeight = el => Math.max(el?.scrollHeight || 0, el?.offsetHeight || 0, el?.clientHeight || 0, el?.getBoundingClientRect?.().height || 0);
+          // inject html or text contect (within ifram)
+          doc.body.innerHTML = 'text/plain' === layer.infoformat
+            ? /* html */`<pre style="margin:0; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; overflow:hidden hidden;">${String(layer.rawdata || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>`
+            : /* html */`<div style="box-sizing:border-box;width:100%;background:#fff3cd;color:#856404;border:1px solid #ffc107;border-radius:3px;padding:4px 8px;font-size:0.85em;font-family:sans-serif;margin-bottom:6px;">⚠ ${this.$t('(CSP) scripts and links are disabled in this frame')}</div>` + (layer.rawdata || '');
 
-          // recalculate content height and update the iframe dimensions (to avoid vertical scrollbars within iframe)
-          const measure   = () => {
-            // Keep only horizontal scrollbar inside iframe content.
-            doc.documentElement.style.overflowX = 'text/plain' === layer.infoformat ? 'hidden' : 'auto';
-            doc.body.style.overflowX            = 'text/plain' === layer.infoformat ? 'hidden' : 'auto';
-            doc.documentElement.style.overflowY = 'hidden';
-            doc.body.style.overflowY            = 'hidden';
+          // html content → keep horizontal scrollbar
+          doc.head.innerHTML = /* html */`<style>
+            html, body { overflow: ${'text/plain' === layer.infoformat ? 'hidden' : 'auto'} hidden; margin: 0; }
+          </style>`;
 
-            // Calculate absolute bottom position of the lowest child element in <body>
-            const bodyRect = doc.body?.getBoundingClientRect?.();
-            const contentBottom = !doc.body || !bodyRect
-              ? 0
-              : Array.from(doc.body.children || []).reduce((max, child) => {
-                const rect = child.getBoundingClientRect?.();
-                return Math.max(max, rect ? (rect.bottom - bodyRect.top) : 0);
-              }, 0);
-
-            // Set iframe height matching the largest measured element (min: 120px)
-            iframe.style.height = `${Math.max(120, Math.ceil(Math.max(getHeight(doc.scrollingElement), getHeight(doc.documentElement), getHeight(doc.body), contentBottom )))}px`;
-          };
-
-          // inject HTML data within iframe 
-          doc.open();
-          doc.write(data);
-          doc.close();
-
-          // adjust iframe size when images are loaded.
-          Array.from(doc.images || []).forEach(img => {
-            img.addEventListener('load', measure, { once: true });
-            img.addEventListener('error', measure, { once: true });
+          // watch for layout changes (within iframe)
+          iframe.__g3wObserver = new ResizeObserver(([entry]) => {
+            iframe.style.height = `${Math.max(120, Math.ceil(entry.borderBoxSize?.[0]?.blockSize || entry.contentRect.height))}px`;
           });
+          iframe.__g3wObserver.observe(doc.documentElement);
 
-          // prevent memory leaks by cleaning up any pre-existing observer
-          iframe.__g3wResizeObserver?.disconnect?.();
-          iframe.__g3wResizeObserverCleanup?.();
-
-          // watch for dynamic layout changes inside the iframe
-          const observer = new ResizeObserver(measure);
-          observer.observe(doc.documentElement);
-          observer.observe(doc.body);
-
-          // store the observer instance on the iframe element for future cleanup access
-          iframe.__g3wResizeObserver = observer;
-
-          // disconnect observer when the iframe document unloads to free up system memory
-          const onUnload = () => {
-            iframe.__g3wResizeObserver?.disconnect?.();
-            iframe.__g3wResizeObserver = null;
-          };
-
-          doc.defaultView?.addEventListener('unload', onUnload, { once: true });
-          iframe.__g3wResizeObserverCleanup = () => { doc.defaultView?.removeEventListener('unload', onUnload); };
-
-          // execute an immediate initial height measurement on the next Vue lifecycle tick
-          this.$nextTick().then(measure) ;
         } catch(e) {
           console.warn(e);
         }
