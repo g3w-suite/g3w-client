@@ -29,7 +29,6 @@
           <div class = "box box-primary">
             <div
               class           = "box-header with-border"
-              :class          = "{'mobile': isMobile()}"
               @mouseover.stop = "!isMobile() && highlightLayer(layer, { zoom: false, highlight: true, duration: Infinity })"
               @mouseout.stop  = "!isMobile() && highlightLayer(layer, { zoom: false, highlight: false })"
               @click.stop     = "collapseSidebar"
@@ -196,7 +195,6 @@
               v-if   = "state.layeractiontool[layer.id].component"
               class  = "g3w-layer-action-tools with-border"
               style  = "padding: 5px"
-              :class = "{'mobile': isMobile()}"
             >
               <component
                 :is     = "state.layeractiontool[layer.id].component"
@@ -308,7 +306,7 @@
               </ul>
             </div>
 
-            <div class = "box-body" :class = "{'mobile': isMobile()}">
+            <div class = "box-body">
 
               <!-- LAYER WITH RAW DATA -->
               <iframe
@@ -322,7 +320,7 @@
                 @load     = "setRawdataIframeContent($event, layer)"
               ></iframe>
 
-              <table v-else class = "table" :class = "{'mobile': isMobile()}">
+              <table v-else class = "table">
                 <tbody v-for = "(feature, index) in layer.features.filter(f => showFeature(layer, f))" :key = "feature.id">
 
                   <!-- ORIGINAL SOURCE: src/components/QueryResultsHeaderFeatureActionsBody.vue@v4.0.0 -->
