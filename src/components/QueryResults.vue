@@ -676,14 +676,10 @@
           // recalculate content height and update the iframe dimensions (to avoid vertical scrollbars within iframe)
           const measure   = () => {
             // Keep only horizontal scrollbar inside iframe content.
-            if (doc.documentElement) {
-              doc.documentElement.style.overflowX = 'text/plain' === layer.infoformat ? 'hidden' : 'auto';
-              doc.documentElement.style.overflowY = 'hidden';
-            }
-            if (doc.body) {
-              doc.body.style.overflowX = 'text/plain' === layer.infoformat ? 'hidden' : 'auto';
-              doc.body.style.overflowY = 'hidden';
-            }
+            doc.documentElement.style.overflowX = 'text/plain' === layer.infoformat ? 'hidden' : 'auto';
+            doc.body.style.overflowX            = 'text/plain' === layer.infoformat ? 'hidden' : 'auto';
+            doc.documentElement.style.overflowY = 'hidden';
+            doc.body.style.overflowY            = 'hidden';
 
             // Calculate absolute bottom position of the lowest child element in <body>
             const bodyRect = doc.body?.getBoundingClientRect?.();
@@ -715,13 +711,8 @@
 
           // watch for dynamic layout changes inside the iframe
           const observer = new ResizeObserver(measure);
-
-          if (doc.documentElement) {
-            observer.observe(doc.documentElement);
-          }
-          if (doc.body) {
-            observer.observe(doc.body);
-          }
+          observer.observe(doc.documentElement);
+          observer.observe(doc.body);
 
           // store the observer instance on the iframe element for future cleanup access
           iframe.__g3wResizeObserver = observer;
