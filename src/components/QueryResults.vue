@@ -683,102 +683,69 @@
           };
 
           const measure = () => {
-            const _doc = iframe.contentDocument;
-            if (!_doc) {
-              return;
-            }
-
             // Keep only horizontal scrollbar inside iframe content.
-            const isTextPlain = 'text/plain' === layer.infoformat;
-            if (_doc.documentElement) {
-              _doc.documentElement.style.overflowX = isTextPlain ? 'hidden' : 'auto';
-              _doc.documentElement.style.overflowY = 'hidden';
+            if (doc.documentElement) {
+              doc.documentElement.style.overflowX = 'text/plain' === layer.infoformat ? 'hidden' : 'auto';
+              doc.documentElement.style.overflowY = 'hidden';
             }
-            if (_doc.body) {
-              _doc.body.style.overflowX = isTextPlain ? 'hidden' : 'auto';
-              _doc.body.style.overflowY = 'hidden';
+            if (doc.body) {
+              doc.body.style.overflowX = 'text/plain' === layer.infoformat ? 'hidden' : 'auto';
+              doc.body.style.overflowY = 'hidden';
             }
 
-            const bodyRect = _doc.body?.getBoundingClientRect?.();
-            const contentBottom = !_doc.body || !bodyRect
+            const bodyRect = doc.body?.getBoundingClientRect?.();
+            const contentBottom = !doc.body || !bodyRect
               ? 0
-              : Array.from(_doc.body.children || []).reduce((max, child) => {
+              : Array.from(doc.body.children || []).reduce((max, child) => {
                 const rect = child.getBoundingClientRect?.();
                 return Math.max(max, rect ? (rect.bottom - bodyRect.top) : 0);
               }, 0);
 
             const height = Math.ceil(Math.max(
-              getElementHeight(_doc.scrollingElement),
-              getElementHeight(_doc.documentElement),
-              getElementHeight(_doc.body),
+              getElementHeight(doc.scrollingElement),
+              getElementHeight(doc.documentElement),
+              getElementHeight(doc.body),
               contentBottom,
             ));
 
             iframe.style.height = `${Math.max(height, 120)}px`;
           };
 
-          const scheduleMeasure = () => {
-            requestAnimationFrame(measure);
-            setTimeout(measure, 50);
-            setTimeout(measure, 200);
-            setTimeout(measure, 500);
-          };
+          doc.open();
+          doc.write(data);
+          doc.close();
 
-          const setupAutoMeasure = () => {
-            const _doc = iframe.contentDocument;
-            if (!_doc || 'undefined' === typeof ResizeObserver) {
-              return;
-            }
+          Array.from(doc.images || []).forEach(img => {
+            img.addEventListener('load', measure, { once: true });
+            img.addEventListener('error', measure, { once: true });
+          });
 
-            iframe.__g3wResizeObserver?.disconnect?.();
-            iframe.__g3wResizeObserverCleanup?.();
-            iframe.__g3wResizeObserverCleanup = null;
+          iframe.__g3wResizeObserver?.disconnect?.();
+          iframe.__g3wResizeObserverCleanup?.();
 
-            const ro = new ResizeObserver(() => {
-              measure();
-            });
+          const observer = new ResizeObserver(measure);
 
-            if (_doc.documentElement) {
-              ro.observe(_doc.documentElement);
-            }
-            if (_doc.body) {
-              ro.observe(_doc.body);
-            }
-
-            iframe.__g3wResizeObserver = ro;
-
-            const onUnload = () => {
-              if (iframe.__g3wResizeObserver === ro) {
-                iframe.__g3wResizeObserver?.disconnect?.();
-                iframe.__g3wResizeObserver = null;
-              }
-            };
-
-            _doc.defaultView?.addEventListener('unload', onUnload, { once: true });
-            iframe.__g3wResizeObserverCleanup = () => {
-              _doc.defaultView?.removeEventListener('unload', onUnload);
-            };
-          };
-
-          // First load: write iframe content and measure after DOM is rebuilt.
-          if (iframe.__g3wRawdata !== data) {
-            iframe.__g3wRawdata = data;
-            doc.open();
-            doc.write(data);
-            doc.close();
-
-            Array.from(doc.images || []).forEach(img => {
-              img.addEventListener('load', measure, { once: true });
-              img.addEventListener('error', measure, { once: true });
-            });
-
-            setupAutoMeasure();
-            scheduleMeasure();
-            return;
+          if (doc.documentElement) {
+            observer.observe(doc.documentElement);
+          }
+          if (doc.body) {
+            observer.observe(doc.body);
           }
 
-          setupAutoMeasure();
-          scheduleMeasure();
+          iframe.__g3wResizeObserver = observer;
+
+          const onUnload = () => {
+            iframe.__g3wResizeObserver?.disconnect?.();
+            iframe.__g3wResizeObserver = null;
+          };
+
+          doc.defaultView?.addEventListener('unload', onUnload, { once: true });
+          iframe.__g3wResizeObserverCleanup = () => { doc.defaultView?.removeEventListener('unload', onUnload); };
+
+          requestAnimationFrame(measure);
+          setTimeout(measure, 50);
+          setTimeout(measure, 200);
+          setTimeout(measure, 500);
         } catch(e) {
           console.warn(e);
         }
