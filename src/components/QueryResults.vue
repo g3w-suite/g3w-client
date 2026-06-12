@@ -662,10 +662,23 @@
             return;
           }
 
-          // inject html or text contect (within ifram)
+          // inject html or text contect (within iframe)
           doc.body.innerHTML = 'text/plain' === layer.infoformat
             ? /* html */`<pre style="margin:0; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; overflow:hidden hidden;">${String(layer.rawdata || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>`
-            : /* html */`<div style="box-sizing:border-box;width:100%;background:#fff3cd;color:#856404;border:1px solid #ffc107;border-radius:3px;padding:4px 8px;font-size:0.85em;font-family:sans-serif;margin-bottom:6px;">⚠ ${this.$t('(CSP) scripts and links are disabled in this frame')}</div>` + (layer.rawdata || '');
+            : (layer.rawdata || '');
+
+          // intercept click on links (within iframe)
+          doc.body.addEventListener('click', async e => {
+            const anchor = e.target.closest('a');
+            if (anchor) {
+              e.preventDefault();
+              const url = anchor.getAttribute('href');
+              const ok = await GUI.confirm(`<h4>🚨 ${this.$t('Open external link?')}</h4><p>${url}</p>`);
+              if (ok) {
+                window.open(url, '_blank', 'noopener,noreferrer');
+              }
+            }
+          });
 
           // html content → keep horizontal scrollbar
           doc.head.innerHTML = /* html */`<style>
