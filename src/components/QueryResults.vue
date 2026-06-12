@@ -311,8 +311,6 @@
               <!-- LAYER WITH RAW DATA -->
               <iframe
                 v-if   = "layer.rawdata"
-                class  = "queryresults-text-html"
-                :class    = "{ text: layer.infoformat === 'text/plain' }"
                 :key      = "`${layer.id}_${layer.infoformat}_${(layer.rawdata || '').length}_${(layer.rawdata || '').charCodeAt(0) || 0}`"
                 style     = "width: 100%; border: none;"
                 sandbox   = "allow-same-origin allow-popups allow-scripts"

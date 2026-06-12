@@ -813,7 +813,6 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .query_relation_field i                                                                       { padding: 6px; }
 .query_relation_field_message                                                                 { font-weight: bold; margin-left: 5px; }
 .queryresults-wrapper                                                                         { height: 100%; caret-color: transparent;}
-.queryresults-wrapper .queryresults-text-html.text                                            { white-space: break-spaces; }
 .queryresults-container                                                                       { height: 100%; overflow-y: auto; position: relative; }
 .queryresults-container .query-results-not-found                                              { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #fff; border-radius: 3px; }
 .queryresults-container .sub-group .group > .row                                              { margin-left: -2px; margin-right: -2px; }
