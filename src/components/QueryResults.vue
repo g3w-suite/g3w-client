@@ -670,19 +670,8 @@
               .replace(/>/g, '&gt;')}</pre>`
             : (layer.rawdata || '');
 
-          const getElementHeight = el => {
-            if (!el) {
-              return 0;
-            }
-            return Math.max(
-              el.scrollHeight || 0,
-              el.offsetHeight || 0,
-              el.clientHeight || 0,
-              el.getBoundingClientRect?.().height || 0,
-            );
-          };
-
-          const measure = () => {
+          const getHeight = el => Math.max(el?.scrollHeight || 0, el?.offsetHeight || 0, el?.clientHeight || 0, el?.getBoundingClientRect?.().height || 0);
+          const measure   = () => {
             // Keep only horizontal scrollbar inside iframe content.
             if (doc.documentElement) {
               doc.documentElement.style.overflowX = 'text/plain' === layer.infoformat ? 'hidden' : 'auto';
@@ -701,14 +690,7 @@
                 return Math.max(max, rect ? (rect.bottom - bodyRect.top) : 0);
               }, 0);
 
-            const height = Math.ceil(Math.max(
-              getElementHeight(doc.scrollingElement),
-              getElementHeight(doc.documentElement),
-              getElementHeight(doc.body),
-              contentBottom,
-            ));
-
-            iframe.style.height = `${Math.max(height, 120)}px`;
+            iframe.style.height = `${Math.max(120, Math.ceil(Math.max(getHeight(doc.scrollingElement), getHeight(doc.documentElement), getHeight(doc.body), contentBottom )))}px`;
           };
 
           doc.open();
