@@ -151,7 +151,11 @@ export class Layer extends Emitter {
             cache_grid:        layer.state.cache_grid,
             cache_grid_extent: layer.state.cache_grid_extent,
           }
-        )
+        ),
+        /** @since 4.1.1 */
+        servertype: layer.state.servertype,
+        /** @since 4.1.1 */
+        source:     layer.state.source,
       };
     }
 
@@ -375,8 +379,8 @@ export class Layer extends Emitter {
       /** @type {number} opacity range = [0, 100] (since 3.8) */
       opacity: config.opacity || 100,
 
-      /** cached proxy params (eg. external wms server) */
-      proxyData: { wms: null },
+      /** cached proxy params (eg. external wms/arcgismapserver server) */
+      proxyData: { wms: null, arcgismapserver: null }, 
 
       /** @since 4.0.0 @type {number } number of preview fields on result */
       max_preview_fields: config.max_preview_fields,
@@ -1824,7 +1828,11 @@ export class Layer extends Emitter {
     if (this.isMulti() && !this.isXYZ()) {
       return 'application/vnd.ogc.gml';
     }
-    if (this.state.infoformat && '' !== this.state.infoformat  && 'wfs' !== ogcService) {
+    // external arcgismapserver
+    if (this.state.infoformat && '' !== this.state.infoformat && this.isArcgisMapserver()) {
+      return 'esri/json';
+    }
+    if (this.state.infoformat && '' !== this.state.infoformat && 'wfs' !== ogcService) {
       return this.state.infoformat;
     }
     return 'application/vnd.ogc.gml';
@@ -1874,7 +1882,7 @@ export class Layer extends Emitter {
    * @returns {*}
    */
   getAttributeLabel(name) {
-    return (this.getAttributes().find(a => name === a.name) || {}).label;
+    return (this.getAttributes().find(a => name === a.name) || {})?.label;
   }
 
   /**
@@ -2022,6 +2030,63 @@ export class Layer extends Emitter {
     return { count, data, params }
   }
 
+  /**
+   * Retrieve external features (remote ARCGIS Server)
+   *
+   * @since 4.1.1
+   */
+  async #queryArcGIS(opts = {}) {
+     const {
+      layers         = [this],
+      size          = [101, 101],
+      coordinates   = [],
+      resolution,
+    } = opts;
+
+     // get extent for view size
+     const dx         = resolution * size[0] / 2;
+     const dy         = resolution * size[1] / 2;
+     const bbox       = [coordinates[0] - dx, coordinates[1] - dy, coordinates[0] + dx, coordinates[1] + dy];
+     const projection = ApplicationState.project.getProjection() || this.getProjection();
+     const [x, y]     = ('ne' === projection.getAxisOrientation().substr(0, 2) ? [coordinates[1], coordinates[0]] : coordinates);
+     const tolerance  = opts.query_point_tolerance ?? QUERY_POINT_TOLERANCE;
+
+    let response;
+
+    try {
+      response = await layers[0].fetchProxyData('arcgismapserver', {
+        // ref: https://developers.arcgis.com/rest/services-reference/enterprise/identify-map-service/
+        url: `${layers[0].getQueryUrl()}/identify`,
+        params: {
+          f:            "json",
+          geometryType: "esriGeometryPoint",
+          geometry:     `{x: ${x}, y: ${y}}`,
+          layers:       `all:${(layers.map(l => l.getWMSInfoLayerName()) ?? []).join(',')}`,
+          imageDisplay: `${GUI.getMap().getSize().join(',')},${DOTS_PER_INCH}`,
+          mapExtent:    ('ne' === projection.getAxisOrientation().substr(0, 2) ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox).join(','),
+          tolerance:    'map' === tolerance.unit ? undefined : tolerance.value
+        },
+        method: layers[0].getOwsMethod(),
+        headers: {
+          'Content-Type': layers[0].getInfoFormat()
+        }
+      });
+    } catch(e) {
+      console.warn(e);
+    }
+
+    return {
+      data: Layer._parse(layers[0].getInfoFormat(), {
+        response,
+        layers,
+        wms:         true,
+        projections: { map: ApplicationState.project.getProjection(), layer: this.getProjection() },
+      }),
+      query: { coordinates, resolution }
+    };
+  }
+
+
   #queryWMS(opts = {}) {
     const {
       layers        = [this],
@@ -2035,7 +2100,7 @@ export class Layer extends Emitter {
     const dy   = resolution * size[1] / 2;
     const bbox = [coordinates[0] - dx, coordinates[1] - dy, coordinates[0] + dx, coordinates[1] + dy];
 
-    const projection = ApplicationState.project.getProjection() || this.getLayer().getProjection();
+    const projection = ApplicationState.project.getProjection() || this.getProjection();
     const tolerance  = opts.query_point_tolerance ?? QUERY_POINT_TOLERANCE;
 
     const url    = layers[0].getQueryUrl();
@@ -2193,12 +2258,21 @@ export class Layer extends Emitter {
       'query QGIS postgresraster',
       'query QGIS vector-tile',
       'query QGIS vectortile',
-      'query QGIS arcgismapserver',
       /** @since 4.0.0 */
       'query QGIS arcgisfeatureserver',
       'query QGIS mdal',
       'query OGC wms',
     ].includes(providerType)) {
+      provider.query = this.#queryWMS.bind(this);
+    }
+
+    // external arcgis mapserver
+    if ('query QGIS arcgismapserver' === providerType && this.state?.source?.external) {
+      provider.query = this.#queryArcGIS.bind(this);
+    }
+
+    // internal arcgis mapserver
+    if ('query QGIS arcgismapserver' === providerType && !this.state?.source?.external) {
       provider.query = this.#queryWMS.bind(this);
     }
 
@@ -2660,7 +2734,7 @@ export class Layer extends Emitter {
    */
   getWMSLayerName({ type = 'map' } = {}) {
     if (this.isRaster()) {
-      const source_layer = this.state?.source?.layers || this.state?.source?.layer;
+      const source_layer = this.state?.source?.layers ?? this.state?.source?.layer;
 
       /** @FIXME add description */
       if (source_layer && this.#hasExternalWMSOrLegend(type)) {
@@ -2822,7 +2896,7 @@ export class Layer extends Emitter {
       return;
     }
     if (this.useProxy()) {
-      return this.getSource().layers;
+      return this.getSource().layers ?? [this.getSource().layer]; // FALLBACK: for external ArcGIS server (source)
     }
     if (this.state.wms_use_layer_ids) {
       return this.getId();
@@ -3093,7 +3167,7 @@ export class Layer extends Emitter {
     }
 
     // ARCGIS LAYER
-    if ('ARCGISMAPSERVER' === this.config.servertype && ('image' === this.getType() || this.isMulti())) {
+    if (('ARCGISMAPSERVER' === this.config.servertype || this.isArcgisMapserver()) && ('image' === this.getType() || this.isMulti())) {
       olLayer = new ol.layer.Tile({
         extent:  this.state.extent,
         visible: this.state.visible ?? true,
@@ -3670,6 +3744,50 @@ Layer._parse = function(type, params, opts) {
 
       return parsed;
     },
+
+    /**
+     * Handle "esri/json" response for ArcGIS layers
+     * 
+     * @see https://developers.arcgis.com/rest/services-reference/enterprise/identify-map-service/#json-response-syntax
+     * 
+     * @since 4.1.1
+     */
+    'esri/json'({ response = {}, projections, layers } = {}) {
+      const layersId = layers.map(l => l.getWMSLayerName());
+      // handle server errors
+      if (response.error) {
+        GUI.showUserMessage({
+          type:        'warning',
+          textMessage: true,
+          message:     `${layersId.join(',')}: ${response.error.message}`
+        });
+      }
+      // JSON parser
+      const esriFormat = new ol.format.EsriJSON({
+        geometryName: 'geometry',
+        defaultDataProjection: projections.layer || projections.map
+      });
+      // features by layer
+      return (response.results || [])
+        .map(r => esriFormat.readFeature(r))
+        .reduce((acc, feature) => {
+          const g3w_fid = sanitizeFidFeature(feature.getId());
+          const index = feature.getId() === g3w_fid ? 0 : layersId.indexOf(feature.getId());
+          // layer exists
+          if (-1 !== index) {
+            feature.set(G3W_FID, g3w_fid);
+            const props = feature.getProperties();
+            // set fields
+            layers[index]
+              .getFields()
+              .filter(f => f.show && props[f.name] === undefined && props[f.label] !== undefined)
+              .forEach(f => feature.set(f.name, props[f.label]));
+            // insert feature into appropriate layer array
+            acc[index].features.push(feature);
+          }
+          return acc;
+        }, layers.map(layer => ({ layer, features: [] })));
+    }
   });
 
   Parsers['g3w-vector/geojson'] = Parsers['g3w-vector/json']; 
