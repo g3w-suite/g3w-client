@@ -3752,47 +3752,41 @@ Layer._parse = function(type, params, opts) {
      * 
      * @since 4.1.1
      */
-    'esri/json'({ response = { results: [], error: undefined }, projections, layers } = {}) {
-      const layersFeatures = layers.map(layer => ({ layer, features: [] }));
-      const layersId       = layers.map(l => l.getWMSLayerName());
+    'esri/json'({ response = {}, projections, layers } = {}) {
+      const layersId = layers.map(l => l.getWMSLayerName());
       // handle server errors
       if (response.error) {
         GUI.showUserMessage({
           type:        'warning',
           textMessage: true,
           message:     `${layersId.join(',')}: ${response.error.message}`
-        })
+        });
       }
-      //handle features
-      (
-        response?.results
-          ? response.results.map((r) => (new ol.format.EsriJSON({
-              geometryName:          'geometry',
-              defaultDataProjection: projections.layer || projections.map,
-            })).readFeature(r)) 
-          : []
-      ).filter(feature => {
-        const featureId = feature.getId();
-        const g3w_fid   = sanitizeFidFeature(featureId);
-        // in the case of wms getfeature without a filter return string contain layerName or layerid
-        const index = featureId == g3w_fid ? 0 : layersId.indexOf(featureId);
-        // skip when ..
-        if (-1 === index) {
-          return false;
-        }
-        const props = feature.getProperties();
-        feature.set(G3W_FID, g3w_fid);
-        // fields
-        layersFeatures[index]
-          .layer
-          .getFields()
-          .filter(f => f.show && undefined === props[f.name] && undefined !== props[f.label])
-          .forEach(f => feature.set(f.name, props[f.label]));
-        // features
-        layersFeatures[index].features.push(feature);
+      // JSON parser
+      const esriFormat = new ol.format.EsriJSON({
+        geometryName: 'geometry',
+        defaultDataProjection: projections.layer || projections.map
       });
-      return layersFeatures;
-
+      // features by layer
+      return (response.results || [])
+        .map(r => esriFormat.readFeature(r))
+        .reduce((acc, feature) => {
+          const g3w_fid = sanitizeFidFeature(feature.getId());
+          const index = feature.getId() === g3w_fid ? 0 : layersId.indexOf(feature.getId());
+          // layer exists
+          if (index !== -1) {
+            feature.set(G3W_FID, g3w_fid);
+            const props = feature.getProperties();
+            // set fields
+            layers[index]
+              .getFields()
+              .filter(f => f.show && props[f.name] === undefined && props[f.label] !== undefined)
+              .forEach(f => feature.set(f.name, props[f.label]));
+            // insert feature into appropriate layer array
+            acc[index].features.push(feature);
+          }
+          return acc;
+        }, layers.map(layer => ({ layer, features: [] })));
     }
   });
 
