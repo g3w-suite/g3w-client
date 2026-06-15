@@ -15,7 +15,7 @@
     role                      = "button"
     :class                    = "{
       selected:             layerstree.selected,
-      disabled:             isDisabled,
+      disabled:             isDisabled || has_scale_visibility_toolip,
       group:                isGroup,
       table:                isTable,
       external:             layerstree.external,
