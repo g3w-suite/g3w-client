@@ -881,8 +881,7 @@ export default new (class GUI extends Emitter {
       }
 
       // check if data can be shown on query result content
-      if (last && show) {
-        this.#clearState();
+      if (last && show && !output.add) {
         this.setContent({
           content:    new Component({
             id:                 'queryresults',
@@ -894,6 +893,9 @@ export default new (class GUI extends Emitter {
           post_title: output.title || '',
           perc:       isMobile.any ? 100 : undefined,
         });
+      }
+
+      if (last && show) {
         this.setQueryResponse(data, { add: !!output.add });
       }
 
@@ -2190,7 +2192,7 @@ export default new (class GUI extends Emitter {
             : attrs.map(featureAttr => ({
               name:  featureAttr,
               label: featureAttr,
-              show:  G3W_FID !== featureAttr && [undefined, 'gdal', 'wms', 'wcs', 'wmst', 'postgresraster'].includes(sourceType),
+              show:  G3W_FID !== featureAttr && [undefined, 'gdal', 'wms', 'wcs', 'wmst', 'postgresraster', 'arcgismapserver'].includes(sourceType),
               type:  'varchar'
             }));
         }
@@ -2238,8 +2240,8 @@ export default new (class GUI extends Emitter {
           } : undefined,
           relationsattributes:       (is_layer || is_vector || is_string)                       ? []                     : undefined,
           hasdownloadablerelations:  !external && layer.hasDowloadableRelations(), //@since 3.11.7
-          filter:                    (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType)) ? layer.state.filter     : {},
-          selection:                 (is_layer && !['wms', 'wcs', 'wmst'].includes(sourceType) && layer.state.selection) || (is_vector && layer.selection) || { active: undefined },
+          filter:                    (is_layer && !['wms', 'wcs', 'wmst', 'arcgismapserver'].includes(sourceType)) ? layer.state.filter     : {},
+          selection:                 (is_layer && !['wms', 'wcs', 'wmst', 'arcgismapserver'].includes(sourceType) && layer.state.selection) || (is_vector && layer.selection) || { active: undefined },
           title:                     (is_layer && layer.getTitle()) || (is_vector && layer.get('name')) || (is_string && name && (name.length > 4 ? name.slice(0, name.length - 4).join(' ') : layer)) || undefined,
           atlas:                     this.#atlas.filter(a => a.atlas.qgs_layer_id === id),
           rawdata:                   rawdata  || null,
@@ -2553,7 +2555,7 @@ export default new (class GUI extends Emitter {
         },
 
         // remove feature
-        ('__g3w_marker' === layer.id || (!layer.external && 'wms' !== (layer.source || {}).type)) && {
+        ('__g3w_marker' === layer.id || (!layer.external && !['wms', 'arcgismapserver'].includes((layer.source || {}).type))) && {
           id:        'removefeaturefromresult',
           mouseover: true,
           class:     "fas fa-minus-square",
@@ -2603,7 +2605,7 @@ export default new (class GUI extends Emitter {
         },
 
         // permalink (click to copy)
-        (layer.hasgeometry && !layer.external && 'wms' !== (layer.source || {}).type) && {
+        (layer.hasgeometry && !layer.external && !['wms', 'arcgismapserver'].includes((layer.source || {}).type)) && {
           id:          'link_zoom_to_fid',
           class:       "fa fa-share-alt",
           hint:        'Share via link',
@@ -2831,6 +2833,9 @@ export default new (class GUI extends Emitter {
     this.#interaction.id = layer.id;
 
     layer.addfeaturesresults.active = !layer.addfeaturesresults.active;
+
+    // disable map context menu when add feature interaction is active
+    this.getMap().set('can_show_context_menu', !layer.addfeaturesresults.active);
 
     if (false === layer.addfeaturesresults.active) {
       this.removeAddFeaturesLayerResultInteraction(true);

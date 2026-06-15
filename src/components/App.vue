@@ -785,7 +785,6 @@
             @click         = "closeContent"
             title          = "close"
             data-placement = "bottom"
-            :class         = "{'mobile': isMobile()}"
             class          = "action-button action-button-close skin-color-dark fas fa-times"
           ></button>
         </div>

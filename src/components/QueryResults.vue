@@ -29,7 +29,6 @@
           <div class = "box box-primary">
             <div
               class           = "box-header with-border"
-              :class          = "{'mobile': isMobile()}"
               @mouseover.stop = "!isMobile() && highlightLayer(layer, { zoom: false, highlight: true, duration: Infinity })"
               @mouseout.stop  = "!isMobile() && highlightLayer(layer, { zoom: false, highlight: false })"
               @click.stop     = "collapseSidebar"
@@ -48,7 +47,7 @@
               >
                 <!-- OPEN ATTRIBUTE TABLE -->
                 <button
-                  v-if           = "!layer.external"
+                  v-if           = "canOpenAttibuteTable(layer)"
                   type           = "button"
                   @click.stop    = "openAttributeTable(layer)"
                   class          = "action-button"
@@ -71,10 +70,11 @@
               <div class="query-layer-actions" style = "display: flex; gap: 2.5px; padding-right: 10px;">
                 <!-- INFO FORMATS -->
                 <select
-                  v-if      = "(layer.infoformats || []).length"
-                  class     = "form-control"
-                  @change   = "changeInfoFormat(layer, $event.target.value)"
-                  :disabled = "layer.loading"
+                  v-if        = "(layer.infoformats || []).length"
+                  class       = "form-control"
+                  @change     = "changeInfoFormat(layer, $event.target.value)"
+                  @click.stop = ""
+                  :disabled   = "layer.loading"
                 >
                   <option
                     v-for     = "format in layer.infoformats"
@@ -127,7 +127,7 @@
 
                 <!-- TOGGLE LAYER FEATURES -->
                 <button
-                  v-if           = "layer.external || (!layer.filter.active && layer.source && 'wms' !== layer.source.type && !(state.query && state.query.pagination))"
+                  v-if           = "layer.external || (!layer.filter.active && layer.source && !['wms', 'arcgismapserver'].includes(layer.source.type) && !(state.query && state.query.pagination))"
                   type           = "button"
                   @click.stop    = "addLayerFeaturesToResults(layer)"
                   class          = "action-button"
@@ -195,7 +195,6 @@
               v-if   = "state.layeractiontool[layer.id].component"
               class  = "g3w-layer-action-tools with-border"
               style  = "padding: 5px"
-              :class = "{'mobile': isMobile()}"
             >
               <component
                 :is     = "state.layeractiontool[layer.id].component"
@@ -307,17 +306,19 @@
               </ul>
             </div>
 
-            <div class = "box-body" :class = "{'mobile': isMobile()}">
+            <div class = "box-body">
 
               <!-- LAYER WITH RAW DATA -->
-              <div
+              <iframe
                 v-if   = "layer.rawdata"
-                class  = "queryresults-text-html"
-                :class = "{ text: layer.infoformat === 'text/plain' }"
-                v-html = "layer.rawdata"
-              ></div>
+                :key      = "`${layer.id}_${layer.infoformat}_${(layer.rawdata || '').length}_${(layer.rawdata || '').charCodeAt(0) || 0}`"
+                style     = "width: 100%; border: none;"
+                sandbox   = "allow-same-origin"
+                scrolling = "no"
+                @load     = "setRawdataIframeContent($event, layer)"
+              ></iframe>
 
-              <table v-else class = "table" :class = "{'mobile': isMobile()}">
+              <table v-else class = "table">
                 <tbody v-for = "(feature, index) in layer.features.filter(f => showFeature(layer, f))" :key = "feature.id">
 
                   <!-- ORIGINAL SOURCE: src/components/QueryResultsHeaderFeatureActionsBody.vue@v4.0.0 -->
@@ -649,6 +650,52 @@
     methods: {
 
       /**
+       * @since 4.1.1 - Inject layer data raw data within and <iframe>
+       */
+      setRawdataIframeContent(event, layer) {
+        try {
+          const iframe = event?.target;
+          const doc    = iframe?.contentDocument;
+
+          // skip when iframe is not ready
+          if (!doc) {
+            return;
+          }
+
+          // inject html or text contect (within iframe)
+          doc.body.innerHTML = 'text/plain' === layer.infoformat
+            ? /* html */`<pre style="margin:0; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; overflow:hidden hidden;">${String(layer.rawdata || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>`
+            : (layer.rawdata || '');
+
+          // intercept click on links (within iframe)
+          doc.body.addEventListener('click', async e => {
+            const anchor = e.target.closest('a');
+            if (anchor) {
+              e.preventDefault();
+              const url = anchor.getAttribute('href');
+              const ok = await GUI.confirm(`<h4>🚨 ${this.$t('Open external link?')}</h4><p>${url}</p>`);
+              if (ok) {
+                window.open(url, '_blank', 'noopener,noreferrer');
+              }
+            }
+          });
+
+          // html content → keep horizontal scrollbar
+          doc.head.innerHTML = /* html */`<style>
+            html, body { overflow: ${'text/plain' === layer.infoformat ? 'hidden' : 'auto'} hidden; margin: 0; }
+          </style>`;
+
+          // watch for layout changes (within iframe)
+          (new ResizeObserver(([entry]) => {
+            iframe.style.height = `${Math.max(120, Math.ceil(entry.borderBoxSize?.[0]?.blockSize || entry.contentRect.height))}px`;
+          })).observe(doc.documentElement);
+
+        } catch(e) {
+          console.warn(e);
+        }
+      },
+
+      /**
        * @returns { boolean } whether can paginate layer results
        */
       canPaginate(layer) {
@@ -881,6 +928,17 @@
       },
 
       /**
+       * @param layer
+       * 
+       * @returns { boolean } whether can open attribute table for layer
+       * 
+       * @since 4.1.1
+       */
+      canOpenAttibuteTable(layer) {
+        return !layer.external && !getCatalogLayerById(layer.id)?.state?.not_show_attributes_table;
+      },
+
+      /**
        * @since 3.10.0
        */
       openAttributeTable(layer) {
@@ -1022,7 +1080,7 @@
        * @since 4.1.0 
        */
       async changeInfoFormat(layer, contenttype) {
-        layer.loading = true;
+        layer.loading     = true;
         try {
           const catalog_layer = getCatalogLayerById(layer.id);
 
@@ -1040,12 +1098,12 @@
           catalog_layer.setInfoFormat(layer.infoformat);
 
           const [data] = Layer._parse(contenttype, { layers: [catalog_layer], response });
-
           // parse as raw data
           if (!data.features) {
             layer.features.splice(0);
             await this.$nextTick();
-            layer.rawdata = data.rawdata;
+            layer.rawdata     = data.rawdata;
+            layer.hasgeometry = false;
           }
 
           // parse data
@@ -1062,7 +1120,7 @@
               if (0 === layer.attributes.length) {
                 layer.hasgeometry = !!feature.geometry;
                 GUI.setActionsForLayers([layer]);
-                getAlphanumericProps(feature.attributes).forEach(name => layer.attributes.push({ name, label: name, show: true }));
+                getAlphanumericProps(feature.attributes).forEach(name => layer.attributes.push({ name, label: name, show: true, type: 'varchar' }));
               }
               layer.features.push(feature);
             });
