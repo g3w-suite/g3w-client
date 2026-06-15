@@ -3774,7 +3774,7 @@ Layer._parse = function(type, params, opts) {
           const g3w_fid = sanitizeFidFeature(feature.getId());
           const index = feature.getId() === g3w_fid ? 0 : layersId.indexOf(feature.getId());
           // layer exists
-          if (index !== -1) {
+          if (-1 !== index) {
             feature.set(G3W_FID, g3w_fid);
             const props = feature.getProperties();
             // set fields
