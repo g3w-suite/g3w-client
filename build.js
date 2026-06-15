@@ -86,7 +86,7 @@ const task = args[0];
       if (g3w.docker_plugins_folder) {
         fs.readdirSync(g3w.docker_plugins_folder).forEach(pluginName => {
           if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}`)) {
-            fs.symlinkSync(path.resolve(`${g3w.docker_plugins_folder}/${pluginName}`), path.resolve(`${g3w.pluginsFolder}/${pluginName}`), 'junction');
+            fs.symlinkSync(path.resolve(`${g3w.docker_plugins_folder}/${pluginName}`), path.resolve(`${g3w.pluginsFolder}/${pluginName = 'g3w-admin-lea' === pluginName ? 'g3w-admin-qlea' : pluginName}`), 'junction');
           }
         })
       }
@@ -464,7 +464,7 @@ async function start_proxy_server() {
         } else {
           //In case of dev plugins (lea) we need to change the path because in g3w-admin-plugins the lea plugin is named qlea, but in src/plugins is lea, so we need to replace /lea with /qlea
           if (dev_plugins.includes(pluginName)) {
-            localPath = path.join(`${g3w.pluginsFolder}/g3w-admin-${pluginName}`, `${'lea' === pluginName? 'qlea' : pluginName}${url.pathname}`.replace('/lea', '/qlea'));
+            localPath = path.join(`${g3w.pluginsFolder}/g3w-admin-${pluginName}`, `${pluginName}${url.pathname}`);
           } else {
             localPath = path.join(`${g3w.pluginsFolder}/g3w-admin-${pluginName}`, url.pathname);
           }
