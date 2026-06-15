@@ -570,8 +570,8 @@
         project.metadata.wms_url = `${project.WMSUrl}?service=WMS&version=1.3.0&request=GetCapabilities`;
       } 
 
-      // @since 4.1.0 set WMTS URL if not set by QGIS project
-      if (!project.metadata.wmts_url) {
+      // @since 4.1.0 set WMTS URL if not set by QGIS project (and some layer has WMTS capability)
+      if (!project.metadata.wmts_url && layers.some(l => l?.state?.ows?.includes?.('WMTS'))) {
         project.metadata.wmts_url = `${project.WMSUrl}?service=WMTS&version=1.3.0&request=GetCapabilities`;
       } 
 
