@@ -105,7 +105,7 @@ const task = args[0];
 
       // update versions
       await Promise.all([''].concat(dev_plugins).map(pluginName => new Promise(done => {
-        const src     = pluginName ? `${g3w.pluginsFolder}/${pluginName}` : '.';
+        const src     = pluginName ? `${g3w.pluginsFolder}/g3w-admin-${pluginName}` : '.';
         const version = get_version(pluginName);
         fs.readFile(`${src}/README.md`, 'utf8', function (_, data) {
           data = (data || '').toString().split("\n");
@@ -160,7 +160,8 @@ async function build_app() {
    * - [submodule "src/plugins/sidebar"]     --> src/plugins/sidebar/plugin.js
    */
   if (!production) {
-    dev_plugins.forEach(p => build_plugin(p)); // build all plugins (async)
+    console.log()
+    //dev_plugins.forEach(p => build_plugin(p)); // build all plugins (async)
   } else if('build:ci' !== task) {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
     await new Promise(done => {
@@ -357,7 +358,7 @@ async function build_plugin(pluginName) {
 }
 
 function get_version(pluginName) {
-  const src = (pluginName ? `${g3w.pluginsFolder}/${pluginName}` : '.');
+  const src = (pluginName ? `${g3w.pluginsFolder}/g3w-admin-${pluginName}` : '.');
   // delete cache of require otherwise no package.json version rests the old (cache) one
   try {
     delete require.cache[require.resolve(`${src}/package.json`)];
@@ -377,7 +378,7 @@ function get_version(pluginName) {
  * @since 3.10.0
  */
 function get_hash(pluginName) {
-  const src = (pluginName ? `${g3w.pluginsFolder}/${pluginName}` : '.');
+  const src = (pluginName ? `${g3w.pluginsFolder}/g3w-admin-${pluginName}` : '.');
   try {
     let branch = execSync(`git -C  ${src} rev-parse --abbrev-ref HEAD`, { encoding: 'utf8' }).trim();
     if (branch && 'HEAD' !== branch.trim()) {
@@ -394,7 +395,7 @@ function get_hash(pluginName) {
  * @since 3.10.0
  */
 function get_branch(pluginName) {
-  const src = (pluginName ? `${g3w.pluginsFolder}/${pluginName}` : '.');
+  const src = (pluginName ? `${g3w.pluginsFolder}/g3w-admin-${pluginName}` : '.');
   try {
     return execSync(`git -C  ${src} rev-parse --abbrev-ref HEAD`, { encoding: 'utf8' }).trim();
   } catch(err) {
@@ -449,7 +450,7 @@ async function start_proxy_server() {
     const SERVER_URL = new URL(g3w.proxy);
 
     const proxy      = httpProxy.createProxyServer({
-      secure: false,
+      secure:       false,
       changeOrigin: true,
     });
 
@@ -457,11 +458,16 @@ async function start_proxy_server() {
       const url = new URL(req.url, `http://${req.headers.host}`);
       let localPath;
       // proxy core and static plugins
-      for (const pluginName of ['client', 'editing', 'openrouteservice', 'qplotly', 'qtimeseries']) {
+      for (const pluginName of ['client', 'editing', 'openrouteservice', 'qplotly', 'qtimeseries', ...dev_plugins]) {
         if ('client' === pluginName) {
           localPath = path.join(g3w.admin_overrides_folder, url.pathname)
         } else {
-          localPath = path.join(`${g3w.pluginsFolder}/g3w-admin-${pluginName}`, url.pathname);
+          //In case of dev plugins (lea) we need to change the path because in g3w-admin-plugins the lea plugin is named qlea, but in src/plugins is lea, so we need to replace /lea with /qlea
+          if (dev_plugins.includes(pluginName)) {
+            localPath = path.join(`${g3w.pluginsFolder}/g3w-admin-${pluginName}`, `${'lea' === pluginName? 'qlea' : pluginName}${url.pathname}`.replace('/lea', '/qlea'));
+          } else {
+            localPath = path.join(`${g3w.pluginsFolder}/g3w-admin-${pluginName}`, url.pathname);
+          }
         }
         if (url.pathname.startsWith(`/static/${pluginName}`) && fs.existsSync(localPath)) {
           console.log(true, '→', localPath);
