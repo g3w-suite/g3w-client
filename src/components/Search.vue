@@ -20,7 +20,7 @@
       
     >
       <i aria-hidden = "true" class = "far fa-circle"></i>
-      <span>{{ search.name }}</span>
+      <span>{{ search.options.title || search.name }}</span>
     </li>
 
     <li v-for = "searchtool in state.tools">

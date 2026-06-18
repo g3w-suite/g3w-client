@@ -28,7 +28,7 @@ export function SearchPanel(opts = {}, show = false) {
   const state = {
     loading:              {}, // store loading state of each input and each dependency
     searching:            false, //Boolean. If true, search request from server is starts. False no search
-    title:                opts.name,
+    title:                opts.options?.title || opts.name,
     /** @type { 'search' | 'search_1n' } */
     type:                 opts.type || 'search',
     /** @TODO check if deprecated */
