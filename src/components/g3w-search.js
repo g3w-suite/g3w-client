@@ -235,9 +235,9 @@ async function doSearch({
     }
     /********************************************************************************/
 
-    // auto zoom to query (response)
-    if (show && ApplicationState.project.state.autozoom_query && 1 === (data.data || []).length && !state.paginate) {
-      GUI.zoomToFeatures(data.data[0].features);
+    // auto zoom to query (response) in case of single response layer
+    if (show && ApplicationState.project.state.autozoom_query && 1 === (data.data || []).filter(d => d.features?.length).length && !state.paginate) {
+      GUI.zoomToFeatures(data?.data?.find(d => d.features?.length)?.features);
     }
 
     const features  = search_1n       && (data.data[0] || {}).features || []
