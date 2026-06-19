@@ -3730,7 +3730,7 @@ export default new (class GUI extends Emitter {
             url.loading = false;
           },
           async setLegendUrls() {
-            this.legendurls = await g3w.app.getLegendSrc({ change: true }, { rulelabel: true }); 
+            this.legendurls = await g3w.app.getLegendSrc({ change: true }, { layertitle: true }); 
           },
           
         },
