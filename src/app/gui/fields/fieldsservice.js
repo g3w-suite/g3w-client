@@ -27,7 +27,7 @@ module.exports  = {
         } else {
           type = 'simple'
         }
-      } else if (value.toString().toLowerCase().match(/[^\s]+.(png|jpg|jpeg|gif)$/g)) {
+      } else if (value.toString().toLowerCase().match(/^(https?:\/\/[^\s]+)\.(png|jpg|jpeg|gif)$/g)) {
         type = 'photo';
       } else if (value.toString().match(/^(https?:\/\/[^\s]+)/g)) {
         type = 'link';
