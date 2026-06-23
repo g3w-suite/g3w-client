@@ -5450,7 +5450,7 @@ export default new (class GUI extends Emitter {
    *
    * @returns {Promise<void>}
    */
-  async getLegendSrc({ change = false, all = false, ...params } = {}) {
+  async getLegendSrc({ all = false, ...params } = {}) {
     /**
      * Stringify a query URL param (eg. `&WIDTH=700`)
      *
@@ -5467,10 +5467,6 @@ export default new (class GUI extends Emitter {
             .flatMap(s => s.showOnCatalog() ? s.getLayers({ GEOLAYER: true, ...(all ? {} : { VISIBLE: true }) }, { TOC_ORDER : true }) : [])
             .map(l => l.state)
             .reduce((urls, layer) => {
-              if (change && ApplicationState.project.state.context_base_legend) {
-                layer.legend.change = false;
-              }
-
               const url  = getCatalogLayerById(layer.id).getLegendUrl({
                 all:        !ApplicationState.project.state.context_base_legend, // true = dynamic legend
                 format:     'image/png',
