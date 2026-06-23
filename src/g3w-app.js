@@ -3730,7 +3730,7 @@ export default new (class GUI extends Emitter {
             url.loading = false;
           },
           async setLegendUrls() {
-            this.legendurls = await g3w.app.getLegendSrc({}, { layertitle: true }); 
+            this.legendurls = await g3w.app.getLegendSrc({ layertitle: true }); 
           },
           
         },
@@ -5450,8 +5450,7 @@ export default new (class GUI extends Emitter {
    *
    * @returns {Promise<void>}
    */
-  async getLegendSrc({ change = false, all = false } = {}, params = {}) {
-
+  async getLegendSrc({ change = false, all = false, ...params } = {}) {
     /**
      * Stringify a query URL param (eg. `&WIDTH=700`)
      *
@@ -5472,10 +5471,11 @@ export default new (class GUI extends Emitter {
                 layer.legend.change = false;
               }
 
-              const url  = getCatalogLayerById(layer.id).getLegendUrl({ ...window.initConfig?.layout?.legend, ...params }, {
+              const url  = getCatalogLayerById(layer.id).getLegendUrl({
                 all:        !ApplicationState.project.state.context_base_legend, // true = dynamic legend
                 format:     'image/png',
-                categories: layer.categories
+                categories: layer.categories,
+                ...params
               });
 
               // extract LEGEND_ON and LEGEND_OFF from prefix -> (in case of legend categories)
