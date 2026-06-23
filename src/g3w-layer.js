@@ -3013,7 +3013,7 @@ export class Layer extends Emitter {
         __('LAYERTITLE=',       opts.layertitle       ?? layertitle),
         __('ITEMFONTSIZE=',     opts.itemfontsize     ?? itemfontsize ?? fontsize), //@since 3.11.3 check itemfontsize or fontsize
         __('CRS=',              opts.crs              ?? crs),
-        __('BBOX=',             ((true === opts.all ? undefined : [false, undefined].includes(opts.all) && opts.bbox && opts.bbox.join(',')))),
+        __('BBOX=',             ((true === opts.all ? undefined : [false, undefined].includes(opts.all) && (opts.bbox ?? bbox)?.join(',')))),
         __('BOXSPACE=',         opts.boxspace         ?? boxspace),
         __('LAYERSPACE=',       opts.layerspace       ?? layerspace),
         __('LAYERTITLESPACE=',  opts.layertitlespace  ?? layertitlespace),
