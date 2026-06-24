@@ -5447,8 +5447,11 @@ export default new (class GUI extends Emitter {
    * ORIGINAL SOURCE: src/components/Catalog.vue@v4.0.0
    * 
    * Get legend src for visible layers
+   * 
+   * @param { Object }  opts
+   * @param { boolean } opts.all whether force to retrieve all layers (legend urls)
    *
-   * @returns {Promise<void>}
+   * @returns { Promise<any> }
    */
   async getLegendSrc({ all = false, ...params } = {}) {
     /**
@@ -5464,8 +5467,21 @@ export default new (class GUI extends Emitter {
         Object.entries(
           Object
             .values(ApplicationState.layers)
-            .flatMap(s => s.showOnCatalog() ? s.getLayers({ GEOLAYER: true, ...(all ? {} : { VISIBLE: true }) }, { TOC_ORDER : true }) : [])
-            .map(l => l.state)
+            // extract geolayers (from TOC)
+            .flatMap(s => {
+              if (!s.showOnCatalog()) {
+                return [];
+              }
+              const map    = s.getLayers().reduce((m, l) => (l.isGeoLayer() && (all || l.isVisible()) ? m.set(l.getId(), l.state) : m), new Map());
+              const tree   = s.getLayersTree?.()?.[0];
+              const layers = tree ? [] : [...map.values()];
+              const walk   = t => t?.nodes?.forEach(n => n.id ? map.has(n.id) && layers.push(map.get(n.id)) : walk(n));
+              // sorted by TOC
+              if (tree) {
+                walk(tree);
+              }
+              return layers;
+            })
             .reduce((urls, layer) => {
               const url  = getCatalogLayerById(layer.id).getLegendUrl({
                 all:        !ApplicationState.project.state.context_base_legend, // true = dynamic legend
