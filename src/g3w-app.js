@@ -5495,7 +5495,7 @@ export default new (class GUI extends Emitter {
                 ? url
                 : url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[0];
 
-              urls[prefix] = urls[prefix] ?? {
+              urls[prefix] ??= {
                 layers: [],
                 method: layer.state?.source?.url || layer.state.external ? 'GET' : ApplicationState.project.state.ows_method
               };
