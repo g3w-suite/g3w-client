@@ -77,8 +77,6 @@ export class Layer extends Emitter {
 
   customParams = {};
 
-  #layersstore;
-
   #color;
   
   /**
@@ -487,7 +485,7 @@ export class Layer extends Emitter {
         }
 
         // type = { 'ONE' | 'MANY' }
-        if (-1 !== ['ONE','MANY'].indexOf(type)) {
+        if (['ONE','MANY'].includes(type)) {
           const relations = {};
           for (const name in this._relations) {
             if (type === this._relations[name].getType()) {
@@ -535,8 +533,6 @@ export class Layer extends Emitter {
       downloadable:       this.isDownloadable(),
       infoformat:         this.getInfoFormat(),
     });
-
-    this.#layersstore = config.layersstore || null;
 
     // sanitize source url (ie. discard any reserved WMS params)
     if (this.state?.source?.url && !this.isMulti()) {
@@ -682,8 +678,7 @@ export class Layer extends Emitter {
    * @returns { * | Array } relation fields
    */
   getRelationAttributes(relationName) {
-    const relation = this.#relations.find(r => relationName === r.name);
-    return relation?.fields ?? [];
+    return this.#relations.find(r => relationName === r.name)?.fields ?? [];
   }
 
   /**
@@ -696,8 +691,8 @@ export class Layer extends Emitter {
   getRelationsAttributes() {
     return (this.state.relations || []).reduce((fields, r) => {
       fields[r.name] = r.fields;
-      return fields; },
-    {});
+      return fields; 
+    },{});
   }
 
   /**
@@ -834,7 +829,7 @@ export class Layer extends Emitter {
       /** @example /vector/api/filtertoken/<qdjango>/<project_id>/<qgs_layer_id>/mode=apply&fid=<fid_filter_saved>|name=<name_filter_saved> */
       const response = await XHR.get({
         url:    this.getUrl('filtertoken'),
-        params: { mode: 'apply', fid: filter.fid }
+        params: { mode: 'apply', fid: filter.fid },
       });
       if (response?.data) {
         this.setFilter(false);
@@ -862,7 +857,7 @@ export class Layer extends Emitter {
         url:    this.getUrl('filtertoken'),
         params: {
           mode: 'save',
-          name: await GUI.prompt(_('Save Filter'), this.state.filter.current?.name || '')
+          name: await GUI.prompt(_('Save Filter'), this.state.filter.current?.name || ''),
         }
       });
 
@@ -1033,11 +1028,11 @@ export class Layer extends Emitter {
       const fids = Array.from(selection);
 
       const { data = {} } = await XHR.post({
-        url:    this.getUrl('filtertoken'),
+        url:         this.getUrl('filtertoken'),
         contentType: 'application/json',
-        data: JSON.stringify(selection.has('__EXCLUDE__')
-          ? { fidsout: fids.filter(id => id !== '__EXCLUDE__').join(',') } // exclude features from selection
-          : { fidsin: fids.join(',') })                                    // include features in selection
+        data:        JSON.stringify(selection.has('__EXCLUDE__')
+                     ? { fidsout: fids.filter(id => id !== '__EXCLUDE__').join(',') } // exclude features from selection
+                     : { fidsin: fids.join(',') })                                    // include features in selection
       });
 
       this.setToken(data.filtertoken);
@@ -2277,15 +2272,6 @@ export class Layer extends Emitter {
     }
 
     return (this.#providers[type] = provider);
-  }
-
-  /**
-   * @TODO Description
-   *
-   * @returns {*}
-   */
-  getLayersStore() {
-    return this.#layersstore;
   }
 
   /**

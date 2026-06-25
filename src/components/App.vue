@@ -288,9 +288,9 @@
       </li>
 
       <!-- THEME SELECTOR -->
-      <li id = "themes" class = "sidebar-item" v-show="ApplicationState.sidebar.open">
+      <li id = "themes" class = "sidebar-item" v-show = "ApplicationState.sidebar.open">
         <!-- whether at least one TOC layer is visible on toc -->
-        <template v-if = "ApplicationState.catalog.layerstrees.length && ApplicationState.catalog.layerstrees[0].tree[0].toc" >
+        <template v-if = "ApplicationState.project.state.layerstree[0].nodes.length" >
           <a
             href        = "#"
             style       = "display: flex; flex-wrap: wrap; align-items: center;"
@@ -440,12 +440,12 @@
 
         <!-- LAYER TREES -->
         <ul
-          v-for = "root in ApplicationState.catalog.layerstrees"
-          :key  = "root.storeid"
+          v-for = "root in ApplicationState.project.state.layerstree"
+          :key  = "root.id"
           class = "tree-root"
         >
           <catalog-tree
-            v-for                      = "tree in root.tree"
+            v-for                      = "tree in [root]"
             :key                       = "tree.id"
             :layerstree                = "tree"
             :root                      = "true"
@@ -1418,7 +1418,7 @@ export default {
 
       // change map theme
       this.ApplicationState.map_theme.change = true;     
-      this.ApplicationState.catalog.layerstrees[0].checked = true;
+      this.ApplicationState.project.layerstree[0].checked = true;
 
       const project  = ApplicationState.project;
 
@@ -1469,7 +1469,7 @@ export default {
                     changes[node.id].style = await project.getLayerById(node.id).changeCurrentStyle(node.style);
                     resolve();
                   };
-                  if (project.getLayersStore()) { changeStyle(node) }
+                  if (project) { changeStyle(node) }
                   else { (node => setTimeout(() => changeStyle(node)))(node) }// case of starting project creation
                 });
                 promises.push(promise);
@@ -1479,7 +1479,7 @@ export default {
       };
       traverse(
         theme.layerstree,
-        this.ApplicationState.catalog.layerstrees[0].tree[0].nodes ?? this.ApplicationState.project.state.layerstree
+        this.ApplicationState.project.state.layerstrees?.[0]?.nodes,
       );
 
       await Promise.allSettled(promises);
@@ -1560,7 +1560,7 @@ export default {
       };
 
       // loop through child nodes
-      traverse(this.ApplicationState.catalog.layerstrees[0].tree[0].nodes, params.layerstree);
+      traverse(this.ApplicationState.project.state.layerstrees[0].nodes, params.layerstree);
 
       return params;
     },
@@ -1773,6 +1773,7 @@ export default {
 
   created() {
     this.language = this.initConfig.user.i18n;
+    console.log(ApplicationState.project.state);
   },
 
   async mounted() {

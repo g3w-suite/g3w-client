@@ -414,8 +414,6 @@ $.ajaxSetup({
     rasterurl:          initConfig.rasterurl,
   }));
 
-  // holds current project configuration
-  let PROJECT;
 
   const gid    = initConfig.initproject;
   const CONFIG = window.initConfig.projects.find(p => gid === p.gid);
@@ -450,184 +448,164 @@ $.ajaxSetup({
     }
   }
 
-  PROJECT = Object.assign(CONFIG, config);
-  PROJECT = Object.assign(PROJECT, {
-    WMSUrl: `${window.initConfig.urls.baseurl}${window.initConfig.urls.ows}/${window.initConfig.id}/${PROJECT.type}/${PROJECT.id}/`,
-    /** @since 3.8.0 */
-    relations: (PROJECT.relations || []).map(r => {
-      if ("ONE" === r.type) {
-        PROJECT.layers.find(l => {
-          if (l.id === r.referencingLayer) {
-            r.name     = l.name;
-            r.origname = l.origname;
-            return true;
-          }
-        });
-      }
-      return r;
-    }),
-    /** actived catalog tab */
-    catalog_tab:            PROJECT.toc_tab_default        || PROJECT._catalog_tab || 'layers',
-    ows_method:             PROJECT.ows_method             || 'GET',
-    toc_layers_init_status: PROJECT.toc_layers_init_status || 'not_collapsed',
-    toc_themes_init_status: PROJECT.toc_themes_init_status || 'collapsed',
-    query_point_tolerance:  PROJECT.query_point_tolerance  || QUERY_POINT_TOLERANCE,
-    crs:                    normalizeEpsg(PROJECT.crs, false),
-    baselayers:             PROJECT.baselayers
-      // Remove bing base layer when no vendor API Key is provided
-      .filter(l => ('Bing' === l.servertype ? ApplicationState.vendorkeys.bing : true))
-      .map(l => Object.assign(l, {
-        visible:   l.id && (l.id === (null !== ApplicationState.baseLayerId ? ApplicationState.baseLayerId : PROJECT.initbaselayer)) || !!l.fixed,
-        baselayer: true,
-      })),
-  });
-
-  const _projection = ApplicationState.projections.get(normalizeEpsg(PROJECT.crs, false));
-
   const project = Object.assign(new Emitter, {
-    _layers: {},
+    _layers:      {},
     _isQueryable: true,
-    state: PROJECT,
-    _projection,
+    config: {
+      id:         CONFIG.gid,
+      projection: ApplicationState.projections.get(normalizeEpsg(CONFIG.crs, false)),
+      extent:     CONFIG.extent,
+      initextent: CONFIG.initextent,
+      wmsUrl:     CONFIG.WMSUrl,
+    },
+    state: Object.assign(CONFIG, config, {
+      WMSUrl: `${window.initConfig.urls.baseurl}${window.initConfig.urls.ows}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}/`,
+      /** @since 3.8.0 */
+      relations: (CONFIG.relations || []).map(r => {
+        if ("ONE" === r.type) {
+          CONFIG.layers.find(l => {
+            if (l.id === r.referencingLayer) {
+              r.name     = l.name;
+              r.origname = l.origname;
+              return true;
+            }
+          });
+        }
+        return r;
+      }),
+      /** actived catalog tab */
+      catalog_tab:            CONFIG.toc_tab_default        || CONFIG._catalog_tab || 'layers',
+      ows_method:             CONFIG.ows_method             || 'GET',
+      toc_layers_init_status: CONFIG.toc_layers_init_status || 'not_collapsed',
+      toc_themes_init_status: CONFIG.toc_themes_init_status || 'collapsed',
+      query_point_tolerance:  CONFIG.query_point_tolerance  || QUERY_POINT_TOLERANCE,
+      crs:                    normalizeEpsg(CONFIG.crs, false),
+      baselayers:             CONFIG.baselayers
+        // Remove bing base layer when no vendor API Key is provided
+        .filter(l => ('Bing' === l.servertype ? ApplicationState.vendorkeys.bing : true))
+        .map(l => Object.assign(l, {
+          visible:   l.id && (l.id === (null !== ApplicationState.baseLayerId ? ApplicationState.baseLayerId : CONFIG.initbaselayer)) || !!l.fixed,
+          baselayer: true,
+        })),
+    }),
     urls: {
-      map_themes:          `/${PROJECT.type}/api/prjtheme/${PROJECT.id}/`,
-      vector_data:         `${PROJECT.vectorurl}data/${PROJECT.type}/${PROJECT.id}/`,
-      featurecount:        `${PROJECT.vectorurl}featurecount/${PROJECT.type}/${PROJECT.id}/`,
-      editorformstructure: `${PROJECT.vectorurl}editorformstructure/${PROJECT.type}/${PROJECT.id}/`, //@since 4.0.0 get configuration from a specific style for a layer (Ex. featurecount, editor_form_structure, ..)
+      map_themes:          `/${CONFIG.type}/api/prjtheme/${CONFIG.id}/`,
+      vector_data:         `${CONFIG.vectorurl}data/${CONFIG.type}/${CONFIG.id}/`,
+      featurecount:        `${CONFIG.vectorurl}featurecount/${CONFIG.type}/${CONFIG.id}/`,
+      editorformstructure: `${CONFIG.vectorurl}editorformstructure/${CONFIG.type}/${CONFIG.id}/`, //@since 4.0.0 get configuration from a specific style for a layer (Ex. featurecount, editor_form_structure, ..)
     },
     setters: {
       setBaseLayer(id) {
         window.initConfig.baselayers.forEach(l => {
-          this.getLayersStore().getLayerById(l.id)?.setVisible(id === l.id);
+          project.getLayerById(l.id)?.setVisible(id === l.id);
           l.visible = (id === l.id);
         })
       },
+      setLayerSelected:       (id, selected) => { project.getLayers().forEach(l => l.state.selected = (id === l.getId()) ? selected : false); },
+      addLayers:               (layers = []) => { layers.forEach(l => project.addLayer(l)) },
+      addLayer:                        layer => { project._layers[layer.getId()] = layer; },
+      removeLayer:                     layer => { delete project._layers[layer.getId()]; },
     },
-    _layersStore:           Object.assign(new Emitter, {
-      config: {
-        id:         PROJECT.gid,
-        projection: _projection,
-        extent:     PROJECT.extent,
-        initextent: PROJECT.initextent,
-        wmsUrl:     PROJECT.WMSUrl,
-        catalog:    true
-      },
-      state: { layerstree: [], relations:  null },
-      setters: {
-        setLayerSelected:       (id, selected) => { project.getLayersStore().getLayers().forEach(l => l.state.selected = (id === l.getId()) ? selected : false); },
-        addLayers:               (layers = []) => { layers.forEach(l => project.getLayersStore().addLayer(l)) },
-        addLayer:                        layer => { project._layers[layer.getId()] = layer; },
-        removeLayer:                     layer => { delete project._layers[layer.getId()]; },
-      },
-      isQueryable:                         () => project._isQueryable,
-      setQueryable:                      bool => project._isQueryable = !!bool,
-      showOnCatalog:                       () => project.getLayersStore().config.catalog,
-      setOptions:               (config = {}) => project.getLayersStore().config = config,
-      getId:                               () => project.getLayersStore().config.id,
-      removeLayers:                        () => { Object.entries(project._layers).forEach(([_, layer]) => project.getLayersStore().removeLayer(layer)) },
-      getLayers:  (filter = {}, options = {}) => Object.values(project.getLayersStore().getLayersDict(filter, options)),
-      getBaseLayers:                       () => project.getLayersStore().getLayersDict({ BASELAYER: true }),
-      getLayerById:                        id => project.getLayersStore().getLayersDict()[id],
-      getLayerByName:                    name => project._layers.find(l => name === l.getName()),
-      getLayerAttributes:                  id => project.getLayersStore().getLayerById(id).getAttributes(),
-      getLayerAttributeLabel:      (id, name) => project.getLayersStore().getLayerById(id).getAttributeLabel(name),
-      getGeoLayers:                        () => project.getLayersStore().getLayers({ GEOLAYER: true }),
-      selectLayer:             (id, selected) => project.getLayersStore().setLayerSelected(id, selected),
-      getProjection:                       () => project.getLayersStore().config.projection,
-      getExtent:                           () => project.getLayersStore().config.extent,
-      getInitExtent:                       () => project.getLayersStore().config.initextent,
-      getWmsUrl:                           () => project.getLayersStore().config.wmsUrl,
-      removeLayersTree:                    () => project.getLayersStore().state.layerstree.splice(0, project.getLayersStore().state.layerstree.length),
-      getLayersTree:                       () => project.getLayersStore().state.layerstree,
-      getLayersDict: (filter = {}, options = {}) => {
-    
-        // skip when no filter is provided (eg. `filter = null`)
-        if (
-          !filter ||
-          [
-            filter.PRINTABLE,
-            filter.QUERYABLE,
-            filter.FILTERABLE,
-            filter.EDITABLE,
-            filter.VISIBLE,
-            filter.SELECTED,
-            filter.CACHED,
-            filter.SELECTED_OR_ALL,
-            filter.SERVERTYPE,
-            filter.BASELAYER,
-            filter.GEOLAYER,
-            filter.VECTORLAYER,
-            filter.HIDDEN,
-            filter.DISABLED,
-            filter.IDS,
-          ].every(f => undefined === f)
-        ) {
-          return project._layers;
-        }
-    
-        let layers = Object.values(project._layers);
-    
-        if (filter.IDS) {
-          const ids = [].concat(filter.IDS);
-          layers = layers.filter(l => ids.includes(l.getId()));
-        }
-    
-        // check if there are `selected` layers otherwise get all `layers`
-        if (filter.SELECTED_OR_ALL) {
-          const selected = layers.filter(l => l.isSelected());
-          layers         = selected.length > 0 ? selected : layers;
-        }
-    
-        // checks if a boolean filter is setted
-        const has = f => 'boolean' === typeof f;
-    
-        if (has(filter.SELECTED) && !filter.SELECTED_OR_ALL)                    layers = layers.filter(l => filter.SELECTED    === l.isSelected());
-        if (has(filter.QUERYABLE))                                              layers = layers.filter(l => filter.QUERYABLE   === l.isQueryable());
-        if (has(filter.FILTERABLE))                                             layers = layers.filter(l => filter.FILTERABLE  === l.isFilterable(options.filtrable || null));
-        if (has(filter.EDITABLE))                                               layers = layers.filter(l => filter.EDITABLE    === l.isEditable());
-        if (has(filter.VISIBLE))                                                layers = layers.filter(l => filter.VISIBLE     === l.isVisible());
-        if (has(filter.CACHED))                                                 layers = layers.filter(l => filter.CACHED      === l.isCached());
-        if (has(filter.BASELAYER))                                              layers = layers.filter(l => filter.BASELAYER   === l.isBaseLayer());
-        if (has(filter.GEOLAYER))                                               layers = layers.filter(l => filter.GEOLAYER    === l.isGeoLayer());
-        if (has(filter.VECTORLAYER))                                            layers = layers.filter(l => filter.VECTORLAYER === l.isType('vector'));
-        if (has(filter.HIDDEN))                                                 layers = layers.filter(l => filter.HIDDEN      === l.isHidden());
-        if (has(filter.DISABLED))                                               layers = layers.filter(l => filter.DISABLED    === l.isDisabled());
-        if ('string'  === typeof filter.SERVERTYPE && filter.SERVERTYPE.length) layers = layers.filter(l => filter.SERVERTYPE  === l.getServerType());
-        if (filter.PRINTABLE)                                                   layers = layers.filter(l => l.isGeoLayer() && l.isPrintable({ scale: filter.PRINTABLE.scale }));
-    
-        /**@since v3.10.3 order TOC */
-        if (options.TOC_ORDER && project.getLayersStore().state.layerstree) {
-          // get all siblings children layers id
-          let nodes = [];
-          let traverse = tree => {
-            tree.nodes.forEach(n => {
-              if (n.id) { nodes.push(n.id) }
-              else { traverse(n) }
-            });
-          };
-          traverse(project.getLayersStore().state.layerstree[0]);
-          return nodes.map(id => layers.find(l => id === l.getId())).filter(id => id);
-        }
-    
-        return layers;
-      },
-    }
-    
-    ),
+    isQueryable:                         () => project._isQueryable,
+    setQueryable:                      bool => project._isQueryable = !!bool,
+    setOptions:               (config = {}) => project.config = config,
+    removeLayers:                        () => { Object.entries(project._layers).forEach(([_, layer]) => project.removeLayer(layer)) },
+    getLayers:  (filter = {}, options = {}) => Object.values(project.getLayersDict(filter, options)),
+    getBaseLayers:                       () => project.getLayersDict({ BASELAYER: true }),
+    getLayerById:                        id => project.getLayersDict()[id],
+    getLayerByName:                    name => project._layers.find(l => name === l.getName()),
+    getLayerAttributes:                  id => project.getLayerById(id).getAttributes(),
+    getLayerAttributeLabel:      (id, name) => project.getLayerById(id).getAttributeLabel(name),
+    getGeoLayers:                        () => project.getLayers({ GEOLAYER: true }),
+    selectLayer:             (id, selected) => project.setLayerSelected(id, selected),
+    getProjection:                       () => project.config.projection,
+    getExtent:                           () => project.config.extent,
+    getInitExtent:                       () => project.config.initextent,
+    getWmsUrl:                           () => project.config.wmsUrl,
+    removeLayersTree:                    () => project.state.layerstree.splice(0, project.state.layerstree.length),
+    getLayersTree:                       () => project.state.layerstree,
+    getLayersDict: (filter = {}, options = {}) => {
+  
+      // skip when no filter is provided (eg. `filter = null`)
+      if (
+        !filter ||
+        [
+          filter.PRINTABLE,
+          filter.QUERYABLE,
+          filter.FILTERABLE,
+          filter.EDITABLE,
+          filter.VISIBLE,
+          filter.SELECTED,
+          filter.CACHED,
+          filter.SELECTED_OR_ALL,
+          filter.SERVERTYPE,
+          filter.BASELAYER,
+          filter.GEOLAYER,
+          filter.VECTORLAYER,
+          filter.HIDDEN,
+          filter.DISABLED,
+          filter.IDS,
+        ].every(f => undefined === f)
+      ) {
+        return project._layers;
+      }
+  
+      let layers = Object.values(project._layers);
+  
+      if (filter.IDS) {
+        const ids = [].concat(filter.IDS);
+        layers = layers.filter(l => ids.includes(l.getId()));
+      }
+  
+      // check if there are `selected` layers otherwise get all `layers`
+      if (filter.SELECTED_OR_ALL) {
+        const selected = layers.filter(l => l.isSelected());
+        layers         = selected.length > 0 ? selected : layers;
+      }
+  
+      // checks if a boolean filter is setted
+      const has = f => 'boolean' === typeof f;
+  
+      if (has(filter.SELECTED) && !filter.SELECTED_OR_ALL)                    layers = layers.filter(l => filter.SELECTED    === l.isSelected());
+      if (has(filter.QUERYABLE))                                              layers = layers.filter(l => filter.QUERYABLE   === l.isQueryable());
+      if (has(filter.FILTERABLE))                                             layers = layers.filter(l => filter.FILTERABLE  === l.isFilterable(options.filtrable || null));
+      if (has(filter.EDITABLE))                                               layers = layers.filter(l => filter.EDITABLE    === l.isEditable());
+      if (has(filter.VISIBLE))                                                layers = layers.filter(l => filter.VISIBLE     === l.isVisible());
+      if (has(filter.CACHED))                                                 layers = layers.filter(l => filter.CACHED      === l.isCached());
+      if (has(filter.BASELAYER))                                              layers = layers.filter(l => filter.BASELAYER   === l.isBaseLayer());
+      if (has(filter.GEOLAYER))                                               layers = layers.filter(l => filter.GEOLAYER    === l.isGeoLayer());
+      if (has(filter.VECTORLAYER))                                            layers = layers.filter(l => filter.VECTORLAYER === l.isType('vector'));
+      if (has(filter.HIDDEN))                                                 layers = layers.filter(l => filter.HIDDEN      === l.isHidden());
+      if (has(filter.DISABLED))                                               layers = layers.filter(l => filter.DISABLED    === l.isDisabled());
+      if ('string'  === typeof filter.SERVERTYPE && filter.SERVERTYPE.length) layers = layers.filter(l => filter.SERVERTYPE  === l.getServerType());
+      if (filter.PRINTABLE)                                                   layers = layers.filter(l => l.isGeoLayer() && l.isPrintable({ scale: filter.PRINTABLE.scale }));
+  
+      /**@since v3.10.3 order TOC */
+      if (options.TOC_ORDER && project.state.layerstree) {
+        // get all siblings children layers id
+        let nodes = [];
+        let traverse = tree => {
+          tree.nodes.forEach(n => {
+            if (n.id) { nodes.push(n.id) }
+            else { traverse(n) }
+          });
+        };
+        traverse(project.state.layerstree[0]);
+        return nodes.map(id => layers.find(l => id === l.getId())).filter(id => id);
+      }
+  
+      return layers;
+    },
     getQueryPointTolerance: () => project.state.query_point_tolerance,
     getRelations:           () => project.state.relations,
     getRelationById:        id => project.state.relations.find(r => id === r.id),
-    getLayerById:           id => project.getLayersStore().getLayerById(id),
-    getLayers:              () => [...project.state.layers, ...project.state.baselayers],
     getState:               () => project.state,
     getPrint:               () => project.state.print || [],
     getId:                  () => project.state.id,
     getType:                () => project.state.type,
     getGid:                 () => project.state.gid,
     getName:                () => project.state.name,
-    getCrs:                 () => project._projection.getCode(),
-    getProjection:          () => project._projection,
-    getLayersStore:         () => project._layersStore,
+    getCrs:                 () => project.config.projection.getCode(),
     getUrl:                 type => project.urls[type],
     /**
      * @param filter property layer config to filter
@@ -669,10 +647,10 @@ $.ajaxSetup({
   /** ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2 */
 
   // Layer factory: instance each layer and add to layersstore
-  project.getLayersStore().addLayers(project.getLayers().flatMap(l => {
+  project.addLayers(project.state.layers.map(l => {
     const config = Object.assign({}, l, {
       crs:               normalizeEpsg(l.crs || project.state.crs, false), // @v4.0 Fix In case of missing layer crs, set project crs
-      projection:        l.crs ? ApplicationState.projections.get(l.crs) : project._projection,
+      projection:        l.crs ? ApplicationState.projections.get(l.crs) : project.config.projection,
       ows_method:        project.state.ows_method,
       wms_use_layer_ids: project.state.wms_use_layer_ids,
       //@since v4.0.0 - original config to maintain
@@ -690,7 +668,7 @@ $.ajaxSetup({
   let layerstree = [];
   if (!project.state.layerstree) {
     // retrieve all project layers that have geometry
-    layerstree = project.getLayersStore().getLayers({ GEOLAYER: true }).map(l => ({
+    layerstree = project.getLayers({ GEOLAYER: true }).map(l => ({
       id:      l.getId(),
       name:    l.getName(),
       title:   l.getTitle(),
@@ -730,7 +708,7 @@ $.ajaxSetup({
     _traverse(
       project.state.layerstree,
       layerstree,
-      project.getLayersStore().getLayers({ BASELAYER: false }).map(l => l.getId())
+      project.getLayers({ BASELAYER: false }).map(l => l.getId())
     );
   }
 
@@ -753,7 +731,7 @@ $.ajaxSetup({
       nodes:       layerstree,
     };
     const _traverseBBox =(group, { bbox, epsg } = {}) => {
-      const project_epsg = project._projection.getCode();
+      const project_epsg = project.config.projection.getCode();
 
       // translate bbox epsg to project epsg code (when they differ)
       if ((epsg !== project_epsg)) {
@@ -791,7 +769,7 @@ $.ajaxSetup({
       return nodes.reduce((toc, node, index) => {
         // substitute node layer with layer state
         if (undefined !== node.id) {
-          nodes[index] = project.getLayersStore().getLayerById(node.id).getState();
+          nodes[index] = project.getLayerById(node.id).getState();
           // pass bbox and epsg of layer
           if (nodes[index].bbox) {
             _traverseBBox(parentGroup, { bbox: nodes[index].bbox, epsg: nodes[index].epsg });
@@ -812,16 +790,15 @@ $.ajaxSetup({
     //set root group visibility based on children nodes
     rootGroup.toc = _traverse(layerstree, rootGroup);
     
-    project.getLayersStore().state.layerstree.splice(0, 0, rootGroup); // at the end
+    project.state.layerstree = [rootGroup]; // at the end
   }
 
   Object.assign(ApplicationState.project, project);
-
   /**@since 4.0.7 set map_theme of application */
   ApplicationState.map_theme.theme = Object.values(project.state.map_themes).flat().find(mt => mt.default)?.theme || null;
 
   // set in first position
-  ApplicationState.layers[project.getGid()] = project.getLayersStore();
+  ApplicationState.layers = project.getLayers();
 
   window.addEventListener('online',  () => { GUI.online(); } );
   window.addEventListener('offline', () => { GUI.offline(); });
@@ -887,9 +864,9 @@ $.ajaxSetup({
 
   /** @since 4.1.0 */
   GUI.emit('app-complete');
-} catch(error) {
-  console.error(error);
-  error = error.responseJSON?.error?.data ?? error?.statusText ?? error
+} catch(e) {
+  console.error(e);
+  const error = e.responseJSON?.error?.data ?? e?.statusText ?? e;
   document.getElementById('startingspinner')?.remove();
   const wrapper = document.querySelector('.error-page');
   if (!wrapper) {

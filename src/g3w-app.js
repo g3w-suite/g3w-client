@@ -642,10 +642,7 @@ export default new (class GUI extends Emitter {
     
       return comp;
     }));
-
-    ApplicationState.catalog.layerstrees.push(
-      ...Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? ({ tree: s.getLayersTree(), storeid: s.getId() }) : [])
-    );
+   
 
     this.#CONTENTS = Object.assign(new Component({
       id:                 'contents',
@@ -1720,7 +1717,7 @@ export default new (class GUI extends Emitter {
     })).filter(Boolean);
 
     const layersstree = traverse(
-      project.getLayersStore().state.layerstree[0].nodes, // current state
+      project.state.layerstree[0].nodes, // current state
       project.state.layerstree,                           // original state
     ).filter(Boolean);
 
@@ -4017,13 +4014,13 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  #setUpEventsKeysToLayersStore(store) {
-    const id = store.getId();
+  #setUpEventsKeysToLayers() {
+    const id = ApplicationState.project.config.id;
     // check if already store a key of events
     this.#events.stores[id] = [];
 
     //In the case of store that has layers @since 3.10.0
-    store.getLayers().forEach(l => {
+    ApplicationState.project.getLayers().forEach(l => {
       if ('vector' === l.getType()) {
         const olLayer = l.getOLLayer();
         if (olLayer) {
@@ -4033,7 +4030,7 @@ export default new (class GUI extends Emitter {
     });
 
     this.#events.stores[id].push({
-      addLayer: store.onafter('addLayer', l => {
+      addLayer: ApplicationState.project.onafter('addLayer', l => {
       if ('vector' === l.getType()) {
         const olLayer = l.getOLLayer();
         if (olLayer) {
@@ -4043,7 +4040,7 @@ export default new (class GUI extends Emitter {
     }),
     });
     this.#events.stores[id].push({
-      removeLayer: store.onafter('removeLayer', l => { 'vector' === l.getType() && this.#map.removeLayer(l.getOLLayer()) }),
+      removeLayer: ApplicationState.project.onafter('removeLayer', l => { 'vector' === l.getType() && this.#map.removeLayer(l.getOLLayer()) }),
     });
   }
 
@@ -4780,9 +4777,7 @@ export default new (class GUI extends Emitter {
     // setup layers
 
     // sort layers by type: [0=BASE, 1=RASTER, 2=VECTOR]
-    Object
-      .values(ApplicationState.layers)
-      .flatMap(s => s.isQueryable() ? s.getLayers() : [])
+    ApplicationState.project.getLayers()
       .filter(l => l.isGeoLayer())
       .reduce((groups, l) => {
 
@@ -4881,17 +4876,8 @@ export default new (class GUI extends Emitter {
       this._setLegendParams();
     }
 
-    // CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
-    Object.values(ApplicationState.layers).forEach(this.#setUpEventsKeysToLayersStore.bind(this));
-    Vue.watch(
-      () => Object.keys(ApplicationState.layers),
-      (newVal, oldVal) => {
-        const added   = newVal.filter(key => !(key in oldVal));
-        const removed = oldVal.filter(key => !(key in newVal));
-        added.forEach(key   => this.#setUpEventsKeysToLayersStore(ApplicationState.layers[key]));
-        removed.forEach(key => this.#removeEventsKeysToLayersStore(ApplicationState.layers[key]));
-      }
-    );
+    // CHECK IF MAPLAYERS PROJECT
+    this.#setUpEventsKeysToLayers();
 
     this.#map_ready = true;
 
@@ -5463,9 +5449,7 @@ export default new (class GUI extends Emitter {
     return (
       await Promise.allSettled(
         Object.entries(
-          Object
-            .values(ApplicationState.layers)
-            .flatMap(s => s.showOnCatalog() ? s.getLayers({ GEOLAYER: true, ...(all ? {} : { VISIBLE: true }) }, { TOC_ORDER : true }) : [])
+          (ApplicationState.project.getLayers({ GEOLAYER: true, ...(all ? {} : { VISIBLE: true }) }, { TOC_ORDER : true }) || [])
             .map(l => l.state)
             .reduce((urls, layer) => {
               if (change && ApplicationState.project.state.context_base_legend) {
@@ -5579,14 +5563,13 @@ export default new (class GUI extends Emitter {
   } = {}) {
     let data       = [];
     const external = ApplicationState.catalog.external.vector.some(l => l.selected);
-    const layers   = Object.values(ApplicationState.layers)
-      .flatMap(s => s.isQueryable() ? s.getLayers({
+    const layers   = ApplicationState.project.getLayers({
         GEOLAYER:        true,
         QUERYABLE:       true,
         SELECTED_OR_ALL: (0 === layerIds.length),
         VISIBLE:         true,
         IDS:             layerIds.length ? layerIds.map(id => id) : undefined,
-      }) : []);
+      });
     const size           = this.getMap().getSize();
     const mapProjection  = this.getMap().getView().getProjection();
     const resolution     = this.getMap().getView().getResolution();

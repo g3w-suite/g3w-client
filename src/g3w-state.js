@@ -346,7 +346,6 @@ const STATE = {
           removeLayer(layer)                       { delete this._layers[layer.getId()]; }
           isQueryable()                            { return this._isQueryable; }
           setQueryable(bool)                       { this._isQueryable = !!bool; }
-          showOnCatalog()                          { return this.config.catalog; }
           setOptions(config = {})                  { this.config = config; }
           getId()                                  { return this.config.id; }
           removeLayers()                           { Object.entries(this._layers).forEach(([_, layer]) => this.removeLayer(layer)) }

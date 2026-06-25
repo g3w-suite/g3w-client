@@ -560,8 +560,7 @@
 
     data() {
       const project = ApplicationState.project.getState();
-      const layers  = Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? s : [])
-        .flatMap(s => s.showOnCatalog() ? s.getLayers() : [])
+      const layers  = ApplicationState.layers
         // In case of layers that has geometry and no epsg, filter according to filter of project layers
         .filter(l => 'NoGeometry' === l.getGeometryType() || (l.config.crs && l.config.crs.epsg));
 

@@ -85,7 +85,7 @@ export class IframeApp extends Emitter {
         response: {
           result: true,
           data: {
-            layers: ApplicationState.project.state.layers.map(l => ({ id: l.id, name: l.name }))
+            layers: ApplicationState.project.layers.map(l => ({ id: l.id, name: l.name }))
           }
         },
       }, '*');
@@ -215,7 +215,7 @@ export class IframeApp extends Emitter {
    * @returns { Promise } qgs_layer_id
    */
   async 'app:zoomtofeature'(params = {}) {
-    params.qgs_layer_id = params.qgs_layer_id ? [].concat(params.qgs_layer_id) : ApplicationState.project.state.layers.map(l => ({ id: l.id, name: l.name }));
+    params.qgs_layer_id = params.qgs_layer_id ? [].concat(params.qgs_layer_id) : ApplicationState.project.layers.map(l => ({ id: l.id, name: l.name }));
     
     let found = false;
 
