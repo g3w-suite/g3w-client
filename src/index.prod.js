@@ -797,9 +797,6 @@ $.ajaxSetup({
   /**@since 4.0.7 set map_theme of application */
   ApplicationState.map_theme.theme = Object.values(project.state.map_themes).flat().find(mt => mt.default)?.theme || null;
 
-  // set in first position
-  ApplicationState.layers = project.getLayers();
-
   window.addEventListener('online',  () => { GUI.online(); } );
   window.addEventListener('offline', () => { GUI.offline(); });
 
