@@ -213,7 +213,7 @@ globalThis.g3wsdk = {
       /** used by the following plugins: "bforest" */
       createVectorLayerFromFile: deprecate(createVectorLayerFromFile, '[G3W-CLIENT] g3wsdk.core.geoutils.createVectorLayerFromFile is deprecated'),
       getAlphanumericPropertiesFromFeature: getAlphanumericProps,
-      getMapLayersByFilter: (f = {}, o = {}) => Object.values(ApplicationState.layers).flatMap(s => s.isQueryable() ? s.getLayers({ GEOLAYER: true, ...(f || {}) }, o) : []),
+      getMapLayersByFilter: (f = {}, o = {}) => ApplicationState.project.getLayers({ GEOLAYER: true, ...(f || {}) }, o),
       areCoordinatesEqual,
       splitFeature,
       convertSingleMultiGeometry,
