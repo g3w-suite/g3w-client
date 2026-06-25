@@ -555,7 +555,7 @@ export default {
     },
 
     async toggleFilter() {
-      this.layerstree.filter.active = await ApplicationState.layers[this.storeid].getLayerById(this.layerstree.id).toggleToken();
+      this.layerstree.filter.active = await ApplicationState.project.getLayerById(this.layerstree.id).toggleToken();
     },
 
     /**
@@ -573,7 +573,7 @@ export default {
 
       // PROJECT LAYER
       if (!layer.external && storeid) {
-        await ApplicationState.layers[storeid].getLayerById(layer.id).clearSelectionFids();
+        await ApplicationState.project.getLayerById(layer.id).clearSelectionFids();
       }
 
       // EXTERNAL LAYER

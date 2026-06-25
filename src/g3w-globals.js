@@ -290,7 +290,6 @@ globalThis.g3wsdk = {
       }
     },
     layer: {
-      LayersStore:     babelify(function(opts) { GUI.showUserMessage({ type: 'alert', message: 'g3wsdk.core.layer.LayersStore is deprecated.' }); return (ApplicationState.layers[opts.id] = opts); }),
       Layer:           Object.assign(Layer, { LayerTypes: { TABLE: 'table', IMAGE: 'image', VECTOR: 'vector' } }),
       VectorLayer:     babelify(class extends Layer { constructor(config = {}, opts = {}) { super(config, Object.assign(opts, { TYPE: 'vector' })) } }),
       features: {

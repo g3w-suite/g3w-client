@@ -82,7 +82,7 @@ export default new (class GUI extends Emitter {
    */
   #events = {
     ol:           [],
-    stores:       [], // layers stores
+    layers:       [], // layers
     unwatches:    [],
     query:        [],
   };
@@ -2736,7 +2736,7 @@ export default new (class GUI extends Emitter {
     // clear map
     this.#events.ol.forEach(key => ol.Observable.unByKey(key));
     this.#events.ol.splice(0);
-    Object.values(ApplicationState.layers).forEach(this.#removeEventsKeysToLayersStore.bind(this));
+    this.#removeEventsKeysToLayers();
 
     // exec lazy functions 
     setTimeout(() => {
@@ -3999,12 +3999,9 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  #removeEventsKeysToLayersStore(store) {
-    const id = store.getId();
-    if (this.#events.stores[id]) {
-      this.#events.stores[id].forEach(evt => { Object.entries(evt).forEach(([event, key]) => store.un(event, key)); });
-      delete this.#events.stores[id];
-    }
+  #removeEventsKeysToLayers() {
+    this.#events.layers.forEach(({ event, key }) => this.un(event, key));
+    this.#events.layers.splice(0);
   }
 
   /**
@@ -4015,9 +4012,8 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   #setUpEventsKeysToLayers() {
-    const id = ApplicationState.project.config.id;
     // check if already store a key of events
-    this.#events.stores[id] = [];
+    this.#events.layers = [];
 
     //In the case of store that has layers @since 3.10.0
     ApplicationState.project.getLayers().forEach(l => {
@@ -4029,7 +4025,7 @@ export default new (class GUI extends Emitter {
       }
     });
 
-    this.#events.stores[id].push({
+    this.#events.layers.push({
       addLayer: ApplicationState.project.onafter('addLayer', l => {
       if ('vector' === l.getType()) {
         const olLayer = l.getOLLayer();
@@ -4039,7 +4035,7 @@ export default new (class GUI extends Emitter {
       }
     }),
     });
-    this.#events.stores[id].push({
+    this.#events.layers.push({
       removeLayer: ApplicationState.project.onafter('removeLayer', l => { 'vector' === l.getType() && this.#map.removeLayer(l.getOLLayer()) }),
     });
   }
@@ -4878,6 +4874,7 @@ export default new (class GUI extends Emitter {
 
     // CHECK IF MAPLAYERS PROJECT
     this.#setUpEventsKeysToLayers();
+    setTimeout(() => this.#removeEventsKeysToLayers(), 3000);
 
     this.#map_ready = true;
 
@@ -5014,7 +5011,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   getProjectLayer(id) {
-    return Object.values(ApplicationState.layers).map(s => s.getLayerById(id)).find(l => l);
+    return ApplicationState.project.getLayerById(id);
   }
 
   /**

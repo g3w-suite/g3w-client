@@ -60,9 +60,6 @@ export class Plugin extends Emitter {
       }
     }, TIMEOUT);
 
-    if (layersStore && name) {
-      ApplicationState.layers[name] = layersStore;
-    }
   }
 
   /**
