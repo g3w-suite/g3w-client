@@ -2933,7 +2933,7 @@ export class Layer extends Emitter {
    * 
    * @since 4.1.0
    */
-  getLegendUrl(params = {}, opts = { categories: false,  all: false, format: 'image/png', }) {
+  getLegendUrl(opts = { categories: false,  all: false, format: 'image/png', }) {
     if (!this.isRaster()) {
       return;
     }
@@ -2968,7 +2968,7 @@ export class Layer extends Emitter {
       bbox,
       sld_version = '1.1.0',
     } = {
-      ...params,
+      ...window.initConfig?.layout?.legend ?? {},
       ...this.customParams
     };
 
@@ -3003,33 +3003,33 @@ export class Layer extends Emitter {
         'SERVICE=WMS',
         'VERSION=1.3.0',
         'REQUEST=GetLegendGraphic',
-        __('SLD_VERSION=',      sld_version),
-        __('WIDTH=',            width),
-        __('HEIGHT=',           height),
+        __('SLD_VERSION=',      opts.sld_version      ?? sld_version),
+        __('WIDTH=',            opts.width            ?? width),
+        __('HEIGHT=',           opts.height           ?? height),
         __('FORMAT=',           (undefined === opts.format ? 'image/png' : opts.format)),
-        __('TRANSPARENT=',      transparent),
-        __('ITEMFONTCOLOR=',    color),
-        __('LAYERFONTCOLOR=',   color),
-        __('LAYERTITLE=',       layertitle),
-        __('ITEMFONTSIZE=',     itemfontsize || fontsize), //@since 3.11.3 check itemfontsize or fontsize
-        __('CRS=',              crs),
-        __('BBOX=',             ((true === opts.all ? undefined : [false, undefined].includes(opts.all) && bbox && bbox.join(',')))),
-        __('BOXSPACE=',         boxspace),
-        __('LAYERSPACE=',       layerspace),
-        __('LAYERTITLESPACE=',  layertitlespace),
-        __('SYMBOLSPACE=',      symbolspace),
-        __('ICONLABELSPACE=',   iconlabelspace),
-        __('SYMBOLWIDTH=',      (opts.categories && 'application/json' === opts.format ? 16 : symbolwidth)),
-        __('SYMBOLHEIGHT=',     (opts.categories && 'application/json' === opts.format ? 16 : symbolheight)),
-        __('LAYERFONTFAMILY=',  layerfontfamily),
-        __('ITEMFONTFAMILY=',   itemfontfamily),
-        __('LAYERFONTBOLD=',    layerfontbold),
-        __('ITEMFONTBOLD=',     itemfontbold),
-        __('LAYERFONTITALIC=',  layerfontitalic),
-        __('LAYERFONTSIZE=',    layerfontsize),    //@since 3.11.3
-        __('SHOWFEATURECOUNT=', showfeaturecount), //@since 3.11.3
-        __('ITEMFONTITALIC=',   itemfontitalic),
-        __('RULELABEL=',        rulelabel ?? 'auto'),
+        __('TRANSPARENT=',      opts.transparent      ?? transparent),
+        __('ITEMFONTCOLOR=',    opts.color            ?? color),
+        __('LAYERFONTCOLOR=',   opts.color            ?? color),
+        __('LAYERTITLE=',       opts.layertitle       ?? layertitle),
+        __('ITEMFONTSIZE=',     opts.itemfontsize     ?? itemfontsize ?? fontsize), //@since 3.11.3 check itemfontsize or fontsize
+        __('CRS=',              opts.crs              ?? crs),
+        __('BBOX=',             opts.all ? undefined : (opts.bbox ?? bbox)?.join(',')),
+        __('BOXSPACE=',         opts.boxspace         ?? boxspace),
+        __('LAYERSPACE=',       opts.layerspace       ?? layerspace),
+        __('LAYERTITLESPACE=',  opts.layertitlespace  ?? layertitlespace),
+        __('SYMBOLSPACE=',      opts.symbolspace      ?? symbolspace),
+        __('ICONLABELSPACE=',   opts.iconlabelspace   ?? iconlabelspace),
+        __('SYMBOLWIDTH=',      (opts.categories && 'application/json' === opts.format ? 16 : opts.symbolwidth ?? symbolwidth)),
+        __('SYMBOLHEIGHT=',     (opts.categories && 'application/json' === opts.format ? 16 : opts.symbolheight ?? symbolheight)),
+        __('LAYERFONTFAMILY=',  opts.layerfontfamily  ?? layerfontfamily),
+        __('ITEMFONTFAMILY=',   opts.itemfontfamily   ?? itemfontfamily),
+        __('LAYERFONTBOLD=',    opts.layerfontbold    ?? layerfontbold),
+        __('ITEMFONTBOLD=',     opts.itemfontbold     ?? itemfontbold),
+        __('LAYERFONTITALIC=',  opts.layerfontitalic  ?? layerfontitalic),
+        __('LAYERFONTSIZE=',    opts.layerfontsize    ?? layerfontsize),    //@since 3.11.3
+        __('SHOWFEATURECOUNT=', opts.showfeaturecount ?? showfeaturecount), //@since 3.11.3
+        __('ITEMFONTITALIC=',   opts.itemfontitalic   ?? itemfontitalic),
+        __('RULELABEL=',        opts.rulelabel        ?? rulelabel ?? 'auto'),
         __('LEGEND_ON=',        ctx_legend && ctx_legend.LEGEND_ON),
         __('LEGEND_OFF=',       ctx_legend && ctx_legend.LEGEND_OFF),
         __('STYLES=',           (opts.categories && 'application/json' === opts.format ? encodeURIComponent(this.getCurrentStyle().name) : undefined)),
