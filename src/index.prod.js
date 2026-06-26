@@ -450,7 +450,6 @@ $.ajaxSetup({
 
   const project = Object.assign(new Emitter, {
     _layers:      {},
-    _isQueryable: true,
     config: {
       id:         CONFIG.gid,
       projection: ApplicationState.projections.get(normalizeEpsg(CONFIG.crs, false)),
@@ -506,8 +505,6 @@ $.ajaxSetup({
       addLayer:                        layer => { project._layers[layer.getId()] = layer; },
       removeLayer:                     layer => { delete project._layers[layer.getId()]; },
     },
-    isQueryable:                         () => project._isQueryable,
-    setQueryable:                      bool => project._isQueryable = !!bool,
     setOptions:               (config = {}) => project.config = config,
     removeLayers:                        () => { Object.entries(project._layers).forEach(([_, layer]) => project.removeLayer(layer)) },
     getLayers:  (filter = {}, options = {}) => Object.values(project.getLayersDict(filter, options)),
