@@ -28,8 +28,6 @@ export class Plugin extends Emitter {
     i18n         = null,
     fontClasses  = [],
     api          = {},
-    /** @since 4.1.0 */
-    layersStore  = false,
   } = {}) {
   
     super();

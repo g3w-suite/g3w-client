@@ -3995,7 +3995,7 @@ export default new (class GUI extends Emitter {
   /**
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    * 
-   * remove all events of layersStore
+   * remove all events of layers
    * 
    * @since 4.1.0
    */
@@ -4007,7 +4007,7 @@ export default new (class GUI extends Emitter {
   /**
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    * 
-   * register all events of layersStore and relative keys
+   * register all events of layers and relative keys
    * 
    * @since 4.1.0
    */

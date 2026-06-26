@@ -560,10 +560,9 @@
 
     data() {
       const project = ApplicationState.project.getState();
-      const layers  = ApplicationState.project.getLayers();
-        // In case of layers that has geometry and no epsg, filter according to filter of project layers
-        .filter(l => 'NoGeometry' === l.getGeometryType() || (l.config.crs && l.config.crs.epsg));
-
+      const layers  = ApplicationState.project.getLayers()   
+                      // In case of layers that has geometry and no epsg, filter according to filter of project layers
+                      .filter(l => 'NoGeometry' === l.getGeometryType() || (l.config.crs && l.config.crs.epsg));
       // @since 4.1.0 set WMS URL if not set by QGIS project
       if (!project.metadata.wms_url) {
         project.metadata.wms_url = `${project.WMSUrl}?service=WMS&version=1.3.0&request=GetCapabilities`;

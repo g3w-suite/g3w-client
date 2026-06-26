@@ -63,7 +63,7 @@ GUI.setupControl.overview = async function() {
       };
       traverse(PROJECT.layerstree);
 
-      // Layer factory: instance each layer and add to layersstore
+      // Layer factory: instance each layer and add to PROJECT._layers
       PROJECT.layers.flatMap(l => {
 
         l.wmsUrl = `${window.initConfig.urls.baseurl}${window.initConfig.urls.ows}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}/`;
