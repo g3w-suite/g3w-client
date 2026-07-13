@@ -478,6 +478,8 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
 
 #app,
 .main-sidebar                                                { background-color: var(--bgcolor); }
+.main-sidebar.g3w-disabled                                   { pointer-events: auto !important; opacity: 0.9 !important; }
+.main-sidebar.g3w-disabled *                                 { pointer-events: none !important; }
 
 /*Navbar toggle button*/
 
