@@ -400,7 +400,8 @@ export default {
     'custom_theme.value'(name) {
       // can save check if value name is set and is not yet set on custom map_theme
       setTimeout(() => {
-        this.custom_theme.validate.valid = name ? !this.map_themes.custom.find(({ theme }) => theme === name.trim()) : false;
+        //@since 4.0.7 Need to check if current map theme name exist in project or custom map themes. 
+        this.custom_theme.validate.valid = name ? !(this.map_themes.project.concat(this.map_themes.custom)).find(({ theme }) => theme === name.trim()) : false;
       }, 200)
 
     },

@@ -15,8 +15,7 @@
         @removeinput      = "removeToValidate"
         :removeToValidate = "removeToValidate"
         :state            = "state"
-        :is               = "type">
-      </component>
+        :is               = "type"/>
       <divider/>
     </div>
 
@@ -28,14 +27,13 @@
       <h4 style = "font-weight: bold">{{ state.label}}</h4>
       <div> {{ state.description }} </div>
       <g3w-input v-for = "field in state.fields" :key = "field.name"
-        :state="field"
+        :state            = "field"
         @changeinput      = "changeInput"
         :changeInput      = "changeInput"
         @addinput         = "addToValidate"
         :addToValidate    = "addToValidate"
         @removeinput      = "removeToValidate"
-        :removeToValidate = "removeToValidate">
-      </g3w-input>
+        :removeToValidate = "removeToValidate"/>
     </div>
   </div>
 </template>
@@ -46,6 +44,7 @@
     'texthtml_input':            require('gui/inputs/texthtml/vue/texthtml'),
     'textarea_input':            require('gui/inputs/textarea/vue/textarea'),
     'integer_input':             require('gui/inputs/integer/vue/integer'),
+    'bigint_input':              require('gui/inputs/integer/vue/integer'), //@since 4.0.8
     'string_input':              require('gui/inputs/text/vue/text'), //temporary
     'float_input':               require('gui/inputs/float/vue/float'),
     'radio_input':               require('gui/inputs/radio/vue/radio'),
@@ -86,14 +85,21 @@
     },
     computed: {
       type() {
-        if (this.state.type !== 'child')
-          return this.state.input.type ? `${this.state.input.type}_input`: `${this.state.type}_input`;
+        /**@since 4.0.8 set integer,bigint, float and  'text' === this.state.input.type set (numeric) input dom type */
+        if (['integer', 'bigint', 'float'].includes(this.state.type) && 'text' === this.state.input.type) {
+          return `${this.state.type}_input`;
+        }
+        
+        return this.state.input.type ? `${this.state.input.type}_input`: `${this.state.type}_input`;
+        
+          
       }
     },
     created() {
       //TEMPORARY
-      if (this.state.type !== 'child' && !this.state.input.options)
+      if (!this.state.input.options) {
         this.state.input.options = {};
+      }
     }
   };
 </script>

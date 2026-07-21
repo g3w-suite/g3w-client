@@ -342,7 +342,7 @@ export default new (class GUI extends G3WObject {
 
       //Check id we can show data
       const show = 'function' === typeof output.condition ? await output.condition(data) : false !== output.condition;
-      const last = show && rid === this.outputDataPlace.reqs.at(-1);
+      const last = rid === this.outputDataPlace.reqs.at(-1);
 
       // set request output ids empty
       if (last) {
@@ -351,26 +351,30 @@ export default new (class GUI extends G3WObject {
 
       //if set before call method and wait
       if (last && output.before) {
-        await output.before(data)
+        await output.before(data);
       }
 
       // in case of usermessage show user message
       if (last && data.usermessage) {
-        this.showUserMessage({
+        await this.showUserMessage({
           type:      data.usermessage.type,
           message:   data.usermessage.message,
           autoclose: data.usermessage.autoclose
-        });
+        });  
       }
 
       // check if data can be shown on query result content
-      if (last) {
+      if (last && show) {
         (this.getService('queryresults') || this.showQueryResults(output.title || '')).setQueryResponse(data, { add: !!output.add });
+      }
+      //@since 4.0.3 in case of show false, need to close content
+      if (last && !show) {
+        await this.closeContent();
       }
 
       // call after is set with data
       if (last && output.after) {
-        output.after(data)
+        output.after(data);
       }
     } catch(e) {
       console.warn(e);
@@ -542,7 +546,7 @@ export default new (class GUI extends G3WObject {
   }
 
   //showusermessage
-  showUserMessage({
+  async showUserMessage({
     title,
     subtitle,
     message,
@@ -559,8 +563,8 @@ export default new (class GUI extends G3WObject {
   } = {}) {
 
     this.closeUserMessage();
-
-    setTimeout(() => {
+    //@since 4.0.3
+    await new Promise((res) => setTimeout(() => {
       Object.assign(ApplicationState.viewport.usermessage, {
         id: getUniqueDomId(),
         show: true,
@@ -578,7 +582,8 @@ export default new (class GUI extends G3WObject {
         hooks,
         iconClass,
       });
-    });
+      res();
+    }));
 
     return ApplicationState.viewport.usermessage;
   }

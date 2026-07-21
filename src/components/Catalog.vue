@@ -518,12 +518,11 @@ export default {
                       .join('&')
                       + '&' + url_params
                 })).blob());
-          } catch (e) {
+          } catch(e) {
             console.warn(e);
-          } finally {
             //set loading to false
             obj.loading = false;
-          }
+          } 
         }
       }
       return legendurls;
@@ -595,12 +594,12 @@ export default {
               // if it has a style settled
               if (node.style) {
                 const promise = new Promise(resolve => {
-                  const setCurrentStyleAndResolvePromise = node => {
+                  const setCurrentStyleAndResolvePromise = async node => {
                     if (changes.layers[node.id] === undefined) changes.layers[node.id] = {
                       visibility: false,
                       style:      false
                     };
-                    changes.layers[node.id].style = project.getLayerById(node.id).setCurrentStyle(node.style);
+                    changes.layers[node.id].style = await project.getLayerById(node.id).changeCurrentStyle(node.style);
                     resolve();
                   };
                   if (project.getLayersStore()) { setCurrentStyleAndResolvePromise(node) }
@@ -689,7 +688,7 @@ export default {
      *
      * @since 3.10.0
      */
-    onUnSelectionLayer(storeid, layer) {
+    async onUnSelectionLayer(storeid, layer) {
       if (!layer) {
         return console.warn('undefined layer');;
       }
@@ -699,7 +698,7 @@ export default {
 
       // PROJECT LAYER
       if (!layer.external && storeid) {
-        ApplicationState.catalog[storeid].getLayerById(layer.id).clearSelectionFids();
+        await ApplicationState.catalog[storeid].getLayerById(layer.id).clearSelectionFids();
       }
 
       // EXTERNAL LAYER
@@ -716,6 +715,11 @@ export default {
           }
           GUI.getService('map').setSelectionFeatures('remove', { feature });
         });
+      }
+
+      //@since 4.0.4 Need to set to false eventually features of layer in queryresults service
+      if (!layer.external) {
+        (service.state.layers.find(l => layer.id === l.id)?.features || []).forEach(f => f.selection.selected = false);
       }
     },
 

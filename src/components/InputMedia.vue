@@ -7,9 +7,10 @@
   <baseinput :state = "state">
     <div slot = "body" v-disabled = "!editable">
       <div
-        class  = "g3w_input_button skin-border-color"
-        @click = "onClick"
-        style  = "border-style: solid; border-width: 2px; width:100%; cursor: pointer; text-align: center;"
+        class           = "g3w_input_button skin-border-color"
+        @click          = "onClick"
+        style           = "border-style: solid; border-width: 2px; width:100%; cursor: pointer; text-align: center;"
+        v-t-tooltip:top = "accept"
       >
         <i :class = "g3wtemplate.getFontClass('file-upload')" class = "fa-2x skin-color" style = "padding: 5px;">
           <input
@@ -20,6 +21,7 @@
             :data-url = "state.input.options.uploadurl"
             :class    = "{'input-error-validation' : notvalid}"
             type      = "file"
+            :accept   = "accept"
             @change   = "onChangeFile"
           >
         </i>
@@ -56,6 +58,8 @@ export default {
         value:     null,
         mime_type: null
       },
+      //@since 4.0.5 take in account allowed types from g3w-admin settings.py G3WFILE_FORM_UPLOAD_FORMATS
+      accept: (this.state.input?.options?.allowed_types || []).map(a => `${a.startsWith('.') ? a : `.${a}`}` ).join(','),
       mediaid: `media_${getUniqueDomId()}`,
       loading: false
     }
@@ -82,14 +86,19 @@ export default {
       this.loading = true;
 
       try {
-        const response = (await (await fetch(this.state.input.options.uploadurl, {
+        let response = (await (await fetch(this.state.input.options.uploadurl, {
           method:  'POST',
           headers: { Accept: 'application/json' },
           body
-        })).json())[this.state.name];
-        console.log(response)
-        if (response) {
-          this.state.value = response;
+        })).json());
+        //@since 4.0.5 in case 
+        if (response?.result) {
+          this.state.value = response?.data;
+        }
+        
+        //@since 4.0.5
+        if (false === response?.result) {
+          GUI.notify.error(response.error || this.$t("info.server_error"));
         }
       } catch(e) {
         console.warn(e);

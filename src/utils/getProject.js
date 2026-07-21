@@ -162,7 +162,7 @@ export async function getProject(gid, options = {}) {
   // Process layerstree and baselayers of the project (useful info for catalog)
   const traverse = nodes => {
     for (let i = 0; i < nodes.length; i++) {
-      const node = nodes[i];
+      let node = nodes[i];
       //check if layer (node) of folder
       if (undefined !== node.id) {
         project.state.layers
@@ -171,7 +171,7 @@ export async function getProject(gid, options = {}) {
               node.name = l.name;
               l.wmsUrl  = project.state.WMSUrl;
               l.project = project;
-              node[i]   = Object.assign(l, node);
+              node      = Object.assign(l, node); // replace node with layer configuration (from server config)
               return false
             }
           });

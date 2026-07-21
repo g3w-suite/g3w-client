@@ -1013,7 +1013,10 @@ class Layer extends G3WObject {
    * @since 3.11.7  
    */
   hasDowloadableRelations() { 
-    return this.getRelations().getArray().length > 0 && !!this.getRelations().getArray().find(r => getCatalogLayerById(r.getChild()).getDownloadableFormats().filter(f => 'pdf' !== f).length > 0); }
+    return !!this.getRelations().getArray()
+      .filter(r => 'MANY' === r.getType()) //@since 4.0.6 filter onlye MANY (1:N) relation type. Exclude Join (ONE) relation type
+      .find(r => getCatalogLayerById(r.getChild()).getDownloadableFormats().filter(f => 'pdf' !== f).length > 0); 
+  }
 
   /**
    * @param download url
@@ -1205,7 +1208,7 @@ class Layer extends G3WObject {
    * @param {boolean} bool
    */
   setFilter(bool = false) {
-    this.state.filter.active     = bool;
+    this.state.filter.active = bool;
     if (this.isGeoLayer() && this.state.filter.active) {
       GUI.getService('map').toggleSelection(false, this.state.id); // hide selection features (open layers)
     }
@@ -1262,7 +1265,7 @@ class Layer extends G3WObject {
   saveFilter() {
 
     // skip when ..
-    if (!this.providers['filtertoken'] || !this.state.selectionFids.size > 0) {
+    if (!this.providers['filtertoken'] || !this.state.filter.active) {
       return;
     }
 
@@ -2359,10 +2362,6 @@ class Layer extends G3WObject {
    * @returns { default.watch.infoformat | * | string }
    */
   getInfoFormat(ogcService) {
-    // In the case of NETCDF (qtime series)
-    if (true === this.config.qtimeseries || 'gdal' === this.getSourceType()) {
-      return 'application/json';
-    }
     if (this.config.infoformat && '' !== this.config.infoformat  && 'wfs' !== ogcService) {
       return this.config.infoformat;
     }
@@ -2587,10 +2586,14 @@ class Layer extends G3WObject {
         this.config.styles.forEach(s => s.current = style === s.name);
         //In case of change need to call change function
         this.change();
+        //return true. Style change
+        return true;
       } catch(e) {
         console.warn(e);    
       }
     }
+    //return false because style is current or in case of error
+    return false;
   }
 
   /**

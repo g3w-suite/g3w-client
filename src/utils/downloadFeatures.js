@@ -141,7 +141,8 @@ export async function downloadFeatures(type, layer, features = [], action, index
         ApplicationState.download = true;
         try {
           const format              = dialog.querySelector('[name="format"]').value;
-          const down_with_relations = Number(dialog.querySelector('[name="down_with_relations"]').value);
+          //@since 4.0.6 Check if lauet has relation downloadble otherwise force to 0
+          const down_with_relations = 1 * Boolean(catalog_layer?.hasDowloadableRelations?.()) * Number(dialog.querySelector('[name="down_with_relations"]').value);
           let blob, filename;
 
           if ('external-url' === format) {

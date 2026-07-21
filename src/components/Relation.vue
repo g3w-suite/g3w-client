@@ -133,7 +133,7 @@
                 ></span>
                 <span
                   v-if              = "table.formStructure"
-                  @click.stop       = "showFormStructure(row, index)"
+                  @click.stop       = "showFormStructure(index)"
                   v-t-tooltip:right = "'Form View'"
                   class             = "action-button row-form skin-color"
                   :class            = "$fa('table')"
@@ -252,6 +252,7 @@
          * @since 3.11.2 table state
          */
         table: {
+          layerId:       layer.getId(), //@since 4.0.4
           title:         layer.getName() || layer.getTitle(),
           formStructure: layer.getLayerEditingFormStructure(),
           features:      [],
@@ -469,14 +470,14 @@
        * @param row
        * @param index
        */
-      async showFormStructure(row, index) {
+      async showFormStructure(index) {
         GUI.showContent({
           content: new Component({
             internalComponent: new (Vue.extend({
               data: () => ({
                 layerid:       this.table.layerId,
                 feature:       this.table.features[index],
-                fields:        this.table.columns.map((c, i) => Object.assign(c, { value: row[i], query: true, input: { type: `${require('gui/fields/fieldsservice').getType(c)}` } })),
+                fields:        this.table.columns.map(c => Object.assign(c, { value: this.table.features[index].attributes[c.name], query: true, input: { type: `${require('gui/fields/fieldsservice').getType(c)}` } })),
                 formStructure: this.table.formStructure,
               }),
               template: /* html */`

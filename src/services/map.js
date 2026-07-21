@@ -514,7 +514,8 @@ class MapService extends G3WObject {
     const { data = [] } = await DataRouterService.getData('search:fids', {
       inputs: {
         layer,
-        fids:  [fid]
+        fids:      [fid],
+        formatter: 1, //@since 4.0.3 need to set formatter 1 to show formatted data
       },
       outputs: {
         show: {
@@ -1021,8 +1022,9 @@ class MapService extends G3WObject {
       });
       //In case of add wms on bottom position, check current zindex of default layers that need to set on top of map layers
       if (this.defaultsLayers.mapcenter)      { this.defaultsLayers.mapcenter.getZIndex()      < zindex && this.defaultsLayers.mapcenter.setZIndex(zindex + 1); }
-      if (this.defaultsLayers.highlightLayer) { this.defaultsLayers.highlightLayer.getZIndex() < zindex && this.defaultsLayers.highlightLayer.setZIndex(zindex + 1); }
-      if (this.defaultsLayers.selectionLayer) { this.defaultsLayers.selectionLayer.getZIndex() < zindex && this.defaultsLayers.selectionLayer.setZIndex(zindex + 2); }
+      if (this.defaultsLayers.selectionLayer) { this.defaultsLayers.selectionLayer.getZIndex() < zindex && this.defaultsLayers.selectionLayer.setZIndex(zindex + 1); }
+      if (this.defaultsLayers.highlightLayer) { this.defaultsLayers.highlightLayer.getZIndex() < zindex && this.defaultsLayers.highlightLayer.setZIndex(zindex + 2); }
+
     });
 
     this.viewer.map.getLayers().on('remove', e => {

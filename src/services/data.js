@@ -191,7 +191,7 @@ export default {
           messagetext: true,
           autoclose:   false
         },
-        data: (await this.getQueryLayersPromisesByGeometry(
+        data: geometry ? (await this.getQueryLayersPromisesByGeometry(
           // layers
           getMapLayersByFilter({
             ...(
@@ -210,11 +210,11 @@ export default {
             filterConfig,
             projection: ApplicationState.project.getProjection()
           }
-        ) || []).flatMap(({ data = [] }) => data),
+        ) || []).flatMap(({ data = [] }) => data) : [],
       };
-    } catch (error) {
-      console.warn(error);
-      throw error;
+    } catch (err) {
+      console.warn(err);
+      throw err;
     }
   },
 
@@ -261,7 +261,7 @@ export default {
       data: (await Promise.allSettled(
         ([].concat(layer).sort((a, b) => (layersId.indexOf(a.state.id) > layersId.indexOf(b.state.id) ? 1 : -1))).map((l, i) => l.searchFeatures({ ...params, filter: params.filter[i] }))
       ))
-        .filter(d => 'fulfilled' === d.status && (d.value?.data || [])[0].features?.length > 0) //@since 4.0.1 check length features
+        .filter(d => 'fulfilled' === d.status && (d.value?.data || [])[0].features) //@since 4.0.4 remove check lenght
         .map(({ value } = {}) => {
           //@since 3.11.0 In case autofilter set
           if (1 === params.autofilter) {
@@ -275,7 +275,6 @@ export default {
           }
 
           if (params.page_sizes)  {
-            const features = (value.data || [])[0].features;
             //@since 4.0.1 get project layer
             const layer    = (value.data || [])[0].layer;
             //get max number of elements per page
@@ -284,7 +283,7 @@ export default {
             page_sizes.push(max <= value.count ? params.page_sizes : [...params.page_sizes.filter(p => p < value.count), value.count]);
             //add a count element on counts array
             counts.push(value.count);
-            paginate.push(features && value.count > features.length);
+            paginate.push(true); //@since 4.0.4 set always true to has results uniform layer tools (selection, filter, save filter)
             layers.push(layer);
           }
           if (params.raw)                                         { return { data: value }; }
@@ -525,18 +524,15 @@ export default {
   async getQueryLayersPromisesByGeometry(layers,
     {
       geometry,
-      projection,
       filterConfig  = {},
       multilayers   = false,
       feature_count = 10
     } = {}
   ) {
-    // skip when no features
-    if (0 === layers.length) {
+    // skip when no features or no geometry
+    if (0 === layers.length || !geometry) {
       return [];
     }
-
-    const mapCrs = projection.getCode();
 
     return await handleQueryPromises(Object.values(
       multilayers
@@ -544,12 +540,10 @@ export default {
         : layers
     ).map(layers => {
       const layer = [].concat(layers)[0];
-      const crs   = layer.getProjection().getCode();
       const filter = {
         config: filterConfig,
         type:   'geometry',
-        // Convert filter geometry from map to layer CRS
-        value:  mapCrs === crs ? geometry : geometry.clone().transform(mapCrs, crs),
+        value:  geometry,
       };
       return promisify(layer.query(
         multilayers

@@ -238,9 +238,11 @@ async function doSearch({
     }
     /********************************************************************************/
 
-    // auto zoom to query (response)
-    if (show && ApplicationState.project.state.autozoom_query && 1 === (data.data || []).length && !state.paginate) {
-      GUI.getService('map').zoomToFeatures(data.data[0].features);
+    const layers_with_features = data?.data?.filter(d => d.features?.length) || [];
+
+    // auto zoom to query (response) in case of single response layer
+    if (show && ApplicationState.project.state.autozoom_query && !state.paginate && 1 === layers_with_features.length) {
+      GUI.getService('map').zoomToFeatures(layers_with_features[0].features);
     }
 
     const features  = search_1n       && (data.data[0] || {}).features || []

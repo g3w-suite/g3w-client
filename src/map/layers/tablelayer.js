@@ -36,6 +36,7 @@ export class TableLayer extends Layer {
       'setColor',
       'getFeatures',
       'commit',
+      'change',
     ];
 
     /**
@@ -112,6 +113,9 @@ export class TableLayer extends Layer {
     this._featuresstore = new FeaturesStore({ provider: this.providers.data });
 
   }
+
+  /**@since 4.0.4 aligned with image layer */
+  change() {}
 
   /**
    * Clear all features of the layer
