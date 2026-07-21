@@ -85,7 +85,7 @@ export class IframeApp extends Emitter {
         response: {
           result: true,
           data: {
-            layers: ApplicationState.project.layers.map(l => ({ id: l.id, name: l.name }))
+            layers: ApplicationState.project.getLayers().map(l => ({ id: l.getId(), name: l.getName() }))
           }
         },
       }, '*');
