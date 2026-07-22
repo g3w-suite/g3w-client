@@ -757,10 +757,13 @@ function _hasVisible(control) {
  * @TODO get rid of `s.getLayers` call
  */
 function _getAvailableLayers(type) {
+
+    console.log(Object.values(ApplicationState.project.getLayers({ GEOLAYER: true, QUERYABLE: true, SELECTED_OR_ALL: true }).filter(l => l.state?.geometrytype)));
+    console.log(ApplicationState.project.getLayers({ GEOLAYER: true, QUERYABLE: true, SELECTED_OR_ALL: true }).filter(l => l.state?.geometrytype));
   return [...new Set([
 
     // QUERYABLE
-    ...Object.values(ApplicationState.project.getLayers({ GEOLAYER: true, QUERYABLE: true, SELECTED_OR_ALL: true }).filter(l => l.state?.geometrytype) ),
+    ...ApplicationState.project.getLayers({ GEOLAYER: true, QUERYABLE: true, SELECTED_OR_ALL: true }).filter(l => l.state?.geometrytype),
 
     // POLYGONS
     ...GUI.getExternalLayers('vector')
