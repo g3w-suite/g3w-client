@@ -635,7 +635,7 @@ export class QueryBy extends MapControl {
         ...('boolean' === typeof excludeSelected ? { SELECTED: !excludeSelected } : { SELECTED_OR_ALL: true }),
         QUERYABLE: true,
         VISIBLE: true
-      })
+      });
       const params = {
         feature_count: ApplicationState.project.state.feature_count || 5,
         filterConfig,
