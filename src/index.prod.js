@@ -468,7 +468,7 @@ $.ajaxSetup({
   }
 
   const project = Object.assign(new Emitter, {
-    _layers:      {},
+    layers:       [], //store instace of Layer class
     config: {
       id:         CONFIG.gid,
       projection: ApplicationState.projections.get(normalizeEpsg(CONFIG.crs, false)),
@@ -521,15 +521,15 @@ $.ajaxSetup({
       },
       setLayerSelected:       (id, selected) => { project.getLayers().forEach(l => l.state.selected = (id === l.getId()) ? selected : false); },
       addLayers:               (layers = []) => { layers.forEach(l => project.addLayer(l)) },
-      addLayer:                        layer => { project._layers[layer.getId()] = layer; },
-      removeLayer:                     layer => { delete project._layers[layer.getId()]; },
+      addLayer:                        layer => project.layers.push(layer) ,
+      removeLayer:                     layer => { project.layers = project.layers.filter(l => layer.getId() !== l.getId()) },
     },
     setOptions:               (config = {}) => project.config = config,
-    removeLayers:                        () => { Object.entries(project._layers).forEach(([_, layer]) => project.removeLayer(layer)) },
+    removeLayers:                        () => { project.layers.forEach(l => project.removeLayer(l)) },
     getLayers:  (filter = {}, options = {}) => Object.values(project.getLayersDict(filter, options)),
     getBaseLayers:                       () => project.getLayersDict({ BASELAYER: true }),
-    getLayerById:                        id => project.getLayersDict()[id],
-    getLayerByName:                    name => Object.values(project._layers).find(l => name === l.getName()),
+    getLayerById:                        id => project.layers.find(l => id === l.getId()),
+    getLayerByName:                    name => project.layers.find(l => name === l.getName()),
     getLayerAttributes:                  id => project.getLayerById(id).getAttributes(),
     getLayerAttributeLabel:      (id, name) => project.getLayerById(id).getAttributeLabel(name),
     getGeoLayers:                        () => project.getLayers({ GEOLAYER: true }),
@@ -563,10 +563,10 @@ $.ajaxSetup({
           filter.IDS,
         ].every(f => undefined === f)
       ) {
-        return project._layers;
+        return project.layers;
       }
   
-      let layers = Object.values(project._layers);
+      let layers = project.layers;
   
       if (filter.IDS) {
         const ids = [].concat(filter.IDS);
