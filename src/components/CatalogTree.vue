@@ -49,8 +49,8 @@
       v-if        = "isGroup || !isTable"
       v-show      = "isGroup || !layerstree.hidden"
       type        = "checkbox"
-      @click.stop = "toggle()"
-      v-model     = "layerstree.checked"
+      @click.stop = "toggle"
+      :checked    = "layerstree.checked"
       role        = "button"
       aria-label  = "Show/Hide"
     />
