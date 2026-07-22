@@ -1416,8 +1416,8 @@ export default {
       GUI.closeContent();
 
       // change map theme
-      this.ApplicationState.map_theme.change = true;     
-      this.ApplicationState.project.layerstree[0].checked = true;
+      this.ApplicationState.map_theme.change                    = true;     
+      this.ApplicationState.project.state.layerstree[0].checked = true;
 
       const project  = ApplicationState.project;
 
@@ -1478,7 +1478,7 @@ export default {
       };
       traverse(
         theme.layerstree,
-        this.ApplicationState.project.state.layerstrees?.[0]?.nodes,
+        this.ApplicationState.project.state.layerstree?.[0]?.nodes,
       );
 
       await Promise.allSettled(promises);
