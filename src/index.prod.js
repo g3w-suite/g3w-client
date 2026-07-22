@@ -529,7 +529,7 @@ $.ajaxSetup({
     getLayers:  (filter = {}, options = {}) => Object.values(project.getLayersDict(filter, options)),
     getBaseLayers:                       () => project.getLayersDict({ BASELAYER: true }),
     getLayerById:                        id => project.getLayersDict()[id],
-    getLayerByName:                    name => project._layers.find(l => name === l.getName()),
+    getLayerByName:                    name => Object.values(project._layers).find(l => name === l.getName()),
     getLayerAttributes:                  id => project.getLayerById(id).getAttributes(),
     getLayerAttributeLabel:      (id, name) => project.getLayerById(id).getAttributeLabel(name),
     getGeoLayers:                        () => project.getLayers({ GEOLAYER: true }),
