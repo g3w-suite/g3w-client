@@ -418,7 +418,7 @@ $.ajaxSetup({
   const gid    = initConfig.initproject;
   
   const CONFIG = window.initConfig.projects.find(p => gid === p.gid);
-  //get inzial project configuration from server that are not set on project settings
+  //get initial project configuration from server that are not set on project settings
   /**
    * Example initial project configuration:
     {
