@@ -1468,8 +1468,7 @@ export default {
                     changes[node.id].style = await project.getLayerById(node.id).changeCurrentStyle(node.style);
                     resolve();
                   };
-                  if (project) { changeStyle(node) }
-                  else { (node => setTimeout(() => changeStyle(node)))(node) }// case of starting project creation
+                  changeStyle(node);
                 });
                 promises.push(promise);
               }
