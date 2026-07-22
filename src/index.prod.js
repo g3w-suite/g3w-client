@@ -416,7 +416,26 @@ $.ajaxSetup({
 
 
   const gid    = initConfig.initproject;
+  
   const CONFIG = window.initConfig.projects.find(p => gid === p.gid);
+  //get inzial project configuration from server that are not set on project settings
+  /**
+   * Example initial project configuration:
+    {
+      "id": 140,
+      "title": "name-3857_multi_geom_addpartqgs.qgs",
+      "description": "",
+      "thumbnail": "/media/macrogroup/logo_img/Screenshot_from_2022-11-24_14-41-28.png",
+      "type": "qdjango",
+      "gid": "qdjango:140",
+      "modified": 1707488467.319423,
+      "url": "it/map/name-3857/qdjango/140/",
+      "baselayers": [...],
+      "crs": {...},
+      "vectorurl": "/vector/api/",
+      "rasterurl": "/raster/api/"
+    }
+  */
 
   if (!CONFIG) {
     throw `Project doesn't exist ${gid}`;
