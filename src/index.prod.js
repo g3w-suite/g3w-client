@@ -682,52 +682,43 @@ $.ajaxSetup({
   
   // create layerstree
   let layerstree = [];
-  if (!project.state.layerstree) {
-    // retrieve all project layers that have geometry
-    layerstree = project.getLayers({ GEOLAYER: true }).map(l => ({
-      id:      l.getId(),
-      name:    l.getName(),
-      title:   l.getTitle(),
-      visible: l.isVisible() || false
-    }));
-  } else {
-    const _traverse = (nodes, layerstree, tocLayersId) => {
-      nodes.forEach(n => {
-        let lightlayer = null;
-        // case TOC has layer ID
-        if (null !== n.id && undefined !== n.id && tocLayersId.find(id => n.id === id)) {
-          lightlayer = ({ ...lightlayer, ...n });
-        }
-        // case group
-        if (null !== n.nodes && undefined !== n.nodes) {
-          lightlayer = ({
-            ...lightlayer,
-            name:                 n.name, /** @since 3.10.0 **/
-            title:                n.name,
-            groupId:              getUniqueDomId(),
-            root:                 false,
-            nodes:                [],
-            checked:              n.checked,
-            mutually_exclusive:   n["mutually-exclusive"],
-            'mutually-exclusive': n["mutually-exclusive"], /** @since 3.10.0 */
-          });
-          _traverse(n.nodes, lightlayer.nodes, tocLayersId); // recursion step
-        }
-        // check if lightlayer is not null
-        if (null !== lightlayer) {
-          lightlayer.expanded = n.expanded; // expand legend item (TOC)
-          layerstree.push(lightlayer);
-        }
-      });
-    };
-    // compare all layer ids from server config with all layer nodes on layerstree server property
-    _traverse(
-      project.state.layerstree,
-      layerstree,
-      project.getLayers({ BASELAYER: false }).map(l => l.getId())
-    );
-  }
-
+  
+  const _traverse = (nodes, layerstree, tocLayersId) => {
+    nodes.forEach(n => {
+      let lightlayer = null;
+      // case TOC has layer ID
+      if (null !== n.id && undefined !== n.id && tocLayersId.find(id => n.id === id)) {
+        lightlayer = ({ ...lightlayer, ...n });
+      }
+      // case group
+      if (null !== n.nodes && undefined !== n.nodes) {
+        lightlayer = ({
+          ...lightlayer,
+          name:                 n.name, /** @since 3.10.0 **/
+          title:                n.name,
+          groupId:              getUniqueDomId(),
+          root:                 false,
+          nodes:                [],
+          checked:              n.checked,
+          mutually_exclusive:   n["mutually-exclusive"],
+          'mutually-exclusive': n["mutually-exclusive"], /** @since 3.10.0 */
+        });
+        _traverse(n.nodes, lightlayer.nodes, tocLayersId); // recursion step
+      }
+      // check if lightlayer is not null
+      if (null !== lightlayer) {
+        lightlayer.expanded = n.expanded; // expand legend item (TOC)
+        layerstree.push(lightlayer);
+      }
+    });
+  };
+  // compare all layer ids from server config with all layer nodes on layerstree server property
+  _traverse(
+    project.state.layerstree,
+    layerstree,
+    project.getLayers({ BASELAYER: false }).map(l => l.getId())
+  );
+  
   // setLayerstree
   if (layerstree.length) {
     const rootGroup = {
