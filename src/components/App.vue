@@ -1558,7 +1558,7 @@ export default {
       };
 
       // loop through child nodes
-      traverse(this.ApplicationState.project.state.layerstrees[0].nodes, params.layerstree);
+      traverse(this.ApplicationState.project.state.layerstree?.[0].nodes, params.layerstree);
 
       return params;
     },
