@@ -467,7 +467,7 @@ $.ajaxSetup({
     }
   }
 
-  const project = Object.assign(new Emitter, {
+  const project = ApplicationState.project = Object.assign(new Emitter, {
     layers:       [], //store instace of Layer class
     config: {
       id:         CONFIG.gid,
@@ -662,7 +662,7 @@ $.ajaxSetup({
 
   /** ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2 */
 
-  // Layer factory: instance each layer and add to project._layers dictionary
+  // Layer factory: instance each layer and add to project.layers array
   project.addLayers(project.state.layers.concat(project.state.baselayers).map(l => {
     const config = Object.assign({}, l, {
       crs:               normalizeEpsg(l.crs || project.state.crs, false), // @v4.0 Fix In case of missing layer crs, set project crs
@@ -687,11 +687,11 @@ $.ajaxSetup({
     nodes.forEach(n => {
       let lightlayer = null;
       // case TOC has layer ID
-      if (null !== n.id && undefined !== n.id && tocLayersId.find(id => n.id === id)) {
+      if ((n.id ?? false) && tocLayersId.includes(n.id)) {
         lightlayer = ({ ...lightlayer, ...n });
       }
       // case group
-      if (null !== n.nodes && undefined !== n.nodes) {
+      if (n.nodes ?? false) {
         lightlayer = ({
           ...lightlayer,
           name:                 n.name, /** @since 3.10.0 **/
@@ -705,18 +705,19 @@ $.ajaxSetup({
         });
         _traverse(n.nodes, lightlayer.nodes, tocLayersId); // recursion step
       }
-      // check if lightlayer is not null
-      if (null !== lightlayer) {
+      // check if lightlayer 
+      if (lightlayer) {
         lightlayer.expanded = n.expanded; // expand legend item (TOC)
         layerstree.push(lightlayer);
       }
     });
   };
+
   // compare all layer ids from server config with all layer nodes on layerstree server property
   _traverse(
     project.state.layerstree,
     layerstree,
-    project.getLayers({ BASELAYER: false }).map(l => l.getId())
+    project.getLayers({ BASELAYER: false }).map(l => l.getId()), //exclude base layers from TOC
   );
   
   // setLayerstree
@@ -797,10 +798,10 @@ $.ajaxSetup({
     //set root group visibility based on children nodes
     rootGroup.toc = _traverse(layerstree, rootGroup);
     
-    project.state.layerstree = [rootGroup]; // at the end
+    project.state.layerstree.splice(0,project.state.layerstree.length, rootGroup); // at the end
+
   }
 
-  Object.assign(ApplicationState.project, project);
   /**@since 4.0.7 set map_theme of application */
   ApplicationState.map_theme.theme = Object.values(project.state.map_themes).flat().find(mt => mt.default)?.theme || null;
 
