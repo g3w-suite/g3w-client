@@ -4015,16 +4015,6 @@ export default new (class GUI extends Emitter {
     // check if already store a key of events
     this.#events.layers = [];
 
-    //In the case of store that has layers @since 3.10.0
-    ApplicationState.project.getLayers().forEach(l => {
-      if ('vector' === l.getType()) {
-        const olLayer = l.getOLLayer();
-        if (olLayer) {
-          this.getMap().addLayer(olLayer);
-        }
-      }
-    });
-
     this.#events.layers.push({
       event: 'addLayer',
       key: ApplicationState.project.onafter('addLayer', l => {
@@ -4874,9 +4864,8 @@ export default new (class GUI extends Emitter {
       this._setLegendParams();
     }
 
-    // CHECK IF MAPLAYERS PROJECT
+    //setip events keys to layers
     this.#setUpEventsKeysToLayers();
-    setTimeout(() => this.#removeEventsKeysToLayers(), 3000);
 
     this.#map_ready = true;
 
