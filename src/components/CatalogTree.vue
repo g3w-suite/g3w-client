@@ -222,7 +222,6 @@
         :root                      = "false"
         :legendplace               = "legendplace"
         :layerstree                = "_layerstree"
-        :storeid                   = "storeid"
         :parent                    = "layerstree"
         :parent_mutually_exclusive = "!!layerstree.mutually_exclusive"
       />
@@ -255,7 +254,6 @@ export default {
 
   props : [
     'layerstree',
-    'storeid',
     'legend',
     'legendplace',
     'parent_mutually_exclusive',
@@ -562,7 +560,6 @@ export default {
      * Remove layer from queryresults selection
      */
     async clearSelection() {
-      const storeid = this.storeid;
       const layer = this.layerstree;
 
       if (!layer) {
@@ -572,7 +569,7 @@ export default {
       const action = layer.external && GUI.getActionLayerById({ layer, id: 'selection' });
 
       // PROJECT LAYER
-      if (!layer.external && storeid) {
+      if (!layer.external) {
         await ApplicationState.project.getLayerById(layer.id).clearSelectionFids();
       }
 

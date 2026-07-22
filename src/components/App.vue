@@ -451,7 +451,6 @@
             :root                      = "true"
             :legendplace               = "ApplicationState.project.state.legend_position || 'tab'"
             :parent_mutually_exclusive = "false"
-            :storeid                   = "root.storeid"
           />
         </ul>
 
