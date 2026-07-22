@@ -50,7 +50,7 @@ GUI.setupControl.overview = async function() {
       const traverse = nodes => {
         nodes.forEach((node, i) => {
           if (undefined !== node.id) {
-            PROJECT.state.layers.forEach(l => {
+            PROJECT.layers.forEach(l => {
               if (node.id === l.id) {
                 l.visible = node.visible ?? true; // @since v4.1.0 - add visible property to layer
               }
@@ -61,10 +61,10 @@ GUI.setupControl.overview = async function() {
           }
         });
       };
-      traverse(PROJECT.state.layerstree);
+      traverse(PROJECT.layerstree);
 
       // Layer factory: instance each layer and add to PROJECT._layers
-      PROJECT.state.layers.flatMap(l => {
+      PROJECT.layers.flatMap(l => {
 
         l.wmsUrl = `${window.initConfig.urls.baseurl}${window.initConfig.urls.ows}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}/`;
 
