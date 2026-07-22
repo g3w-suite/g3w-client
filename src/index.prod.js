@@ -462,7 +462,7 @@ $.ajaxSetup({
     ]);
     if (result) {
       config.layerstree    = data;
-      map_theme.layetstree = data;
+      map_theme.layerstree = data;
       map_theme.default    = true;
     }
   }

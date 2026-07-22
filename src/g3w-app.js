@@ -4864,7 +4864,7 @@ export default new (class GUI extends Emitter {
       this._setLegendParams();
     }
 
-    //setip events keys to layers
+    //setup events keys to layers
     this.#setUpEventsKeysToLayers();
 
     this.#map_ready = true;
