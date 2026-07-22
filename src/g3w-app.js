@@ -4000,7 +4000,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   #removeEventsKeysToLayers() {
-    this.#events.layers.forEach(({ event, key }) => this.un(event, key));
+    this.#events.layers.forEach(({ event, key }) => ApplicationState.project.un(event, key));
     this.#events.layers.splice(0);
   }
 
@@ -4026,17 +4026,19 @@ export default new (class GUI extends Emitter {
     });
 
     this.#events.layers.push({
-      addLayer: ApplicationState.project.onafter('addLayer', l => {
-      if ('vector' === l.getType()) {
-        const olLayer = l.getOLLayer();
-        if (olLayer) {
-          this.getMap().addLayer(olLayer);
+      event: 'addLayer',
+      key: ApplicationState.project.onafter('addLayer', l => {
+        if ('vector' === l.getType()) {
+          const olLayer = l.getOLLayer();
+          if (olLayer) {
+            this.getMap().addLayer(olLayer);
+          }
         }
-      }
-    }),
+      }),
     });
     this.#events.layers.push({
-      removeLayer: ApplicationState.project.onafter('removeLayer', l => { 'vector' === l.getType() && this.#map.removeLayer(l.getOLLayer()) }),
+      event: 'removeLayer',
+      key: ApplicationState.project.onafter('removeLayer', l => { 'vector' === l.getType() && this.#map.removeLayer(l.getOLLayer()) }),
     });
   }
 
