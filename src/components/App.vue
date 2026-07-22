@@ -439,13 +439,9 @@
         </a>
 
         <!-- LAYER TREES -->
-        <ul
-          v-for = "root in ApplicationState.project.state.layerstree"
-          :key  = "root.id"
-          class = "tree-root"
-        >
+        <ul class = "tree-root">
           <catalog-tree
-            v-for                      = "tree in [root]"
+            v-for                      = "tree in ApplicationState.project.state.layerstree"
             :key                       = "tree.id"
             :layerstree                = "tree"
             :root                      = "true"
