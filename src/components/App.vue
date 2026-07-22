@@ -1771,7 +1771,6 @@ export default {
 
   created() {
     this.language = this.initConfig.user.i18n;
-    console.log(ApplicationState.project.state);
   },
 
   async mounted() {
