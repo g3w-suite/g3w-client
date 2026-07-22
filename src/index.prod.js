@@ -528,7 +528,7 @@ $.ajaxSetup({
     removeLayers:                        () => { project.layers.forEach(l => project.removeLayer(l)) },
     getLayers:  (filter = {}, options = {}) => Object.values(project.getLayersDict(filter, options)),
     getBaseLayers:                       () => project.getLayersDict({ BASELAYER: true }),
-    getLayerById:                        id => project.layers.find(l => id === l.getId()),
+    getLayerById:                        id => project.layers.find(l => `${id}` === `${l.getId()}`),
     getLayerByName:                    name => project.layers.find(l => name === l.getName()),
     getLayerAttributes:                  id => project.getLayerById(id).getAttributes(),
     getLayerAttributeLabel:      (id, name) => project.getLayerById(id).getAttributeLabel(name),
@@ -679,6 +679,7 @@ $.ajaxSetup({
       return []
     }
   }));
+
   
   // create layerstree
   let layerstree = [];
