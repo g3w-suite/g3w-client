@@ -702,7 +702,7 @@ const vueComp = ({
                   DPI:            this.dpi,
                   STYLES:         layers.map(l => l.getStyle()).join(','),
                   OPACITIES:      layers.map(l => parseInt((l.getOpacity() / 100) * 255)).join(','), //@since 4.0.1 send OPACITIES parameter
-                  ...(has_theme ? {} : { LAYERS }), // in the case of a map that has preset_theme, no LAYERS need tyo pass as parameter.
+                  ...(has_theme ? {} : { LAYERS }), // in the case of a map that has preset_theme, no LAYERS need to pass as parameter.
                   FORMAT:         ({ png: 'png', pdf: 'application/pdf', geopdf: 'application/pdf' })[this.format] || this.format,
                   ...('geopdf' === this.format ? { FORMAT_OPTIONS: 'WRITE_GEO_PDF:TRUE'} : {}), //@since 3.10.0
                   CRS:            ApplicationState.project.getProjection().getCode(),
