@@ -401,7 +401,7 @@ $.ajaxSetup({
   ApplicationState.layout.app = initConfig.layout;
 
   // setup projects
-  initConfig.projects.forEach(project => Object.assign(project, {
+  initConfig.projects.forEach(p => Object.assign(p, {
     baselayers:         initConfig.baselayers,
     minscale:           initConfig.minscale,
     maxscale:           initConfig.maxscale,
@@ -447,8 +447,9 @@ $.ajaxSetup({
     })
   ]);
 
+  //check if map_theme is set on url param, if so need to get map theme configuration from server
   const THEME     = (new URLSearchParams(location.search)).get('map_theme');
-  const map_theme = config && THEME && Object.values(config.map_themes).flat().find(({ theme }) => THEME === theme);
+  const map_theme = Object.values(config?.map_themes ?? {}).flat().find(({ theme }) => THEME === theme);
 
   /** In the case of url param set map_theme, need to get map theme configuration from server */
   if (map_theme) {
@@ -457,13 +458,13 @@ $.ajaxSetup({
       await XHR.get({url: `/${CONFIG.type}/api/prjtheme/${CONFIG.id}/${THEME}` })
     ]);
     if (result) {
-      config.layerstree    = data;
+      config.layerstree    = data; //replace layerstree project config based on map theme configuration
       map_theme.layerstree = data;
       map_theme.default    = true;
     }
   }
 
-  //set project  to aplication state
+  //set project to aplication state
   const project = ApplicationState.project = Object.assign(new Emitter, {
     layers:       [], //store instance of Layer class
     config: {
