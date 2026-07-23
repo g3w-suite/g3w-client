@@ -476,6 +476,22 @@ $.ajaxSetup({
     },
     // store project configuration from server
     state: Object.assign(CONFIG, config, {
+      layerstree: [Vue.observable(  {
+        name:        config.name || config.gid,
+        root:        true, //root group of TOC, referred to project
+        toc:         true, //@since 4.1.0 set true as default. Attribute used to show/hide group or layer on toce based on visibility
+        parentGroup: null, //no parent group for root group
+        expanded:    'not_collapsed' === config.toc_layers_init_status,
+        disabled:    false,
+        checked:     true,
+        bbox:        {
+          minx: config.initextent.at(0),
+          miny: config.initextent.at(1),
+          maxx: config.initextent.at(2),
+          maxy: config.initextent.at(3),
+        },
+        nodes:       config.layerstree ?? [],
+      })],
       WMSUrl: `${window.initConfig.urls.baseurl}${window.initConfig.urls.ows}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}/`,
       /** @since 3.8.0 */
       relations: (CONFIG.relations || []).map(r => {
@@ -663,7 +679,6 @@ $.ajaxSetup({
 
   traverse(project.state.layerstree);
 
-
   /** ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2 */
 
   // Layer factory: instance each layer and add to project.layers array
@@ -685,65 +700,16 @@ $.ajaxSetup({
   }));
 
   
-  // create layerstree
-  let layerstree = [];
-  
-  const _traverse = (nodes, layerstree, tocLayersId) => {
-    nodes.forEach(n => {
-      let lightlayer = null;
-      // case TOC has layer ID
-      if ((n.id ?? false) && tocLayersId.includes(n.id)) {
-        lightlayer = ({ ...lightlayer, ...n });
-      }
-      // case group
-      if (n.nodes ?? false) {
-        lightlayer = ({
-          ...lightlayer,
-          name:                 n.name, /** @since 3.10.0 **/
-          title:                n.name,
-          groupId:              getUniqueDomId(),
-          root:                 false,
-          nodes:                [],
-          checked:              n.checked,
-          mutually_exclusive:   n["mutually-exclusive"],
-          'mutually-exclusive': n["mutually-exclusive"], /** @since 3.10.0 */
-        });
-        _traverse(n.nodes, lightlayer.nodes, tocLayersId); // recursion step
-      }
-      // check if lightlayer 
-      if (lightlayer) {
-        lightlayer.expanded = n.expanded; // expand legend item (TOC)
-        layerstree.push(lightlayer);
-      }
-    });
-  };
+  // in case project has a layerstrees
+  if (project.state.layerstree?.[0].nodes.length > 0) {
 
-  // compare all layer ids from server config with all layer nodes on layerstree server property
-  _traverse(
-    project.state.layerstree,
-    layerstree,
-    project.getLayers({ BASELAYER: false }).map(l => l.getId()), //exclude base layers from TOC
-  );
-  
-  // setLayerstree
-  if (layerstree.length > 0) {
-    const rootGroup = {
-      title:       project.state.name || project.state.gid,
-      root:        true,
-      toc:         true, //@since 4.1.0
-      parentGroup: null,
-      expanded:    'not_collapsed' === project.state.toc_layers_init_status,
-      disabled:    false,
-      checked:     true,
-      bbox:        {
-        minx: project.state.initextent.at(0),
-        miny: project.state.initextent.at(1),
-        maxx: project.state.initextent.at(2),
-        maxy: project.state.initextent.at(3)
-      },
-      nodes:       layerstree,
-    };
+    /**
+     * 
+     * @param {*} group 
+     * @param {*} param1 
+     */
     const _traverseBBox =(group, { bbox, epsg } = {}) => {
+      //get project epsg code
       const project_epsg = project.config.projection.getCode();
 
       // translate bbox epsg to project epsg code (when they differ)
@@ -778,20 +744,29 @@ $.ajaxSetup({
         _traverseBBox(group.parentGroup, { bbox: group.bbox, epsg: project_epsg });
       }
     };
+
+    /**
+     * 
+     * @param {*} nodes 
+     * @param {*} parentGroup 
+     * @returns 
+     */
     const _traverse = (nodes, parentGroup) => {
       return nodes.reduce((toc, node, index) => {
-        // substitute node layer with layer state
-        if (undefined !== node.id) {
-          nodes[index] = project.getLayerById(node.id).getState();
+        //Check if is a layer node, 
+        if (node.id ?? false) {
+          nodes[index] = project.getLayerById(node.id).getState(); // substitute node layer with layer state
           // pass bbox and epsg of layer
           if (nodes[index].bbox) {
             _traverseBBox(parentGroup, { bbox: nodes[index].bbox, epsg: nodes[index].epsg });
           }
         }
 
+        //Check if is a group
         if (Array.isArray(node.nodes)) {
           node.nodes.forEach(n => n.parentGroup = parentGroup);
-          node.toc = _traverse(node.nodes, node);
+          node.toc   = _traverse(node.nodes, node);
+          node.root  = false;
         }
 
         toc = toc || node.toc;
@@ -800,11 +775,9 @@ $.ajaxSetup({
         return toc;
       }, false);
     }
-    //set root group visibility based on children nodes
-    rootGroup.toc = _traverse(layerstree, rootGroup);
     
-    project.state.layerstree.splice(0,project.state.layerstree.length, rootGroup); // at the end
-
+    _traverse(project.state.layerstree[0].nodes, project.state.layerstree[0]);
+  
   }
 
   /**@since 4.0.7 set map_theme of application */
@@ -857,7 +830,7 @@ $.ajaxSetup({
         }
         config.baseUrl = window.initConfig.staticurl;
         try {
-          const modified = ApplicationState.project.state.modified + '+' + new Date().toISOString().slice(0, 13);
+          const modified = `${ApplicationState.project.state.modified}+${new Date().toISOString().slice(0, 13)}`;
           // wait plugin dependencies before loading plugin
           await Promise.all((config.jsscripts || []).map(s => _loadScript(s)));
           await _loadScript(`${window.initConfig.staticurl}${name}/js/plugin.js?${modified}`);
@@ -868,7 +841,7 @@ $.ajaxSetup({
           return Promise.reject();
         }
       }));
-  } catch (e) {
+  } catch(e) {
     console.warn(e);
   }
 
