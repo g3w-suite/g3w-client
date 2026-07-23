@@ -745,7 +745,7 @@ $.ajaxSetup({
      * @returns 
      */
     const _traverse = (nodes, parentGroup) => {
-      return nodes.reduce((toc, node, index) => {
+      return parentGroup.toc = nodes.reduce((toc, node, index) => {
         //Check if is a layer node, 
         if (node.id ?? false) {
           nodes[index] = project.getLayerById(node.id).getState(); // substitute node layer with layer state
