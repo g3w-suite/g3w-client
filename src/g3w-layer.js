@@ -1572,7 +1572,7 @@ export class Layer extends Emitter {
    * @returns {*} current project
    */
   getProject() {
-    return this.state.project;
+    return ApplicationState.project;
   }
 
   /**

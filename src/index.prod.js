@@ -647,7 +647,6 @@ $.ajaxSetup({
             if (node.id === l.id) {
               node.name = l.name;
               l.wmsUrl  = project.state.WMSUrl;
-              l.project = project;
               node      = Object.assign(l, node); // replace node with layer configuration (from server config)
               return false
             }
