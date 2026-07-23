@@ -474,6 +474,7 @@ $.ajaxSetup({
       initextent: CONFIG.initextent,
       wmsUrl:     CONFIG.WMSUrl,
     },
+    // store project configuration from server
     state: Object.assign(CONFIG, config, {
       WMSUrl: `${window.initConfig.urls.baseurl}${window.initConfig.urls.ows}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}/`,
       /** @since 3.8.0 */
@@ -504,26 +505,28 @@ $.ajaxSetup({
           baselayer: true,
         })),
     }),
+    //set api urls for project
     urls: {
-      map_themes:          `/${CONFIG.type}/api/prjtheme/${CONFIG.id}/`,
+      map_themes:          `/${CONFIG.type}/api/prjtheme/${CONFIG.id}/`, //get map themes configuration from server
       vector_data:         `${CONFIG.vectorurl}data/${CONFIG.type}/${CONFIG.id}/`,
-      featurecount:        `${CONFIG.vectorurl}featurecount/${CONFIG.type}/${CONFIG.id}/`,
+      featurecount:        `${CONFIG.vectorurl}featurecount/${CONFIG.type}/${CONFIG.id}/`, //get features count for a specific layer
       editorformstructure: `${CONFIG.vectorurl}editorformstructure/${CONFIG.type}/${CONFIG.id}/`, //@since 4.0.0 get configuration from a specific style for a layer (Ex. featurecount, editor_form_structure, ..)
     },
     setters: {
+      /**
+       * 
+       * @param {string} id The ID of the base layer to set
+       */
       setBaseLayer(id) {
-        window.initConfig.baselayers.forEach(l => {
-          project.getLayerById(l.id)?.setVisible(id === l.id);
-          l.visible = (id === l.id);
-        })
+        project.state.baselayers.forEach(l => l.visible = project.getLayerById(l.id)?.setVisible(id === l.id));
       },
       setLayerSelected:       (id, selected) => { project.getLayers().forEach(l => l.state.selected = (id === l.getId()) ? selected : false); },
       addLayers:               (layers = []) => { layers.forEach(l => project.addLayer(l)) },
       addLayer:                        layer => project.layers.push(layer) ,
-      removeLayer:                     layer => { project.layers = project.layers.filter(l => layer.getId() !== l.getId()) },
+      removeLayer:                     layer => project.layers = project.layers.filter(l => layer.getId() !== l.getId()),
     },
     setOptions:               (config = {}) => project.config = config,
-    removeLayers:                        () => { project.layers.forEach(l => project.removeLayer(l)) },
+    removeLayers:                        () => project.layers.forEach(l => project.removeLayer(l)),
     getLayers:  (filter = {}, options = {}) => Object.values(project.getLayersDict(filter, options)),
     getBaseLayers:                       () => project.getLayersDict({ BASELAYER: true }),
     getLayerById:                        id => project.layers.find(l => `${id}` === `${l.getId()}`),
