@@ -661,7 +661,6 @@ $.ajaxSetup({
 
   traverse(project.state.layerstree);
 
-  console.log(project.state.baselayers);
 
   /** ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2 */
 
