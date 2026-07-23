@@ -652,12 +652,13 @@ $.ajaxSetup({
   });
 
   // Process layerstree and baselayers of the project (useful info for catalog)
+  //it useful to traverse here because some proprietries, for example visibile, is an attribute of layersstree node and not of layer object
   const traverse = nodes => {
     for (let i = 0; i < nodes.length; i++) {
       let node = nodes[i];
       // check if layer (node) of folder
       if (node.id ?? false) {
-        const l = project.state.layers.find(l => node.id === l.id)
+        const l   = project.state.layers.find(l => node.id === l.id)
         node.name = l?.name;
         node      = Object.assign(l ?? {}, node); // replace node with layer configuration (from server config)
       }
