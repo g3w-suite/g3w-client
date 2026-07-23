@@ -246,7 +246,7 @@ export class Layer extends Emitter {
 
       // URLs to get various type of data
       urls:      {
-        query: config.infourl || config.wmsUrl,
+        query: config.infourl || config.wmsUrl || ApplicationState.project.state.WMSUrl,
         ...(config.urls || {}),
         ...(config.baselayer ? {} : {
             filtertoken: `${window.initConfig.vectorurl}filtertoken/${project.getType()}/${project.getId()}/${config.id}/`,
@@ -2857,7 +2857,7 @@ export class Layer extends Emitter {
       return this.state.source.url;
     }
 
-    return this.state.wmsUrl;
+    return ApplicationState.project.state.WMSUrl;
   }
 
   /**
@@ -2901,7 +2901,7 @@ export class Layer extends Emitter {
    * @since 4.1.0
    */
   getWfsUrl() {
-    return this.isRaster() && (ApplicationState.project.state.metadata.wms_url || this.state.wmsUrl);
+    return this.isRaster() && (ApplicationState.project.state.metadata.wms_url || ApplicationState.project.state.WMSUrl);
   }
 
   /**

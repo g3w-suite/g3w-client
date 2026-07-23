@@ -656,17 +656,10 @@ $.ajaxSetup({
     for (let i = 0; i < nodes.length; i++) {
       let node = nodes[i];
       // check if layer (node) of folder
-      if (undefined !== node.id) {
-        project.state.layers
-          .forEach(l => {
-            // in case of layer
-            if (node.id === l.id) {
-              node.name = l.name;
-              l.wmsUrl  = project.state.WMSUrl;
-              node      = Object.assign(l, node); // replace node with layer configuration (from server config)
-              return false
-            }
-          });
+      if (node.id ?? false) {
+        const l = project.state.layers.find(l => node.id === l.id)
+        node.name = l?.name;
+        node      = Object.assign(l ?? {}, node); // replace node with layer configuration (from server config)
       }
       // in case of group
       if (Array.isArray(node.nodes)) {
