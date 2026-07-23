@@ -464,6 +464,45 @@ $.ajaxSetup({
     }
   }
 
+  //Change config.layerstree to have a root group node, so that the TOC can be rendered properly
+  config.layerstree = [{
+    name:        config.name || config.gid,
+    root:        true, //root group of TOC, referred to project
+    toc:         true, //@since 4.1.0 set true as default. Attribute used to show/hide group or layer on toce based on visibility
+    parentGroup: null, //no parent group for root group
+    expanded:    'not_collapsed' === config.toc_layers_init_status,
+    disabled:    false,
+    checked:     true,
+    bbox:        {
+      minx: config.initextent.at(0),
+      miny: config.initextent.at(1),
+      maxx: config.initextent.at(2),
+      maxy: config.initextent.at(3),
+    },
+    nodes:       config.layerstree ?? [],
+  }];
+
+  //  Process layerstree of the project (useful info for catalog)
+  //  it useful to traverse here because some proprietries,
+  //  for example visibile, is an attribute of layersstree node and not of layer object
+  (function traverse(nodes = []) {
+    for (let i = 0; i < nodes.length; i++) {
+      let node = nodes[i];
+      // check if layer (node) of folder
+      if (node.id ?? false) {
+        const l   = config.layers.find(l => node.id === l.id)
+        node.name = l?.name;
+        node      = Object.assign(l ?? {}, node); // replace node with layer configuration (from server config)
+      }
+      // in case of group
+      if (Array.isArray(node.nodes)) {
+        // add title to tree
+        node.title = node.name;
+        traverse(node.nodes);
+      }
+    }
+  })(config.layerstree);
+  
   //set project to aplication state
   const project = ApplicationState.project = Object.assign(new Emitter, {
     layers:       [], //store instance of Layer class
@@ -478,22 +517,6 @@ $.ajaxSetup({
     // need to assign to an empty object to has reactive property 
     // https://v2.vuejs.org/v2/guide/reactivity.html#For-Objects
     state: Object.assign({}, CONFIG, config, { 
-      layerstree: [{
-        name:        config.name || config.gid,
-        root:        true, //root group of TOC, referred to project
-        toc:         true, //@since 4.1.0 set true as default. Attribute used to show/hide group or layer on toce based on visibility
-        parentGroup: null, //no parent group for root group
-        expanded:    'not_collapsed' === config.toc_layers_init_status,
-        disabled:    false,
-        checked:     true,
-        bbox:        {
-          minx: config.initextent.at(0),
-          miny: config.initextent.at(1),
-          maxx: config.initextent.at(2),
-          maxy: config.initextent.at(3),
-        },
-        nodes:       config.layerstree ?? [],
-      }],
       WMSUrl: `${window.initConfig.urls.baseurl}${window.initConfig.urls.ows}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}/`,
       /** @since 3.8.0 */
       relations: (CONFIG.relations || []).map(r => {
@@ -652,28 +675,6 @@ $.ajaxSetup({
      */
     getConfigLayers:        ({ key } = {}) => key ? project.state.layers.filter(l => undefined !== l[key] ) : project.state.layers,
   });
-
-  // Process layerstree and baselayers of the project (useful info for catalog)
-  //it useful to traverse here because some proprietries, for example visibile, is an attribute of layersstree node and not of layer object
-  const traverse = nodes => {
-    for (let i = 0; i < nodes.length; i++) {
-      let node = nodes[i];
-      // check if layer (node) of folder
-      if (node.id ?? false) {
-        const l   = project.state.layers.find(l => node.id === l.id)
-        node.name = l?.name;
-        node      = Object.assign(l ?? {}, node); // replace node with layer configuration (from server config)
-      }
-      // in case of group
-      if (Array.isArray(node.nodes)) {
-        // add title to tree
-        node.title = node.name;
-        traverse(node.nodes);
-      }
-    }
-  };
-
-  traverse(project.state.layerstree);
 
   /** ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2 */
 
