@@ -602,12 +602,12 @@ $.ajaxSetup({
         // get all siblings children layers id
         let nodes = [];
         let traverse = tree => {
-          tree.nodes.forEach(n => {
+          (tree?.nodes || []).forEach(n => {
             if (n.id) { nodes.push(n.id) }
             else { traverse(n) }
           });
         };
-        traverse(project.state.layerstree[0]);
+        traverse(project.state.layerstree?.[0]);
         return nodes.map(id => layers.find(l => id === l.getId())).filter(id => id);
       }
   
