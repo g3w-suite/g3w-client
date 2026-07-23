@@ -475,8 +475,10 @@ $.ajaxSetup({
       wmsUrl:     CONFIG.WMSUrl,
     },
     // store project configuration from server
-    state: Object.assign(CONFIG, config, {
-      layerstree: [Vue.observable({
+    // need to assign to an empty object to has reactive property 
+    // https://v2.vuejs.org/v2/guide/reactivity.html#For-Objects
+    state: Object.assign({}, CONFIG, config, { 
+      layerstree: [{
         name:        config.name || config.gid,
         root:        true, //root group of TOC, referred to project
         toc:         true, //@since 4.1.0 set true as default. Attribute used to show/hide group or layer on toce based on visibility
@@ -491,7 +493,7 @@ $.ajaxSetup({
           maxy: config.initextent.at(3),
         },
         nodes:       config.layerstree ?? [],
-      })],
+      }],
       WMSUrl: `${window.initConfig.urls.baseurl}${window.initConfig.urls.ows}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}/`,
       /** @since 3.8.0 */
       relations: (CONFIG.relations || []).map(r => {
