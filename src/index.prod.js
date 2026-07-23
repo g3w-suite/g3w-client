@@ -476,7 +476,7 @@ $.ajaxSetup({
     },
     // store project configuration from server
     state: Object.assign(CONFIG, config, {
-      layerstree: [Vue.observable(  {
+      layerstree: [Vue.observable({
         name:        config.name || config.gid,
         root:        true, //root group of TOC, referred to project
         toc:         true, //@since 4.1.0 set true as default. Attribute used to show/hide group or layer on toce based on visibility
@@ -695,16 +695,15 @@ $.ajaxSetup({
       return new Layer(config, { project });
     } catch(e) {
       console.warn(e);
-      return []
+      return [];
     }
   }));
 
-  
   // in case project has a layerstrees
   if (project.state.layerstree?.[0].nodes.length > 0) {
 
     /**
-     * 
+     * Set bounding box info for each group based on its children layers and groups
      * @param {*} group 
      * @param {*} param1 
      */
