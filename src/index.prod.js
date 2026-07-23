@@ -696,86 +696,79 @@ $.ajaxSetup({
     }
   }));
 
-  // in case project has a layerstrees
-  if (project.state.layerstree?.[0].nodes.length > 0) {
+  /**
+   * Set bounding box info for each group based on its children layers and groups
+   * @param {*} group 
+   * @param {*} param1 
+   */
+  const _traverseBBox = (group, { bbox, epsg } = {}) => {
+    //get project epsg code
+    const project_epsg = project.config.projection.getCode();
 
-    /**
-     * Set bounding box info for each group based on its children layers and groups
-     * @param {*} group 
-     * @param {*} param1 
-     */
-    const _traverseBBox =(group, { bbox, epsg } = {}) => {
-      //get project epsg code
-      const project_epsg = project.config.projection.getCode();
-
-      // translate bbox epsg to project epsg code (when they differ)
-      if ((epsg !== project_epsg)) {
-        const [ minx, miny, maxx, maxy ] = ol.proj.transformExtent([ bbox.minx, bbox.miny, bbox.maxx, bbox.maxy ], epsg, project_epsg);
-        bbox = { minx, miny, maxx, maxy }
-      }
-      // get current bbox or compute bbox from an ol extent
-      if (undefined === group.bbox) {
-        group.bbox = bbox
-      } else {
-        group.bbox = ol.extent
-          .extend(
-            [ group.bbox.minx, group.bbox.miny, group.bbox.maxx, group.bbox.maxy ],
-            [ bbox.minx, bbox.miny, bbox.maxx, bbox.maxy ]
-          )
-          .reduce(
-            (bbox, extentCoordinate, index) => {
-              switch(index){
-                case 0: bbox.minx = extentCoordinate; break;
-                case 1: bbox.miny = extentCoordinate; break;
-                case 2: bbox.maxx = extentCoordinate; break;
-                case 3: bbox.maxy = extentCoordinate; break;
-              }
-              return bbox;
-            },
-            { minx: null, miny: null, maxx: null, maxy: null }
-          );
-      }
-      // Recursion
-      if (group.parentGroup && false === group.parentGroup.root) {
-        _traverseBBox(group.parentGroup, { bbox: group.bbox, epsg: project_epsg });
-      }
-    };
-
-    /**
-     * 
-     * @param {*} nodes 
-     * @param {*} parentGroup 
-     * @returns 
-     */
-    const _traverse = (nodes, parentGroup) => {
-      return parentGroup.toc = nodes.reduce((toc, node, index) => {
-        //Check if is a layer node, 
-        if (node.id ?? false) {
-          nodes[index] = project.getLayerById(node.id).getState(); // substitute node layer with layer state
-          // pass bbox and epsg of layer
-          if (nodes[index].bbox) {
-            _traverseBBox(parentGroup, { bbox: nodes[index].bbox, epsg: nodes[index].epsg });
-          }
-        }
-
-        //Check if is a group
-        if (Array.isArray(node.nodes)) {
-          node.nodes.forEach(n => n.parentGroup = parentGroup);
-          node.toc   = _traverse(node.nodes, node);
-          node.root  = false;
-        }
-
-        toc = toc || node.toc;
-        //SET PARENT GROUP
-        nodes[index].parentGroup = parentGroup;
-        return toc;
-      }, false);
+    // translate bbox epsg to project epsg code (when they differ)
+    if ((epsg !== project_epsg)) {
+      const [ minx, miny, maxx, maxy ] = ol.proj.transformExtent([ bbox.minx, bbox.miny, bbox.maxx, bbox.maxy ], epsg, project_epsg);
+      bbox = { minx, miny, maxx, maxy }
     }
-    
-    _traverse(project.state.layerstree[0].nodes, project.state.layerstree[0]);
-  
-  }
+    // get current bbox or compute bbox from an ol extent
+    if (undefined === group.bbox) {
+      group.bbox = bbox
+    } else {
+      group.bbox = ol.extent
+        .extend(
+          [ group.bbox.minx, group.bbox.miny, group.bbox.maxx, group.bbox.maxy ],
+          [ bbox.minx, bbox.miny, bbox.maxx, bbox.maxy ]
+        )
+        .reduce(
+          (bbox, extentCoordinate, index) => {
+            switch(index){
+              case 0: bbox.minx = extentCoordinate; break;
+              case 1: bbox.miny = extentCoordinate; break;
+              case 2: bbox.maxx = extentCoordinate; break;
+              case 3: bbox.maxy = extentCoordinate; break;
+            }
+            return bbox;
+          },
+          { minx: null, miny: null, maxx: null, maxy: null }
+        );
+    }
+    // Recursion
+    if (group.parentGroup && false === group.parentGroup.root) {
+      _traverseBBox(group.parentGroup, { bbox: group.bbox, epsg: project_epsg });
+    }
+  };
 
+  /**
+   * 
+   * @param {*} nodes 
+   * @param {*} parentGroup 
+   * @returns 
+   */
+  (function traverse (nodes, parentGroup) {
+    return parentGroup.toc = nodes.reduce((toc, node, index) => {
+      //Check if is a layer node, 
+      if (node.id ?? false) {
+        nodes[index] = project.getLayerById(node.id).getState(); // substitute node layer with layer state
+        // pass bbox and epsg of layer
+        if (nodes[index].bbox) {
+          _traverseBBox(parentGroup, { bbox: nodes[index].bbox, epsg: nodes[index].epsg });
+        }
+      }
+
+      //Check if is a group
+      if (Array.isArray(node.nodes)) {
+        node.nodes.forEach(n => n.parentGroup = parentGroup);
+        node.toc   = traverse(node.nodes, node);
+        node.root  = false;
+      }
+
+      toc = toc || node.toc;
+      //SET PARENT GROUP
+      nodes[index].parentGroup = parentGroup;
+      return toc;
+    }, false);
+  })(project.state.layerstree[0].nodes, project.state.layerstree[0]);
+  
   /**@since 4.0.7 set map_theme of application */
   ApplicationState.map_theme.theme = Object.values(project.state.map_themes).flat().find(mt => mt.default)?.theme || null;
 
