@@ -310,17 +310,13 @@ function _loadScript(url) {
 const initConfig = window.initConfig;
 
 // set application user
-ApplicationState.user = initConfig.user
+ApplicationState.user = initConfig.user;
 
 GUI.emit('initconfig', initConfig);
 
-const vendorkeys = initConfig.vendorkeys || {};
-initConfig.baselayers.forEach(l => {
-  if (l.apikey) {
-    vendorkeys[l.servertype ? l.servertype.toLowerCase() : null] = l.apikey
-  }
-});
-Object.keys(vendorkeys).forEach(k => ApplicationState.vendorkeys[k] = vendorkeys[k])
+ApplicationState.vendorkeys = initConfig.vendorkeys || {};
+
+initConfig.baselayers.filter(l => l.apikey).forEach(l => ApplicationState.vendorkeys[l.servertype ? l.servertype.toLowerCase() : null] = l.apikey);
 
 /**
  * create application configuration
