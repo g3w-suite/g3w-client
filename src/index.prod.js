@@ -467,8 +467,9 @@ $.ajaxSetup({
     }
   }
 
+  //set project  to aplication state
   const project = ApplicationState.project = Object.assign(new Emitter, {
-    layers:       [], //store instace of Layer class
+    layers:       [], //store instance of Layer class
     config: {
       id:         CONFIG.gid,
       projection: ApplicationState.projections.get(normalizeEpsg(CONFIG.crs, false)),
@@ -502,7 +503,7 @@ $.ajaxSetup({
         // Remove bing base layer when no vendor API Key is provided
         .filter(l => ('Bing' === l.servertype ? ApplicationState.vendorkeys.bing : true))
         .map(l => Object.assign(l, {
-          visible:   l.id && (l.id === (null !== ApplicationState.baseLayerId ? ApplicationState.baseLayerId : CONFIG.initbaselayer)) || !!l.fixed,
+          visible:   l.id === config.initbaselayer || !!l.fixed,
           baselayer: true,
         })),
     }),
@@ -659,6 +660,8 @@ $.ajaxSetup({
   };
 
   traverse(project.state.layerstree);
+
+  console.log(project.state.baselayers);
 
   /** ORIGINAL SOURCE: src/app/core/layers/layerfactory.js@v3.10.2 */
 
