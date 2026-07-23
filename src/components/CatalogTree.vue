@@ -510,7 +510,6 @@ export default {
      * Handle visibilty change (layer.checked property)
      */
     onLayerChecked() {
-      
 
       // external layer (eg. temporary layer through `addlayerscontrol`)
       if (!this.layerstree.projectLayer) {
