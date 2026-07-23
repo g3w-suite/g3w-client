@@ -31,14 +31,14 @@ GUI.setupControl.overview = async function() {
       throw `Project doesn't exist ${gid}`;
     }
 
-    let PROJECT  = gid === g3wsdk.core.ApplicationState.project.getGid() ? g3wsdk.core.ApplicationState.project : null;
+    let PROJECT  = gid === g3w.app.state.project.getGid() ? g3w.app.state.project : null;
 
     // fetch project configuration from remote server
     if (!PROJECT) {
       PROJECT = Object.assign({}, CONFIG, await XHR.get({ url:
         `${window.initConfig.urls.baseurl}${window.initConfig.urls.config}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}?_t=${CONFIG.modified}`
       }), {
-        _layers: {},
+        _layers: [], // store instance of Layer class
         get crs()      { return normalizeEpsg(CONFIG.crs, false) },
         getType:       () => CONFIG.type,
         getId:         () => CONFIG.id,
@@ -63,7 +63,7 @@ GUI.setupControl.overview = async function() {
       };
       traverse(PROJECT.layerstree);
 
-      // Layer factory: instance each layer and add to PROJECT._layers
+      // Layer factory: instance each layer and add to PROJECT.layers
       PROJECT.layers.flatMap(l => {
 
         l.wmsUrl = `${window.initConfig.urls.baseurl}${window.initConfig.urls.ows}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}/`;
@@ -85,7 +85,7 @@ GUI.setupControl.overview = async function() {
           console.warn(e);
         }
         return [];
-      }).forEach(l => PROJECT._layers[l.getId()] = l);
+      }).forEach(l => PROJECT._layers.push(l));
       
     }
 
@@ -123,8 +123,7 @@ GUI.setupControl.overview = async function() {
           layers:        Object
             .entries(
               // group layer by multilayerId
-              Object
-                .values(PROJECT._layers)
+              PROJECT._layers
                 .filter(l => !l.isBaseLayer() && l.isGeoLayer() && l.isVisible())
                 .reduce((group, l) => {
                   const id = l.getMultiLayerId();
