@@ -744,7 +744,7 @@ $.ajaxSetup({
    * @param {*} parentGroup 
    * @returns 
    */
-  (function traverse (nodes, parentGroup) {
+  (function traverse(nodes, parentGroup) {
     return parentGroup.toc = nodes.reduce((toc, node, index) => {
       //Check if is a layer node, 
       if (node.id ?? false) {
