@@ -570,8 +570,7 @@ $.ajaxSetup({
       let layers = project.layers;
   
       if (filter.IDS) {
-        const ids = [].concat(filter.IDS);
-        layers = layers.filter(l => ids.includes(l.getId()));
+        layers = layers.filter(l => [].concat(filter.IDS).includes(l.getId()));
       }
   
       // check if there are `selected` layers otherwise get all `layers`
@@ -594,17 +593,21 @@ $.ajaxSetup({
       if (has(filter.VECTORLAYER))                                            layers = layers.filter(l => filter.VECTORLAYER === l.isType('vector'));
       if (has(filter.HIDDEN))                                                 layers = layers.filter(l => filter.HIDDEN      === l.isHidden());
       if (has(filter.DISABLED))                                               layers = layers.filter(l => filter.DISABLED    === l.isDisabled());
-      if ('string'  === typeof filter.SERVERTYPE && filter.SERVERTYPE.length) layers = layers.filter(l => filter.SERVERTYPE  === l.getServerType());
+      if ('string' === typeof filter.SERVERTYPE && filter.SERVERTYPE.length) layers = layers.filter(l => filter.SERVERTYPE  === l.getServerType());
       if (filter.PRINTABLE)                                                   layers = layers.filter(l => l.isGeoLayer() && l.isPrintable({ scale: filter.PRINTABLE.scale }));
   
       /**@since v3.10.3 order TOC */
-      if (options.TOC_ORDER && project.state.layerstree) {
+      if (options.TOC_ORDER && project.state.layerstree?.[0]) {
         // get all siblings children layers id
         let nodes = [];
         let traverse = tree => {
           (tree?.nodes || []).forEach(n => {
-            if (n.id) { nodes.push(n.id) }
-            else { traverse(n) }
+            if (n.id) { 
+              nodes.push(n.id) 
+            }
+            else { 
+              traverse(n) 
+            }
           });
         };
         traverse(project.state.layerstree?.[0]);
@@ -676,7 +679,7 @@ $.ajaxSetup({
     });
     try {
       return new Layer(config, { project });
-    } catch (e) {
+    } catch(e) {
       console.warn(e);
       return []
     }
