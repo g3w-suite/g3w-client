@@ -674,7 +674,7 @@ $.ajaxSetup({
       ows_method:        project.state.ows_method,
       wms_use_layer_ids: project.state.wms_use_layer_ids,
       //@since v4.0.0 - original config to maintain
-      styles:            l.styles && l.styles.map(s => ({...s})), // v4.0.0 pass a copy of styles
+      styles:            l?.styles?.map?.(s => ({...s})), // v4.0.0 pass a copy of styles
     });
     try {
       return new Layer(config, { project });
@@ -726,7 +726,7 @@ $.ajaxSetup({
   );
   
   // setLayerstree
-  if (layerstree.length) {
+  if (layerstree.length > 0) {
     const rootGroup = {
       title:       project.state.name || project.state.gid,
       root:        true,
@@ -748,7 +748,7 @@ $.ajaxSetup({
 
       // translate bbox epsg to project epsg code (when they differ)
       if ((epsg !== project_epsg)) {
-        const [minx, miny, maxx, maxy] = ol.proj.transformExtent([ bbox.minx, bbox.miny, bbox.maxx, bbox.maxy ], epsg, project_epsg);
+        const [ minx, miny, maxx, maxy ] = ol.proj.transformExtent([ bbox.minx, bbox.miny, bbox.maxx, bbox.maxy ], epsg, project_epsg);
         bbox = { minx, miny, maxx, maxy }
       }
       // get current bbox or compute bbox from an ol extent
@@ -770,7 +770,7 @@ $.ajaxSetup({
               }
               return bbox;
             },
-            { minxx:null, miny: null, maxx: null, maxy: null }
+            { minx: null, miny: null, maxx: null, maxy: null }
           );
       }
       // Recursion
