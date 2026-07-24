@@ -44,6 +44,7 @@ GUI.setupControl.overview = async function() {
       })
     }
     // loop layerstree and inject additional layer properties from server config (eg. visibile: true/false)
+    // ordering by TOC
     const traverse = nodes => {
       nodes.forEach((node) => {
         //esclude not visible node and nalphanumerical layers (eg. NoGeometry) 
