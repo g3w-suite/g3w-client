@@ -696,47 +696,6 @@ $.ajaxSetup({
     }
   }));
 
-  /**
-   * Set bounding box info for each group based on its children layers and groups
-   * @param {*} group 
-   * @param {*} param1 
-   */
-  const _traverseBBox = (group, { bbox, epsg } = {}) => {
-    //get project epsg code
-    const project_epsg = project.config.projection.getCode();
-
-    // translate bbox epsg to project epsg code (when they differ)
-    if ((epsg !== project_epsg)) {
-      const [ minx, miny, maxx, maxy ] = ol.proj.transformExtent([ bbox.minx, bbox.miny, bbox.maxx, bbox.maxy ], epsg, project_epsg);
-      bbox = { minx, miny, maxx, maxy }
-    }
-    // get current bbox or compute bbox from an ol extent
-    if (undefined === group.bbox) {
-      group.bbox = bbox;
-    } else {
-      group.bbox = ol.extent
-        .extend(
-          [ group.bbox.minx, group.bbox.miny, group.bbox.maxx, group.bbox.maxy ],
-          [ bbox.minx, bbox.miny, bbox.maxx, bbox.maxy ]
-        )
-        .reduce(
-          (bbox, extentCoordinate, index) => {
-            switch(index){
-              case 0: bbox.minx = extentCoordinate; break;
-              case 1: bbox.miny = extentCoordinate; break;
-              case 2: bbox.maxx = extentCoordinate; break;
-              case 3: bbox.maxy = extentCoordinate; break;
-            }
-            return bbox;
-          },
-          { minx: null, miny: null, maxx: null, maxy: null }
-        );
-    }
-    // Recursion
-    if (false === group?.parentGroup?.root) {
-      _traverseBBox(group.parentGroup, { bbox: group.bbox, epsg: project_epsg });
-    }
-  };
 
   /**
    * 
@@ -751,7 +710,36 @@ $.ajaxSetup({
         nodes[index] = project.getLayerById(node.id).getState(); // substitute node layer with layer state
         // pass bbox and epsg of layer
         if (nodes[index].bbox) {
-          _traverseBBox(parentGroup, { bbox: nodes[index].bbox, epsg: nodes[index].epsg });
+          //need to create a new object maintain original bbox of node
+          // in case for example of different epdg code between project and layer
+          const bbox = Object.assign({}, nodes[index].bbox);
+          // Set bounding box info for each group based on its children layers and groups
+          // translate bbox epsg to project epsg code (when they differ)
+          if ((nodes[index].epsg !== project.config.projection.getCode())) {
+            [ bbox.minx, bbox.miny, bbox.maxx, bbox.maxy ] = ol.proj.transformExtent([ nodes[index].bbox.minx, nodes[index].bbox.miny, nodes[index].bbox.maxx, nodes[index].bbox.maxy ], nodes[index].epsg, project.config.projection.getCode());
+          }
+          // get current bbox or compute bbox from an ol extent
+          if (undefined === parentGroup.bbox) {
+            parentGroup.bbox = bbox;
+          } else {
+            parentGroup.bbox = ol.extent
+              .extend(
+                [ parentGroup.bbox.minx, parentGroup.bbox.miny, parentGroup.bbox.maxx, parentGroup.bbox.maxy ],
+                [ bbox.minx, bbox.miny, bbox.maxx, bbox.maxy ]
+              )
+              .reduce(
+                (bbox, extentCoordinate, index) => {
+                  switch(index){
+                    case 0: bbox.minx = extentCoordinate; break;
+                    case 1: bbox.miny = extentCoordinate; break;
+                    case 2: bbox.maxx = extentCoordinate; break;
+                    case 3: bbox.maxy = extentCoordinate; break;
+                  }
+                  return bbox;
+                },
+                { minx: null, miny: null, maxx: null, maxy: null }
+              );
+          }
         }
       }
 
