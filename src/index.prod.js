@@ -442,8 +442,8 @@ $.ajaxSetup({
   // { Array } config.layers - The order of layers follows layer rendering order set on QGIS project.Can be different to TOC layer order
   const config = await Promise.race([
     new Promise(res => setTimeout(() => res("Timeout"), TIMEOUT)),
-    await XHR.get({ url:
-      `${window.initConfig.urls.baseurl}${window.initConfig.urls.config}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}?_t=${CONFIG.modified}`
+    await XHR.get({ 
+      url: `${window.initConfig.urls.baseurl}${window.initConfig.urls.config}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}?_t=${CONFIG.modified}`
     })
   ]);
 
@@ -489,7 +489,7 @@ $.ajaxSetup({
     for (let i = 0; i < nodes.length; i++) {
       let node = nodes[i];
       // check if layer (node) of folder
-      if (node.id ?? false) {
+      if (null !== node.id && undefined !== node.id) {
         const l   = config.layers.find(l => node.id === l.id)
         node.name = l?.name;
         node      = Object.assign(l ?? {}, node); // replace node with layer configuration (from server config)
@@ -620,7 +620,7 @@ $.ajaxSetup({
         layers         = selected.length > 0 ? selected : layers;
       }
   
-      // checks if a boolean filter is setted
+      // checks if a boolean filter is set
       const has = f => 'boolean' === typeof f;
   
       if (has(filter.SELECTED) && !filter.SELECTED_OR_ALL)                    layers = layers.filter(l => filter.SELECTED    === l.isSelected());
@@ -638,7 +638,7 @@ $.ajaxSetup({
       if (filter.PRINTABLE)                                                   layers = layers.filter(l => l.isGeoLayer() && l.isPrintable({ scale: filter.PRINTABLE.scale }));
   
       /**@since v3.10.3 order TOC */
-      if (options.TOC_ORDER && project.state.layerstree?.[0]) {
+      if (options.TOC_ORDER) {
         // get all siblings children layers id
         let nodes = [];
         let traverse = tree => {
@@ -712,7 +712,7 @@ $.ajaxSetup({
     }
     // get current bbox or compute bbox from an ol extent
     if (undefined === group.bbox) {
-      group.bbox = bbox
+      group.bbox = bbox;
     } else {
       group.bbox = ol.extent
         .extend(
@@ -733,7 +733,7 @@ $.ajaxSetup({
         );
     }
     // Recursion
-    if (group.parentGroup && false === group.parentGroup.root) {
+    if (false === group?.parentGroup?.root) {
       _traverseBBox(group.parentGroup, { bbox: group.bbox, epsg: project_epsg });
     }
   };
@@ -747,7 +747,7 @@ $.ajaxSetup({
   (function traverse(nodes, parentGroup) {
     return parentGroup.toc = nodes.reduce((toc, node, index) => {
       //Check if is a layer node, 
-      if (node.id ?? false) {
+      if (null !== node.id && undefined !== node.id) {
         nodes[index] = project.getLayerById(node.id).getState(); // substitute node layer with layer state
         // pass bbox and epsg of layer
         if (nodes[index].bbox) {
