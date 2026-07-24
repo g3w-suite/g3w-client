@@ -30,8 +30,6 @@ GUI.setupControl.overview = async function() {
       throw `Project doesn't exist ${gid}`;
     }
 
-    let layers   = []; //array contains all layers that are visible in the overview map (from project configuration)
-
     const PROJECT  = gid === g3w.app.state.project.getGid() ? g3w.app.state.project : null;
 
     // fetch project configuration from remote server in case of overview project is different from current project
@@ -39,22 +37,26 @@ GUI.setupControl.overview = async function() {
       url: `${window.initConfig.urls.baseurl}${window.initConfig.urls.config}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}?_t=${CONFIG.modified}`
     });
     
-    // loop layerstree and inject additional layer properties from server config (eg. visibile: true/false)
-    // ordering by TOC
-    (function traverse(nodes = []) {
-      nodes.forEach((node) => {
-        //esclude not visible node and alphanumerical layers (eg. NoGeometry) 
-        if (undefined !== node.id && node.visible) {
-          const l = config.layers.find(l => node.id === l.id);
-          if ('NoGeometry' !== l?.geometrytype) {
-            layers.push(l);
+    //Array contains all layers that are visible in the overview map (from project configuration)
+    const layers = (
+      // loop layerstree and inject additional layer properties from server config (eg. visibile: true/false)
+      // ordering by TOC
+      function traverse(nodes = [], layers = []) {
+        nodes.forEach((node) => {
+          //esclude not visible node and alphanumerical layers (eg. NoGeometry) 
+          if (undefined !== node.id && node.visible) {
+            const l = config.layers.find(l => node.id === l.id);
+            if ('NoGeometry' !== l?.geometrytype) {
+              layers.push(l);
+            }
           }
-        }
-        if (Array.isArray(node.nodes)) {
-          traverse(node.nodes);
-        }
-      });
-    })(config.layerstree);
+          if (Array.isArray(node.nodes)) {
+            traverse(node.nodes, layers);
+          }
+        });
+        return layers;
+      } 
+    )(config.layerstree, []);
 
     const collapseLabel = Object.assign(document.createElement('span'), { title: 'close' });
     const label         = Object.assign(document.createElement('span'), { title: 'Overview map' });
