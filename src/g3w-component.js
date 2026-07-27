@@ -42,48 +42,23 @@ export default class Component extends Emitter {
       delete opts.iconConfig;
     }
 
-    // TODO: check why `GUI.getFontClass` is undefined
-    opts.icon = GUI.getFontClass(opts.icon) || opts.icon;
+    // Check if opts.icon using `GUI.getFontClass` method is defined as key on FONT_AWESOME_ICONS global constants
+    opts.icon        = GUI.getFontClass(opts.icon) ?? opts.icon;
 
     opts.open        = opts.open        ?? false; 
     opts.mobile      = opts.mobile      ?? true; //show on mobile devices (default true)
     opts.collapsible = opts.collapsible ?? true; //means that the component can be opened and closed by clicking on the icon in the sidebar
 
     super({
-      setters: {
-
-        setOpen(bool) {
-          this.state.open = bool;
-          if (this._setOpen) {
-            this._setOpen(bool);
-          }
-        },
-
-        setVisible(bool) {
-          this.state.visible = bool;
-          if (this._setVisible) {
-            this._setVisible(bool);
-          }
-        },
-
-        setLoading(bool = false) {
-          this.state.loading = bool;
-        },
-
-        setDisabled(bool = false) {
-          this.state.disabled = bool;
-        },
-
-        reload() {
-          console.warn('[G3W-CLIENT] reloading of components will be discontinued, please update your code as soon as possible', this.getId())
-          if (this._reload) {
-            this._reload();
-          }
-        },
-      }
-
+      setters: [
+        'setOpen',
+        'setVisible',
+        'setLoading',
+        'setDisabled',
+        'reload',
+      ]
     });
-
+      
     this._firstLayout      = true;
 
     /** internal VUE component */
@@ -217,6 +192,35 @@ export default class Component extends Emitter {
       .forEach(e => this.internalComponent.$on(e.name, data => e.handler && e.handler(data) || this[`set${e.name[0].toUpperCase()}${e.name.slice(1)}`](data)));
     if (this._service && this._service.state) {
       this.internalComponent.state = this._service.state;
+    }
+  }
+
+  setOpen(bool) {
+    this.state.open = bool;
+    if (this._setOpen) {
+      this._setOpen(bool);
+    }
+  }
+
+  setVisible(bool) {
+    this.state.visible = bool;
+    if (this._setVisible) {
+      this._setVisible(bool);
+    }
+  }
+
+  setLoading(bool = false) {
+    this.state.loading = bool;
+  }
+
+  setDisabled(bool = false) {
+    this.state.disabled = bool;
+  }
+
+  reload() {
+    console.warn('[G3W-CLIENT] reloading of components will be discontinued, please update your code as soon as possible', this.getId())
+    if (this._reload) {
+      this._reload();
     }
   }
 
