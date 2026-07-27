@@ -12,8 +12,6 @@ import { cloneDeep }    from 'utils/cloneDeep';
 import { waitFor }      from 'utils/waitFor';
 import { gettext as _ } from 'g3w-i18n';
 
-const TIMEOUT = 10000;
-
 /**
  * ORIGINAL SOURCE: src/app/core/plugin/plugin.js@v3.10.2
  */
@@ -46,7 +44,7 @@ export class Plugin extends Emitter {
     // List of sidebar services that usually plugin need to interact with (hook = place/name of component)
     this.hookservices = {
       'search': GUI.getService('search'),
-      'tools':  GUI.getService('tools')
+      'tools':  GUI.getService('tools'),
     };
 
     // Automatically remove the loading plugin indicator after timeout
@@ -56,7 +54,7 @@ export class Plugin extends Emitter {
       if (this.name) {
         delete ApplicationState.layout[this.name];
       }
-    }, TIMEOUT);
+    }, 10000);
 
   }
 
@@ -117,7 +115,7 @@ export class Plugin extends Emitter {
    * Set plugin configuration
    * @param { Object } config
    */
-  setConfig(config) {
+  setConfig(config = {}) {
     this.config = 'Object' === toRawType(config) ? config : null;
   }
 
@@ -155,7 +153,11 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * @FIXME add description
+   * Set plugin service functionality (methods, events, ...) to interact with the plugin
+   * 
+   * @param { Object } service
+   * 
+   * @since 4.0.0
    */
   setService(service) {
     this.service = service;
@@ -165,22 +167,30 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * @FIXME add description
+   * Return plugin service functionality (methods, events, ...) to interact with the plugin
+   * 
+   * @returns { Object }
+   * 
+   * @since 4.0.0 
    */
   getService() {
     return this.service;
   }
 
   /**
-   * @FIXME add description
-   * @param { Array } dependencies
+   * Set plugin dependencies
+   * @param { Array } dependencies plugin dependencies (eg. ["editing", "processing"])
    */
   setDependencies(dependencies = []) {
     this.dependencies = dependencies;
   }
 
   /**
-   * @FIXME add description
+   * Set plugin API that expose plugin interaction from external
+   *   
+   * @param { Object } api
+   * 
+   * @since 4.0.0
    */
   setApi(api = {}) {
     this._api = api;
@@ -191,21 +201,33 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * @FIXME add description
+   * Return plugin API that expose plugin interaction from external
+   * 
+   * @returns { Object }
+   * 
+   * @since 4.0.0
    */
   getApi() {
     return this._api;
   }
 
   /**
-   * @FIXME add description
+   * Set the hook service to interact with a specific component (eg. "tools" interface on the left sidebar)
+   * 
+   * @param { string } hook
+   * 
+   * @since 4.0.0 
    */
   setHookService(hook) {
     this._hook = hook;
   }
 
   /**
-   * @FIXME add description
+   *  Get the hook service to interact with a specific component (eg. "tools" interface on the left sidebar)
+   * 
+   * @param { string } hook
+   * 
+   * @since 4.0.0 
    */
   getHookService(hook = "tools") {
     return this.hookservices[hook];
@@ -241,7 +263,7 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * @FIXME add description
+   * Set the current layout of the plugin as active
    * 
    * @see g3wsdk.core.ApplicationState.layout.__current
    */
@@ -250,7 +272,9 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * @FIXME add description
+   * Set the plugin as ready (eg. after initialization is complete)
+   * 
+   * @param { boolean } isReady
    */
   setReady(isReady) {
     this._ready = isReady;
@@ -265,7 +289,11 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * @FIXME add description
+   * Return a promise that resolves when the plugin is ready (eg. after "setReady(true)" is called)
+   * 
+   * @returns { Promise }
+   * 
+   * @since 4.0.0
    */
   isReady() {
     return new Promise((resolve) => {
@@ -276,6 +304,7 @@ export class Plugin extends Emitter {
   }
 
   /**
+   * @param { string } gid plugin's gid (eg: qdjango:1)
    * @returns whether plugin is compatible with current projectId
    */
   isCurrentProjectCompatible(gid) {
@@ -284,6 +313,8 @@ export class Plugin extends Emitter {
 
   /**
    * Check and register plugin only when compatible with current projectId (eg: qdjango:1)
+   * @param { string } gid plugin's gid (eg: qdjango:1)
+   * @returns { boolean } whether plugin is compatible with current projectId
    */
   registerPlugin(gid) {
     const iscompatible  = this.isCurrentProjectCompatible(gid);
@@ -300,6 +331,11 @@ export class Plugin extends Emitter {
    * Used by the following plugins: "archiweb"
    * 
    * Get plugin dependencies
+   * 
+   * @param { Array } pluginsName
+   * @returns { Promise }
+   * 
+   * @since 4.0.0
    */
   getDependencyPlugins(pluginsName) {
     this.dependencies = pluginsName || this.dependencies;
@@ -308,6 +344,9 @@ export class Plugin extends Emitter {
 
   /**
    * Used by the following plugins: "iframe", "sispi-worksite", "simplereporting"
+   * @returns { Object } plugin dependencies API
+   * 
+   * @since 4.0.0
    */
   async getDependencyPluginsObject(pluginsName) {
     const api      = {};
