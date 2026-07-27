@@ -719,8 +719,7 @@ export default new (class GUI extends Emitter {
     if ('catalog' === componentId) {
       return this.#CATALOG;
     }
-    const component = this.getComponent(componentId);
-    return component && component.getService();
+    return this.getComponent(componentId)?.getService?.();
   }
 
   /**
