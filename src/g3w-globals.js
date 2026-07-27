@@ -345,7 +345,7 @@ globalThis.g3wsdk = {
     Panel,
     /** used by the following plugins: "simplereporting", "arpalombardia-charts", "ws-trento" */
     ComponentsFactory: {
-      build: ({ vueComponentObject, service, propsData }, options={}) => (new Component(options)).init({ vueComponentObject, service, propsData }),
+      build: ({ vueComponentObject, service, propsData }, options = {}) => (new Component(options)).init({ vueComponentObject, service, propsData }),
     },
     /** used by the following plugins: "br-service" */
     FieldsService,

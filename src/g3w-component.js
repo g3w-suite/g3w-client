@@ -4,7 +4,6 @@
  */
 
 import Emitter        from 'g3w-emitter';
-import { noop }       from 'utils/noop';
 import { cloneDeep }  from 'utils/cloneDeep';
 import GUI            from 'g3w-app';
 
@@ -58,7 +57,8 @@ export default class Component extends Emitter {
         'reload',
       ]
     });
-      
+     
+    /** start true mean no changes is done on component layout */
     this._firstLayout      = true;
 
     /** internal VUE component */
@@ -73,8 +73,11 @@ export default class Component extends Emitter {
     /** @type { string } */
     this.title             = opts.title ?? '';
 
+    /** @type { boolean } */
+    this.mobile            = opts.mobile; //show on mobile devices (default true)
+
     this.state = {
-      sizes:                        { width: 0, height:0 },
+      sizes:                        { width: 0, height: 0 },
       info:                         opts.info                         ?? null,
       open:                         opts.open                         ?? false,
       visible:                      opts.visible                      ?? true,
@@ -84,7 +87,7 @@ export default class Component extends Emitter {
       closewhenshowviewportcontent: opts.closewhenshowviewportcontent ?? true,
     };
 
-    this.setService(opts.service || this);
+    this._service = opts.service || this;
 
     if (opts.internalComponent) {
       this.setInternalComponent(opts.internalComponent);
@@ -118,7 +121,7 @@ export default class Component extends Emitter {
     this.vueComponent = cloneDeep(opts.vueComponentObject);
     this._components  = opts.components || [];
 
-    this.setService(opts.service || this._service || noop);
+    this._service = opts.service || this._service || (() => {});
 
     if (this._service.init && this.init !== this._service.init) {
       this._service.init(opts);
@@ -186,27 +189,28 @@ export default class Component extends Emitter {
     return this.internalComponent;
   }
 
+  /**
+   * 
+   * @param {*} internalComponent  Vue instance 
+   * @param {*} opts 
+   */
   setInternalComponent(internalComponent, opts = {}) {
-    this.internalComponent = internalComponent ?? new this.internalComponentClass;
+    this.internalComponent = internalComponent;
     (opts.events || [])
       .forEach(e => this.internalComponent.$on(e.name, data => e.handler && e.handler(data) || this[`set${e.name[0].toUpperCase()}${e.name.slice(1)}`](data)));
-    if (this._service && this._service.state) {
+    if (this._service?.state) {
       this.internalComponent.state = this._service.state;
     }
   }
 
   setOpen(bool) {
     this.state.open = bool;
-    if (this._setOpen) {
-      this._setOpen(bool);
-    }
+    this._setOpen?.(bool);
   }
 
   setVisible(bool) {
     this.state.visible = bool;
-    if (this._setVisible) {
-      this._setVisible(bool);
-    }
+    this._setVisible?.(bool);
   }
 
   setLoading(bool = false) {
@@ -219,9 +223,7 @@ export default class Component extends Emitter {
 
   reload() {
     console.warn('[G3W-CLIENT] reloading of components will be discontinued, please update your code as soon as possible', this.getId())
-    if (this._reload) {
-      this._reload();
-    }
+    this._reload?.();
   }
 
   /**
@@ -290,21 +292,10 @@ export default class Component extends Emitter {
       this.internalComponent.$on('resize-component', this.internalComponent.layout);
       this._firstLayout = false;
     }
-    await this.internalComponent?.$nextTick();
+    await this.internalComponent?.$nextTick?.();
     //need to check if internal component exist becouse wehn unmount, internalcomponent is set to nul
     this.internalComponent?.$emit('resize-component', { width, height });
     this.emit('layout');
   }
 
 }
-
-/**
- * @deprecated since 3.10.0 Will be deleted in 4.x.
- */
-Object.assign(Component.prototype, {
-  destroy:                 noop,
-  click:                   noop,
-  show:                    noop,
-  /** used by the following plugins: "iternet" */
-  overwriteServiceMethods: deprecate(function(o) { Object.entries(o).forEach(([n, m]) => this._service[n] = m) }, '[G3W-CLIENT] Component::overwriteServiceMethods(methodsOptions) is deprecated'),
-});
