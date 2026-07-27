@@ -10,14 +10,6 @@ import GUI            from 'g3w-app';
 
 import deprecate      from 'util-deprecate';
 
-function merge(destination, source) {
-  for (let key in source) {
-    if (Object.prototype.hasOwnProperty.call(source, key)) {
-      destination[key] = source[key];
-    }
-  }
-}
-
 /**
  * Component class
  * 
@@ -53,9 +45,9 @@ export default class Component extends Emitter {
     // TODO: check why `GUI.getFontClass` is undefined
     opts.icon = GUI.getFontClass(opts.icon) || opts.icon;
 
-    opts.open        = opts.open        ?? false;
-    opts.mobile      = opts.mobile      ?? true;
-    opts.collapsible = opts.collapsible ?? true;
+    opts.open        = opts.open        ?? false; 
+    opts.mobile      = opts.mobile      ?? true; //show on mobile devices (default true)
+    opts.collapsible = opts.collapsible ?? true; //means that the component can be opened and closed by clicking on the icon in the sidebar
 
     super({
       setters: {
@@ -92,19 +84,19 @@ export default class Component extends Emitter {
 
     });
 
-    this._firstLayout = true;
+    this._firstLayout      = true;
 
     /** internal VUE component */
     this.internalComponent = opts.internalComponent ?? null;
 
     /** @type { Array } */
-    this._components = [];
+    this._components       = [];
 
     /** @type { string } */
-    this.id = opts.id ?? Math.random() * 1000;
+    this.id                = opts.id ?? Math.random() * 1000;
 
     /** @type { string } */
-    this.title = opts.title ?? '';
+    this.title             = opts.title ?? '';
 
     this.state = {
       sizes:                        { width: 0, height:0 },
@@ -123,7 +115,7 @@ export default class Component extends Emitter {
       this.setInternalComponent(opts.internalComponent);
     }
 
-    merge(this, opts);
+    Object.assign(this, opts);
 
     // add events options
     this.events = opts.events ?? {};
@@ -212,12 +204,7 @@ export default class Component extends Emitter {
   }
 
   removeComponent(Component) {
-    this._components.find((c, i) => {
-      if (c === Component) {
-        this.splice(i, 1);
-        return true;
-      }
-    })
+    this._components = this._components.filter(c => c !== Component);
   }
 
   getInternalComponent() {
