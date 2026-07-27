@@ -121,9 +121,9 @@ export default class Component extends Emitter {
     this.vueComponent = cloneDeep(opts.vueComponentObject);
     this._components  = opts.components || [];
 
-    this._service = opts.service || this._service || (() => {});
+    this._service     = opts.service ?? this._service ?? (() => {});
 
-    if (this._service.init && this.init !== this._service.init) {
+    if (this._service?.init && this.init !== this._service?.init) {
       this._service.init(opts);
     }
 
@@ -131,17 +131,14 @@ export default class Component extends Emitter {
       this.vueComponent.template = opts.template;
     }
 
-    this.setInternalComponent = function() {
-      this.internalComponent = new (Vue.extend(this.vueComponent))({
-        service:   this._service,
-        template:  opts.template,
-        propsData: opts.propsData
-      });
-      this.internalComponent.state = this.getService().state;
-    };
+    this.internalComponent = new (Vue.extend(this.vueComponent))({
+      service:   this._service,
+      template:  opts.template,
+      propsData: opts.propsData
+    });
 
-    this.setInternalComponent();
-
+    this.internalComponent.state = this._service?.state;
+    
     return this;
   }
 
