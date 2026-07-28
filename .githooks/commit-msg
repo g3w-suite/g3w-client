@@ -7,6 +7,12 @@ commit_msg=$(cat "$1")
 # Accepts formats like: feat: add login, fix(api): fix bug, feat!: breaking change
 REGEXP="^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z0-9_-]+\))?!?: .+"
 
+# Bypass GitHub Desktop messages
+if echo "$commit_msg" | grep -qEq "^Merge branch '|^Revert \""; then
+    exit 0
+fi
+
+# Check for Conventional Commits
 if ! echo "$commit_msg" | grep -Eq "$REGEXP"; then
     echo "❌ ERROR: Commit message does not follow Conventional Commits standard!"
     echo "Expected format: type(scope): description"
