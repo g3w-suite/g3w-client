@@ -66,13 +66,6 @@ export class Layer extends Emitter {
 
   #providers = {};
 
-  /**
-   * @TODO check if deprecated
-   * 
-   * ORIGINAL SOURCE: g3w-client/src/map/layers/featuresstore.js@v4.0.0
-   */
-  #features = [];
-
   #relations;
 
   customParams = {};
@@ -119,8 +112,6 @@ export class Layer extends Emitter {
      * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
      */
     this.setters = [
-      'addFeature',
-      'setFeatures',
       'change',
     ];
 
@@ -2745,30 +2736,6 @@ export class Layer extends Emitter {
     this.#color = color;
   }
 
-  /**
-   * @since 4.1.0 
-   */
-  addFeature(feature) {
-    console.trace('[G3W-LAYER] addFeature is deprecated?');
-    this.#features.push(feature);
-  }
-
-  /**
-   * @TODO check if it unusued
-   * 
-   * @since 4.1.0
-   */
-  setFeatures(features = []) {
-    console.trace('[G3W-LAYER] setFeatures is deprecated?');
-    this.#features = features;
-  }
-  /**
-   * @since 4.1.0
-   */
-  readFeatures() {
-    console.trace('[G3W-LAYER] readFeatures is deprecated?');
-    return this.#features;
-  }
 
   /**
    * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
@@ -2786,13 +2753,6 @@ export class Layer extends Emitter {
    */
   isStarted() {
     return this._editor?.isStarted()
-  }
-
-  /**
-   * @since 4.1.0
-   */
-  addFeatures(features = []) {
-    features.forEach(f => this.addFeature(f));
   }
 
   /**
