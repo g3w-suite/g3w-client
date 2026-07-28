@@ -109,7 +109,7 @@ export class Layer extends Emitter {
     super();
 
     /**
-     * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
+     * @type { string[] } list of events to trigger on layer state change
      */
     this.setters = [
       'change',
