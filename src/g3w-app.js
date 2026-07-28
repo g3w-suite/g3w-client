@@ -416,7 +416,7 @@ export default new (class GUI extends Emitter {
               style            = "display: flex; justify-content: space-between; align-items: center"
               :data-i18n-title = "sidebar.open ? '' : (component.title || '')"
               data-placement   = "right"
-              @click.prevent   
+              @click.prevent   = "component?.events?.click?.()"
             >
               <div>
                 <span v-if = "!sidebar.open"><i :class = "component.icon" :style = "{ color: component.iconColor }"></i></span>
