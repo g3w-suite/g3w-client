@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# Read the commit message from the temporary file provided by Git
+commit_msg=$(cat "$1")
+
+# Standard Regex for Conventional Commits
+# Accepts formats like: feat: add login, fix(api): fix bug, feat!: breaking change
+REGEXP="^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z0-9_-]+\))?!?: .+"
+
+# Bypass GitHub Desktop messages
+if echo "$commit_msg" | grep -qEq "^Merge branch '|^Revert \""; then
+    exit 0
+fi
+
+# Check for Conventional Commits
+if ! echo "$commit_msg" | grep -Eq "$REGEXP"; then
+    echo "❌ ERROR: Commit message does not follow Conventional Commits standard!"
+    echo "Expected format: type(scope): description"
+    echo "Examples: feat(auth): add login, fix: resolve crash"
+    echo "More info: https://conventionalcommits.org"
+    exit 1
+fi
