@@ -712,7 +712,6 @@ export default {
         this.legend_tree.loading = true;
         await this.$nextTick();
         this.legend_tree.url = getCatalogLayerById(this.layerstree.id).getLegendUrl({
-          ...window.initConfig?.layout?.legend,
           width:  16,
           height: 16,
         });
@@ -791,9 +790,7 @@ export default {
           this.legend_categories = categories;
         } else {
           const { nodes = [] } = await XHR.get({
-            url: projectLayer.getLegendUrl(
-              window.initConfig?.layout?.legend,
-              {
+            url: projectLayer.getLegendUrl({
                 categories: true,
                 format:     'application/json', // request format (icon and label of each category)
                 all,

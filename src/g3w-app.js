@@ -3744,7 +3744,7 @@ export default new (class GUI extends Emitter {
             url.loading = false;
           },
           async setLegendUrls() {
-            this.legendurls = await g3w.app.getLegendSrc({ change: true }); 
+            this.legendurls = await g3w.app.getLegendSrc({ layertitle: true }); 
           },
           
         },
@@ -5430,11 +5430,13 @@ export default new (class GUI extends Emitter {
    * ORIGINAL SOURCE: src/components/Catalog.vue@v4.0.0
    * 
    * Get legend src for visible layers
+   * 
+   * @param { Object }  opts
+   * @param { boolean } opts.all whether force to retrieve all layers (legend urls)
    *
-   * @returns {Promise<void>}
+   * @returns { Promise<any> }
    */
-  async getLegendSrc({ change = false, all = false } = {}) {
-
+  async getLegendSrc({ all = false, ...params } = {}) {
     /**
      * Stringify a query URL param (eg. `&WIDTH=700`)
      *
@@ -5448,33 +5450,43 @@ export default new (class GUI extends Emitter {
         Object.entries(
           Object
             .values(ApplicationState.layers)
-            .flatMap(s => s.showOnCatalog() ? s.getLayers({ GEOLAYER: true, ...(all ? {} : { VISIBLE: true }) }, { TOC_ORDER : true }) : [])
-            .map(l => l.state)
-            .reduce((urls, layer) => {
-              if (change && ApplicationState.project.state.context_base_legend) {
-                layer.legend.change = false;
+            // extract geolayers (from TOC)
+            .flatMap(s => {
+              if (!s.showOnCatalog()) {
+                return [];
               }
-
-              const url  = getCatalogLayerById(layer.id).getLegendUrl(window.initConfig?.layout?.legend, {
+              const map    = s.getLayers().reduce((m, l) => (l.isGeoLayer() && (all || l.isVisible()) ? m.set(l.getId(), l) : m), new Map());
+              const tree   = s.getLayersTree?.()?.[0];
+              const layers = tree ? [] : [...map.values()];
+              const walk   = t => t?.nodes?.forEach(n => n.id ? map.has(n.id) && layers.push(map.get(n.id)) : walk(n));
+              // sorted by TOC
+              if (tree) {
+                walk(tree);
+              }
+              return layers;
+            })
+            .reduce((urls, layer) => {
+              const url   = layer.getLegendUrl({
                 all:        !ApplicationState.project.state.context_base_legend, // true = dynamic legend
                 format:     'image/png',
-                categories: layer.categories
+                categories: layer.state.categories,
+                ...params
               });
 
               // extract LEGEND_ON and LEGEND_OFF from prefix -> (in case of legend categories)
-              const prefix = layer?.source?.url
+              const prefix = layer.state?.source?.url
                 ? url
                 : url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[0];
 
-              urls[prefix] = urls[prefix] ?? {
+              urls[prefix] ??= {
                 layers: [],
-                method: layer?.source?.url || layer.external ? 'GET' : ApplicationState.project.state.ows_method
+                method: layer.state?.source?.url || layer.state.external ? 'GET' : ApplicationState.project.state.ows_method
               };
 
-              if (!layer?.source?.url) {
+              if (!layer.state?.source?.url) {
                 urls[prefix].layers.unshift({
                   layerName:  url.split('LAYER=')[1],
-                  style:      layer?.styles?.find(s => s.current)?.name ?? false,
+                  style:      layer.state?.styles?.find(s => s.current)?.name ?? false,
                   legend_on:  (url.split('LAYER=')[0].split('LEGEND_ON=')[1] || '').replace('&', ''),                         // remove eventually &
                   legend_off: (url.split('LAYER=')[0].split('LEGEND_ON=')[0].split('LEGEND_OFF=')[1] || '').replace('&', ''), // remove eventually &
                 });
