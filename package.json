@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "preinstall": "",
+    "prepare": "git config core.hooksPath .githooks",
     "build": "node build.js build",
     "build:ci": "node build.js build:ci",
     "dev": "node build.js dev",
