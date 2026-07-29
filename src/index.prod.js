@@ -519,9 +519,9 @@ $.ajaxSetup({
     state: Object.assign({}, CONFIG, config, { 
       WMSUrl: `${window.initConfig.urls.baseurl}${window.initConfig.urls.ows}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}/`,
       /** @since 3.8.0 */
-      relations: (CONFIG.relations || []).map(r => {
+      relations: (config.relations || []).map(r => {
         if ("ONE" === r.type) {
-          CONFIG.layers.find(l => {
+          config.layers.find(l => {
             if (l.id === r.referencingLayer) {
               r.name     = l.name;
               r.origname = l.origname;
