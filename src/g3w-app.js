@@ -2208,8 +2208,6 @@ export default new (class GUI extends Emitter {
           expandable:             true,
           addfeaturesresults:     { active: false },
           downloadformats:        { active: false },
-          editable:               is_layer   ? layer.isEditable() && layer.config.editing?.visible : false,
-          editing:                is_layer   ? layer.state.editing                                 : { inediting: false},
           source:                 is_layer   ? layer.getSource()                                   : undefined,
           infoformat:             is_layer   ? layer.getInfoFormat()                               : undefined,
           infoformats:            is_layer   ? layer.getInfoFormats()                              : [],
