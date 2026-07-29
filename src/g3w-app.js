@@ -2599,21 +2599,6 @@ export default new (class GUI extends Emitter {
           }
         },
 
-        // edit
-        (layer.editable) && {
-          id:    'editing',
-          class: "fas fa-pencil-alt",
-          hint:  'Editing',
-          state:  Vue.observable({ disabled: layer.editing.inediting }), //disable when in editing
-          init() {
-             this.unwatch = Vue.watch(() => layer.editing.inediting, bool => this.state.disabled = bool );
-          },
-          clear() {
-            this.unwatch && this.unwatch(); // remove action when destroy
-          },
-          cbk:   (layer, feature) => this.editFeature({ layer, feature })
-        },
-
       ]).filter(Boolean));
 
 
