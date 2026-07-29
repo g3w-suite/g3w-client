@@ -229,37 +229,37 @@ export class Layer extends Emitter {
      * @TODO simplify further, some propertiy names seems to be duplicated
      */
     this.state = Object.assign(config, {
-      id:        config.id || getUniqueDomId(),
-      title:     config.title || config.name,
+      id:        config.id    ?? getUniqueDomId(),
+      title:     config.title ?? config.name,
       download:  !!config.download,
       baselayer: !!config.baselayer,
-      fields:    config.fields || {},
+      fields:    config.fields ?? {},
 
       // URLs to get various type of data
       urls:      {
         query: config.infourl || config.wmsUrl || ApplicationState.project.state.WMSUrl,
         ...(config.urls || {}),
         ...(config.baselayer ? {} : {
-            filtertoken: `${window.initConfig.vectorurl}filtertoken/${project.getType()}/${project.getId()}/${config.id}/`,
-            data:        `${window.initConfig.vectorurl}data/${project.getType()}/${project.getId()}/${config.id}/`,
-            shp:         `${window.initConfig.vectorurl}shp/${project.getType()}/${project.getId()}/${config.id}/`,
-            csv:         `${window.initConfig.vectorurl}csv/${project.getType()}/${project.getId()}/${config.id}/`,
-            xls:         `${window.initConfig.vectorurl}xls/${project.getType()}/${project.getId()}/${config.id}/`,
-            gpx:         `${window.initConfig.vectorurl}gpx/${project.getType()}/${project.getId()}/${config.id}/`,
-            gpkg:        `${window.initConfig.vectorurl}gpkg/${project.getType()}/${project.getId()}/${config.id}/`,
-            geotiff:     `${window.initConfig.rasterurl}geotiff/${project.getType()}/${project.getId()}/${config.id}/`,
-            editing:     `${window.initConfig.vectorurl}editing/${project.getType()}/${project.getId()}/${config.id}/`,
-            commit:      `${window.initConfig.vectorurl}commit/${project.getType()}/${project.getId()}/${config.id}/`,
-            config:      `${window.initConfig.vectorurl}config/${project.getType()}/${project.getId()}/${config.id}/`,
-            unlock:      `${window.initConfig.vectorurl}unlock/${project.getType()}/${project.getId()}/${config.id}/`,
+            filtertoken:          `${window.initConfig.vectorurl}filtertoken/${project.getType()}/${project.getId()}/${config.id}/`,
+            data:                 `${window.initConfig.vectorurl}data/${project.getType()}/${project.getId()}/${config.id}/`,
+            shp:                  `${window.initConfig.vectorurl}shp/${project.getType()}/${project.getId()}/${config.id}/`,
+            csv:                  `${window.initConfig.vectorurl}csv/${project.getType()}/${project.getId()}/${config.id}/`,
+            xls:                  `${window.initConfig.vectorurl}xls/${project.getType()}/${project.getId()}/${config.id}/`,
+            gpx:                  `${window.initConfig.vectorurl}gpx/${project.getType()}/${project.getId()}/${config.id}/`,
+            gpkg:                 `${window.initConfig.vectorurl}gpkg/${project.getType()}/${project.getId()}/${config.id}/`,
+            geotiff:              `${window.initConfig.rasterurl}geotiff/${project.getType()}/${project.getId()}/${config.id}/`,
+            editing:              `${window.initConfig.vectorurl}editing/${project.getType()}/${project.getId()}/${config.id}/`,
+            commit:               `${window.initConfig.vectorurl}commit/${project.getType()}/${project.getId()}/${config.id}/`,
+            config:               `${window.initConfig.vectorurl}config/${project.getType()}/${project.getId()}/${config.id}/`,
+            unlock:               `${window.initConfig.vectorurl}unlock/${project.getType()}/${project.getId()}/${config.id}/`,
             widget:      {
-              unique: `${window.initConfig.vectorurl}widget/unique/data/${project.getType()}/${project.getId()}/${config.id}/`
+              unique:             `${window.initConfig.vectorurl}widget/unique/data/${project.getType()}/${project.getId()}/${config.id}/`
             },
             /** @since 3.8.0 */
             featurecount:         `${window.initConfig.vectorurl}featurecount/${project.getType()}/${project.getId()}/`,
             editorformstructure : `${window.initConfig.vectorurl}editorformstructure/${project.getType()}/${project.getId()}/`,
             /** @since 3.10.0 */
-            pdf:         `/html2pdf/`,
+            pdf:                  `/html2pdf/`,
           })
       },
 
@@ -270,18 +270,18 @@ export class Layer extends Emitter {
       multilayerid:       config.multilayer, //it used to check if a layer can be grouped with other layers (get map tiles, get feature info)
       projection:         config.projection && config?.projection?.getCode() === config?.crs?.epsg ? config.projection : (config.crs ? ApplicationState.projections.get(config.crs) : undefined),
       attributions:       config.attributions,
-      selected:           config?.selected ?? false,
-      disabled:           config?.disabled ?? false,
+      selected:           config.selected ?? false,
+      disabled:           config.disabled ?? false,
       metadata:           config.metadata,
-      removable:          config?.removable ?? false,
+      removable:          config.removable ?? false,
       source:             config.source,
       styles:             config.styles,
       defaultstyle,
-      infoformats:        config?.infoformats ?? [],
+      infoformats:        config.infoformats ?? [],
       projectLayer:       true,
       geolayer:           "NoGeometry" !== config.geometrytype,
       attributetable:     { pageLength: null },
-      visible:            !!config.visible,
+      visible:            config.visible ?? false,
 
       /** state of if is in editing (setted by editing plugin) */
       inediting:          false,
@@ -303,7 +303,7 @@ export class Layer extends Emitter {
       },
 
       /** @type { Array<{{ id: string, name: string }}> } since 3.9.0 - array of saved filters */
-      filters:            config?.filters ?? [],
+      filters:            config.filters ?? [],
 
       /** @type {number} since 3.8.0 */
       featurecount:       config.featurecount,
@@ -318,10 +318,10 @@ export class Layer extends Emitter {
       expanded:           config.expanded,
 
       /** @type { boolean } since 3.10.0 - whether to show layer on TOC (default: true) */
-      toc:                config?.toc ?? true,
+      toc:                config.toc ?? true,
 
       /** @since 4.0.0 */
-      legend: config?.legend ?? {
+      legend: config.legend ?? {
         url:        null,
         loading:    false,
         error:      false,
@@ -333,28 +333,28 @@ export class Layer extends Emitter {
       },
 
       /** @type { boolean } whether has more than one category's legend (since 4.0.0) */
-      categories: config?.categories ?? false,
+      categories: config.categories ?? false,
 
       /** @type { boolean } since 4.0.0 */
-      exclude_from_legend: config?.exclude_from_legend ?? true,
+      exclude_from_legend: config.exclude_from_legend ?? true,
 
       /** @since 4.0.0 */
-      external: config?.source?.external,
+      external: config.source?.external,
 
       /** @since 4.0.0 */
-      bbox: config?.bbox,
+      bbox: config.bbox,
 
       /** @since 4.0.0 checked config attribute is passed by vector layer on editing */
       checked: config.checked ?? !!config.visible,
 
       /** @since 4.0.0 */
-      epsg: config?.crs?.epsg,
+      epsg: config.crs?.epsg,
 
       /** @since 4.0.0 */
-      hidden: !!config?.hidden,
+      hidden: config.hidden ?? false,
 
       /** @since 4.0.0 */
-      scalebasedvisibility: !!config?.scalebasedvisibility,
+      scalebasedvisibility: config.scalebasedvisibility ?? false,
 
       /** @since 4.0.0 */
       minscale: config.minscale,
@@ -366,7 +366,7 @@ export class Layer extends Emitter {
       ows_method: config.ows_method,
    
       /** @type {number} opacity range = [0, 100] (since 3.8) */
-      opacity: config.opacity || 100,
+      opacity: config.opacity ?? 100,
 
       /** cached proxy params (eg. external wms/arcgismapserver server) */
       proxyData: { wms: null, arcgismapserver: null }, 
@@ -381,8 +381,8 @@ export class Layer extends Emitter {
       http_params: config.http_params ?? {},
     });
     
-    this.layers          = this.state?.layers ?? []; // store enabled layers (wms)
-    this.showSpinner     = !!this.state.visible;
+    this.layers          = this.state.layers ?? []; // store enabled layers (wms)
+    this.showSpinner     = this.state.visible ?? false;
     this.extent          = this.state.extent;
     this.projection      = this.state.projection;
     this.layer           = null;
@@ -408,10 +408,10 @@ export class Layer extends Emitter {
           /** @type { boolean } loading state (for editing purpose) */
           loading:     false,
           /** @type { string } relation id */ 
-          id:          config.id       || `id_${suffix}`,
+          id:          config.id       ?? `id_${suffix}`,
           /** @type { string } relation name */ 
-          name:        config.name     || `name_${suffix}`,
-          origname:    config.origname || `origname_${suffix}`,
+          name:        config.name     ?? `name_${suffix}`,
+          origname:    config.origname ?? `origname_${suffix}`,
           /** @type { string[] } layerId of father relation */
           father:      config.referencedLayer,
           /** @type { string[] } layerId of child relation */
@@ -419,7 +419,7 @@ export class Layer extends Emitter {
           /** @type { 'MANY' | ONE' | string } relation type */
           type:        config.type,
           /** @since 3.9.0 */
-          editable:    config.editable || false,
+          editable:    config.editable ?? false,
           /** @type { string } since 3.9.0 - relation prefix (for Relation 1:1) */
           prefix:      config.prefix,
           /** BACKCOMP (g3w-admin < v.3.7.0) - father relation field name */
@@ -664,12 +664,12 @@ export class Layer extends Emitter {
   }
 
   /**
-   * @param relationName
+   * @param name
    * 
    * @returns { * | Array } relation fields
    */
-  getRelationAttributes(relationName) {
-    return this.#relations.find(r => relationName === r.name)?.fields ?? [];
+  getRelationAttributes(name) {
+    return this.#relations.find(r => name === r.name)?.fields ?? [];
   }
 
   /**
@@ -683,7 +683,7 @@ export class Layer extends Emitter {
     return (this.state.relations || []).reduce((fields, r) => {
       fields[r.name] = r.fields;
       return fields; 
-    },{});
+    }, {});
   }
 
   /**
@@ -729,10 +729,10 @@ export class Layer extends Emitter {
   }
 
   /**
-   * @TODO add description
+   * @returns { * | boolean } whether it has relations
    */
   hasRelations() {
-    return !!this.#relations.getLength();
+    return this.#relations.getLength() > 0;
   }
 
   /******************************************************************************************
@@ -1034,7 +1034,9 @@ export class Layer extends Emitter {
   }
 
   /**
-   * @TODO add description
+   * select all features (fids) of current layer
+   * 
+   * @since 4.0.0
    */
   selectAll() {
     this.state.selection.fids.clear();
@@ -1067,7 +1069,7 @@ export class Layer extends Emitter {
    */
   async inverseSelection() {
     const selection = this.state.selection.fids;
-    /** @TODO add description */
+    /**invert selection */
     if (selection.has('__EXCLUDE__'))  { selection.delete('__EXCLUDE__'); }
     else if (selection.has('__ALL__')) { selection.delete('__ALL__'); }
     else if (selection.size > 0)       { selection.add('__EXCLUDE__'); }
@@ -1105,7 +1107,7 @@ export class Layer extends Emitter {
       }
     }
 
-    /** @TODO add description */
+    /** create filter token if needed */
     if (createToken && this.state.filter.active) {
       await this.#createToken();
     }
