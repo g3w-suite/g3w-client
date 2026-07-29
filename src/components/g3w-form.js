@@ -108,7 +108,8 @@ async function getFilterExpression({
    * @FIXME should return Promise.reject('some error message') ?
    */
   if (!filter_expression) {
-    return;
+    console.warn('No filter expression provided for field:', field.name);
+    return [];
   }
 
   loading.state = 'loading';
@@ -166,7 +167,7 @@ async function getFilterExpression({
 
       // see: https://github.com/g3w-suite/g3w-client/pull/856
       if (parentData) {
-        ApplicationState.project.getLayerById(qgs_layer_id).config.editing.fields.find(f => f.name === field.name ).input.options.values = values;
+        GUI.getPlugin('editing').getLayerById(qgs_layer_id).state.editing.fields.find(f => f.name === field.name ).input.options.values = values;
       }
     }
 
