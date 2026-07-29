@@ -248,7 +248,6 @@ export class Layer extends Emitter {
             gpx:                  `${window.initConfig.vectorurl}gpx/${project.getType()}/${project.getId()}/${config.id}/`,
             gpkg:                 `${window.initConfig.vectorurl}gpkg/${project.getType()}/${project.getId()}/${config.id}/`,
             geotiff:              `${window.initConfig.rasterurl}geotiff/${project.getType()}/${project.getId()}/${config.id}/`,
-            editing:              `${window.initConfig.vectorurl}editing/${project.getType()}/${project.getId()}/${config.id}/`,
             commit:               `${window.initConfig.vectorurl}commit/${project.getType()}/${project.getId()}/${config.id}/`,
             config:               `${window.initConfig.vectorurl}config/${project.getType()}/${project.getId()}/${config.id}/`,
             unlock:               `${window.initConfig.vectorurl}unlock/${project.getType()}/${project.getId()}/${config.id}/`,
@@ -282,9 +281,6 @@ export class Layer extends Emitter {
       geolayer:           "NoGeometry" !== config.geometrytype,
       attributetable:     { pageLength: null },
       visible:            config.visible ?? false,
-
-      /** state of if is in editing (setted by editing plugin) */
-      inediting:          false,
 
       /** Reactive selection attribute */
       selection:          {
@@ -1265,24 +1261,6 @@ export class Layer extends Emitter {
   }
 
   /**
-   * [EDITING PLUGIN] Check if layer is in editing
-   *
-   * @returns { boolean }
-   */
-  isInEditing() {
-    return this.state?.editing?.inediting;
-  }
-
-  /**
-   * [EDITING PLUGIN] Set editing state
-   *
-   * @param {boolean} bool
-   */
-  setInEditing(bool = false) {
-    this.state.editing.inediting = bool;
-  }
-
-  /**
    * @TODO Add description here
    *
    * @returns {*}
@@ -1600,7 +1578,7 @@ export class Layer extends Emitter {
   /**
    * Get state layer
    *
-   * @returns {*|{metadata, downloadable: *, attributetable: {pageLength: null}, defaultstyle: *, source, title: *, infoformats: ((function(): *)|*|*[]), featurecount: number, stylesfeaturecount: (number|string|*|{[p: number]: *}), projectLayer: boolean, infoformat: (string|default.watch.infoformat|*), geolayer: boolean, inediting: boolean, disabled: boolean, id: (*|string), selected: boolean, openattributetable: (boolean|boolean), visible: boolean, filters: *[], filter: {current: null, active: boolean}, selection: {active: boolean}, removable: (boolean|*), styles}}
+   * @returns {*|{metadata, downloadable: *, attributetable: {pageLength: null}, defaultstyle: *, source, title: *, infoformats: ((function(): *)|*|*[]), featurecount: number, stylesfeaturecount: (number|string|*|{[p: number]: *}), projectLayer: boolean, infoformat: (string|default.watch.infoformat|*), geolayer: boolean, disabled: boolean, id: (*|string), selected: boolean, openattributetable: (boolean|boolean), visible: boolean, filters: *[], filter: {current: null, active: boolean}, selection: {active: boolean}, removable: (boolean|*), styles}}
    */
   getState() {
     return this.state;
