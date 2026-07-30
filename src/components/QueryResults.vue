@@ -336,7 +336,7 @@
                     >
                       <!-- ORIGINAL SOURCE: src/components/QueryResultsActions.vue@v4.0.0 -->
                       <button
-                        v-for                     = "action in getFeatureActions({ actions: state.layersactions[layer.id], layer, feature, index })" 
+                        v-for                     = "action in state.layersactions[layer.id].filter(action => initAction({ action, layer, feature, index }))" 
                         type                      = "button"
                         :key                      = "action.id"
                         v-if                      = "(action.state && action.state.show) || true"
@@ -564,8 +564,6 @@
         headerActionsCellWidth:      10,
         /** @since 4.1.0 */
         proxied_layers:              [],
-        /** @since 4.2.0 cache feature action visibility to avoid render loops */
-        layer_feature_actions:       {},
       }
     },
 
@@ -1133,54 +1131,34 @@
         layer.loading = false;
       },
 
-      /** @since 4.2.0 */
-      getFeatureActions({ actions = [], layer, feature, index } = {}) {
-        const key = `${layer.id}__${feature?.id ?? index}`;
+      /**@since 4.1.0 */
+      async initAction({ action, layer, feature, index } = {}) {
+        let show = true;
 
-        if (this.layer_feature_actions[key]) {
-          return this.layer_feature_actions[key];
+        //check if action has condition to show action button in feature box header
+        if ('function' === typeof action.condition) {
+          show = await action.condition({ layer, feature });
         }
 
-        // Return immediately with all actions once; async visibility filtering updates cache once resolved.
-        this.$set(this.layer_feature_actions, key, actions);
+        show = show && (undefined === (action.state || {}).show ? show : action.state.show);
 
-        (async () => {
+        //check if has init function 
+        if (show && action.init) {
+          action.init({ layer, feature, index, action });
+        }
 
-          for (const action of actions) {
-            let show = true;
+        //check if action has clear function to clear action state and store it in clear_actions array to be cleared on component destroy
+        if (show && 'function' === typeof action.clear) {
+          this.clear_actions.push(() => action.clear({ action, layer, feature }));
+        }
 
-            if ('function' === typeof action.condition) {
-              show = await action.condition({ layer, feature });
-            }
-
-            show = show && (undefined === (action.state || {}).show ? true : action.state.show);
-
-            if (show && action.init) {
-              action.init({ layer, feature, index, action });
-            }
-
-            if (show && 'function' === typeof action.clear) {
-              this.clear_actions.push(() => action.clear({ action, layer, feature }));
-            }
-
-            if (!show) {
-              this.layer_feature_actions[key] = this.layer_feature_actions[key].filter(a => a !== action);
-            }
-          }
-
-        })();
-
-        return this.layer_feature_actions[key];
-      },
+        return show;
+      }, 
     },
 
     watch: {
 
       async 'state.queried_layers'(queried_layers = []) {
-
-        //reset feature actions cache to avoid render loops
-        this.layer_feature_actions = {};
-
         queried_layers.forEach(layer => {
           if (layer.attributes.length <= layer.max_preview_fields && !layer.hasImageField) {
             layer.expandable = false;
