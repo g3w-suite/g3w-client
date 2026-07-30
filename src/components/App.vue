@@ -956,7 +956,7 @@ export default {
      * @since 4.1.0
      */
     has_related_maps() {
-      return window.initConfig.macrogroups.length + window.initConfig.groups.length + window.initConfig.projects.length > 1;
+      return (window.initConfig.macrogroups.length + window.initConfig.groups.length + window.initConfig.projects.length) > 1;
     },
 
     main_title() {
@@ -980,7 +980,9 @@ export default {
     showtitle() {
       if (this.state.content.contentsdata.length > 0) {
         const options = this.state.content.contentsdata.at(-1).options;
-        if ( [true, false].includes(options.showtitle) ) { return options.showtitle }
+        if ( [true, false].includes(options.showtitle) ) {
+          return options.showtitle 
+        }
       }
       return true;
     },
@@ -999,7 +1001,7 @@ export default {
     },
 
     contentTitle() {
-      if (this.state.content.contentsdata.length) {
+      if (this.state.content.contentsdata.length > 0) {
         return this.state.content.contentsdata.at(-1).options;
       }
     },
@@ -1029,15 +1031,15 @@ export default {
     },
 
     componentname() {
-      return ApplicationState.sidebar.components.length ? ApplicationState.sidebar.components.slice(-1)[0].getTitle(): '';
+      return ApplicationState.sidebar.components.length > 0 ? ApplicationState.sidebar.components.slice(-1)[0].getTitle(): '';
     },
 
     panelname() {
-      return this.panels.length ? this.panels.slice(-1)[0].content.getTitle() : '';
+      return this.panels.length > 0 ? this.panels.slice(-1)[0].content.getTitle() : '';
     },
 
     version() {
-      return 'Powered by G3W-SUITE ' + initConfig.version;
+      return `Powered by G3W-SUITE ${initConfig.version}`;
     },
 
     showmapunits() {
@@ -1052,7 +1054,7 @@ export default {
     },
 
     custom_theme_invalid() {
-      return this.custom_theme_input && this.ApplicationState.project.state.map_themes.project.concat(this.ApplicationState.project.state.map_themes.custom).find(({ theme }) => theme === this.custom_theme_input.trim());
+      return this.custom_theme_input && this.ApplicationState.project.state.map_themes.project.concat(this.ApplicationState.project.state.map_themes.custom).find(({ theme }) => this.custom_theme_input.trim() === theme);
     },
 
   },
@@ -1063,31 +1065,36 @@ export default {
      * @since 3.11.0
      */
     onCustomItemClick(e, item) {
+      alert()
       if (item.onclick) {
         e.preventDefault();
         return item.onclick();
       }
+
       if (!['modal', 'metadata'].includes(item.type)) {
         return;
       }
+
       e.preventDefault();
       if (item.target && 'modal' === item.type && document.querySelector(item.target)) {
         return $(item.target).modal('show');
       }
+
       if (item.target && 'metadata' === item.type && document.querySelector('#modal-metadata')) {
         $('#modal-metadata').modal('show');
-        document.querySelector('#modal-metadata a[href="' + item.target + '"]').click();
+        document.querySelector(`#modal-metadata a[href="${ item.target }"]`).click();
         return;
       }
+      
       document.body.insertAdjacentHTML('beforeend', /* html */`
-        <div id = "custom_modal" class = "modal fade" tabindex="-1">
+        <div id = "custom_modal" class = "modal fade" tabindex = "-1">
           <div class = "modal-dialog">
-            <div class  = "modal-content">${ item.content }</div>
+            <div class = "modal-content">${ item.content }</div>
           </div>
         </div>
       `);
       $('#custom_modal').modal('show');
-      $('#custom_modal').on('hidden.bs.modal', () => document.querySelector('#custom_modal')?.remove());
+      $('#custom_modal').on('hidden.bs.modal', () => document.querySelector('#custom_modal')?.remove?.());
     },
 
     async showEmbedModal() {
@@ -1116,7 +1123,7 @@ export default {
     },
 
     isNotLastCrumb(index) {
-      return index < this.breadcrumb.length - 1;
+      return index < (this.breadcrumb.length - 1);
     },
 
     closeContent() {
@@ -1137,7 +1144,7 @@ export default {
       GUI.closeUserMessage();
     },
 
-    async onResize(e) {
+    async onResize() {
       const sidebar = document.getElementById('g3w-view-content');
       const panel   = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
       let rect, dx, dy;
@@ -1178,7 +1185,7 @@ export default {
         });
       };
 
-      const mouseup = async e => {
+      const mouseup = async () => {
         document.removeEventListener('mousemove', mousemove);
         if (!this.disabled && 'h' === this.state.split && panel.width > 65) {
           GUI.hideSidebar();
@@ -1412,7 +1419,8 @@ export default {
       GUI.closeContent();
 
       // change map theme
-      this.ApplicationState.map_theme.change                    = true;     
+      this.ApplicationState.map_theme.change                    = true;  
+      //set root group checked to true in order to show all layers in TOC   
       this.ApplicationState.project.state.layerstree[0].checked = true;
 
       const project  = ApplicationState.project;
@@ -1489,13 +1497,13 @@ export default {
       const styles  = (await this.getThemeConfig(map_theme)).styles;
 
       // clear categories
-      layers.forEach(id => {
-        if (!changes[id].visible) {
+      layers
+        .filter(id => !changes[id].visible)
+        .forEach(id => {
           const layer = getCatalogLayerById(id);
           layer.clearCategories();
           layer.change();
-        }
-      });
+        });
 
       // apply styles on each layer
       layers.forEach(id => GUI.emit('layer-change-style', { layerId: id, style: styles[id] }));
@@ -1590,11 +1598,11 @@ export default {
         // close dialog
         this.theme_dialog_open    = false;
         //set as current active name map theme
-        this.active_theme.theme = this.custom_theme_input;
+        this.active_theme.theme   = this.custom_theme_input;
         //need to wait watch
         await this.$nextTick();
         //set custom map theme value to null. Reset value
-        this.custom_theme_input = null;
+        this.custom_theme_input   = null;
       } catch(e) {
         console.warn(e);
         GUI.showUserMessage({ type: 'alert', message: e.error || 'server_error' });
