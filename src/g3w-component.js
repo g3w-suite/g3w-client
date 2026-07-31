@@ -131,13 +131,17 @@ export default class Component extends Emitter {
       this.vueComponent.template = opts.template;
     }
 
-    this.internalComponent = new (Vue.extend(this.vueComponent))({
-      service:   this._service,
-      template:  opts.template,
-      propsData: opts.propsData
-    });
+    this.setInternalComponent = function() {
+      this.internalComponent = new (Vue.extend(this.vueComponent))({
+        service:   this._service,
+        template:  opts.template,
+        propsData: opts.propsData
+      });
+      this.internalComponent.state = this.getService().state;
+    };
 
-    this.internalComponent.state = this._service?.state;
+    this.setInternalComponent();
+
     
     return this;
   }
