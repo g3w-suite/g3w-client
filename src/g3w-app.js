@@ -1988,14 +1988,15 @@ export default new (class GUI extends Emitter {
    * clear all stacks
    */
   async #clearContents() {
-    await Promise.allSettled((ApplicationState.contentsdata || []).map(async d => {
-      if (d.content instanceof Component || d.content instanceof Panel) {
-        await d.content.unmount();
-      } else {
-        let parent = this.getComponent('contents').parent;
-        ('string' === typeof parent ? document.querySelector(parent) : parent)?.replaceChildren(); // removes all children
-      }
-    }));
+    await Promise.allSettled((ApplicationState.contentsdata || [])
+      .map(async d => {
+        if (d.content instanceof Component || d.content instanceof Panel) {
+          await d.content.unmount();
+        } else {
+          const parent = this.getComponent('contents').parent;
+          ('string' === typeof parent ? document.querySelector(parent) : parent)?.replaceChildren(); // removes all children
+        }
+      }));
     ApplicationState.contentsdata.splice(0, ApplicationState.contentsdata.length);
   }
 
@@ -2306,8 +2307,8 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  addLayersPlotIds(layerIds = []) {
-    this.plotLayerIds = layerIds;
+  addLayersPlotIds(ids = []) {
+    this.plotLayerIds = ids;
   }
 
   /**
@@ -2356,7 +2357,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   updateLayerResultFeatures(responseLayer, replace = false) {
-    const layer = this.state.queried_layers.find(l => l.id === responseLayer.id);
+    const layer = this.state.queried_layers.find(l => responseLayer?.id === l.id);
 
     if (layer?.features?.length > 0) {
       const features_ids = replace ? [] : layer.features.map(f => this.#getFid(f, layer?.external)) // get features id from current layer on a result
@@ -2365,7 +2366,7 @@ export default new (class GUI extends Emitter {
         layer.features.forEach(f => delete this.state.layersFeaturesBoxes[this.getBoxId(layer, f)]);
         layer.features.splice(0);
       }
-      (responseLayer.features || []).forEach((feat, index) => {
+      (responseLayer?.features || []).forEach((feat, index) => {
         const feature_id = this.#getFid(feat, layer?.external);
         // If true, remove the feature because is already loaded
         if (features_ids.some(id => id === feature_id)) {
@@ -2396,10 +2397,10 @@ export default new (class GUI extends Emitter {
     }
 
     // no more features on layer → remove interaction pickcoordinate to get a result from a map
-    if (layer && 0 === (layer.features || []).length) {
+    if (0 === (layer?.features || []).length) {
       // due to vue reactivity, wait a little bit before update layers
       setTimeout(() => {
-        this.state.queried_layers = this.state.queried_layers.filter(l => l.id !== layer.id);
+        this.state.queried_layers = this.state.queried_layers.filter(l => layer.id !== l.id);
         this.highlight(false);
         this.removeAddFeaturesLayerResultInteraction(true);
       })
@@ -2409,7 +2410,7 @@ export default new (class GUI extends Emitter {
     if (1 === this.state.queried_layers.length) {
       let type, geometry;
       const coordinates = this.state.queried_layers[0].features
-        .map(f => f.getGeometry ? f.getGeometry() : f.geometry)
+        .map(f => f.getGeometry?.() ?? f.geometry)
         .map(geom => {
           type = type ? type : (geom instanceof ol.geom.Geometry) ? geom.getType() : geom.type;
           return geom?.getCoordinates?.() ?? geom.coordinates;
@@ -2427,7 +2428,7 @@ export default new (class GUI extends Emitter {
     }
 
     // call "action.change"
-    this.state.layersactions[layer.id].forEach(action => action.change && action.change(layer));
+    this.state.layersactions[layer.id].forEach(a => a.change?.(layer));
 
     // reset actions tools
     (layer.features || []).forEach((_, idx) => {
@@ -2459,7 +2460,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   getBoxId(layer, feature, relation_index) {
-    return (null !== relation_index && undefined !== relation_index)
+    return (![null, undefined].includes(relation_index))
       ? `${layer.id}_${feature.id}_${relation_index}`
       : `${layer.id}_${feature.id}`;
   }
@@ -2521,9 +2522,7 @@ export default new (class GUI extends Emitter {
           id:       'show-query-relations',
           class:    "fas fa-sitemap",
           hint:     'Show Relations',
-          cbk: (layer, feature) => {
-            this.showRelations({ feature, layerId: layer.id });
-          },
+          cbk:      (layer, feature) => this.showRelations({ feature, layerId: layer.id }),
         },
 
         // print (atlas)
@@ -2582,7 +2581,7 @@ export default new (class GUI extends Emitter {
           clear() {
             this.unwatch && this.unwatch(); // remove action when destroy
           },
-          cbk: throttle((layer, feature) => { this.toggleSelection(layer, feature); })
+          cbk: throttle((layer, feature) => this.toggleSelection(layer, feature))
         },
 
         // permalink (click to copy)
@@ -2632,9 +2631,7 @@ export default new (class GUI extends Emitter {
     layer,
     id,
   } = {}) {
-    if (this.state.layersactions[layer.id]) {
-      return this.state.layersactions[layer.id].find(action => action.id === id);
-    }
+    return this.state.layersactions[layer.id]?.find?.(a => id === a.id);
   }
 
   /**
@@ -2663,9 +2660,9 @@ export default new (class GUI extends Emitter {
 
     // need to check if pass component and
     if (
-      tools[index] &&                   // if component is set
-      action.id !== feats[index].id &&  // same action
-      feats[index].toggleable           // check if toggleable
+      tools[index]                     // if component is set
+      && action.id !== feats[index].id // same action
+      && feats[index].toggleable       // check if toggleable
     ) {
       feats[index].state.toggled[index] = false;
     }
@@ -2737,17 +2734,17 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   isOneLayerResult() {
-    return (1 === this.state.queried_layers.length);
+    return 1 === this.state.queried_layers.length;
   }
 
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
    *
-   * @param {boolean} toggle whether toggle mapcontrol
+   * @param {boolean} bool whether toggle mapcontrol
    * 
    * @since 4.1.0
    */
-  removeAddFeaturesLayerResultInteraction(toggle) {
+  removeAddFeaturesLayerResultInteraction(bool) {
     if (null !== this.#interaction.toggleeventhandler) {
       this.off('mapcontrol:toggled', this.#interaction.toggleeventhandler);
     }
@@ -2759,7 +2756,7 @@ export default new (class GUI extends Emitter {
 
     // check if query map control is toggled and registered
     if (null !== this.#interaction.mapcontrol) {
-      this.#interaction.mapcontrol.toggle(toggle);
+      this.#interaction.mapcontrol.toggle(bool);
     }
 
     // reset values
@@ -2783,7 +2780,7 @@ export default new (class GUI extends Emitter {
    */
   addLayerFeaturesToResultsAction(layer) {
     const not_current = ![null, layer.id].includes(this.#interaction.id);
-    const new_layer   = not_current && this.state.queried_layers.find(l => l.id === this.#interaction.id);
+    const new_layer   = not_current && this.state.queried_layers.find(l => this.#interaction.id === l.id);
 
     // disable previous layer
     if (not_current && new_layer) {
@@ -2796,7 +2793,7 @@ export default new (class GUI extends Emitter {
     }
 
     // set new layer
-    this.#interaction.id = layer.id;
+    this.#interaction.id            = layer.id;
 
     layer.addfeaturesresults.active = !layer.addfeaturesresults.active;
 
@@ -2810,7 +2807,7 @@ export default new (class GUI extends Emitter {
       // used by the following plugins: "bforest"
       this.emit('onbefore:activeMapInteraction');
 
-      const external_layer = (this.state.queried_layers.find(l => l.id === layer.id) || {}).external;
+      const external_layer = (this.state.queried_layers.find(l => layer.id === l.id) || {}).external;
 
       this.#interaction.mapcontrol  = this.#interaction.mapcontrol || this.getCurrentToggledMapControl() || null;
       this.#interaction.interaction = new PickCoordinatesInteraction();
@@ -2865,9 +2862,10 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   deactiveQueryInteractions() {
-    this.state.queried_layers.forEach(l => {
-      if (l.addfeaturesresults) { l.addfeaturesresults.active = false }
-    })
+    this.state.queried_layers
+    .filter(l =>  l.addfeaturesresults)
+    .forEach(l => l.addfeaturesresults.active = false)
+
     this.removeAddFeaturesLayerResultInteraction();
   }
 
@@ -2984,8 +2982,8 @@ export default new (class GUI extends Emitter {
     if (has_coords) {
       this.#map.forEachFeatureAtPixel(
         this.#map.getPixelFromCoordinate(coordinates),
-        f => { features.push(f); },
-        { layerFilter: l => l === layer }
+        f => features.push(f),
+        { layerFilter: l => layer === l }
       );
     }
 
