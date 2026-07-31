@@ -1154,7 +1154,8 @@
                 show = await action.condition({ layer, feature }); 
               }
               catch(e) {
-                console.warn(e); show = false; 
+                console.warn(e); 
+                show = false; 
               }
             }
 
