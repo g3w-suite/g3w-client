@@ -1150,8 +1150,12 @@
             let show = true;
 
             if ('function' === typeof action.condition) {
-              try { show = await action.condition({ layer, feature }); }
-              catch (e) { console.warn(e); show = false; }
+              try { 
+                show = await action.condition({ layer, feature }); 
+              }
+              catch(e) {
+                console.warn(e); show = false; 
+              }
             }
 
             show = show && (undefined === (action.state || {}).show ? true : action.state.show);
