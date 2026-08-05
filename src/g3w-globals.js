@@ -170,6 +170,7 @@ globalThis.g3w = {
     addZValue,
     convertSingleMultiGeometry,
     getCatalogLayerById,
+    getCatalogLayers, //@since 4.2.0
     debounce,
     throttle,
     XHR,
@@ -283,6 +284,7 @@ globalThis.g3wsdk = {
         getCurrentProject: () => ApplicationState.project,
       })
     },
+    //@TODO depecrate, use g3w.utils instead
     catalog: {
       CatalogLayersStoresRegistry: {
         getLayerById: getCatalogLayerById,
