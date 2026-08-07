@@ -1017,7 +1017,7 @@
           e.preventDefault();
         }
         // show our custom context menu
-        if (ctx || (!ctrl && !GUI.getPlugin('editing')?.getLayers?.()?.some?.(l => l.isInEditing()))) {
+        if (ctx || (!ctrl && !GUI.getPlugin('editing')?.areLayersInEditing())) {
           this.map_coords = GUI.getMap().getCoordinateFromPixel([e.pixel[0], e.pixel[1]]);
           GUI.emit('context-menu', e.originalEvent);
         }
