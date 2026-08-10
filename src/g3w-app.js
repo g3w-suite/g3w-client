@@ -927,7 +927,6 @@ export default new (class GUI extends Emitter {
     // remove all content stacks
     if (!pop && !backonclose){
       this.closeContent();
-      this.setModal(false);
     }
   }
 
