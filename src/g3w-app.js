@@ -352,8 +352,6 @@ export default new (class GUI extends Emitter {
       /** @since 4.1.0 */
       'postRender',
       /** @since 4.1.0 */
-      'editFeature',
-      /** @since 4.1.0 */
       'removeFeatureFromResult',
       /** @since 4.1.0 */
       'addHideMap',
@@ -2277,13 +2275,15 @@ export default new (class GUI extends Emitter {
   postRender(element) {}
 
   /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   * 
-   * Setter method related to relation table
-   * 
-   * @since 4.1.0
+   * Method that call editing plugin method to edit a feature from a layer
+   * @since 4.2.0
    */
-  editFeature({ layer, feature } = {}) {}
+  editFeature({ layer, feature } = {}) {
+    this.getPlugin('editing')?.editFeature?.({
+      layer,
+      feature,
+    })
+  }
 
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
