@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
-import { waitFor } from '../../../src/utils/waitFor.js';
+import assert           from 'node:assert/strict';
+import { waitFor }      from '../../../src/utils/waitFor.js';
 
 describe('waitFor', () => {
 

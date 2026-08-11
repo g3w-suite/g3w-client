@@ -1,5 +1,5 @@
-import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
+import { describe, it }        from 'node:test';
+import assert                  from 'node:assert/strict';
 import { areCoordinatesEqual } from '../../../src/utils/areCoordinatesEqual.js';
 
 describe('areCoordinatesEqual', () => {

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
-import { debounce } from '../../../src/utils/debounce.js';
+import assert           from 'node:assert/strict';
+import { debounce }     from '../../../src/utils/debounce.js';
 
 describe('debounce', () => {
 

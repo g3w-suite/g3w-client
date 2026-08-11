@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
+import assert           from 'node:assert/strict';
 import { is3DGeometry } from '../../../src/utils/is3DGeometry.js';
 
 describe('is3DGeometry', () => {

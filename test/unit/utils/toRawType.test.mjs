@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
-import { toRawType } from '../../../src/utils/toRawType.js';
+import assert           from 'node:assert/strict';
+import { toRawType }    from '../../../src/utils/toRawType.js';
 
 describe('toRawType', () => {
   it('returns "String" for strings', ()  => assert.equal(toRawType('hello'), 'String'));

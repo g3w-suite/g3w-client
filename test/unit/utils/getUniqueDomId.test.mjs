@@ -1,5 +1,5 @@
-import { describe, it, beforeEach } from 'node:test';
-import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+import assert           from 'node:assert/strict';
 
 // Re-import the module freshly for each test to reset the module-level counter.
 // node:test runs each file in a separate worker so the counter starts at 0 per file,
