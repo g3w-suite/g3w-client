@@ -40,6 +40,7 @@ import { noop }                                 from 'utils/noop';
 import { groupBy }                              from 'utils/groupBy';
 
 import PickCoordinatesInteraction               from 'interactions/pick-coordinates';
+import { FormComponent }                        from 'components/g3w-form';
 
 Object
   .entries({
@@ -510,7 +511,7 @@ export default new (class GUI extends Emitter {
    * ORIGINAL SOURCE: src/index.prod.js@v4.0.0
    * ORIGINAL SOURCE: src/services/gui.js@v4.0.0
    */
-  ready() {
+  async ready() {
 
     // G3W-SPATIALBOOKMARKS
     this.addComponent(new Component({
@@ -518,7 +519,7 @@ export default new (class GUI extends Emitter {
       icon:               'far fa-bookmark',
       iconColor:          '#00bcd4',
       title:              'Bookmarks',
-      vueComponentObject: require('components/SpatialBookMarks.vue').default,
+      vueComponentObject: (await import('components/SpatialBookMarks.vue')).default,
     }));
 
     // G3W-SEARCH
@@ -539,13 +540,13 @@ export default new (class GUI extends Emitter {
         title:                    ApplicationState.project.state.search_title || "search",
         addTool(t)                { this.state.tools.push(t); },
         addTools(tt)              { for (const t of tt) this.addTool(t); },
-        showPanel(o)              { return new (require('components/g3w-search')).SearchPanel(o, true) },
+        async showPanel(o)        { return await new (await import('components/g3w-search')).SearchPanel(o, true) },
         getTitle()                { return this.title },
         removeTools()             { this.state.tools.splice(0) },
         async stop(d)             { return d },
         removeTool()              {},
       }),
-      vueComponentObject: require('components/Search.vue').default,
+      vueComponentObject: (await import('components/Search.vue')).default,
     }), {
       _setOpen: bool => {
         const search = g3w.app.getComponent('search').getInternalComponent();
@@ -557,7 +558,7 @@ export default new (class GUI extends Emitter {
     }));
 
     // G3W-TOOLS
-    this.addComponent(new (function() {
+    this.addComponent(await (async function() {
       const state   = {
         id:          'tools',
         icon:        "fas fa-cogs",
@@ -620,7 +621,7 @@ export default new (class GUI extends Emitter {
                 <div :id="g.name + '-tools'" class="tool-box"><g3w-tool v-for="t in g.tools" :key="t.name" :tool="t" /></div>
               </li>
             </ul>`,
-          components: { G3wTool: require('components/Tool.vue').default },
+          components: { G3wTool: (await import('components/Tool.vue')).default },
           data: () => ({ state: null }),
           watch: {
             async 'state.toolsGroups'(g) {
@@ -641,7 +642,7 @@ export default new (class GUI extends Emitter {
       };
     
       return comp;
-    }));
+    })());
 
     ApplicationState.catalog.layerstrees.push(
       ...Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? ({ tree: s.getLayersTree(), storeid: s.getId() }) : [])
@@ -821,7 +822,7 @@ export default new (class GUI extends Emitter {
         content:    new Component({
           id:                 'queryresults',
           service:            this,
-          vueComponentObject: require('components/QueryResults.vue').default,
+          vueComponentObject: (await import('components/QueryResults.vue')).default,
         }),
         title:      "Results",
         push:       this.push_content,
@@ -863,7 +864,7 @@ export default new (class GUI extends Emitter {
           content:    new Component({
             id:                 'queryresults',
             service:            this,
-            vueComponentObject: require('components/QueryResults.vue').default,
+            vueComponentObject: (await import('components/QueryResults.vue')).default,
           }),
           title:      "Results",
           push:       this.push_content,
@@ -897,7 +898,6 @@ export default new (class GUI extends Emitter {
   }
 
   showForm(opts = {}) {
-    const { FormComponent } = require('components/g3w-form');
     // new instance every time
     const formComponent = opts.formComponent ? new opts.formComponent(opts) : new FormComponent(opts);
     this.setContent({
@@ -3154,7 +3154,7 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  showRelations({
+  async showRelations({
     relationId,
     layerId,
     feature,
@@ -3164,7 +3164,7 @@ export default new (class GUI extends Emitter {
     this.setContent({
       push,
       content: new Component({
-        internalComponent: new (Vue.extend(require('components/Relations.vue').default))({
+        internalComponent: new (Vue.extend((await import('components/Relations.vue')).default))({
           relation,
           layerId,
           feature,

@@ -3,7 +3,7 @@
  * @since 4.1.0
  */
 
-require('./map/demo-311');
-require('./map/expression');
-require('./map/statistic');
-require('./map/timeseries');
+import './map/demo-311.js';
+import './map/expression.js';
+import './map/statistic.js';
+import './map/timeseries.js';

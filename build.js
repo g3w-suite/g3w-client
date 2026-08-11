@@ -4,21 +4,23 @@
  * @since 4.1.0
  */
 
-// polyfills
-require('@ungap/with-resolvers');
+import '@ungap/with-resolvers';
+import * as esbuild         from 'esbuild';
+import esbuildVue           from 'esbuild-vue';
+import fs                   from 'node:fs';
+import path                 from 'node:path';
+import readline             from 'node:readline';
+import { execSync }         from 'node:child_process';
+import http                 from 'node:http';
+import httpProxy            from 'http-proxy';
+import mime                 from 'mime-types';
+import modifyResponse       from 'http-proxy-response-rewrite';
+import g3w                  from './config.js';
 
-// esbuild
-const esbuild     = require('esbuild');
+const readJSON = filePath => JSON.parse(fs.readFileSync(filePath, 'utf8'));
 
-// Node.js
-const fs          = require('fs');
-const path        = require('path');
-const readline    = require('readline');
-const execSync    = require('child_process').execSync;
-
-const packageJSON = require('./package.json');
-const packageLock = require('./package-lock.json');
-const g3w         = require('./config');
+const packageJSON = readJSON(path.resolve('package.json'));
+const packageLock = readJSON(path.resolve('package-lock.json'));
 
 // TODO: make use of "process.env" instead of setting local variables
 let production   = false;
@@ -215,7 +217,7 @@ async function build_app() {
     //   },
     // assetNames: 'assets/[name]-[hash]',
     plugins: [
-      require('esbuild-vue')({ production }),
+      esbuildVue({ production }),
       {
         name: 'g3w-assets',
         setup(build) {
@@ -321,7 +323,7 @@ async function build_plugin(pluginName) {
       'process.env.g3w_plugin_branch':  `"${branch}"`,
     },
     plugins: [
-      require('esbuild-vue')({ production }),
+      esbuildVue({ production }),
       {
         name: 'onBuildEnd',
         setup(build) {
@@ -358,16 +360,11 @@ async function build_plugin(pluginName) {
 
 function get_version(pluginName) {
   const src = (pluginName ? `${g3w.pluginsFolder}/${pluginName}` : '.');
-  // delete cache of require otherwise no package.json version rests the old (cache) one
+
   try {
-    delete require.cache[require.resolve(`${src}/package.json`)];
+    return readJSON(path.resolve(src, 'package.json')).version;
   } catch (e) {
     console.warn(YELLOW__ + '[WARN] ' + __RESET + 'package.json not found (' + GREEN__ + pluginName + __RESET + ')');
-  }
-  try {
-    return require(`${src}/package.json`).version;
-  } catch(e) {
-    console.warn(YELLOW__ + '[WARN] ' + __RESET + 'package.json not found (' + GREEN__ + pluginName + __RESET + ')' );
   }
 }
 
@@ -439,11 +436,6 @@ function copyDir(src, dest) {
  * @since 4.1.0
  */
 async function start_proxy_server() {
-  const http      = require('http');
-  const httpProxy = require('http-proxy');
-  const mime      = require('mime-types');
-  const modifyResponse = require('http-proxy-response-rewrite');
-
   //check if valid url
   try {
     const SERVER_URL = new URL(g3w.proxy);
@@ -467,7 +459,7 @@ async function start_proxy_server() {
           console.log(true, '→', localPath);
           const contentType = mime.lookup(localPath) || 'application/octet-stream'; // Determine MIME type
           res.setHeader('Content-Type', contentType);                               // Set the Content-Type header
-          res.end(require('fs').readFileSync(localPath));
+          res.end(fs.readFileSync(localPath));
           return;
         }
       }

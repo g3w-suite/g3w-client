@@ -78,6 +78,8 @@ import { cloneDeep }                               from 'utils/cloneDeep';
 import { saveBlob }                                from 'utils/saveBlob';
 import { flattenObject }                           from 'utils/flattenObject';
 import { normalizeEpsg }                           from 'utils/normalizeEpsg';
+
+const getGUI = () => GUI || globalThis.g3w?.app;
 import { sameOrigin }                              from 'utils/sameOrigin';
 
 import { gettext as _ }                            from 'g3w-i18n';
@@ -109,7 +111,7 @@ import Fields, { FieldsService }                   from 'components/g3w-fields';
 
 import 'components/x-select';
 
-const deprecate                   = require('util-deprecate');
+import deprecate                                  from 'util-deprecate';
 
 /**
  * BACKCOMP: v3.x (proxy "esbuild" classes for legacy plugins, still based on babel)
@@ -446,11 +448,24 @@ g3wsdk.core.ApplicationService.setCurrentLayout     = (who = 'app') => Applicati
 /** used by the following plugins: "archiweb" */
 g3wsdk.core.ApplicationService.isIframe             = () => ApplicationState.iframe;
 
-GUI.on('initconfig',   () => g3wsdk.core.ApplicationService.emit('initconfig', window.initConfig));
-GUI.on('online',       () => g3wsdk.core.ApplicationService.online());
-GUI.on('offline',      () => g3wsdk.core.ApplicationService.offline());
-GUI.on('app-ready',    () => g3wsdk.core.ApplicationService.emit('ready'));
-GUI.on('app-complete', () => { g3wsdk.core.ApplicationService.complete = true; g3wsdk.core.ApplicationService.emit('complete'); });
+const registerApplicationServiceHooks = gui => {
+  gui.on('initconfig',   () => g3wsdk.core.ApplicationService.emit('initconfig', window.initConfig));
+  gui.on('online',       () => g3wsdk.core.ApplicationService.online());
+  gui.on('offline',      () => g3wsdk.core.ApplicationService.offline());
+  gui.on('app-ready',    () => g3wsdk.core.ApplicationService.emit('ready'));
+  gui.on('app-complete', () => { g3wsdk.core.ApplicationService.complete = true; g3wsdk.core.ApplicationService.emit('complete'); });
+};
+
+if (getGUI()?.on) {
+  registerApplicationServiceHooks(getGUI());
+} else {
+  const timer = setInterval(() => {
+    if (getGUI()?.on) {
+      clearInterval(timer);
+      registerApplicationServiceHooks(getGUI());
+    }
+  }, 50);
+}
 
 /** used by the following plugins: "archiweb" */
 g3wsdk.core.project.ProjectsRegistry.setProjectAliasUrl = alias => { const p = window.initConfig.projects.find(p => alias.gid === p.gid); if (p) { p.url = `${alias.host || ''}${alias.url}` } };

@@ -1,6 +1,7 @@
 {
   "name": "g3w-client",
   "version": "4.2.0-alpha.0",
+  "type": "module",
   "description": "Gis3W WebGIS Client",
   "main": "index.js",
   "scripts": {
@@ -16,9 +17,9 @@
     "docker:config": "npm run docker config",
     "docker:logs": "npm run docker logs",
     "test": "node test/dev.g3wsuite.it.js",
-    "test:unit": "node --test \"test/unit/**/*.test.mjs\"",
-    "test:unit:watch": "node --test --watch \"test/unit/**/*.test.mjs\"",
-    "test:unit:coverage": "node --test --experimental-test-coverage \"test/unit/**/*.test.mjs\"",
+    "test:unit": "node --test \"test/unit/**/*.test.js\"",
+    "test:unit:watch": "node --test --watch \"test/unit/**/*.test.js\"",
+    "test:unit:coverage": "node --test --experimental-test-coverage \"test/unit/**/*.test.js\"",
     "preversion": "npm run test",
     "version": "npm run build && git add -A",
     "postversion": "git push && git push --tags"
