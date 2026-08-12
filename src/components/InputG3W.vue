@@ -109,7 +109,7 @@
         if (['integer', 'bigint', 'float'].includes(this.state.type) && 'text' === this.state.input.type) {
           return `${this.state.type}_input`;
         }
-        return this.state.input.type ? `${this.state.input.type}_input`: `${this.state.type}_input`;
+        return `${this.state.input?.type ?? this.state.type}_input`;
       }
     },
     created() {
