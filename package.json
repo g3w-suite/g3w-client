@@ -52,12 +52,13 @@
     "vue-color": "^2.8.1"
   },
   "devDependencies": {
+    "@cucumber/cucumber": "^13.2.1",
     "esbuild": "^0.24.0",
     "esbuild-vue": "^1.2.2",
     "http-proxy": "^1.18.1",
     "http-proxy-response-rewrite": "^0.0.1",
     "mime-types": "^3.0.1",
-    "playwright": "^1.55.0",
+    "playwright": "^1.62.1",
     "vue-template-compiler": "2.7.16"
   },
   "engines": {
