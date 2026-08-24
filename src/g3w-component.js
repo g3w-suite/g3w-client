@@ -42,12 +42,16 @@ export default class Component extends Emitter {
     }
 
     // Check if opts.icon using `GUI.getFontClass` method is defined as key on FONT_AWESOME_ICONS global constants
-    opts.icon        = GUI.getFontClass(opts.icon) ?? opts.icon;
+    opts.icon              = GUI.getFontClass(opts.icon) ?? opts.icon;
 
-    opts.open        = opts.open        ?? false; 
-    opts.mobile      = opts.mobile      ?? true; //show on mobile devices (default true)
-    opts.collapsible = opts.collapsible ?? true; //means that the component can be opened and closed by clicking on the icon in the sidebar
-
+    opts.open              = opts.open        ?? false; 
+    opts.mobile            = opts.mobile      ?? true; //show on mobile devices (default true)
+    opts.collapsible       = opts.collapsible ?? true; //means that the component can be opened and closed by clicking on the icon in the sidebar
+    opts.internalComponent = opts.internalComponent ?? null;
+    opts.id                = opts.id ?? Math.random() * 1000;
+    /** @type { string } */
+    opts.title             = opts.title ?? '';
+    
     super({
       setters: [
         'setOpen',
@@ -57,24 +61,15 @@ export default class Component extends Emitter {
         'reload',
       ]
     });
+
+    // store the options
+    this.opts              = opts;
      
     /** start true mean no changes is done on component layout */
     this._firstLayout      = true;
 
-    /** internal VUE component */
-    this.internalComponent = opts.internalComponent ?? null;
-
     /** @type { Array } */
     this._components       = [];
-
-    /** @type { string } */
-    this.id                = opts.id ?? Math.random() * 1000;
-
-    /** @type { string } */
-    this.title             = opts.title ?? '';
-
-    /** @type { boolean } */
-    this.mobile            = opts.mobile; //show on mobile devices (default true)
 
     this.state = {
       sizes:                        { width: 0, height: 0 },
@@ -89,23 +84,10 @@ export default class Component extends Emitter {
 
     this._service = opts.service || this;
 
-    if (opts.internalComponent) {
-      this.setInternalComponent(opts.internalComponent);
-    }
-
     Object.assign(this, opts);
 
-    // add events options
-    this.events = opts.events ?? {};
-
-    if (this.events.open) {
-      const { when = "after", cb = () => {} } = this.events.open;
-      this[`on${when}`]('setOpen', bool => cb(bool));
-    }
-
-    if (opts.vueComponentObject) {
-      this.init(opts);
-    }
+    this.init();
+    
   }
 
   /**
@@ -117,32 +99,8 @@ export default class Component extends Emitter {
    * @param opts.template
    * @param opts.propsData
    */
-  init(opts = {}) {
-    this.vueComponent = cloneDeep(opts.vueComponentObject);
-    this._components  = opts.components || [];
-
-    this._service     = opts.service ?? this._service ?? (() => {});
-
-    if (this._service?.init && this.init !== this._service?.init) {
-      this._service.init(opts);
-    }
-
-    if (opts.template) {
-      this.vueComponent.template = opts.template;
-    }
-
-    this.setInternalComponent = function() {
-      this.internalComponent = new (Vue.extend(this.vueComponent))({
-        service:   this._service,
-        template:  opts.template,
-        propsData: opts.propsData
-      });
-      this.internalComponent.state = this.getService().state;
-    };
-
+  init() {
     this.setInternalComponent();
-
-    
     return this;
   }
 
@@ -191,17 +149,45 @@ export default class Component extends Emitter {
   }
 
   /**
-   * 
-   * @param {*} internalComponent  Vue instance 
-   * @param {*} opts 
+   * Initialize the internal component, if opts.internalComponent is defined, it will be used, otherwise, if opts.vueComponent is defined, it will be used to create a new Vue component.
    */
-  setInternalComponent(internalComponent, opts = {}) {
-    this.internalComponent = internalComponent;
-    (opts.events || [])
-      .forEach(e => this.internalComponent.$on(e.name, data => e?.handler?.(data) || this[`set${e.name[0].toUpperCase()}${e.name.slice(1)}`](data)));
-    if (this._service?.state) {
-      this.internalComponent.state = this._service.state;
+  setInternalComponent() {
+  
+    //bins open event
+    if (this.opts.events?.open) {
+      const { when = "after", cb = () => {} } = this.opts.events.open;
+      this[`on${when}`]('setOpen', bool => cb(bool));
     }
+
+    // if internalComponent is defined, use it
+    if (this.opts.internalComponent) {
+      this.internalComponent = this.opts.internalComponent;
+      (Array.isArray(this.opts.events) ? this.opts.events : [])
+        .forEach(e => this.internalComponent.$on(e.name, data => e?.handler?.(data) || this[`set${e.name[0].toUpperCase()}${e.name.slice(1)}`](data)));
+    }
+
+    // if vueComponentObject is defined, use it to create a new Vue component
+    if (this.opts.vueComponentObject) {
+      this.vueComponent = cloneDeep(this.opts.vueComponentObject);
+      this._components  = this.opts.components || [];
+
+      this._service     = this._service ?? (() => {});
+
+      if (this._service?.init && this.init !== this._service?.init) {
+        this._service.init(this.opts);
+      }
+
+      if (this.opts.template) {
+        this.vueComponent.template = this.opts.template;
+      }
+      this.internalComponent = new (Vue.extend(this.vueComponent))({
+        service:   this._service,
+        template:  this.opts.template,
+        propsData: this.opts.propsData
+      });
+    }
+
+    this.internalComponent.state = this._service.state;
   }
 
   setOpen(bool) {
