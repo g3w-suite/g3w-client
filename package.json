@@ -17,6 +17,7 @@
     "docker:config": "npm run docker config",
     "docker:logs": "npm run docker logs",
     "test": "node test/dev.g3wsuite.it.js",
+    "test:cucumber": "cucumber-js",
     "test:unit": "node --test \"test/unit/**/*.test.js\"",
     "test:unit:watch": "node --test --watch \"test/unit/**/*.test.js\"",
     "test:unit:coverage": "node --test --experimental-test-coverage \"test/unit/**/*.test.js\"",
