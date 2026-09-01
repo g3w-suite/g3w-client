@@ -820,8 +820,8 @@ const vueComp = ({
       
       const map      = GUI.getMap();
       const view     = map.getView();
-
-      const [padTop, padRight, padBottom, padLeft] = view.get('padding') || [0, 0, 0, 0];
+      //https://openlayers.org/en/latest/apidoc/module-ol_View-View.html#padding
+      const [padTop, padRight, padBottom, padLeft] = view.padding || [0, 0, 0, 0];
       
       const { h, w } = this.maps.find(m => !m.overview);
       const res      = view.getResolution() * ('m' === GUI.getMapUnits() ? 1  : ol.proj.Units.METERS_PER_UNIT.degrees); // resolution in meters
