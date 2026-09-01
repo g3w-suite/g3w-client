@@ -3484,7 +3484,8 @@ export default new (class GUI extends Emitter {
       const sidebar = document.querySelector('.main-sidebar');
       const padding = (this.isSidebarVisible() && sidebar) ? Math.round(sidebar.getBoundingClientRect().width * dpr) : 0;
 
-      const w = Math.max(canvas.width - padding, 0), h = canvas.height;
+      const w       = Math.max(canvas.width - padding, 0);
+      const h       = canvas.height;
       const cropped = Object.assign(document.createElement('canvas'), { width: w, height: h });
       
       cropped.getContext('2d').drawImage(canvas, padding, 0, w, h, 0, 0, w, h);
