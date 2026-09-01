@@ -3480,9 +3480,11 @@ export default new (class GUI extends Emitter {
   createMapImage({ map } = {}) {
     return new Promise((resolve) => {
       const canvas  = (map || this.getMap()).getViewport().querySelector('canvas');
-      const padding = this.isSidebarVisible() ? (350 * (window.devicePixelRatio || 1)) : 0; // 350 = left sidebar width
-      
-      const w = canvas.width - padding, h = canvas.height;
+      const dpr     = window.devicePixelRatio || 1;
+      const sidebar = document.querySelector('.main-sidebar');
+      const padding = (this.isSidebarVisible() && sidebar) ? Math.round(sidebar.getBoundingClientRect().width * dpr) : 0;
+
+      const w = Math.max(canvas.width - padding, 0), h = canvas.height;
       const cropped = Object.assign(document.createElement('canvas'), { width: w, height: h });
       
       cropped.getContext('2d').drawImage(canvas, padding, 0, w, h, 0, 0, w, h);
