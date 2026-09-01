@@ -1098,9 +1098,9 @@ export default new (class GUI extends Emitter {
     const dialog = Object.assign(document.createElement('template'), {
         innerHTML: /* html */ `
           <dialog class="usermessage-${type}" popover="manual">
-            <form>
+            <form tabindex="0">
               <header>
-                <i class  = "${g3w.app.getFontClass(iconClass || type)}"></i>
+                <i class = "${g3w.app.getFontClass(iconClass || type)}"></i>
                 <div>
                   <h4 style="font-weight: bold;">${title ? _(title): type.toUpperCase()}</h4>
                   ${ subtitle ? `<h5>${_(subtitle)}</h5>` : '' }
