@@ -1113,14 +1113,15 @@ export default new (class GUI extends Emitter {
       `.trim()
       }).content.firstChild;
 
-    // inject custom components
-    [hooks['header'], hooks['body'], hooks['footer']]
-      .filter(h => h)
-      .forEach(h => dialog.appendChild((new (Vue.extend(h))().$mount()).$el));
-
-    if (draggable || 'tool' === type) {
-      this.#makeDraggable(dialog);
+     // inject custom header component
+    if (hooks['header']) {
+      dialog.querySelector('header').replaceWith((new (Vue.extend(hooks['header']))().$mount()).$el);
     }
+
+    // inject custom body, footer components
+    [hooks['body'], hooks['footer']]
+      .filter(h => h)
+      .forEach(h => dialog.appendChild((new (Vue.extend(h))().$mount()).$el));  
 
     dialog.addEventListener('beforetoggle', e => {
       if (e.newState === 'closed') {
@@ -1134,7 +1135,12 @@ export default new (class GUI extends Emitter {
     });
 
     document.body.append(dialog);
+
     dialog.showPopover();
+
+    if (draggable || 'tool' === type) {
+      this.#makeDraggable(dialog);
+    }
 
     // close dialog on x icon
     dialog.querySelector('button[value="cancel"]').addEventListener('click', () => {
