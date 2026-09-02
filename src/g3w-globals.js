@@ -170,6 +170,7 @@ globalThis.g3w = {
     addZValue,
     convertSingleMultiGeometry,
     getCatalogLayerById,
+    getCatalogLayers, //@since 4.2.0
     debounce,
     throttle,
     XHR,
@@ -213,7 +214,7 @@ globalThis.g3wsdk = {
       /** used by the following plugins: "bforest" */
       createVectorLayerFromFile: deprecate(createVectorLayerFromFile, '[G3W-CLIENT] g3wsdk.core.geoutils.createVectorLayerFromFile is deprecated'),
       getAlphanumericPropertiesFromFeature: getAlphanumericProps,
-      getMapLayersByFilter: (f = {}, o = {}) => Object.values(ApplicationState.layers).flatMap(s => s.isQueryable() ? s.getLayers({ GEOLAYER: true, ...(f || {}) }, o) : []),
+      getMapLayersByFilter: (f = {}, o = {}) => ApplicationState.project.getLayers({ GEOLAYER: true, ...(f || {}) }, o),
       areCoordinatesEqual,
       splitFeature,
       convertSingleMultiGeometry,
@@ -283,6 +284,7 @@ globalThis.g3wsdk = {
         getCurrentProject: () => ApplicationState.project,
       })
     },
+    //@TODO depecrate, use g3w.utils instead
     catalog: {
       CatalogLayersStoresRegistry: {
         getLayerById: getCatalogLayerById,
@@ -290,7 +292,6 @@ globalThis.g3wsdk = {
       }
     },
     layer: {
-      LayersStore:     babelify(function(opts) { GUI.showUserMessage({ type: 'alert', message: 'g3wsdk.core.layer.LayersStore is deprecated.' }); return (ApplicationState.layers[opts.id] = opts); }),
       Layer:           Object.assign(Layer, { LayerTypes: { TABLE: 'table', IMAGE: 'image', VECTOR: 'vector' } }),
       VectorLayer:     babelify(class extends Layer { constructor(config = {}, opts = {}) { super(config, Object.assign(opts, { TYPE: 'vector' })) } }),
       features: {
@@ -346,7 +347,7 @@ globalThis.g3wsdk = {
     Panel,
     /** used by the following plugins: "simplereporting", "arpalombardia-charts", "ws-trento" */
     ComponentsFactory: {
-      build: ({ vueComponentObject, service, propsData }, options={}) => (new Component(options)).init({ vueComponentObject, service, propsData }),
+      build: ({ vueComponentObject, service, propsData }, options = {}) => (new Component(options)).init({ vueComponentObject, service, propsData }),
     },
     /** used by the following plugins: "br-service" */
     FieldsService,

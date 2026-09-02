@@ -589,9 +589,14 @@
        * @since 3.11.0
        */
        canEdit(layer) {
-        return layer 
-          ? !layer.external && getCatalogLayerById(layer.id).isEditable() && getCatalogLayerById(layer.id).config.editing?.visible
-          : Object.values(GUI.getPlugin('editing')?.getEditableLayers() || {}).find(l => l.isGeoLayer() && !l.isInEditing());
+        try {
+          return layer 
+          ? !layer.external && false === GUI.getPlugin('editing')?.isLayerInEditing?.(layer.id)
+          : Object.values(GUI.getPlugin('editing')?.getEditableLayers() || {}).find(l => l.isGeoLayer() && !GUI.getPlugin('editing')?.isLayerInEditing?.(l.getId()));
+        } catch(e) {
+          console.warn(e);
+        } 
+        
       },
 
       /**
@@ -1012,7 +1017,7 @@
           e.preventDefault();
         }
         // show our custom context menu
-        if (ctx || (!ctrl && !GUI.getPlugin('editing')?.getLayers?.()?.some?.(l => l.isInEditing()))) {
+        if (ctx || (!ctrl && !GUI.getPlugin('editing')?.areLayersInEditing())) {
           this.map_coords = GUI.getMap().getCoordinateFromPixel([e.pixel[0], e.pixel[1]]);
           GUI.emit('context-menu', e.originalEvent);
         }

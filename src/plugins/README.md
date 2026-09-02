@@ -152,8 +152,6 @@ g3wsdk = {
       CatalogLayersStoresRegistry
     },
     layer: {
-      LayersStoreRegistry,
-      LayersStore,
       Layer,
       LayerFactory,
       TableLayer,

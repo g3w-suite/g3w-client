@@ -49,8 +49,8 @@
       v-if        = "isGroup || !isTable"
       v-show      = "isGroup || !layerstree.hidden"
       type        = "checkbox"
-      @click.stop = "toggle()"
-      v-model     = "layerstree.checked"
+      @click.stop = "toggle"
+      :checked    = "layerstree.checked"
       role        = "button"
       aria-label  = "Show/Hide"
     />
@@ -222,7 +222,6 @@
         :root                      = "false"
         :legendplace               = "legendplace"
         :layerstree                = "_layerstree"
-        :storeid                   = "storeid"
         :parent                    = "layerstree"
         :parent_mutually_exclusive = "!!layerstree.mutually_exclusive"
       />
@@ -255,7 +254,6 @@ export default {
 
   props : [
     'layerstree',
-    'storeid',
     'legend',
     'legendplace',
     'parent_mutually_exclusive',
@@ -316,8 +314,13 @@ export default {
       this.layerstree.selected = (this.layerstree.disabled && this.layerstree.selected) ? false : this.layerstree.selected;
     },
 
+    /**
+     * @returns {boolean} whether layer is disabled (not visible)
+     * 
+     * @since 4.1.0
+     */
     isDisabled() {
-      return !this.isGroup && !this.isTable && !this.layerstree.checked && (!this.layerstree.visible || this.layerstree.disabled);
+      return !this.isGroup && !this.isTable && (!this.layerstree.checked || (!this.layerstree.visible || this.layerstree.disabled));
     },
 
     /**
@@ -361,12 +364,11 @@ export default {
   },
 
   watch: {
-
     'layerstree.checked'() {
       if (this.isGroup) {
-        this.onGroupChecked(this.layerstree);
+        this.onGroupChecked();
       } else {
-        this.onLayerChecked(this.layerstree);
+        this.onLayerChecked();
       }
       //@since 4.0.7 In case of map theme change and layers tree is not root, reset map theme
       if (!this.layerstree.root && !ApplicationState.map_theme.change) {
@@ -467,15 +469,10 @@ export default {
 
     /**
      * Handle change checked property of group
-     *
-     * @param {boolean} group.checked
-     * @param {uknown}  group.parentGroup
-     * @param {uknown}  group.nodes
      */
-    onGroupChecked(group) {
-
-      if (!group.checked) {
-        group.nodes.forEach(n => {
+    onGroupChecked() {
+      if (!this.layerstree.checked) {
+        this.layerstree.nodes.forEach(n => {
           if (undefined === n.id) {
             _setAllLayersVisible({ nodes: n.nodes, visible: false });
           } else if (n.checked) {
@@ -485,16 +482,16 @@ export default {
         return; // NB exit early!
       }
 
-      const visible            = group?.parentGroup?.checked ?? true;
-      const mutually_exclusive = group?.parentGroup?.mutually_exclusive;
+      const visible            = this.layerstree?.parentGroup?.checked ?? true;
+      const mutually_exclusive = this.layerstree?.parentGroup?.mutually_exclusive;
 
       if (!mutually_exclusive) {
-        _setAllLayersVisible({ nodes: group.nodes, visible });
+        _setAllLayersVisible({ nodes: this.layerstree.nodes, visible });
       }
 
       if (mutually_exclusive) {
-        group.parentGroup.nodes.forEach(n => {
-          n.checked = n.groupId === group.groupId;
+        this.layerstree.parentGroup.nodes.forEach(n => {
+          n.checked = n.groupId === this.layerstree.groupId;
           if (n.checked) {
             _setAllLayersVisible({ nodes: n.nodes, visible });
           }
@@ -502,7 +499,7 @@ export default {
       }
 
       // traverse parent groups
-      let g = group.parentGroup;
+      let g = this.layerstree.parentGroup;
       while (g) {
         g.checked = g.root || g.checked;
         g         = g.parentGroup;
@@ -511,34 +508,28 @@ export default {
 
     /**
      * Handle visibilty change (layer.checked property)
-     *
-     * @param {boolean} layer.checked
-     * @param {string}  layer.id
-     * @param {boolean} layer.disabled
-     * @param {boolean} layer.projectLayer
-     * @param {uknown}  layer.parentGroup
      */
-    onLayerChecked(layer) {
+    onLayerChecked() {
 
       // external layer (eg. temporary layer through `addlayerscontrol`)
-      if (!layer.projectLayer) {
-        layer.visible = layer.checked;
-        layer.setVisible(layer.checked);
+      if (!this.layerstree.projectLayer) {
+        this.layerstree.visible = this.layerstree.checked;
+        this.layerstree.setVisible(this.layerstree.checked);
         return;  // NB exit early!
       }
 
       // project layer (eg. qgis layer)
-      const qlayer  = getCatalogLayerById(layer.id);
-      const checked = layer.checked;
+      const qlayer  = getCatalogLayerById(this.layerstree.id);
+      const checked = this.layerstree.checked;
 
-      qlayer.setVisible(checked ? !layer.disabled : false)
+      qlayer.setVisible(checked ? !this.layerstree.disabled : false)
 
-      if (checked && layer.parentGroup?.mutually_exclusive) {
-        layer.parentGroup.nodes.forEach(n => n.checked = n.id === layer.id);
+      if (checked && this.layerstree.parentGroup?.mutually_exclusive) {
+        this.layerstree.parentGroup.nodes.forEach(n => n.checked = n.id === this.layerstree.id);
       }
 
       // traverse parent groups
-      let g = layer.parentGroup;
+      let g = this.layerstree.parentGroup;
       while (checked && g) {
         g.checked = true;
         g         = g.parentGroup;
@@ -555,14 +546,13 @@ export default {
     },
 
     async toggleFilter() {
-      this.layerstree.filter.active = await ApplicationState.layers[this.storeid].getLayerById(this.layerstree.id).toggleToken();
+      this.layerstree.filter.active = await ApplicationState.project.getLayerById(this.layerstree.id).toggleToken();
     },
 
     /**
      * Remove layer from queryresults selection
      */
     async clearSelection() {
-      const storeid = this.storeid;
       const layer = this.layerstree;
 
       if (!layer) {
@@ -572,8 +562,8 @@ export default {
       const action = layer.external && GUI.getActionLayerById({ layer, id: 'selection' });
 
       // PROJECT LAYER
-      if (!layer.external && storeid) {
-        await ApplicationState.layers[storeid].getLayerById(layer.id).clearSelectionFids();
+      if (!layer.external) {
+        await ApplicationState.project.getLayerById(layer.id).clearSelectionFids();
       }
 
       // EXTERNAL LAYER
@@ -881,7 +871,7 @@ export default {
     this.CLICK_TIMER = null; // timeoutID return by setTimeout Function
 
     if (this.isGroup && !this.layerstree.checked) {
-      this.onGroupChecked(this.layerstree);
+      this.onGroupChecked();
     }
     if (this.isGroup && !this.root && this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive) {
       this.layerstree.nodes.forEach(node => { node.id && (node.uncheckable = true); })

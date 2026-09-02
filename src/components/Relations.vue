@@ -346,7 +346,7 @@
        * @since 4.1.0 
        */
       isEditable() {
-        return this.layer.isEditable() && !this.layer.isInEditing();
+        return this.layer.isEditable() && !GUI.getPlugin('editing')?.isLayerInEditing?.(this.layer.getId());
       },
 
       /**

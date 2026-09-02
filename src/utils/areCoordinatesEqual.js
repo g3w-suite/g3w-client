@@ -5,5 +5,5 @@
  * @returns { boolean }
  */
 export function areCoordinatesEqual(coordinates1 = [], coordinates2 = []) {
-  return (coordinates1[0] === coordinates2[0] && coordinates1[1] === coordinates2[1]);
+  return (coordinates1.length === coordinates2.length) && coordinates1.every((c, i) => coordinates2[i] === c);
 }

@@ -14,19 +14,21 @@ export default class Panel extends Emitter {
   constructor (opts = {}) {
     super();
 
-    this.id      = opts.id || null;
+    this.id            = opts.id ?? null;
 
-    this.title   = opts.title || '';
+    this.title         = opts.title ?? '';
 
-    this.service = opts.service;
+    this.service       = opts.service;
+
+    this.internalPanel = null;
 
     if (opts.vueComponentObject) {
       this.internalPanel = new (Vue.extend(opts.vueComponentObject))({ service: this.service });
     } else {
-      this.internalPanel = opts.panel || opts.internalPanel || null;  
+      this.internalPanel = opts.panel ?? opts.internalPanel ?? null;
     }
 
-    if (true === opts.show && this.internalPanel) {
+    if (this.internalPanel && true === opts.show) {
       this.show();
     }
   }
@@ -68,23 +70,17 @@ export default class Panel extends Emitter {
     const vueComp = panel.$mount();
     ('string' === typeof parent ? document.querySelector(parent) : parent).append(vueComp.$el);
     await vueComp.$nextTick();
-    if (panel.onShow) {
-      panel.onShow();
-    }
+    panel?.onShow?.();
     return true;
   }
 
   async unmount() {
     const panel = this.internalPanel;
     panel.$destroy(true);
-    panel.$el?.remove();
-    if (panel.onClose) {
-      panel.onClose();
-    }
-    this.internalComponent = null;
-    if (this.service && this.service.clear) {
-      this.service.clear();
-    }
+    panel.$el?.remove?.();
+    panel.onClose?.();
+    this.internalPanel = null;
+    this.service?.clear?.();
   }
-
+  
 }

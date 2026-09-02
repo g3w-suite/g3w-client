@@ -4,19 +4,10 @@
  */
 
 import Emitter        from 'g3w-emitter';
-import { noop }       from 'utils/noop';
 import { cloneDeep }  from 'utils/cloneDeep';
 import GUI            from 'g3w-app';
 
 import deprecate      from 'util-deprecate';
-
-function merge(destination, source) {
-  for (let key in source) {
-    if (Object.prototype.hasOwnProperty.call(source, key)) {
-      destination[key] = source[key];
-    }
-  }
-}
 
 /**
  * Component class
@@ -50,64 +41,38 @@ export default class Component extends Emitter {
       delete opts.iconConfig;
     }
 
-    // TODO: check why `GUI.getFontClass` is undefined
-    opts.icon = GUI.getFontClass(opts.icon) || opts.icon;
+    // Check if opts.icon using `GUI.getFontClass` method is defined as key on FONT_AWESOME_ICONS global constants
+    opts.icon              = GUI.getFontClass(opts.icon) ?? opts.icon;
 
-    opts.open        = opts.open        ?? false;
-    opts.mobile      = opts.mobile      ?? true;
-    opts.collapsible = opts.collapsible ?? true;
-
+    opts.open              = opts.open        ?? false; 
+    opts.mobile            = opts.mobile      ?? true; //show on mobile devices (default true)
+    opts.collapsible       = opts.collapsible ?? true; //means that the component can be opened and closed by clicking on the icon in the sidebar
+    opts.internalComponent = opts.internalComponent ?? null;
+    opts.id                = opts.id ?? Math.random() * 1000;
+    /** @type { string } */
+    opts.title             = opts.title ?? '';
+    
     super({
-      setters: {
-
-        setOpen(bool) {
-          this.state.open = bool;
-          if (this._setOpen) {
-            this._setOpen(bool);
-          }
-        },
-
-        setVisible(bool) {
-          this.state.visible = bool;
-          if (this._setVisible) {
-            this._setVisible(bool);
-          }
-        },
-
-        setLoading(bool = false) {
-          this.state.loading = bool;
-        },
-
-        setDisabled(bool = false) {
-          this.state.disabled = bool;
-        },
-
-        reload() {
-          console.warn('[G3W-CLIENT] reloading of components will be discontinued, please update your code as soon as possible', this.getId())
-          if (this._reload) {
-            this._reload();
-          }
-        },
-      }
-
+      setters: [
+        'setOpen',
+        'setVisible',
+        'setLoading',
+        'setDisabled',
+        'reload',
+      ]
     });
 
-    this._firstLayout = true;
-
-    /** internal VUE component */
-    this.internalComponent = opts.internalComponent ?? null;
+    // store the options
+    this.opts              = opts;
+     
+    /** start true mean no changes is done on component layout */
+    this._firstLayout      = true;
 
     /** @type { Array } */
-    this._components = [];
-
-    /** @type { string } */
-    this.id = opts.id ?? Math.random() * 1000;
-
-    /** @type { string } */
-    this.title = opts.title ?? '';
+    this._components       = [];
 
     this.state = {
-      sizes:                        { width: 0, height:0 },
+      sizes:                        { width: 0, height: 0 },
       info:                         opts.info                         ?? null,
       open:                         opts.open                         ?? false,
       visible:                      opts.visible                      ?? true,
@@ -117,25 +82,12 @@ export default class Component extends Emitter {
       closewhenshowviewportcontent: opts.closewhenshowviewportcontent ?? true,
     };
 
-    this.setService(opts.service || this);
+    this._service = opts.service || this;
 
-    if (opts.internalComponent) {
-      this.setInternalComponent(opts.internalComponent);
-    }
+    Object.assign(this, opts);
 
-    merge(this, opts);
-
-    // add events options
-    this.events = opts.events ?? {};
-
-    if (this.events.open) {
-      const { when = "after", cb = () => {} } = this.events.open;
-      this[`on${when}`]('setOpen', bool => cb(bool));
-    }
-
-    if (opts.vueComponentObject) {
-      this.init(opts);
-    }
+    this.init();
+    
   }
 
   /**
@@ -147,31 +99,8 @@ export default class Component extends Emitter {
    * @param opts.template
    * @param opts.propsData
    */
-  init(opts = {}) {
-    this.vueComponent = cloneDeep(opts.vueComponentObject);
-    this._components  = opts.components || [];
-
-    this.setService(opts.service || this._service || noop);
-
-    if (this._service.init && this.init !== this._service.init) {
-      this._service.init(opts);
-    }
-
-    if (opts.template) {
-      this.vueComponent.template = opts.template;
-    }
-
-    this.setInternalComponent = function() {
-      this.internalComponent = new (Vue.extend(this.vueComponent))({
-        service:   this._service,
-        template:  opts.template,
-        propsData: opts.propsData
-      });
-      this.internalComponent.state = this.getService().state;
-    };
-
+  init() {
     this.setInternalComponent();
-
     return this;
   }
 
@@ -212,25 +141,76 @@ export default class Component extends Emitter {
   }
 
   removeComponent(Component) {
-    this._components.find((c, i) => {
-      if (c === Component) {
-        this.splice(i, 1);
-        return true;
-      }
-    })
+    this._components = this._components.filter(c => c !== Component);
   }
 
   getInternalComponent() {
     return this.internalComponent;
   }
 
-  setInternalComponent(internalComponent, opts = {}) {
-    this.internalComponent = internalComponent ?? new this.internalComponentClass;
-    (opts.events || [])
-      .forEach(e => this.internalComponent.$on(e.name, data => e.handler && e.handler(data) || this[`set${e.name[0].toUpperCase()}${e.name.slice(1)}`](data)));
-    if (this._service && this._service.state) {
-      this.internalComponent.state = this._service.state;
+  /**
+   * Initialize the internal component, if opts.internalComponent is defined, it will be used, otherwise, if opts.vueComponent is defined, it will be used to create a new Vue component.
+   */
+  setInternalComponent() {
+  
+    //bins open event
+    if (this.opts.events?.open) {
+      const { when = "after", cb = () => {} } = this.opts.events.open;
+      this[`on${when}`]('setOpen', bool => cb(bool));
     }
+
+    // if internalComponent is defined, use it
+    if (this.opts.internalComponent) {
+      this.internalComponent = this.opts.internalComponent;
+      (Array.isArray(this.opts.events) ? this.opts.events : [])
+        .forEach(e => this.internalComponent.$on(e.name, data => e?.handler?.(data) || this[`set${e.name[0].toUpperCase()}${e.name.slice(1)}`](data)));
+    }
+
+    // if vueComponentObject is defined, use it to create a new Vue component
+    if (this.opts.vueComponentObject) {
+      this.vueComponent = cloneDeep(this.opts.vueComponentObject);
+      this._components  = this.opts.components || [];
+
+      this._service     = this._service ?? (() => {});
+
+      if (this._service?.init && this.init !== this._service?.init) {
+        this._service.init(this.opts);
+      }
+
+      if (this.opts.template) {
+        this.vueComponent.template = this.opts.template;
+      }
+      this.internalComponent = new (Vue.extend(this.vueComponent))({
+        service:   this._service,
+        template:  this.opts.template,
+        propsData: this.opts.propsData
+      });
+    }
+
+    this.internalComponent.state = this._service.state;
+  }
+
+  setOpen(bool) {
+    this.state.open = bool;
+    this._setOpen?.(bool);
+  }
+
+  setVisible(bool) {
+    this.state.visible = bool;
+    this._setVisible?.(bool);
+  }
+
+  setLoading(bool = false) {
+    this.state.loading = bool;
+  }
+
+  setDisabled(bool = false) {
+    this.state.disabled = bool;
+  }
+
+  reload() {
+    console.warn('[G3W-CLIENT] reloading of components will be discontinued, please update your code as soon as possible', this.getId())
+    this._reload?.();
   }
 
   /**
@@ -299,21 +279,10 @@ export default class Component extends Emitter {
       this.internalComponent.$on('resize-component', this.internalComponent.layout);
       this._firstLayout = false;
     }
-    await this.internalComponent?.$nextTick();
+    await this.internalComponent?.$nextTick?.();
     //need to check if internal component exist becouse wehn unmount, internalcomponent is set to nul
     this.internalComponent?.$emit('resize-component', { width, height });
     this.emit('layout');
   }
 
 }
-
-/**
- * @deprecated since 3.10.0 Will be deleted in 4.x.
- */
-Object.assign(Component.prototype, {
-  destroy:                 noop,
-  click:                   noop,
-  show:                    noop,
-  /** used by the following plugins: "iternet" */
-  overwriteServiceMethods: deprecate(function(o) { Object.entries(o).forEach(([n, m]) => this._service[n] = m) }, '[G3W-CLIENT] Component::overwriteServiceMethods(methodsOptions) is deprecated'),
-});

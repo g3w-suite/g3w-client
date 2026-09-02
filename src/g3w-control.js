@@ -10,10 +10,25 @@ import GUI from 'g3w-app';
 export default class MapControl extends ol.control.Control {
 
   /**
-   * @param {Object}  options 
-   * @param {string}  options.name
-   * @param {boolean} options.enabled 
-   * @param {string}  options.cursorClass since 3.11.0
+   * @param {Object}   options 
+   * @param {string}   options.name
+   * @param {boolean}  options.enabled 
+   * @param {boolean}  options.visible
+   * @param {string}   options.position
+   * @param {string}   options.label
+   * @param {string}   options.tipLabel
+   * @param {string}   options.customClass
+   * @param {function} options.onclick
+   * @param {function} options.postRender 
+   * @param {function} options.onSetMap 
+   * @param {boolean}  options.clickmap 
+   * @param {boolean}  options.autountoggle 
+   * @param {Array<string>} options.geometryTypes
+   * @param {boolean}  options.onhover 
+   * @param {string}   options.help 
+   * @param {Object}   options.toggledTool 
+   * @param {Object}   options.interactionClass 
+   * @param {string}   options.cursorClass since 3.11.0
    */
   constructor(options = {}) {
 
@@ -22,9 +37,9 @@ export default class MapControl extends ol.control.Control {
       super({ element: options.ol.element });
       this._options     = options;
       this._control     = options.ol;
-      this.positionCode = options.position || 'tl';
+      this.positionCode = options.position ?? 'tl';
       this.offline      = true;
-      this._control.element.classList.add("ol-control-" + this.positionCode);
+      this._control.element.classList.add(`ol-control-${this.positionCode}`);
       return this;
     }
 
@@ -33,14 +48,14 @@ export default class MapControl extends ol.control.Control {
     
     options.visible = options.visible ?? true;
 
-    const name = (options.name || '').split(' ').join('-').toLowerCase();
+    const name      = (options.name ?? '').split(' ').join('-').toLowerCase();
 
     /** ORIGINAL SOURCE: src/components/MapControlButton.js@v3.10.0 */
-    options.element = options.element || (new (Vue.extend({
+    options.element = options.element ?? (new (Vue.extend({
       template: /* html */ `<div class="ol-${name} ol-unselectable ol-control">
         <button type="button" title="${(options.tipLabel || name).toString()}">
           ${ options.customClass ? '<i class="' + options.customClass + '" aria-hidden="true"></i>' : '' }
-          ${ options.label || options.tipLabel || name || '' }
+          ${ options.label ?? options.tipLabel ?? name ?? '' }
         </button>
       </div>`,
     }))()).$mount().$el;
@@ -76,21 +91,19 @@ export default class MapControl extends ol.control.Control {
     /**
      * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
      *
-     * @FIXME add description
+     * Check if che be used offline
      */
     this.offline         = options.offline ?? true;
 
     /**
      * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
      *
-     * @FIXME add description
      */
     this.name            = name;
 
     /**
      * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
      *
-     * @FIXME add description
      */
     this.id              = `${this.name}_${(Math.floor(Math.random() * 1000000))}`;
 
@@ -119,7 +132,7 @@ export default class MapControl extends ol.control.Control {
     this.priority        = options.priority ?? 0;
 
     /**
-     * @FIXME why?
+     * Mean tah has a interaction with map (e.g., draw, measure, select, etc.)
      * 
      * @since 4.0.0 Add click map option
      */
@@ -346,7 +359,7 @@ export default class MapControl extends ol.control.Control {
    * @since 3.11.0
    */
   getPosition(pos) {
-    pos = pos || this.positionCode;
+    pos = pos ?? this.positionCode;
     return {
       top:    pos.includes('t'),
       left:   pos.includes('l'),
@@ -440,7 +453,7 @@ export default class MapControl extends ol.control.Control {
    * @since 3.11.0
    */
   setEnable(bool) {
-    this.element.querySelector('button')?.classList?.toggle('g3w-ol-disabled', !bool);
+    this.element.querySelector('button')?.classList?.toggle?.('g3w-ol-disabled', !bool);
     if (!bool && this._interaction) {
       this._interaction.setActive(false);
     }
@@ -487,7 +500,7 @@ export default class MapControl extends ol.control.Control {
    * @since 3.11.0
    */
   overwriteOnClickEvent(handler) {
-    this._originalonlick = this._originalonlick || this._onclick;
+    this._originalonlick = this._originalonlick ?? this._onclick;
     this._onclick        = handler;
   };
 
@@ -497,7 +510,7 @@ export default class MapControl extends ol.control.Control {
    * @since 3.11.0
    */
   resetOriginalOnClickEvent() {
-    this._onclick        = this._originalonlick || this._onclick;
+    this._onclick        = this._originalonlick ?? this._onclick;
     this._originalonlick = null;
   }
 
@@ -598,14 +611,14 @@ export default class MapControl extends ol.control.Control {
      * @TODO check if it is deprecated. It used to show help message for map control
      */
     if ('how' === toggledTool.how && this._onhover) {
-      this._toolButton = $(`<span style="display:none" class="tool_mapcontrol_button"><i class="fas fa-cog"></i></span>`);
-      $(this.element).prepend(this._toolButton);
-      this._toolButton.on('click', e => {
+      this._toolButton = document.createElement(`<span style="display:none" class="tool_mapcontrol_button"><i class="fas fa-cog"></i></span>`);
+      this.element.prepend(this._toolButton);
+      this._toolButton.addEventListener('click', e => {
         e.stopPropagation();
         this.showToggledTool(true);
       });
-      $(this.element).hover(() => this._toggled && this._toolButton.show());
-      $(this.element).mouseleave(() => this._toolButton.hide());
+      this.element.addEventListener('mouseover',  () => this._toggled && this._toolButton.show());
+      this.element.addEventListener('mouseleave', () => this._toolButton.hide());
     }
   }
 
@@ -620,7 +633,7 @@ export default class MapControl extends ol.control.Control {
         title:     this.toggledTool.__title,
         type:      'tool',
         iconClass: this.toggledTool.__iconClass,
-        closable:  this._toolButton ? true : false,
+        closable:  !!this._toolButton,
         hooks:     { body: this.toggledTool },
       });
     } else {
@@ -663,10 +676,8 @@ export default class MapControl extends ol.control.Control {
     }
 
     /** Add or remove g3w-ol-toggled class to control button */
-    const btn = this.element.querySelector('button');
-    if (btn) {
-      btn.classList.toggle('g3w-ol-toggled', toggled);
-    }
+    this.element.querySelector('button')?.classList?.toggle?.('g3w-ol-toggled', toggled);
+    
 
     /** @TODO Deprecated */
     if (toggled && this._toolButton) {
