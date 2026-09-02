@@ -80,7 +80,6 @@ const tooltip = Object.assign(document.createElement('template'), {
 document.querySelector('#app').insertAdjacentElement('afterend', tooltip);
 document.addEventListener('mousemove', showTooltip);
 document.addEventListener('mousedown', showTooltip);
-document.addEventListener('mouseover', showTooltip);
 document.addEventListener('focusin',   showTooltip);
 document.addEventListener('focusout', () => tooltip.hidePopover());
 
