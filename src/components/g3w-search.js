@@ -207,6 +207,7 @@ async function doSearch({
   try {
     data = await GUI.getData('search:features', {
       inputs: {
+        id:        state.id, //since 4.2.0
         layer:     state.search_layers,
         filter:    filter || createFilterFormInputs({
           layer:   state.search_layers,
@@ -218,7 +219,6 @@ async function doSearch({
         raw:        'search' === state.return,                                        // whether get a raw response
         autofilter: Number(show && state.autofilter.value),                           // 0/1 = autofilter (by server)
         ...(state.paginate && !search_1n ? { page: 1, page_sizes: PAGELENGTHS } : {}), // @since 3.11.0 pagination configuration
-        config: state, //since 4.2.0 pass search configuration
       },
       outputs: show && { title: state.title }
     });
