@@ -603,7 +603,7 @@
           this.$refs.content.style.width = `${100 - perc}%`;
           this.$refs.chart.style.width   = `${perc}%`;
         };
-        const el = document.getElementById('g3w-view-content');
+        const el = document.querySelector('#g3w-content');
         el.addEventListener('mousemove', move);
         el.addEventListener('mouseup', async () => { 
           el.removeEventListener('mousemove', move); 

@@ -956,7 +956,7 @@
       highlightLayer(layer, opts = {}) {
         if (layer.hasgeometry) {
           const features = (layer.features || []).filter(f => GUI.showFeature(layer, f));
-          const async    = document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size');
+          const async    = document.querySelector('#g3w-content')?.classList?.contains?.('full-size');
           GUI.once('asyncFnc.todo', () => {
             let type, geometry;
             const coordinates = features

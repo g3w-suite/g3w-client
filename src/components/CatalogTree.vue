@@ -636,7 +636,7 @@ export default {
           { duration: 200, center:     view.getCenter() },
           { duration: 200, resolution: view.getResolution() }
         );
-        view.fit(geometry, { constrainResolution: true, size: GUI.getMap().getSize() });
+        view.fit(geometry);
       }
     },
 
