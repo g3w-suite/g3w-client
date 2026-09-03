@@ -233,8 +233,8 @@ async function doSearch({
     // no search response (values) → show an empty result
     if (!has_values && 'search' === state.return) {
       await GUI.closeContent();
-      data = [];
-      GUI.showData({ data });
+      data = { data: [] };
+      GUI.showData(data);
     }
     /********************************************************************************/
 
