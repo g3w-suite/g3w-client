@@ -5687,7 +5687,7 @@ export default new (class GUI extends Emitter {
         ([].concat(layer).sort((a, b) => (layersId.indexOf(a.state.id) > layersId.indexOf(b.state.id) ? 1 : -1)))
           .map((l, i) => l.getFilterData({ ...params, field: params.filter[i] }))
       ))
-        .filter(d => 'fulfilled' === d.status && d.value?.data?.at?.(0)?.features)
+        .filter(d => 'fulfilled' === d.status && (params.raw || d.value?.data?.at?.(0)?.features))
         .map(({ value } = {}) => {
           const layerId = value.data?.at?.(0)?.layer?.state?.id;
           // autofilter → automatically set filtertoken
