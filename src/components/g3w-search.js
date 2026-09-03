@@ -216,7 +216,8 @@ async function doSearch({
         feature_count,
         raw:        'search' === state.return,                                        // whether get a raw response
         autofilter: Number(show && state.autofilter.value),                           // 0/1 = autofilter (by server)
-        ...(state.paginate && !search_1n ? { page: 1, page_sizes: PAGELENGTHS } : {}) // @since 3.11.0 pagination configuration
+        ...(state.paginate && !search_1n ? { page: 1, page_sizes: PAGELENGTHS } : {}), // @since 3.11.0 pagination configuration
+        config: state, //since 4.2.0 pass search configuration
       },
       outputs: show && { title: state.title }
     });

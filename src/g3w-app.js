@@ -5646,6 +5646,7 @@ export default new (class GUI extends Emitter {
    * @param options.page               - since 3.11.0
    * @param options.page_sizes         - since 3.11.0
    * @param { boolean } options.raw    - whether it should return raw data
+   * @param { object } options.config  - since 4.2.0
    * 
    * @private invoked by `getData('search:features')`
    */
@@ -5660,6 +5661,7 @@ export default new (class GUI extends Emitter {
     autofilter: 0,
     page,
     page_sizes,
+    config: {},
   }) {
     const { layer, ...params } = options;
 
@@ -5732,7 +5734,8 @@ export default new (class GUI extends Emitter {
         /** whether it was an autofilter request */
         autofilter: !!params.autofilter,
         /** @since 3.11.0 - pagination info (in case of paginated request) */
-        pagination: params.page_size && pagination
+        pagination: params.page_size && pagination,
+        config: params.config ?? {},
       },
       type: 'api',
     };
