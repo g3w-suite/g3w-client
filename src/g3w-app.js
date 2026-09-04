@@ -5691,17 +5691,18 @@ export default new (class GUI extends Emitter {
       ))
         .filter(d => 'fulfilled' === d.status)
         .map(({ value } = {}) => {
-          // raw data, return as is (eg. for `getData('search:features')` with `raw: true`)
+          // raw data → return as is
           if (params.raw) {
             return { data: value };
           }
-          
-          //in case no features return from response, return an empty array 
+
+          // no features → return an empty array
           if (!value?.data?.at?.(0)?.features) {
             return [];
           }
 
           const layerId = value.data?.at?.(0)?.layer?.state?.id;
+
           // autofilter → automatically set filtertoken
           if (1 === params.autofilter) {
             (value.data || []).forEach(({ layer, filtertoken }) => {
@@ -5710,6 +5711,7 @@ export default new (class GUI extends Emitter {
                   layer.setToken(filtertoken); }
               })
           }
+
           // pagination (total elements > page size)
           if (params.page_sizes)  {
             const page_size     = Math.max(...(Array.isArray(params.page_sizes) ? params.page_sizes : [params.page_sizes])); // page size = max elements per page
@@ -5729,7 +5731,7 @@ export default new (class GUI extends Emitter {
             };
             pagination.getData.params[layerId] = { ...params, filter: params.filter[0] };
           }
-          
+
           if (Array.isArray(value.data) && value.data.length > 0) {
             return value.data?.at?.(0);
           }
