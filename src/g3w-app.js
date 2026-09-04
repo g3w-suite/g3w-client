@@ -5657,6 +5657,7 @@ export default new (class GUI extends Emitter {
    * @param options.page               - since 3.11.0
    * @param options.page_sizes         - since 3.11.0
    * @param { boolean } options.raw    - whether it should return raw data
+   * @param { string } options.id      - since 4.2.0 - search request identifier
    * 
    * @private invoked by `getData('search:features')`
    */
@@ -5671,6 +5672,7 @@ export default new (class GUI extends Emitter {
     autofilter: 0,
     page,
     page_sizes,
+    id,
   }) {
     const { layer, ...params } = options;
 
@@ -5698,9 +5700,20 @@ export default new (class GUI extends Emitter {
         ([].concat(layer).sort((a, b) => (layersId.indexOf(a.state.id) > layersId.indexOf(b.state.id) ? 1 : -1)))
           .map((l, i) => l.getFilterData({ ...params, field: params.filter[i] }))
       ))
-        .filter(d => 'fulfilled' === d.status && d.value?.data?.at?.(0)?.features)
+        .filter(d => 'fulfilled' === d.status)
         .map(({ value } = {}) => {
+          // raw data → return as is
+          if (params.raw) {
+            return { data: value };
+          }
+
+          // no features → return an empty array
+          if (!value?.data?.at?.(0)?.features) {
+            return [];
+          }
+
           const layerId = value.data?.at?.(0)?.layer?.state?.id;
+
           // autofilter → automatically set filtertoken
           if (1 === params.autofilter) {
             (value.data || []).forEach(({ layer, filtertoken }) => {
@@ -5709,6 +5722,7 @@ export default new (class GUI extends Emitter {
                   layer.setToken(filtertoken); }
               })
           }
+
           // pagination (total elements > page size)
           if (params.page_sizes)  {
             const page_size     = Math.max(...(Array.isArray(params.page_sizes) ? params.page_sizes : [params.page_sizes])); // page size = max elements per page
@@ -5728,10 +5742,7 @@ export default new (class GUI extends Emitter {
             };
             pagination.getData.params[layerId] = { ...params, filter: params.filter[0] };
           }
-          // raw data
-          if (params.raw) {
-            return { data: value };
-          }
+
           if (Array.isArray(value.data) && value.data.length > 0) {
             return value.data?.at?.(0);
           }
@@ -5743,7 +5754,8 @@ export default new (class GUI extends Emitter {
         /** whether it was an autofilter request */
         autofilter: !!params.autofilter,
         /** @since 3.11.0 - pagination info (in case of paginated request) */
-        pagination: params.page_size && pagination
+        pagination: params.page_size && pagination,
+        id:         params.id,
       },
       type: 'api',
     };
