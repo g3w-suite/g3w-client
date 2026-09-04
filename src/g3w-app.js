@@ -387,6 +387,15 @@ export default new (class GUI extends Emitter {
     this.onLayerLoadError    = this.onLayerLoadError.bind(this);
 
     this._setLegendParams = debounce(this._setLegendParams.bind(this), 1000);
+
+    // BACKOMP for v4.1.x
+    this.hideContent = bool => {
+      console.warn('GUI.hideContent is deprecated. Use GUI.toggleContent instead');
+      const perc = ApplicationState.layout[ApplicationState.layout.__current].rightpanel['h' === ApplicationState.split ? 'width': 'height'];
+      this.toggleContent(!bool);
+      // return previous percentage
+      return perc;
+    };
   }
 
   /**
@@ -663,23 +672,37 @@ export default new (class GUI extends Emitter {
     /** @since 3.8.0 */
     this.onbefore('online', () => this.#offlineids.forEach(({ id, enable }) => this.#controls.find(control => id === control.type)?.control?.setEnable(enable)));
 
-    this.getComponent('contents').mount('#g3w-view-content', true);
+    this.getComponent('contents').mount('#g3w-content', true);
 
     ApplicationState.sidebar.width = document.querySelector('.main-sidebar').offsetWidth;;
 
-    // handle window and sidebar resize
-    const resize_observer = (() => {
+    // handle window resize
+    const resize_observer1 = (() => {
       let frame;
       return new ResizeObserver(() => {
         cancelAnimationFrame(frame);
-        frame = requestAnimationFrame(() => { this._layout(); });
+        frame = requestAnimationFrame(() => { this.resize(); });
       });
     })();
-    resize_observer.observe(document.querySelector('.content-wrapper'));
-    resize_observer.observe(document.querySelector('.navbar'));
-    document.querySelector('.main-sidebar').addEventListener('transitionend', () => this._layout());
+    resize_observer1.observe(document.querySelector('#app'));
 
-    this._layout();
+    const resize_observer2 = (() => {
+      let frame;
+      return new ResizeObserver(() => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => { this.resize(); });
+      });
+    })();
+    resize_observer2.observe(document.querySelector('.main-sidebar'));
+
+    // update map state on sidebar toggle 
+    (new MutationObserver(() => {
+      if (ApplicationState.sidebar.open !== !document.body.classList.contains('sidebar-collapse')) {
+        this.resize();
+      }
+    })).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+    this.resize();
 
     // remove "permalink_code" from URL
     const url = new URL(window.location);
@@ -1017,124 +1040,131 @@ export default new (class GUI extends Emitter {
     }
   }
 
+  /**
+   * @see https://www.w3schools.com/howto/howto_js_draggable.asp 
+   */
+  #makeDraggable(el) {
+    let x2 = 0, y2 = 0, x1 = 0, y1 = 0;
+
+    el.addEventListener('mousedown', e => {
+      // skip dragging on form elements
+      if (['.select2-container', 'button', 'select', 'input', 'textarea', 'x-select'].some(i => e.target.closest(i))) {
+        return;
+      }
+      e.preventDefault();
+
+      const rect = el.getBoundingClientRect();
+      if (!el.style.top)  el.style.top  = rect.top + "px";
+      if (!el.style.left) el.style.left = rect.left + "px";
+
+      x1 = e.clientX;
+      y1 = e.clientY;
+
+      document.addEventListener('mouseup', mouseUp);
+      document.addEventListener('mousemove', mouseMove);
+    });
+
+    function mouseUp() {
+      document.removeEventListener('mouseup', mouseUp);
+      document.removeEventListener('mousemove', mouseMove);
+    }
+    
+    function mouseMove(e) {
+      e.preventDefault();
+      x2 = x1 - e.clientX;
+      y2 = y1 - e.clientY;
+      x1 = e.clientX;
+      y1 = e.clientY;
+
+      el.style.top  = (parseFloat(el.style.top)  - y2) + "px";
+      el.style.left = (parseFloat(el.style.left) - x2) + "px";
+    }
+  }
+
   async showUserMessage({
     title,
     subtitle,
     message = '',
-    type,
-    position,
+    type = 'tool',
     duration = 3000,
     textMessage = false,
     closable = true,
+    draggable = false,
     autoclose,
     hooks = {},
     iconClass = null, //@since 3.11.0
   } = {}) {
-    if ('tool' !== type) {
-      const dialog = Object.assign(document.createElement('template'), {
-      innerHTML: /* html */ `
-        <dialog class="usermessage-${type}" popover="manual" style = "
-          color: #FFF;
-          line-height: normal;
-          padding: 3px;
-          border: unset;
-          inset: unset;
-          margin: unset;
-          ${ 'position-area' in document.body.style ? 'top: anchor(--g3w-view-map top);' : '' }
-          ${ 'position-area' in document.body.style ? 'left: anchor(--g3w-view-map left);' : '' }
-          ${ 'position-area' in document.body.style ? 'left: anchor(--g3w-view-map left);' : '' }
-          width: ${ApplicationState.map.sizes.width + (document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size') ? ApplicationState.content.sizes.width : 0)}px;
-          /*margin-left: ${document.body.classList.contains('sidebar-collapse') ? '5px' : '40px'};*/
-          animation: fade 0.3s ease-in;
-        ">
-          <form>
-            <div style = "
-                display: flex;
-                align-items: baseline;
-                justify-content: space-between;
-                width: 100%;
-                border-bottom: 2px solid #eee;
-                margin-bottom: 14px;
-              ">
-              <i class = "${g3w.app.getFontClass(iconClass || type)}"></i>
-              <div>
-                <h4 style="font-weight: bold;">${title ? _(title): type.toUpperCase()}</h4>
-                <h5>${subtitle ? _(subtitle): ''}</h5>
-              </div>
-              <button type="button" value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
-            </div>
-            <div>${ textMessage ? message : _(message) }</div>
-          </form>
-        </dialog>
+
+    const dialog = Object.assign(document.createElement('template'), {
+        innerHTML: /* html */ `
+          <dialog class="usermessage-${type}" popover="manual">
+            <form tabindex="0">
+              <header>
+                <i class = "${g3w.app.getFontClass(iconClass || type)}"></i>
+                <div>
+                  <h4 style="font-weight: bold;">${title ? _(title): type.toUpperCase()}</h4>
+                  ${ subtitle ? `<h5>${_(subtitle)}</h5>` : '' }
+                </div>
+                <button type="button" value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
+              </header>
+              <div>${ textMessage ? message : _(message) }</div>
+            </form>
+          </dialog>
       `.trim()
       }).content.firstChild;
 
-      const unwatch = Vue.watch(
-          ()    => ApplicationState.map.sizes.width, 
-          width => {
-            dialog.style.width = `${width + (document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size') ? ApplicationState.content.sizes.width : 0)}px`
-          }
-      );
-
-      dialog.addEventListener('close', () => {
-        dialog.remove();
-        unwatch();
-      });
-
-      document.querySelector('.content-wrapper').insertAdjacentElement('afterbegin', dialog);
-      dialog.showPopover();
-
-      // close dialog on x icon
-      dialog.querySelector('button[value="cancel"]').addEventListener('click', () => {
-        dialog.hidePopover();
-      });
-
-      if (autoclose) {
-        const timer = setTimeout(() => {
-          dialog.hidePopover();
-          clearTimeout(timer)
-        }, duration);
-      }
-
-      if (autoclose || closable) {
-        dialog.style.cursor = 'pointer';
-        dialog.addEventListener('click', () => {
-          dialog.hidePopover();
-        });
-      }
-
-      return;
+     // inject custom header component
+    if (hooks['header']) {
+      dialog.querySelector('header').replaceWith((new (Vue.extend(hooks['header']))().$mount()).$el);
     }
 
-    this.closeUserMessage();
+    // inject custom body, footer components
+    [hooks['body'], hooks['footer']]
+      .filter(h => h)
+      .forEach(h => dialog.appendChild((new (Vue.extend(h))().$mount()).$el));  
 
-    await new Promise(res => setTimeout(() => {
-      Object.assign(ApplicationState.usermessage, {
-        id: getUniqueDomId(),
-        show: true,
-        message,
-        textMessage,
-        title,
-        subtitle,
-        position,
-        type,
-        closable,
-        hooks,
-        iconClass,
+    dialog.addEventListener('beforetoggle', e => {
+      if (e.newState === 'closed') {
+        // clean up childs (vue)
+        Array.from(dialog.children).forEach(el => {
+          el.__vue__?.$destroy();
+          el.remove();
+        });
+        dialog.remove();
+      }
+    });
+
+    document.body.append(dialog);
+
+    dialog.showPopover();
+
+    if (draggable || 'tool' === type) {
+      this.#makeDraggable(dialog);
+    }
+
+    // close dialog on x icon
+    dialog.querySelector('button[value="cancel"]').addEventListener('click', () => {
+      dialog.hidePopover();
+    });
+
+    if (autoclose) {
+      const timer = setTimeout(() => {
+        dialog.hidePopover();
+        clearTimeout(timer)
+      }, duration);
+    }
+
+    if ((autoclose || closable) && 'tool' !== type) {
+      dialog.style.cursor = 'pointer';
+      dialog.addEventListener('click', () => {
+        dialog.hidePopover();
       });
-      res();
-    }));
+    }
 
-    return ApplicationState.usermessage;
   }
 
   closeUserMessage() {
-    Object.assign(ApplicationState.usermessage, {
-      id:          null,
-      show:        false,
-      textMessage: false,
-      message:     '',
-    });
+    document.querySelector('.usermessage-tool')?.hidePopover();
   }
 
   /**
@@ -1478,7 +1508,7 @@ export default new (class GUI extends Emitter {
 
     contents.setOpen(true);
 
-    await this._layout(true);
+    await this.toggleContent(true);
 
     // automatically hide sidebar on mobile
     if (window.innerWidth < 767) {
@@ -1486,12 +1516,12 @@ export default new (class GUI extends Emitter {
     }  
   }
 
-  // hide content
-  hideContent(bool) {
-    const content_perc = ApplicationState.layout[ApplicationState.layout.__current].rightpanel['h' === ApplicationState.split ? 'width': 'height'];
-    this._layout(!bool);
-    // return previous percentage
-    return content_perc;
+  /**
+   * @param bool whether to show content (right sidebar)
+   */
+  async toggleContent(bool) {
+    document.querySelector('#g3w-content').toggleAttribute('hidden', !bool);
+    await this.resize();
   }
 
   async closeContent() {
@@ -1503,7 +1533,7 @@ export default new (class GUI extends Emitter {
     if (open) {
       this.getComponent('contents').setOpen(false);
       await this.#clearContents();
-      this._layout(false);
+      this.toggleContent(false);
       await Vue.nextTick();
     }
   }
@@ -1536,7 +1566,7 @@ export default new (class GUI extends Emitter {
       await this.#clearContents();
     }
 
-    this._layout(!!opts.perc);
+    this.toggleContent(!!opts.perc);
 
     await Vue.nextTick();
 
@@ -1559,7 +1589,7 @@ export default new (class GUI extends Emitter {
       .from(this.getComponent('contents').internalComponent.$el.children)       // hide other elements but not the last one
       .forEach((el, i, a) => el.style.display = (i === a.length - 1) ? 'block' : 'none');
 
-    this._layout();
+    this.resize();
 
     return ApplicationState.contentsdata.at(-1);
   }
@@ -1647,13 +1677,11 @@ export default new (class GUI extends Emitter {
   showSidebar() {
     document.body.classList.add('sidebar-open');
     document.body.classList.remove('sidebar-collapse');
-    ApplicationState.sidebar.open = true;
   }
 
   hideSidebar() {
     document.body.classList.remove('sidebar-open');
     document.body.classList.add('sidebar-collapse');
-    ApplicationState.sidebar.open = false;
   }
 
   getSize({ element, what }) {
@@ -1848,100 +1876,88 @@ export default new (class GUI extends Emitter {
     dialog.showModal();
   }
 
-  getViewportSizes() {
-    const content_wrapper = document.querySelector('.content-wrapper');
-    const navbar          = document.querySelector('.navbar');
-    return {
-      viewW: content_wrapper.getBoundingClientRect().width || window.innerWidth,
-      viewH: window.innerHeight - navbar.offsetHeight,
-    };
-  }
-
   /**
-   * load components of viewport after right size setting
-   * 
-   * ORIGINAL SOURCE: src/services/viewport.js@v3.10.2
+   * Called on DOM resize
    */
-  async _layout(param) {
+  async resize() {
+    const app      = document.querySelector('#app');
+    const content  = document.querySelector('#g3w-content');
+    const navbar   = document.querySelector('.navbar');
+    const contents = document.querySelector('#contents');
+    const sidebar  = document.querySelector('.main-sidebar');
+    const footer   = document.querySelector('#map_footer');
 
-    // whether to show secondary (content)
-    if ('boolean' === typeof param) {
-      this._layout.secondary = param;
-    }
+    const W        = app.getBoundingClientRect().width;
+    const H        = window.innerHeight - navbar.offsetHeight;
 
-    const sec             = this._layout.secondary;
-    
-    const layout          = ApplicationState.layout;
+    const panel    = ApplicationState.layout[ApplicationState.layout.__current].rightpanel;
 
-    const contents         = document.querySelector('#contents');
-    const content_wrapper  = document.querySelector('.content-wrapper');
-    const { viewW, viewH } = this.getViewportSizes();
-    const panel            = layout[layout.__current].rightpanel;
-
-    const opts = {
-      split: ApplicationState.split,
-      ...(ApplicationState.contentsdata.at(-1)?.options || {}),
-    };
-
-    const h_split = 'h' === opts.split;
-    const v_split = 'v' === opts.split;
-
-    content_wrapper.style.flexDirection  = h_split ? 'row' : 'column';
-    content_wrapper.style.justifyContent = 'space-between';
-
-    const is_full = 100 === opts.perc || (h_split ? panel.width_100 : panel.height_100);
+    const h_split  = 'h' === (ApplicationState.contentsdata.at(-1)?.options?.split ?? ApplicationState.split);
+    const v_split  = 'v' === (ApplicationState.contentsdata.at(-1)?.options?.split ?? ApplicationState.split);
+    const is_full  = 100 === ApplicationState.contentsdata.at(-1)?.options?.perc || (h_split ? panel.width_100 : panel.height_100);
 
     // percentage of secondary view (content)
-    const scale = is_full ? 1 : ((h_split ? panel.width: panel.height) /100);
+    const scale    = is_full ? 1 : ((h_split ? panel.width: panel.height) /100);
 
     contents.parentElement.classList.toggle('full-size', is_full);
 
-    // size "content"
+    ApplicationState.sidebar.open = !document.body.classList.contains('sidebar-collapse');
+
+    // reset scrollbars position (mobile ⇄ desktop)
+    app.scrollTo(0,0);
+
+    // resize "content" (state)
     Object.assign(ApplicationState.content.sizes, {
-      width:  h_split ? (sec ? Math.max((viewW * scale), 200) : 0) : (sec ? viewW : 0),
-      height: v_split ? (sec ? Math.max((viewH * scale), 200) : 0) : (sec ? viewH : 0),
-    });
+      width:  content.hidden ? 0 : (h_split ? Math.max(W * scale, 200) - (is_full && window.innerWidth > 767 ? sidebar.offsetWidth : 0) : W),
+      height: content.hidden ? 0 : (v_split ? Math.max(H * scale, 200) - (is_full && window.innerWidth > 767 ? footer.offsetHeight : 0) : H - footer.offsetHeight) } 
+    );
 
-    // size "map"
-    Object.assign(ApplicationState.map.sizes, {
-      width:  viewW - (h_split ? ApplicationState.content.sizes.width : 0),
-      height: viewH - (v_split ? ApplicationState.content.sizes.height : 0),
-    });
+    // resize floating elements (sidebars, navbar, footer)
+    document.body.style.setProperty('--mt', `${window.innerWidth < 767 && ApplicationState.sidebar.open    ? 0                                                           : navbar.offsetHeight}px`);
+    document.body.style.setProperty('--mr', `${h_split && !content.hidden                                  ? ApplicationState.content.sizes.width                        : 0}px`);
+    document.body.style.setProperty('--mb', `${v_split                                                     ? ApplicationState.content.sizes.height + footer.offsetHeight : footer.offsetHeight}px`);
+    document.body.style.setProperty('--ml', `${window.innerWidth > 767                                     ? sidebar.offsetWidth                                         : 0}px`);
 
-    // size full (when mobile menu is open) 
-    if (document.body.classList.contains('sidebar-open') && window.innerWidth < 767) {
-      Object.assign(ApplicationState.map.sizes, {
-        width:  window.innerWidth,
-        height: window.innerHeight,
-      });
-    }
+    // map controls layout vars (decoupled from map view padding vars)
+    const controls_top       = 5;
+    const controls_right     = (h_split && !content.hidden ? ApplicationState.content.sizes.width : 0) + 5;
+    const controls_bottom    = v_split ? ApplicationState.content.sizes.height + footer.offsetHeight : footer.offsetHeight;
+    const controls_maxheight = Math.max(H - controls_top - controls_bottom, 0);
 
-    // resize "content" (after vue state is updated)
+    document.body.style.setProperty('--g3w-controls-top', `${controls_top}px`);
+    document.body.style.setProperty('--g3w-controls-right', `${controls_right}px`);
+    document.body.style.setProperty('--g3w-controls-bottom', `${controls_bottom}px`);
+    document.body.style.setProperty('--g3w-controls-max-height', `${controls_maxheight}px`);
+
+    // wait DOM repaint (after vue state is updated)
     await Vue.nextTick();
 
     // resize "map"
-    this.layout({
-      width:  ApplicationState.map.sizes.width,
-      height: ApplicationState.map.sizes.height
-    });
-
-    // sidebar panel fix
-    const panel_el = document.querySelector('#g3w-view-content');
-    if (panel_el) {
-      contents.style.height = panel_el.offsetHeight
-        - (panel_el.querySelector('.close-panel-block')?.offsetHeight || 0)
-        - (panel_el.querySelector('.content_breadcrumb')?.offsetHeight || 0)
-        - (contents.children[0] ? 50 : 0) + 'px'; // vertical padding
-
-      // workaround for qplotly?
-      if (contents.children[0]) {
-        contents.children[0].style.height = contents.style.height;
-      }
-
-      document.querySelector(".main-sidebar").style.height  = `${viewH}px`;
-      document.querySelector(".sidebar-panel").style.height = `${viewH}px`;
+    if (this.#map && W > 0 && H > 0) {
+      this.getMap().updateSize();
+      this.state.hidemaps.forEach(h => h.map.updateSize());
+      this.state.bbox       = this.getMapBBOX();
+      this.state.resolution = this.#map.getView().getResolution();
+      this.state.center     = this.#map.getView().getCenter();
     }
 
+    this.setHidden(W <= 0 || H <= 0);
+
+    const padding = [
+      // TODO: move `#map` container underneath the top `.navbar` element (NB: it will break `--g3w-map` anchor?) 
+      0, // parseFloat(document.body.style.getPropertyValue('--mt'))
+      parseFloat(document.body.style.getPropertyValue('--mr')),
+      parseFloat(document.body.style.getPropertyValue('--mb')),
+      parseFloat(document.body.style.getPropertyValue('--ml'))
+    ];
+
+    // init "map"
+    if (!this.#map) {
+      await this.#initMap({ padding });
+    }
+
+    // update map padding
+    this.getMap().getView().padding = padding;
     // re-layout each component stored into the stack
     ApplicationState.contentsdata.forEach(d => {
       try {
@@ -1950,7 +1966,7 @@ export default new (class GUI extends Emitter {
         }
       } catch(e) {
         this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
-        setTimeout(() => this._layout(), 1000);
+        setTimeout(() => this.resize(), 1000);
       }
     });
 
@@ -2506,7 +2522,7 @@ export default new (class GUI extends Emitter {
             if (!feature.geometry) {
               return;
             }
-            const async = document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size');
+            const async = document.querySelector('#g3w-content')?.classList?.contains?.('full-size');
             this.once('asyncFnc.todo', () => {
               if (this.isOneLayerResult()) {
                 this.zoomToFeatures([feature], {});
@@ -3462,15 +3478,19 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   createMapImage({ map } = {}) {
-    return new Promise((resolve, reject) => {
-      try {
-        const canvas = (map || this.getMap()).getViewport().querySelector('canvas');
-        canvas.toBlob(blob => resolve(blob));
-      } catch(e) {
-        console.warn(e);
-        reject(e);
-      }
-    })
+    return new Promise((resolve) => {
+      const canvas  = (map || this.getMap()).getViewport().querySelector('canvas');
+      const dpr     = window.devicePixelRatio || 1;
+      const sidebar = document.querySelector('.main-sidebar');
+      const padding = (this.isSidebarVisible() && sidebar) ? Math.round(sidebar.getBoundingClientRect().width * dpr) : 0;
+
+      const w       = Math.max(canvas.width - padding, 0);
+      const h       = canvas.height;
+      const cropped = Object.assign(document.createElement('canvas'), { width: w, height: h });
+      
+      cropped.getContext('2d').drawImage(canvas, padding, 0, w, h, 0, 0, w, h);
+      cropped.toBlob(resolve);
+    });
   }
 
   /**
@@ -4158,15 +4178,6 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  setTarget(elId) {
-    this.target = elId;
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * @since 4.1.0
-   */
   getCurrentToggledMapControl() {
     return this.#controls.find(c => c?.control?.isToggled?.())?.control;
   }
@@ -4352,7 +4363,7 @@ export default new (class GUI extends Emitter {
    */
   zoomToLayer(layer, options = {}) {
     options.highlight = !this.isOneLayerResult();
-    const async       = document.querySelector('#g3w-view-content')?.classList?.contains?.('full-size');
+    const async       = document.querySelector('#g3w-content')?.classList?.contains?.('full-size');
     const features    = (layer.features || []).filter(f => this.showFeature(layer, f));
     this.once('asyncFnc.todo', () => { this.zoomToFeatures(features, options); });
     if (async) {
@@ -4510,34 +4521,34 @@ export default new (class GUI extends Emitter {
       return Promise.resolve();
     }
 
-    const map = this.getMap();
+    const map     = this.getMap();
+    const view    = map.getView();
+    const mapSize = map.getSize();
 
+    
     let resolution;
 
     // if outside project extent, return max resolution
     if (false === ol.extent.containsExtent(ApplicationState.project.state.extent, extent)) {
-      resolution = map.getView().getResolutionForExtent(ApplicationState.project.state.extent, map.getSize());
+      resolution = view.getResolutionForExtent(ApplicationState.project.state.extent, mapSize);
     }
 
     // retrieve resolution from given `extent`
     else if (true === options.force) {
-      resolution = map.getView().getResolutionForExtent(extent, map.getSize()); // resolution of request extent
+      resolution = view.getResolutionForExtent(extent, mapSize); // resolution of request extent
     }
 
     // calculate main resolutions from map
     else {
-      const curr = map.getView().getResolution();
+      const curr = view.getResolution();
       // max resolution of the map
-      resolution = Math.max(map.getView().getResolutionForExtent(extent, map.getSize()), getResolutionFromScale(this.#maxZoom, this.getMapUnits()));
+      resolution = Math.max(view.getResolutionForExtent(extent, mapSize), getResolutionFromScale(this.#maxZoom, this.getMapUnits()));
       resolution = (curr < resolution) && (curr > resolution) ? curr : resolution;
     }
-
-    await (new Promise(res => {
-      this.#map.getView().once('change:center', () => setTimeout(res, 500));
-      this.#map.getView().animate(
-        { duration: 200, center: ol.extent.getCenter(extent) },
-        { duration: 200, resolution: resolution || this.#map.getView().getResolution() }
-      );
+  
+    await (new Promise(done => {
+      view.once('change:center', () => setTimeout(done, 500));
+      view.fit(extent, { duration: 200, minResolution: resolution });
     }));
 
     if (options.highLightGeometry) {
@@ -4561,34 +4572,10 @@ export default new (class GUI extends Emitter {
     this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, { force: true }));
   }
 
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * called when layout (window) resizes
-   * 
-   * @since 4.1.0
-   */
-  async layout({ width, height }) {
-    const el = document.getElementById(this.target);
+  async #initMap({ padding }) {
 
-    if (el) {
-      el.style.height = height + 'px';
-      el.style.width  = width + 'px';
-    }
-
-    if (this.#map && width > 0 && height > 0) {
-      this.getMap().updateSize();
-      this.state.hidemaps.forEach(h => h.map.updateSize());
-      this.state.bbox       = this.getMapBBOX();
-      this.state.resolution = this.#map.getView().getResolution();
-      this.state.center     = this.#map.getView().getCenter();
-    }
-
-    this.setHidden(width <= 0 || height <= 0);
-
-    if (this.#map) {
-      return;
-    }
+    const width  = document.querySelector('#app').getBoundingClientRect().width;
+    const height = window.innerHeight - document.querySelector('.navbar').offsetHeight;
 
     this.emit('before:setupViewer');
 
@@ -4630,8 +4617,9 @@ export default new (class GUI extends Emitter {
       controls:            ol.control.defaults({ attribution: false, zoom: false, rotateOptions: { autoHide: true, tipLabel: "Reset rotation (CTRL+DRAG to rotate)" } }),
       interactions:        ol.interaction.defaults().extend([ new ol.interaction.DragRotate({ condition: ol.events.condition.platformModifierKeyOnly, }) ]),
       keyboardEventTarget: document,
-      target:              this.target,
+      target:              'map',
       view:                new ol.View({
+        padding,
         extent,
         projection:    this.getProjection(),
         center:        ol.extent.getCenter(initextent),
@@ -4735,7 +4723,7 @@ export default new (class GUI extends Emitter {
     this.state.mapUnits = this.#map.getView().getProjection().getUnits();
 
     if (window.initConfig.background_color) {
-      document.getElementById(this.target).style.backgroundColor = window.initConfig.background_color;
+      document.querySelector('.ol-viewport').style.backgroundColor = window.initConfig.background_color;
     }
 
     this.#map.getViewport().insertAdjacentHTML(
@@ -4931,6 +4919,7 @@ export default new (class GUI extends Emitter {
     this.emit('after:setupControls');
 
     this.emit('after:setupViewer');
+
   }
 
   /**

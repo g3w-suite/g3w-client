@@ -17,7 +17,7 @@
   >
 
     <!-- CUSTOM ITEMS -->
-    <li v-for = "(item, i) in items" :key = "i"  @click.prevent.stop = "item.cbk || (() => {})" :style="{ order: item.position }">
+    <li v-for = "(item, i) in items" :key = "i"  @click.prevent.stop = "item.cbk && item.cbk($event)" :style="{ order: item.position }">
       <i v-if = "item.children" class = "fas fa-chevron-right" style  = "position: absolute; right: 0; margin-top: 3px"></i>
       <i v-if = "item.icon" :class = "$fa(item.icon)"></i> {{ $t(item.label) }}
       <!--SUB MENU-->
@@ -572,7 +572,7 @@
             { duration: 200, center:     view.getCenter() },
             { duration: 200, resolution: view.getResolution() }
           );
-          view.fit(geometry, { constrainResolution: true, size: GUI.getMap().getSize() });
+          view.fit(geometry);
         } catch(e) {
           console.warn(e);
           GUI.showUserMessage({
@@ -1023,125 +1023,3 @@
 
   };
 </script>
-
-<style>
-  .context-menu {
-    background: #FAFAFA;
-    border: 1px solid #BDBDBD;
-    border-radius: 3px;
-    display: block;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    position: fixed;
-    min-width: 150px;
-    z-index: 2;
-    color: #000;
-    outline: none;
-    display: flex;
-    flex-direction: column;
-  }
-  .context-menu li ul {
-    position: absolute;
-    width: max-content;
-    order: 1;
-    padding-left: 0;
-    background-color: #FFF;
-    color:#000;
-  }
-  .context-menu li:not(:hover) ul {
-    display: none;
-  }
-  .context-menu li {
-    border-bottom: 1px solid #E0E0E0;
-    margin: 0;
-    padding: 8px 25px 8px 15px;
-    display: flex;
-    flex-direction: row;
-  }
-
-  .context-menu li:not(.title) {
-    align-items: center;
-  }
-
-  .context-menu li i {
-    padding-right: 3px;
-    margin-right: 6px;
-    color: hsl(from var(--skin-color) h s calc(l - 20)) !important;
-  }
-  .context-menu li .click-to-copy {
-    color: #000;
-    opacity: 1;
-    margin-left: 1ch;
-    margin-right: -15px;
-    margin-top: 8px;
-  }
-  .context-menu li .click-to-copy:hover {
-    color: #FFF !important;
-    transform: scale(1.1);
-  }
-  .context-menu li.title {
-    background: transparent !important;
-    font-size: 1.1em;
-    font-weight: bold;
-    border-bottom-width: 3px !important;
-    flex-direction: column;
-    max-width: 250px;
-    cursor: move !important;
-    color: #000 !important;
-    border-bottom-color: var(--skin-color) !important;
-  }
-  .context-menu li:last-child {
-    border-bottom: none;
-  }
-  .context-menu li:hover {
-    color: #fafafa;
-    cursor: pointer;
-    background: hsl(from var(--skin-color) h s calc(l + 10));
-  }
-  .context-menu li .layer-menu-metadata-info {
-    background-color: #FFF ;
-    color:#000;
-    padding: 5px;
-    max-width: 200px;
-    white-space: normal;
-    overflow-y: auto;
-    max-height: 150px;
-  }
-  .context-menu .item-text {
-    margin-left: 3px;
-  }
-  .context-menu :is(ul, li) {
-    list-style-type: none;
-  }
-  .context-menu li.inline-submenu {
-    display: list-item;
-    padding: 0;
-    text-indent: 100%;
-    line-height: 0;
-    overflow: hidden;
-  }
-  .context-menu li.inline-submenu > * {
-    display: none;
-  }
-  .context-menu li.inline-submenu > ul {
-    display: block;
-    position: relative;
-    left: 0 !important;
-    width: 100%;
-    text-indent: 0;
-    line-height: initial;
-  }
-  .context-menu li,
-  .context-menu li.inline-submenu > ul > li {
-    font-weight: bold;
-  }
-  .context-menu li li {
-    font-weight: normal;
-  }
-  
-  .context-menu .sub-contex-menu {
-    border: 1px solid #eee;
-    border-left: 0;
-  }
-</style>

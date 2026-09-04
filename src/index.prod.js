@@ -263,7 +263,7 @@ Vue.use({
         return added;
       },
       getFontClass(type) {
-        return this.font[type] || '';
+        return this.font[type] || type || '';
       }
     };
     /** @since 3.11.0 */
