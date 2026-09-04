@@ -336,7 +336,7 @@
                     >
                       <!-- ORIGINAL SOURCE: src/components/QueryResultsActions.vue@v4.0.0 -->
                       <button
-                        v-for                     = "action in state.layersactions[layer.id].filter(action => initAction({ action, layer, feature, index }))" 
+                        v-for                     = "action in getFeatureActions({ actions: state.layersactions[layer.id], layer, feature, index })" 
                         type                      = "button"
                         :key                      = "action.id"
                         v-if                      = "(action.state && action.state.show) || true"
@@ -564,6 +564,8 @@
         headerActionsCellWidth:      10,
         /** @since 4.1.0 */
         proxied_layers:              [],
+        /** @since 4.2.0 cache feature action visibility to avoid render loops */
+        layer_feature_actions:       {},
       }
     },
 
@@ -1131,34 +1133,59 @@
         layer.loading = false;
       },
 
-      /**@since 4.1.0 */
-      async initAction({ action, layer, feature, index } = {}) {
-        let show = true;
+      /**
+       * @returns a cached, per-feature action list.
+       * 
+       * @since 4.2.0
+       */
+      getFeatureActions({ actions = [], layer, feature, index } = {}) {
+        const key = `${layer.id}__${feature?.id ?? index}`;
 
-        //check if action has condition to show action button in feature box header
-        if ('function' === typeof action.condition) {
-          show = await action.condition({ layer, feature });
+        // store it into cache (per layer/feature, to avoid render loops)
+        if (!this.layer_feature_actions[key]) {
+          this.$set(this.layer_feature_actions, key, actions);
+          (async () => {
+            for (const action of actions) {
+              let show = true;
+              // evaluate action visibility (for this feature)
+              if ('function' === typeof action.condition) {
+                try {
+                  show = await action.condition({ layer, feature });
+                } catch(e) {
+                  console.warn(e);
+                  show = false;
+                }
+              }
+              // keep visibility consistent with action state
+              show = show && (undefined === (action.state || {}).show ? true : action.state.show);
+              // init only visible actions
+              if (show && action.init) {
+                action.init({ layer, feature, index, action });
+              }
+              // register cleanup (only for active actions)
+              if (show && 'function' === typeof action.clear) {
+                this.clear_actions.push(() => action.clear({ action, layer, feature }));
+              }
+              // remove hidden actions (from cache)
+              if (!show) {
+                this.layer_feature_actions[key] = this.layer_feature_actions[key].filter(a => a !== action);
+              }
+            }
+          })();
         }
 
-        show = show && (undefined === (action.state || {}).show ? show : action.state.show);
-
-        //check if has init function 
-        if (show && action.init) {
-          action.init({ layer, feature, index, action });
-        }
-
-        //check if action has clear function to clear action state and store it in clear_actions array to be cleared on component destroy
-        if (show && 'function' === typeof action.clear) {
-          this.clear_actions.push(() => action.clear({ action, layer, feature }));
-        }
-
-        return show;
-      }, 
+        // return cached action
+        return this.layer_feature_actions[key];
+      },
     },
 
     watch: {
 
       async 'state.queried_layers'(queried_layers = []) {
+
+        //reset feature actions cache to avoid render loops
+        this.layer_feature_actions = {};
+
         queried_layers.forEach(layer => {
           if (layer.attributes.length <= layer.max_preview_fields && !layer.hasImageField) {
             layer.expandable = false;
