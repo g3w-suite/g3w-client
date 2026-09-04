@@ -1050,10 +1050,10 @@ textarea.form-control                     { height: auto; }
 /**************************************************************************************
  * 10. Contents
  **************************************************************************************/
-.contents                            { padding: 0 10px; height: auto; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; }
-.contents > :first-child             { flex-grow: 1; height: auto !important; display: flex !important; flex-direction: column; min-height: 0; }
-.contents > div                      { height: 100%; }
-.contents table                      { empty-cells: show; width: 100%; background-color: #fff !important; }
+.contents                                                          { padding: 0 10px; height: auto; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; }
+.contents > :first-child:not([style*="display: none"])             { flex-grow: 1; height: auto !important; display: flex !important; flex-direction: column; min-height: 0; }
+.contents > div                                                    { height: 100%; }
+.contents table                                                    { empty-cells: show; width: 100%; background-color: #fff !important; }
 .contents .node-row > div + div,
 .contents .tabs-wrapper + .tabs-wrapper,
 .contents .node-row .field + .tabs-wrapper                          { border-left: 1px solid rgba(0,0,0,.1);  }
