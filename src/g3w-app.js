@@ -5689,8 +5689,18 @@ export default new (class GUI extends Emitter {
         ([].concat(layer).sort((a, b) => (layersId.indexOf(a.state.id) > layersId.indexOf(b.state.id) ? 1 : -1)))
           .map((l, i) => l.getFilterData({ ...params, field: params.filter[i] }))
       ))
-        .filter(d => 'fulfilled' === d.status && (params.raw || d.value?.data?.at?.(0)?.features))
+        .filter(d => 'fulfilled' === d.status)
         .map(({ value } = {}) => {
+          // raw data, return as is (eg. for `getData('search:features')` with `raw: true`)
+          if (params.raw) {
+            return { data: value };
+          }
+          
+          //in case no features return from response, return an empty array 
+          if (!value?.data?.at?.(0)?.features) {
+            return [];
+          }
+
           const layerId = value.data?.at?.(0)?.layer?.state?.id;
           // autofilter → automatically set filtertoken
           if (1 === params.autofilter) {
@@ -5719,10 +5729,7 @@ export default new (class GUI extends Emitter {
             };
             pagination.getData.params[layerId] = { ...params, filter: params.filter[0] };
           }
-          // raw data
-          if (params.raw) {
-            return { data: value };
-          }
+          
           if (Array.isArray(value.data) && value.data.length > 0) {
             return value.data?.at?.(0);
           }
