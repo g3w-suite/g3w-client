@@ -3,11 +3,11 @@
  * @since 4.1.0
  */
 
-const { chromium } = require('playwright');
-const path         = require('path');
-const fs           = require('fs');
-const packageJSON  = require('../../package.json');
-const conf         = require('../../config');
+import { chromium } from 'playwright';
+import path from 'node:path';
+import fs from 'node:fs';
+import packageJSON from '../../package.json' with { type: 'json' };
+import conf from '../../config.js';
 
 const SERVER_URL = 'https://dev.g3wsuite.it/';
 

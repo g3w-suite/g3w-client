@@ -41,6 +41,9 @@ import * as xml             from 'ol/xml';
 import shp                  from 'shpjs';
 import proj4                from 'proj4';
 import Vue                  from 'vue/dist/vue.js';
+import $                    from 'jquery/dist/jquery';
+import select2              from 'select2';
+import moment               from 'moment/min/moment-with-locales';
 
 /**
  * Monkey patch for: `Vue.extend(require())`
@@ -156,7 +159,7 @@ globalThis.ol = Object.assign({}, ol, {
 /**
  * Based on jQuery v2.2.4
  */
-globalThis.$ = globalThis.jQuery = require('jquery/dist/jquery');
+globalThis.$ = globalThis.jQuery = $;
 
 /**
  * Based on bootstrap/js/modal.js@v3.3.7
@@ -233,9 +236,9 @@ $.fn.tooltip = function(opts) {
   return this;
 };
 
-require('select2')(jQuery);
+select2(jQuery);
 
-globalThis.moment = require('moment/min/moment-with-locales');
+globalThis.moment = moment;
 
 /**
  * Based on bootstrap/js/dropdown.js@v3.3.7

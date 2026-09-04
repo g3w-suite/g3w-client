@@ -9,7 +9,7 @@ import shpwrite    from '@mapbox/shp-write';
 // expose global variables
 import 'g3w-globals';
 
-const CONF = require('../config');
+import CONF from '../config.js';
 
 // apply dev config overrides (config.js)
 (CONF.devConfig || (() => { })).call();
@@ -839,4 +839,4 @@ g3w.app.once('ready', async () => {
 
 
 // run app (index.prod.js)
-require('./index.prod');
+import './index.prod';

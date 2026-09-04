@@ -533,6 +533,7 @@
 <script>
   import ApplicationState         from 'g3w-state';
   import { fieldsMixin }          from 'mixins';
+  import GUI                      from 'g3w-app';
   import Link                     from 'components/FieldLink.vue';
   import VueField                 from 'components/FieldVue.vue';
   import Image                    from 'components/FieldImage.vue'
@@ -540,7 +541,6 @@
   import { throttle }             from 'utils/throttle';
   import { getCatalogLayerById }  from 'utils/getCatalogLayerById';
   import { downloadFeatures }     from 'utils/downloadFeatures';
-  import GUI                      from 'g3w-app';
   import { Layer }                from 'g3w-layer';
   import { getAlphanumericProps } from 'utils/getAlphanumericProps';
   
