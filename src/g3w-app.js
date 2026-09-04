@@ -5646,7 +5646,7 @@ export default new (class GUI extends Emitter {
    * @param options.page               - since 3.11.0
    * @param options.page_sizes         - since 3.11.0
    * @param { boolean } options.raw    - whether it should return raw data
-   * @param { string } options.id      - since 4.2.0
+   * @param { string } options.id      - since 4.2.0 - search request identifier
    * 
    * @private invoked by `getData('search:features')`
    */
