@@ -1133,7 +1133,11 @@
         layer.loading = false;
       },
 
-      /** @since 4.2.0 */
+      /**
+       * @returns a cached, per-feature action list.
+       * 
+       * @since 4.2.0
+       */
       getFeatureActions({ actions = [], layer, feature, index } = {}) {
         const key = `${layer.id}__${feature?.id ?? index}`;
 
