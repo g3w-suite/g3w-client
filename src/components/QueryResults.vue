@@ -1141,45 +1141,40 @@
       getFeatureActions({ actions = [], layer, feature, index } = {}) {
         const key = `${layer.id}__${feature?.id ?? index}`;
 
-        if (this.layer_feature_actions[key]) {
-          return this.layer_feature_actions[key];
+        // store it into cache (per layer/feature, to avoid render loops)
+        if (!this.layer_feature_actions[key]) {
+          this.$set(this.layer_feature_actions, key, actions);
+          (async () => {
+            for (const action of actions) {
+              let show = true;
+              // evaluate action visibility (for this feature)
+              if ('function' === typeof action.condition) {
+                try {
+                  show = await action.condition({ layer, feature });
+                } catch(e) {
+                  console.warn(e);
+                  show = false;
+                }
+              }
+              // keep visibility consistent with action state
+              show = show && (undefined === (action.state || {}).show ? true : action.state.show);
+              // init only visible actions
+              if (show && action.init) {
+                action.init({ layer, feature, index, action });
+              }
+              // register cleanup (only for active actions)
+              if (show && 'function' === typeof action.clear) {
+                this.clear_actions.push(() => action.clear({ action, layer, feature }));
+              }
+              // remove hidden actions (from cache)
+              if (!show) {
+                this.layer_feature_actions[key] = this.layer_feature_actions[key].filter(a => a !== action);
+              }
+            }
+          })();
         }
 
-        // Return immediately with all actions once; async visibility filtering updates cache once resolved.
-        this.$set(this.layer_feature_actions, key, actions);
-
-        (async () => {
-
-          for (const action of actions) {
-            let show = true;
-
-            if ('function' === typeof action.condition) {
-              try { 
-                show = await action.condition({ layer, feature }); 
-              }
-              catch(e) {
-                console.warn(e); 
-                show = false; 
-              }
-            }
-
-            show = show && (undefined === (action.state || {}).show ? true : action.state.show);
-
-            if (show && action.init) {
-              action.init({ layer, feature, index, action });
-            }
-
-            if (show && 'function' === typeof action.clear) {
-              this.clear_actions.push(() => action.clear({ action, layer, feature }));
-            }
-
-            if (!show) {
-              this.layer_feature_actions[key] = this.layer_feature_actions[key].filter(a => a !== action);
-            }
-          }
-
-        })();
-
+        // return cached action
         return this.layer_feature_actions[key];
       },
     },
