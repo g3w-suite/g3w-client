@@ -49,7 +49,7 @@
 
 .content-wrapper            { height: calc(100% - 50px); position: fixed; inset: 0; pointer-events: none; }
 .content-wrapper > *        { pointer-events: all; }
-.is-iframe .content-wrapper { height: calc(100% - 0px); padding-top: 0;  }
+.is-iframe .content-wrapper { height: 100%; padding-top: 0;  }
 /*!
 * Based on Bootstrap v3.4.1 (https://getbootstrap.com/)
 * Copyright 2011-2019 Twitter, Inc.
@@ -543,7 +543,7 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
 .treeview-menu > li.active > a,
 .treeview-menu > li > a:hover                                      { color: #fff; }
 
-.is-iframe .main-sidebar                                           { margin-top: 0; }
+.is-iframe .main-sidebar                                           { margin-top: 0; height: 100%; }
 .is-iframe .main-sidebar a.sidebar-aside-toggle                    { top: 0! important; }
 .sidebar-panel                                                     { position: relative; color: #FFF; padding: 10px 15px 10px 15px; }
 .sidebar-panel .g3w-panel .g3w-panel-form button.run_button        { margin-top: 5px; font-weight: bold; }
@@ -780,6 +780,8 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .g3w-map-controls-left-bottom .ol-control                              { position: relative; }
 .g3w-map-controls-left-bottom                                          { display: flex; gap: 5px; align-items: end; bottom: 88px; position: absolute; z-index: 1; }
 .ol-zoom-history                                                       { align-items: end; order: 1; }
+
+.is-iframe :is(.g3w-map-controls-left-bottom, .ol-scale-line)          { bottom: 38px; }
 
 .ol-control button:hover                                               { background-color:var(--skin-color); }
 .ol-control button:focus                                               { background-color:#e5e5e5; outline: none; }
@@ -1050,10 +1052,11 @@ textarea.form-control                     { height: auto; }
 /**************************************************************************************
  * 10. Contents
  **************************************************************************************/
-.contents                            { padding: 0 10px; height: auto; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; }
-.contents > :first-child             { flex-grow: 1; height: auto !important; display: flex !important; flex-direction: column; min-height: 0; }
-.contents > div                      { height: 100%; }
-.contents table                      { empty-cells: show; width: 100%; background-color: #fff !important; }
+.contents                                                           { padding: 0 10px; height: auto; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; }
+.contents > *                                                       { display: none !important; }
+.contents > :last-child                                             { display: flex !important; flex-grow: 1; flex-direction: column; min-height: 0; height: auto !important; }
+.contents > div                                                     { height: 100%; }
+.contents table                                                     { empty-cells: show; width: 100%; background-color: #fff !important; }
 .contents .node-row > div + div,
 .contents .tabs-wrapper + .tabs-wrapper,
 .contents .node-row .field + .tabs-wrapper                          { border-left: 1px solid rgba(0,0,0,.1);  }

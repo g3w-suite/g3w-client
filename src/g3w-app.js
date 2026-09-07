@@ -1502,10 +1502,6 @@ export default new (class GUI extends Emitter {
       ApplicationState.contentsdata.push({ content, options: opts });
     }
 
-    Array
-      .from(contents.internalComponent.$el.children)  // hide other elements but not the last one
-      .forEach((el, i, a) => el.style.display = (i === a.length - 1) ? 'block' : 'none');
-
     contents.setOpen(true);
 
     await this.toggleContent(true);
@@ -1584,10 +1580,6 @@ export default new (class GUI extends Emitter {
     }
 
     ApplicationState.contentsdata.pop();
-
-    Array
-      .from(this.getComponent('contents').internalComponent.$el.children)       // hide other elements but not the last one
-      .forEach((el, i, a) => el.style.display = (i === a.length - 1) ? 'block' : 'none');
 
     this.resize();
 
