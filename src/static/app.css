@@ -1051,7 +1051,8 @@ textarea.form-control                     { height: auto; }
  * 10. Contents
  **************************************************************************************/
 .contents                                                           { padding: 0 10px; height: auto; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; }
-.contents > :first-child:not([style*="display"][style*="none"])     { flex-grow: 1; height: auto !important; display: flex !important; flex-direction: column; min-height: 0; }
+.contents > *                                                       { display: none !important; }
+.contents > :last-child                                             { display: flex !important; flex-grow: 1; flex-direction: column; min-height: 0; height: auto !important; }
 .contents > div                                                     { height: 100%; }
 .contents table                                                     { empty-cells: show; width: 100%; background-color: #fff !important; }
 .contents .node-row > div + div,
