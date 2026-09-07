@@ -37,7 +37,7 @@ If everything went fine, you should see the same folders symlinked also in here:
 ```
 
 
-Local development URLs are avaialble at:
+Local development URLs are available at:
 
 ```
 http://localhost:8000 # local docker instance
