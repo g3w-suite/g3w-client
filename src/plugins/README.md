@@ -179,3 +179,23 @@ You can check the value of these variables within the console of your favorite b
 console.log(window.initConfig)
 console.log(window.g3w)
 ```
+
+## Legacy plugins
+
+All the repos named `g3w-client-*` are legacy plugins and will be archived soon:
+
+- [base-template](https://github.com/g3w-suite/g3w-client-plugin-base-template)
+- [editing](https://github.com/g3w-suite/g3w-client-plugin-editing)
+- [eleprofile](https://github.com/g3w-suite/g3w-client-plugin-elevation-profile)
+- [openrouteservice](https://github.com/g3w-suite/g3w-client-plugin-openrouteservice)
+- [qplotly](https://github.com/g3w-suite/g3w-client-plugin-qplotly)
+- [qtimeseries](https://github.com/g3w-suite/g3w-client-plugin-qtimeseries)
+- [queryresult-template](https://github.com/g3w-suite/g3w-client-plugin-queryresult-template)
+- [sidebar-template](https://github.com/g3w-suite/g3w-client-plugin-sidebar-template)
+
+
+## Chatbot
+
+*Still confused? Please ask Devin about g3w-client before reaching out or creating an issue!*
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/g3w-suite/g3w-client)
