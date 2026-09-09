@@ -1676,7 +1676,7 @@ export default {
         await this.$nextTick();
 
         //ge locale from current languare or previuous language to check if plugins are translated
-        const locale             = Object.keys(ApplicationState.locales[plang || lang]);
+        const locale             = Object.keys(ApplicationState.locales[plang || lang] || {});
         const installed_plugins  = Object.keys(initConfig.plugins); //plugins provided by the server
         const i18n_plugins       = installed_plugins.filter(name => locale.find(k => k.includes(`plugins.${name}`)));
         // wait until all plugins have been translated
