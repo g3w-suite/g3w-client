@@ -1022,7 +1022,6 @@ export default {
      * @since 3.11.0
      */
     onCustomItemClick(e, item) {
-      alert()
       if (item.onclick) {
         e.preventDefault();
         return item.onclick();
