@@ -1,6 +1,7 @@
 {
   "name": "g3w-client",
   "version": "4.2.0-alpha.0",
+  "type": "module",
   "description": "Gis3W WebGIS Client",
   "main": "index.js",
   "scripts": {
@@ -16,6 +17,10 @@
     "docker:config": "npm run docker config",
     "docker:logs": "npm run docker logs",
     "test": "node test/dev.g3wsuite.it.js",
+    "test:cucumber": "cucumber-js",
+    "test:unit": "node --test \"test/unit/**/*.test.js\"",
+    "test:unit:watch": "node --test --watch \"test/unit/**/*.test.js\"",
+    "test:unit:coverage": "node --test --experimental-test-coverage \"test/unit/**/*.test.js\"",
     "preversion": "npm run test",
     "version": "npm run build && git add -A",
     "postversion": "git push && git push --tags"
@@ -48,12 +53,13 @@
     "vue-color": "^2.8.1"
   },
   "devDependencies": {
+    "@cucumber/cucumber": "^13.2.1",
     "esbuild": "^0.24.0",
     "esbuild-vue": "^1.2.2",
     "http-proxy": "^1.18.1",
     "http-proxy-response-rewrite": "^0.0.1",
     "mime-types": "^3.0.1",
-    "playwright": "^1.55.0",
+    "playwright": "^1.62.1",
     "vue-template-compiler": "2.7.16"
   },
   "engines": {

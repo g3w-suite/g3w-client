@@ -1,4 +1,6 @@
-const { version } = require('./package.json');
+import packageJSON from './package.json' with { type: 'json' };
+
+const { version } = packageJSON;
 
 let conf = {
   pluginsFolder:          './src/plugins',                                  // path to G3W-CLIENT plugins folder
@@ -51,4 +53,4 @@ if (version < '4') {
   conf.test         = { path: '/test/config/groups/' };
 }
 
-module.exports = conf;
+export default conf;

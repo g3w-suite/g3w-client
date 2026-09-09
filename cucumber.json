@@ -1,0 +1,8 @@
+{
+  "default": {
+    "parallel": 2,
+    "format": ["html:cucumber-report.html"],
+    "paths": ["test/features/**/*.feature"],
+    "import": ["test/features/step_definitions/**/*.js"]
+  }
+}
