@@ -187,9 +187,9 @@ export default class Component extends Emitter {
       });
     }
 
-    if (this.internalComponent) {
-      this.internalComponent.state = this._service.state;
-    }
+    this.internalComponent.state = this._service.state;
+    
+  }
 
   setOpen(bool) {
     this.state.open = bool;
