@@ -611,14 +611,17 @@ export default class MapControl extends ol.control.Control {
      * @TODO check if it is deprecated. It used to show help message for map control
      */
     if ('how' === toggledTool.how && this._onhover) {
-      this._toolButton = document.createElement(`<span style="display:none" class="tool_mapcontrol_button"><i class="fas fa-cog"></i></span>`);
+      this._toolButton               = document.createElement('span');
+      this._toolButton.style.display = 'none';
+      this._toolButton.className     = 'tool_mapcontrol_button';
+      this._toolButton.innerHTML     = '<i class="fas fa-cog"></i>';
       this.element.prepend(this._toolButton);
       this._toolButton.addEventListener('click', e => {
         e.stopPropagation();
         this.showToggledTool(true);
       });
-      this.element.addEventListener('mouseover',  () => this._toggled && this._toolButton.show());
-      this.element.addEventListener('mouseleave', () => this._toolButton.hide());
+      this.element.addEventListener('mouseover',  () => this._toggled && (this._toolButton.style.display = ''));
+      this.element.addEventListener('mouseleave', () => this._toolButton.style.display = 'none');
     }
   }
 
@@ -681,9 +684,9 @@ export default class MapControl extends ol.control.Control {
 
     /** @TODO Deprecated */
     if (toggled && this._toolButton) {
-      this._toolButton.show();
+      this._toolButton.style.display = '';
     } else if (!toggled && this._toolButton) {
-      this._toolButton.hide();
+      this._toolButton.style.display = 'none';
     }
 
     //** if not toggled and has a toggle tool (e.g., measure map control) close user message tool  */
