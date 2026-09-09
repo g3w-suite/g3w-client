@@ -271,14 +271,6 @@ const STATE = {
   split: 'h',
 
   /** @since 4.1.0 */
-  map: {
-    sizes: {
-      width:  0,
-      height: 0
-    },
-  },
-
-  /** @since 4.1.0 */
   content: {
     loading:  false,
     disabled: false,
@@ -296,25 +288,6 @@ const STATE = {
     closable:     true, // (x) is closable
     backonclose:  false, // back on prevoius content
     contentsdata: [], // content data array
-  },
-
-  /** @since 4.1.0 */
-  usermessage: {
-    id:          null, // unique identify
-    show:        false,
-    title:       null,
-    message:     null,
-    position:    null,
-    type:        null,
-    draggable:   null,
-    cloasable:   null,
-    autoclose:   null,
-    textMessage: false,
-    hooks: {
-      header: null,
-      body:   null,
-      footer: null
-    }
   },
 
   /** @since 3.11.0 */

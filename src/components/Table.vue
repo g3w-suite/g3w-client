@@ -630,9 +630,9 @@ export default {
     });
 
     // move "table_metadata", "table_info" and "table_search" before header action tools
-    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', this.$refs['table_metadata']);
-    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', this.$refs['table_info']);
-    document.querySelector('#g3w-view-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', this.$refs['table_search']);
+    document.querySelector('#g3w-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', this.$refs['table_metadata']);
+    document.querySelector('#g3w-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', this.$refs['table_info']);
+    document.querySelector('#g3w-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', this.$refs['table_search']);
   },
 
   async beforeDestroy() {

@@ -94,6 +94,15 @@ g3w.app.on('map:context-menu', menu => {
     return { lat, lon, zoom };
   };
   menu.items.push({
+    label: 'View on Panoramax',
+    icon: 'fas fa-road',
+    position: 10,
+    cbk: () => {
+      const { lat, lon, zoom } = xyz();
+      window.open(`https://explore.panoramax.fr/?map=${zoom}/${lat}/${lon}`, '_blank');
+    }
+  });
+  menu.items.push({
     label: 'View on external map',
     icon: 'external-link',
     position: 100,

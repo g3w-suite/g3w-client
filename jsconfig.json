@@ -2,12 +2,12 @@
   "compilerOptions": {
     "target": "ES6",
     "moduleResolution": "bundler",
-    "baseUrl": "src",
     "paths": {
       "*": [
-        "*",
-        "app/*",
-        "plugins/*"
+        "./*",
+        "./src/*",
+        "./src/app/*",
+        "./src/plugins/*"
       ]
     }
   }

@@ -559,7 +559,7 @@
 
       const selectElement  = $(this.$refs.select);
       const language       = window.initConfig.user.i18n || "en";
-      const dropdownParent = undefined === this.state.dropdownParent && document.querySelector('#g3w-view-content');
+      const dropdownParent = undefined === this.state.dropdownParent && document.querySelector('#g3w-content');
       if (this.autocomplete) {
         this.select2 = selectElement.select2({
           minimumInputLength: 1,

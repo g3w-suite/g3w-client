@@ -26,6 +26,7 @@ import vueSearchComp                  from 'components/SearchPanel.vue';
  */
 export function SearchPanel(opts = {}, show = false) {
   const state = {
+    id:                   opts.id, //since 4.2.0
     loading:              {}, // store loading state of each input and each dependency
     searching:            false, //Boolean. If true, search request from server is starts. False no search
     title:                opts.name,
@@ -194,7 +195,6 @@ async function doSearch({
   feature_count = 10000,
   state
 } = {}) {
-
   queryUrl = undefined === queryUrl ? state.queryurl : queryUrl;
   show     = undefined === show     ? 'search' === state.type && 'data' === state.return : show;
 
@@ -206,6 +206,7 @@ async function doSearch({
   try {
     data = await GUI.getData('search:features', {
       inputs: {
+        id:        state.id, //since 4.2.0
         layer:     state.search_layers,
         filter:    filter || createFilterFormInputs({
           layer:   state.search_layers,
@@ -216,7 +217,7 @@ async function doSearch({
         feature_count,
         raw:        'search' === state.return,                                        // whether get a raw response
         autofilter: Number(show && state.autofilter.value),                           // 0/1 = autofilter (by server)
-        ...(state.paginate && !search_1n ? { page: 1, page_sizes: PAGELENGTHS } : {}) // @since 3.11.0 pagination configuration
+        ...(state.paginate && !search_1n ? { page: 1, page_sizes: PAGELENGTHS } : {}), // @since 3.11.0 pagination configuration
       },
       outputs: show && { title: state.title }
     });
@@ -230,8 +231,9 @@ async function doSearch({
     }
     // no search response (values) → show an empty result
     if (!has_values && 'search' === state.return) {
-      GUI.showData({ data: [] });
-      data = [];
+      await GUI.closeContent();
+      data = { data: [] };
+      GUI.showData(data);
     }
     /********************************************************************************/
 
