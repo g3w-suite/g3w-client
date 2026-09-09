@@ -522,7 +522,7 @@ export default {
       const qlayer  = getCatalogLayerById(this.layerstree.id);
       const checked = this.layerstree.checked;
 
-      qlayer.setVisible(checked ? !this.layerstree.disabled : false)
+      qlayer.setVisible(checked ? !this.layerstree.disabled : false);
 
       if (checked && this.layerstree.parentGroup?.mutually_exclusive) {
         this.layerstree.parentGroup.nodes.forEach(n => n.checked = n.id === this.layerstree.id);
