@@ -2435,7 +2435,7 @@ export default new (class GUI extends Emitter {
     }
 
     // call "action.change"
-    this.state.layersactions[layer.id].forEach(a => a.change?.(layer));
+    this.state.layersactions[layer.id].forEach(action => action.change?.(layer));
 
     // reset actions tools
     (layer.features || []).forEach((_, idx) => {
