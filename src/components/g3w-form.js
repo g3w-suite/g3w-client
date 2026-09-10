@@ -193,7 +193,7 @@ export class FormComponent extends Component {
       ...opts,
       id:                 opts.id || 'form',
       perc:               opts.layer?.config?.editing?.form?.perc ?? opts.perc,
-      service:            new (opts.service || FormService)(),
+      service:            new (opts.service || FormService)(opts),
       vueComponentObject: opts.vueComponentObject || vueComp,
     });
 
@@ -255,13 +255,15 @@ export class FormService extends Emitter {
       'postRender',
     ];
 
+    this.setInitForm(opts);
+
   }
 
   /**
    * @since 4.0.0. 
    */
   setInitForm(opts = {}) {
-    this._setInitForm(opts);
+    this.#setInitForm(opts);
   }
 
   /**
@@ -315,14 +317,10 @@ export class FormService extends Emitter {
     // hook for listener to change DOM
   }
 
-  init(opts = {}) {
-    this._setInitForm(opts);
-  }
-
   /**
    * Init form options passed, for example, by editor
    */
-  _setInitForm(options = {}) {
+  #setInitForm(options = {}) {
     const {
       fields,
       feature,
