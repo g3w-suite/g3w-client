@@ -2831,7 +2831,7 @@ export default new (class GUI extends Emitter {
   }
 
   /**
-   * @param {boolean} bool since 4.2.0 - whether toggle mapcontrol
+   * @param {undefined | boolean} bool since 4.2.0 - whether toggle mapcontrol
    * 
    * @since 4.1.0
    */
