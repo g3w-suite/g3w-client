@@ -590,13 +590,13 @@
        */
        canEdit(layer) {
         try {
-          return layer 
-          ? !layer.external && false === GUI.getPlugin('editing')?.isLayerInEditing?.(layer.id)
-          : Object.values(GUI.getPlugin('editing')?.getEditableLayers() || {}).find(l => l.isGeoLayer() && !GUI.getPlugin('editing')?.isLayerInEditing?.(l.getId()));
+          const editing = GUI.getPlugin('editing');
+          return layer
+            ? !layer.external && !editing?.isLayerInEditing?.(layer.id)
+            : Object.values(editing?.getEditableLayers() || {}).find(l => l.isGeoLayer() && !editing?.isLayerInEditing?.(l.getId()));
         } catch(e) {
           console.warn(e);
         } 
-        
       },
 
       /**
