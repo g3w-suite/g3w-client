@@ -81,12 +81,9 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   #events = {
-    ol:           [],
-    layers:       [], // layers
-    unwatches:    [],
-    query:        [],
+    unwatches: [],
+    query:     [],
   };
-
 
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
@@ -2710,7 +2707,7 @@ export default new (class GUI extends Emitter {
     this.highlight(false);
     this.#layer.getSource().clear();
     this.deactiveQueryInteractions(true);
-    //reset pagination
+    // reset pagination
     this.#clearState();
     // used by the following plugins: "stress"
     this.emit('onbefore:closeComponent');
@@ -2718,12 +2715,6 @@ export default new (class GUI extends Emitter {
     this.emit('onafter:closeComponent');
     this.#layer.getSource().clear();
     this.getMap().removeLayer(this.#layer);
-
-    // clear map
-    this.#events.ol.forEach(key => ol.Observable.unByKey(key));
-    this.#events.ol.splice(0);
-    this.#events.layers.forEach(({ event, key }) => ApplicationState.project.un(event, key));
-    this.#events.layers.splice(0);
 
     // exec lazy functions 
     setTimeout(() => {
@@ -4748,48 +4739,45 @@ export default new (class GUI extends Emitter {
         this.addExternalLayer(olLayer, { ...layer.options, zoomToExtent: false });
       });
     });
-    
-    // setup ol events
 
-    // set change resolution
-    this.#events.ol.forEach(k => ol.Observable.unByKey(k));
-    this.#events.ol.push(
-      this.#map.getView().on('change:resolution', debounce(() => {
-        this.state.bbox       = this.getMapBBOX();
-        this.state.resolution = this.#map.getView().getResolution();
-        this.state.center     = this.#map.getView().getCenter();
-        this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, {}));
-        if (ApplicationState.project.state.context_base_legend) {
-          this._setLegendParams();
-        }
-      }))
-    );
+    // update legend (on map move)
+    this.#map.getView().on('change:resolution', debounce(() => {
+      this.state.bbox       = this.getMapBBOX();
+      this.state.resolution = this.#map.getView().getResolution();
+      this.state.center     = this.#map.getView().getCenter();
+      this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, {}));
+      if (ApplicationState.project.state.context_base_legend) {
+        this._setLegendParams();
+      }
+    }));
 
-    if (ApplicationState.project.state.context_base_legend) {
-      this.#events.ol.push(
-        this.#map.on('moveend', () => this._setLegendParams())
-      );
-    } else {
-      //set always to show legend at the start
+    // update legend (on map move)
+    this.#map.on('moveend', () => {
+      if (ApplicationState.project.state.context_base_legend) {
+        this._setLegendParams();
+      }
+    });
+
+    // show legend (at start)
+    if (!ApplicationState.project.state.context_base_legend) {
       this._setLegendParams();
     }
 
-    // setup events keys to layers
-    this.#events.layers = [];
-    this.#events.layers.push({
-      event: 'addLayer',
-      key: ApplicationState.project.onafter('addLayer', l => {
-        if ('vector' === l.getType()) {
-          const olLayer = l.getOLLayer();
-          if (olLayer) {
-            this.getMap().addLayer(olLayer);
-          }
+    // temp layers (add)
+    ApplicationState.project.onafter('addLayer', l => {
+      if ('vector' === l.getType()) {
+        const olLayer = l.getOLLayer();
+        if (olLayer) {
+          this.getMap().addLayer(olLayer);
         }
-      }),
+      }
     });
-    this.#events.layers.push({
-      event: 'removeLayer',
-      key: ApplicationState.project.onafter('removeLayer', l => { 'vector' === l.getType() && this.#map.removeLayer(l.getOLLayer()) }),
+
+    // temp layers (remove)
+    ApplicationState.project.onafter('removeLayer', l => {
+      if ('vector' === l.getType()) {
+        this.#map.removeLayer(l.getOLLayer());
+      }
     });
 
     this.#map_ready = true;
