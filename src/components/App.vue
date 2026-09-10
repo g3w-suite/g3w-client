@@ -1651,9 +1651,8 @@ export default {
     language: {
       immediate: true,
       async handler(lang, plang) {
-        //In case of no language, loading time, set default language en
+        // no language → fallback to "en"
         if (!lang) {
-          // lazy load i18n translations
           _.register('en', (await import(`${initConfig.urls.clienturl}locales/en.js`)).default);
           return;
         }
@@ -1667,26 +1666,19 @@ export default {
           GUI.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
         }
 
-        //wait loading all plugins. Need to wait for plugins to be loaded when open apllication first time
+        // wait for all plugins (loading).
         await waitFor(() => 0 === ApplicationState.plugins.length);
 
         ApplicationState.language = lang;
 
-        //need to wait change laguage. Some plugins watch language change
+        // wait language change (some plugins may watch language change).
         await this.$nextTick();
 
-        //ge locale from current languare or previuous language to check if plugins are translated
-        const current_locale     = ApplicationState.locales[plang || lang];
-        if (!current_locale) {
-          console.warn('[i18n] Missing locale dictionary while waiting for plugin translations', {
-            lang,
-            plang,
-            available_locales: Object.keys(ApplicationState.locales || {}),
-          });
-        }
-        const locale             = Object.keys(current_locale || {});
-        const installed_plugins  = Object.keys(initConfig.plugins); //plugins provided by the server
+        // retrieve plugins translations.
+        const locale             = Object.keys(ApplicationState.locales[plang || lang] || {});
+        const installed_plugins  = Object.keys(initConfig.plugins); // plugins provided by the server
         const i18n_plugins       = installed_plugins.filter(name => locale.find(k => k.includes(`plugins.${name}`)));
+
         // wait until all plugins have been translated
         await waitFor(() => {
           return i18n_plugins.length === i18n_plugins.filter(name => locale.find(key => key.startsWith(`plugins.${name}`))).length;
