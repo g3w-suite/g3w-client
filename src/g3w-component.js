@@ -7,30 +7,38 @@ import Emitter        from 'g3w-emitter';
 import { cloneDeep }  from 'utils/cloneDeep';
 import GUI            from 'g3w-app';
 
-import deprecate      from 'util-deprecate';
-
 /**
- * Component class
+ * Base class for UI components managed by the application GUI.
  * 
- * ORIGINAL SOURCE src/app/gui/component/component.js@v3.9.3
- * 
- * @param { Object} opts
- * @param { number } opts.id 
- * @param { string } opts.title
- * @param { boolean } opts.visible
- * @param { boolean } opts.open
- * @param { boolean } opts.resizable
- * @param { null | unknown } opts.info
- * @param { boolean } opts.loading
- * @param { boolean } opts.disabled
- * @param { boolean } opts.closewhenshowviewportcontent
- * @param opts.events
- * @param opts.internalComponent since 3.10.0
- * @param opts.service since 3.10.0
+ * @param { Object }  [opts={}]                                component options
+ * @param { number }  opts.id                                  component identifier; a random identifier is generated when omitted
+ * @param { string }  opts.info                                additional component information
+ * @param { string }  [opts.title='']                          component title
+ * @param { boolean } [opts.visible=true]                      whether the component is visible
+ * @param { boolean } [opts.mobile=true]                       whether to show the component on mobile devices
+ * @param { boolean } [opts.open=false]                        whether the component starts open
+ * @param { boolean } [opts.collapsible=true]                  whether the component can be opened and closed from the sidebar
+ * @param { boolean } [opts.loading=false]                     whether the component is loading
+ * @param { boolean } [opts.disabled=false]                    whether the component is disabled
+ * @param { boolean } [opts.closewhenshowviewportcontent=true] whether to close when viewport content is shown
+ * @param { Object }  opts.internalComponent                   existing Vue component instance (since 3.10.0)
+ * @param { Object }  opts.vueComponentObject                  Vue component definition used to create an instance
+ * @param { Object }  opts.service                             service exposed to the Vue component (since 3.10.0)
  */
 export default class Component extends Emitter {
 
+  #service;
+
   constructor(opts = {}) {
+
+    super({
+      setters: [
+        'setOpen',
+        'setVisible',
+        'setLoading',
+        'setDisabled',
+      ]
+    });
 
     // BACKCOMP v3.x
     if (opts.iconConfig) {
@@ -41,69 +49,57 @@ export default class Component extends Emitter {
       delete opts.iconConfig;
     }
 
-    // Check if opts.icon using `GUI.getFontClass` method is defined as key on FONT_AWESOME_ICONS global constants
-    opts.icon              = GUI.getFontClass(opts.icon) ?? opts.icon;
-
-    opts.open              = opts.open        ?? false; 
-    opts.mobile            = opts.mobile      ?? true; //show on mobile devices (default true)
-    opts.collapsible       = opts.collapsible ?? true; //means that the component can be opened and closed by clicking on the icon in the sidebar
-    opts.internalComponent = opts.internalComponent ?? null;
-    opts.id                = opts.id ?? Math.random() * 1000;
-    /** @type { string } */
-    opts.title             = opts.title ?? '';
-    
-    super({
-      setters: [
-        'setOpen',
-        'setVisible',
-        'setLoading',
-        'setDisabled',
-        'reload',
-      ]
+    // store every opts into component instance 
+    Object.assign(this, {
+        info:                         null,
+        open:                         false,
+        mobile:                       true,
+        collapsible:                  true,
+        internalComponent:            null,
+        id:                           Math.random() * 1000,
+        title: '',
+        visible:                      true,
+        loading:                      false,
+        disabled:                     false,
+        closewhenshowviewportcontent: true,
+        ...opts,
+        // TODO: check why `GUI.getFontClass` is undefined
+        icon: GUI.getFontClass?.(opts.icon) ?? opts.icon
     });
 
-    // store the options
-    this.opts              = opts;
-     
-    /** start true mean no changes is done on component layout */
-    this._firstLayout      = true;
-
-    /** @type { Array } */
-    this._components       = [];
-
+    // TODO: remove `this.state` and store only `opts`?
     this.state = {
       sizes:                        { width: 0, height: 0 },
-      info:                         opts.info                         ?? null,
-      open:                         opts.open                         ?? false,
-      visible:                      opts.visible                      ?? true,
-      loading:                      opts.loading                      ?? false,
-      disabled:                     opts.disabled                     ?? false,
-      resizable:                    opts.resizable                    ?? false,
-      closewhenshowviewportcontent: opts.closewhenshowviewportcontent ?? true,
+      info:                         this.info,
+      open:                         this.open,
+      visible:                      this.visible,
+      loading:                      this.loading,
+      disabled:                     this.disabled,
+      closewhenshowviewportcontent: this.closewhenshowviewportcontent,
     };
 
-    this._service = opts.service || this;
+    this.#service = this.service || this;
 
-    Object.assign(this, opts);
+    // create a new Vue component (from object definition)
+    if (this.vueComponentObject) {
+      const vueComp    = cloneDeep(this.vueComponentObject);
+      vueComp.template = this.template || vueComp.template;
+      this.internalComponent = new (Vue.extend(vueComp))({
+        service:   this.#service,
+        template:  this.template,
+        propsData: this.propsData
+      });
+    }
 
-    this.init();
+    if (this.internalComponent) {
+      this.internalComponent.state = this.#service.state;
+    }
     
   }
 
   /**
-   * @param { Object } opts
-   * @param { Array } opts.components
-   * @param { Object } opts.service
-   * @param { Function } opts.service.init
-   * @param opts.vueComponentObject
-   * @param opts.template
-   * @param opts.propsData
+   * @returns { number } the component identifier
    */
-  init() {
-    this.setInternalComponent();
-    return this;
-  }
-
   getId() {
     return this.id;
   }
@@ -112,126 +108,102 @@ export default class Component extends Emitter {
     this.id = id;
   }
 
+  /**
+   * @returns { boolean } whether the component is open
+   */
   getOpen() {
     return this.state.open;
   }
 
+  /**
+   * @returns { boolean } whether the component is visible
+   */
   getVisible() {
     return this.state.visible;
   }
 
+  /**
+   * @returns { string } the component title
+   */
   getTitle() {
     return this.state.title;
   }
 
+  /**
+   * @param { string } title new component title
+   */
   setTitle(title) {
     this.state.title = title;
   }
 
+  /**
+   * @returns { Object } the service associated with the component
+   */
   getService() {
-    return this._service;
+    return this.#service;
   }
 
+  /**
+   * @param { Object } service service associated with the component
+   */
   setService(service) {
-    this._service = service;
+    this.#service = service;
   }
 
-  addComponent(Component) {
-    this._components.push(Component);
-  }
-
-  removeComponent(Component) {
-    this._components = this._components.filter(c => c !== Component);
-  }
-
+  /**
+   * @returns { Object|null } the mounted internal Vue component, if any
+   */
   getInternalComponent() {
     return this.internalComponent;
   }
 
   /**
-   * Initialize the internal component, if opts.internalComponent is defined, it will be used, otherwise, if opts.vueComponent is defined, it will be used to create a new Vue component.
+   * @param { boolean } bool whether the component is open
    */
-  setInternalComponent() {
-  
-    //bins open event
-    if (this.opts.events?.open) {
-      const { when = "after", cb = () => {} } = this.opts.events.open;
-      this[`on${when}`]('setOpen', bool => cb(bool));
-    }
-
-    // if internalComponent is defined, use it
-    if (this.opts.internalComponent) {
-      this.internalComponent = this.opts.internalComponent;
-      (Array.isArray(this.opts.events) ? this.opts.events : [])
-        .forEach(e => this.internalComponent.$on(e.name, data => e?.handler?.(data) || this[`set${e.name[0].toUpperCase()}${e.name.slice(1)}`](data)));
-    }
-
-    // if vueComponentObject is defined, use it to create a new Vue component
-    if (this.opts.vueComponentObject) {
-      this.vueComponent = cloneDeep(this.opts.vueComponentObject);
-      this._components  = this.opts.components || [];
-
-      this._service     = this._service ?? (() => {});
-
-      if (this._service?.init && this.init !== this._service?.init) {
-        this._service.init(this.opts);
-      }
-
-      if (this.opts.template) {
-        this.vueComponent.template = this.opts.template;
-      }
-      this.internalComponent = new (Vue.extend(this.vueComponent))({
-        service:   this._service,
-        template:  this.opts.template,
-        propsData: this.opts.propsData
-      });
-    }
-
-    this.internalComponent.state = this._service.state;
-    
-  }
-
   setOpen(bool) {
     this.state.open = bool;
     this._setOpen?.(bool);
   }
 
+  /**
+   * @param { boolean } bool whether the component is visible
+   */
   setVisible(bool) {
     this.state.visible = bool;
     this._setVisible?.(bool);
   }
 
+  /**
+   * @param { boolean } [bool=false] whether the component is loading
+   */
   setLoading(bool = false) {
     this.state.loading = bool;
   }
 
+  /**
+   * @param { boolean } [bool=false] whether the component is disabled
+   */
   setDisabled(bool = false) {
     this.state.disabled = bool;
   }
 
-  reload() {
-    console.warn('[G3W-CLIENT] reloading of components will be discontinued, please update your code as soon as possible', this.getId())
-    this._reload?.();
-  }
-
   /**
-   * @param { Element | 'string' } parent DOM element
-   * @param { boolean } append
+   * Mount the internal Vue component in the target element.
+   * 
+   * @param { Element|string } parent DOM element or selector used as mount target
+   * @param { boolean } [append=false] append the mounted element instead of mounting in place
+   *
+   * @returns { Promise<boolean> } resolves to true after the component is mounted
    * 
    * @fires ready
    * @fires mount
    */
   async mount(parent, append) {
-
-    if (!this.internalComponent) {
-      this.setInternalComponent();
-    }
-
     if (append) {
       ('string' === typeof parent ? document.querySelector(parent) : parent).append(this.internalComponent.$mount().$el);
     }
 
-    if (!append){
+    if (!append) {
       this.internalComponent.$mount(parent);
     }
 
@@ -244,45 +216,42 @@ export default class Component extends Emitter {
   }
 
   /**
+   * Destroy and remove the internal Vue component.
+   *
+   * @returns { Promise<void >} resolves after the component has been unmounted
+   * 
    * @fires unmount
    */
   async unmount() {
     if (!this.internalComponent) {
       return;
     }
-    if (this.state.resizable) {
-      this.internalComponent.$off('resize-component', this.internalComponent.layout);
-    }
     this.state.open = false;
     this.internalComponent.$destroy(true); // destroy vue component
     this.internalComponent.$el?.remove();  // remove dom element
-    this.internalComponent = null;         // set internal componet to null (for GC)
+    this.internalComponent = null;         // set internal component to null (for GC)
     this.emit('unmount');                  // emit unmount event
   }
 
   /**
-   * @returns { Element } DOM element
+   * @returns { Element|null } mounted DOM element, or null when not mounted
    */
   ismount() {
     return this.internalComponent?.$el;
   }
 
   /**
-   * @param { number } width 
-   * @param { number } height 
+   * Update the component layout and notify the internal Vue component.
    * 
-   * @listens internalComponent~resize-component
-   * @fires internalComponent~resize-component
+   * @param { number } width available width in pixels
+   * @param { number } height available height in pixels
+   *
+   * @returns { Promise<void> } resolves after the layout event is emitted
+   * 
    * @fires layout
    */
   async layout(width, height) {
-    if (this.state.resizable && this._firstLayout & this.internalComponent) {
-      this.internalComponent.$on('resize-component', this.internalComponent.layout);
-      this._firstLayout = false;
-    }
     await this.internalComponent?.$nextTick?.();
-    //need to check if internal component exist becouse wehn unmount, internalcomponent is set to nul
-    this.internalComponent?.$emit('resize-component', { width, height });
     this.emit('layout');
   }
 
