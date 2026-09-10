@@ -1940,17 +1940,6 @@ export default new (class GUI extends Emitter {
 
     // update map padding
     this.getMap().getView().padding = padding;
-    // re-layout each component stored into the stack
-    ApplicationState.contentsdata.forEach(d => {
-      try {
-        if ('function' == typeof d.content.layout) {
-          d.content.layout(ApplicationState.content.sizes.width, parseFloat(contents.style.height));
-        }
-      } catch(e) {
-        this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
-        setTimeout(() => this.resize(), 1000);
-      }
-    });
 
     this.emit('resize');
 

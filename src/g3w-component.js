@@ -84,7 +84,7 @@ export default class Component extends Emitter {
     if (this.internalComponent) {
       this.internalComponent.state = this.#service.state;
     }
-    
+
   }
 
   /**
@@ -219,21 +219,6 @@ export default class Component extends Emitter {
     this.internalComponent.$el?.remove();  // remove dom element
     this.internalComponent = null;         // set internal component to null (for GC)
     this.emit('unmount');                  // emit unmount event
-  }
-
-  /**
-   * Update the component layout and notify the internal Vue component.
-   * 
-   * @param { number } width available width in pixels
-   * @param { number } height available height in pixels
-   *
-   * @returns { Promise<void> } resolves after the layout event is emitted
-   * 
-   * @fires layout
-   */
-  async layout(width, height) {
-    await this.internalComponent?.$nextTick?.();
-    this.emit('layout');
   }
 
 }
