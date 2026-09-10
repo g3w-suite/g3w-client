@@ -1729,6 +1729,13 @@ export class Layer extends Emitter {
   }
 
   /**
+   * @returns { boolean } whether plugin is in editing
+   */
+  isInEditing() {
+    return this.isEditable() && GUI.getPlugin('editing')?.isLayerInEditing?.(this.state.id);
+  }
+
+  /**
    * @returns {*|boolean} whether is a base layer
    */
   isBaseLayer() {
