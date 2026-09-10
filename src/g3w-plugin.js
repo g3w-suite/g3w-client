@@ -54,30 +54,28 @@ export class Plugin extends Emitter {
       if (this.name) {
         delete ApplicationState.layout[this.name];
       }
-    }, 10000);
+    }, 10000); // 10 seconds
 
   }
 
   /**
-   * Set plugin name
-   * @param { String } name
+   * @param { String } name plugin name
    */
   setName(name) {
     this.name = name;
   }
 
   /**
-   * Get plugin name
-   * @returns { String } name
+   * @returns { String } plugin name
    */
   getName() {
     return this.name;
   }
 
   /**
+   * @param { String | Object } i18n translations lang for the plugin
+   * 
    * @since 4.1.0
-   * Set i18n translations lang for the plugin
-   * @param { String | Object } i18n 
    */
   async setI18n(i18n) {
     //In case of missing i18n configuration, do nothing
@@ -112,23 +110,23 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * Set plugin configuration
-   * @param { Object } config
+   * @param { Object } config plugin configuration
    */
   setConfig(config = {}) {
     this.config = 'Object' === toRawType(config) ? config : null;
   }
 
   /**
-   * Get plugin configuration
-   * @param { String } name
+   * @param { String } name plugin name
+   * 
+   * @returns plugin configuration
    */
   getConfig(name) {
     return this.config || window.initConfig.plugins[name || this.name];
   }
 
   /**
-   * Register custom i18n strings (global context) 
+   * Register custom i18n strings (global context)
    * 
    * @param { string } lang 
    * @param {*} locale i18n object
@@ -153,9 +151,7 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * Set plugin service functionality (methods, events, ...) to interact with the plugin
-   * 
-   * @param { Object } service
+   * @param { Object } service plugin service functionality (methods, events, ...) to interact with the plugin
    * 
    * @since 4.0.0
    */
@@ -167,9 +163,7 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * Return plugin service functionality (methods, events, ...) to interact with the plugin
-   * 
-   * @returns { Object }
+   * @returns { Object } plugin service functionality (methods, events, ...) to interact with the plugin
    * 
    * @since 4.0.0 
    */
@@ -178,7 +172,6 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * Set plugin dependencies
    * @param { Array } dependencies plugin dependencies (eg. ["editing", "processing"])
    */
   setDependencies(dependencies = []) {
@@ -305,6 +298,7 @@ export class Plugin extends Emitter {
 
   /**
    * @param { string } gid plugin's gid (eg: qdjango:1)
+   * 
    * @returns whether plugin is compatible with current projectId
    */
   isCurrentProjectCompatible(gid) {
@@ -313,7 +307,9 @@ export class Plugin extends Emitter {
 
   /**
    * Check and register plugin only when compatible with current projectId (eg: qdjango:1)
+   * 
    * @param { string } gid plugin's gid (eg: qdjango:1)
+   * 
    * @returns { boolean } whether plugin is compatible with current projectId
    */
   registerPlugin(gid) {
@@ -330,10 +326,7 @@ export class Plugin extends Emitter {
   /**
    * Used by the following plugins: "archiweb"
    * 
-   * Get plugin dependencies
-   * 
-   * @param { Array } pluginsName
-   * @returns { Promise }
+   * @param { Array } pluginsName plugin dependencies
    * 
    * @since 4.0.0
    */
@@ -344,6 +337,7 @@ export class Plugin extends Emitter {
 
   /**
    * Used by the following plugins: "iframe", "sispi-worksite", "simplereporting"
+   * 
    * @returns { Object } plugin dependencies API
    * 
    * @since 4.0.0
