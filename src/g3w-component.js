@@ -29,15 +29,15 @@ export default class Component extends Emitter {
 
   #service;
 
+  // BACKOMP for < v4.2
+  get state() {
+    return this;
+  }
+
   constructor(opts = {}) {
 
     super({
-      setters: [
-        'setOpen',
-        'setVisible',
-        'setLoading',
-        'setDisabled',
-      ]
+      setters: ['setOpen']
     });
 
     // BACKCOMP v3.x
@@ -49,34 +49,24 @@ export default class Component extends Emitter {
       delete opts.iconConfig;
     }
 
-    // store every opts into component instance 
+    // store every `opts` into component instance
     Object.assign(this, {
-        info:                         null,
-        open:                         false,
-        mobile:                       true,
-        collapsible:                  true,
-        internalComponent:            null,
-        id:                           Math.random() * 1000,
-        title: '',
-        visible:                      true,
-        loading:                      false,
-        disabled:                     false,
-        closewhenshowviewportcontent: true,
-        ...opts,
-        // TODO: check why `GUI.getFontClass` is undefined
-        icon: GUI.getFontClass?.(opts.icon) ?? opts.icon
-    });
-
-    // TODO: remove `this.state` and store only `opts`?
-    this.state = {
       sizes:                        { width: 0, height: 0 },
-      info:                         this.info,
-      open:                         this.open,
-      visible:                      this.visible,
-      loading:                      this.loading,
-      disabled:                     this.disabled,
-      closewhenshowviewportcontent: this.closewhenshowviewportcontent,
-    };
+      info:                         null,
+      open:                         false,
+      mobile:                       true,
+      collapsible:                  true,
+      internalComponent:            null,
+      id:                           Math.random() * 1000,
+      title: '',
+      visible:                      true,
+      loading:                      false,
+      disabled:                     false,
+      closewhenshowviewportcontent: true,
+      ...opts,
+      // TODO: check why `GUI.getFontClass` is undefined
+      icon: GUI.getFontClass?.(opts.icon) ?? opts.icon
+    });
 
     this.#service = this.service || this;
 
@@ -112,28 +102,28 @@ export default class Component extends Emitter {
    * @returns { boolean } whether the component is open
    */
   getOpen() {
-    return this.state.open;
+    return this.open;
   }
 
   /**
    * @returns { boolean } whether the component is visible
    */
   getVisible() {
-    return this.state.visible;
+    return this.visible;
   }
 
   /**
    * @returns { string } the component title
    */
   getTitle() {
-    return this.state.title;
+    return this.title;
   }
 
   /**
    * @param { string } title new component title
    */
   setTitle(title) {
-    this.state.title = title;
+    this.title = title;
   }
 
   /**
@@ -161,28 +151,28 @@ export default class Component extends Emitter {
    * @param { boolean } bool whether the component is open
    */
   setOpen(bool) {
-    this.state.open = bool;
+    this.open = bool;
   }
 
   /**
    * @param { boolean } bool whether the component is visible
    */
   setVisible(bool) {
-    this.state.visible = bool;
+    this.visible = bool;
   }
 
   /**
    * @param { boolean } [bool=false] whether the component is loading
    */
   setLoading(bool = false) {
-    this.state.loading = bool;
+    this.loading = bool;
   }
 
   /**
    * @param { boolean } [bool=false] whether the component is disabled
    */
   setDisabled(bool = false) {
-    this.state.disabled = bool;
+    this.disabled = bool;
   }
 
   /**
@@ -224,18 +214,11 @@ export default class Component extends Emitter {
     if (!this.internalComponent) {
       return;
     }
-    this.state.open = false;
+    this.open = false;
     this.internalComponent.$destroy(true); // destroy vue component
     this.internalComponent.$el?.remove();  // remove dom element
     this.internalComponent = null;         // set internal component to null (for GC)
     this.emit('unmount');                  // emit unmount event
-  }
-
-  /**
-   * @returns { Element|null } mounted DOM element, or null when not mounted
-   */
-  ismount() {
-    return this.internalComponent?.$el;
   }
 
   /**
