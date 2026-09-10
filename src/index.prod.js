@@ -447,11 +447,11 @@ $.ajaxSetup({
     })
   ]);
 
-  //check if map_theme is set on url param, if so need to get map theme configuration from server
+  // check if map_theme is set on url param, if so need to get map theme configuration from server
   const THEME     = (new URLSearchParams(location.search)).get('map_theme');
   const map_theme = Object.values(config?.map_themes ?? {}).flat().find(({ theme }) => THEME === theme);
 
-  /** In the case of url param set map_theme, need to get map theme configuration from server */
+  // In the case of url param set map_theme, need to get map theme configuration from server
   if (map_theme) {
     const { result, data } = await Promise.race([
       new Promise(res => setTimeout(() => res("Timeout"), TIMEOUT)),
@@ -464,7 +464,7 @@ $.ajaxSetup({
     }
   }
 
-  //Change config.layerstree to have a root group node, so that the TOC can be rendered properly
+  // change config.layerstree to have a root group node, so that the TOC can be rendered properly
   config.layerstree = [{
     name:        config.name || config.gid,
     root:        true, //root group of TOC, referred to project
