@@ -2722,7 +2722,8 @@ export default new (class GUI extends Emitter {
     // clear map
     this.#events.ol.forEach(key => ol.Observable.unByKey(key));
     this.#events.ol.splice(0);
-    this.#removeEventsKeysToLayers();
+    this.#events.layers.forEach(({ event, key }) => ApplicationState.project.un(event, key));
+    this.#events.layers.splice(0);
 
     // exec lazy functions 
     setTimeout(() => {
@@ -3982,18 +3983,6 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   unloadExternalLayer(layer) {}
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * remove all events of layers
-   * 
-   * @since 4.1.0
-   */
-  #removeEventsKeysToLayers() {
-    this.#events.layers.forEach(({ event, key }) => ApplicationState.project.un(event, key));
-    this.#events.layers.splice(0);
-  }
 
   /**
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
