@@ -441,11 +441,14 @@ $.ajaxSetup({
 
   // { Array } config.layers - The order of layers follows layer rendering order set on QGIS project.Can be different to TOC layer order
   const config = await Promise.race([
-    new Promise(res => setTimeout(() => res("Timeout"), TIMEOUT)),
-    await XHR.get({ 
+    new Promise(res => setTimeout(() => res(null), TIMEOUT)),
+    XHR.get({
       url: `${window.initConfig.urls.baseurl}${window.initConfig.urls.config}/${window.initConfig.id}/${CONFIG.type}/${CONFIG.id}?_t=${CONFIG.modified}`
     })
   ]);
+  if (!config) {
+    throw new Error(`Timed out while loading project config for ${gid}`);
+  }
 
   //check if map_theme is set on url param, if so need to get map theme configuration from server
   const THEME     = (new URLSearchParams(location.search)).get('map_theme');
@@ -453,10 +456,14 @@ $.ajaxSetup({
 
   /** In the case of url param set map_theme, need to get map theme configuration from server */
   if (map_theme) {
-    const { result, data } = await Promise.race([
-      new Promise(res => setTimeout(() => res("Timeout"), TIMEOUT)),
-      await XHR.get({url: `/${CONFIG.type}/api/prjtheme/${CONFIG.id}/${THEME}` })
+    const mapThemeConfig = await Promise.race([
+      new Promise(res => setTimeout(() => res(null), TIMEOUT)),
+      XHR.get({ url: `/${CONFIG.type}/api/prjtheme/${CONFIG.id}/${THEME}` })
     ]);
+    if (!mapThemeConfig) {
+      throw new Error(`Timed out while loading map theme "${THEME}"`);
+    }
+    const { result, data } = mapThemeConfig;
     if (result) {
       config.layerstree    = data; //replace layerstree project config based on map theme configuration
       map_theme.layerstree = data;
