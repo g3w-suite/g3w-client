@@ -109,7 +109,7 @@ import Fields, { FieldsService }                   from 'components/g3w-fields';
 
 import 'components/x-select';
 
-const deprecate                   = require('util-deprecate');
+const deprecate = require('util-deprecate');
 
 /**
  * BACKCOMP: v3.x (proxy "esbuild" classes for legacy plugins, still based on babel)
@@ -284,11 +284,10 @@ globalThis.g3wsdk = {
         getCurrentProject: () => ApplicationState.project,
       })
     },
-    //@TODO depecrate, use g3w.utils instead
     catalog: {
       CatalogLayersStoresRegistry: {
-        getLayerById: getCatalogLayerById,
-        getLayers:    getCatalogLayers,
+        getLayerById: deprecate(getCatalogLayerById, '[G3W-CLIENT] g3wsdk.core.catalog.CatalogLayersStoresRegistry.getLayerById is deprecated'),
+        getLayers:    deprecate(getCatalogLayers, '[G3W-CLIENT] g3wsdk.core.catalog.CatalogLayersStoresRegistry.getLayers is deprecated'),
       }
     },
     layer: {
