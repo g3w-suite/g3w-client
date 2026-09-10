@@ -2409,7 +2409,7 @@ export default new (class GUI extends Emitter {
       setTimeout(() => {
         this.state.queried_layers = this.state.queried_layers.filter(l => layer.id !== l.id);
         this.highlight(false);
-        this.removeAddFeaturesLayerResultInteraction(true);
+        this.deactiveQueryInteractions(true);
       })
     }
 
@@ -2709,7 +2709,7 @@ export default new (class GUI extends Emitter {
     this.#events.query = [];
     this.highlight(false);
     this.#layer.getSource().clear();
-    this.removeAddFeaturesLayerResultInteraction(true);
+    this.deactiveQueryInteractions(true);
     //reset pagination
     this.#clearState();
     // used by the following plugins: "stress"
@@ -2747,38 +2747,6 @@ export default new (class GUI extends Emitter {
 
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   *
-   * @param {boolean} bool whether toggle mapcontrol
-   * 
-   * @since 4.1.0
-   */
-  removeAddFeaturesLayerResultInteraction(bool) {
-    if (null !== this.#interaction.toggleeventhandler) {
-      this.off('mapcontrol:toggled', this.#interaction.toggleeventhandler);
-    }
-
-    // remove current interaction to get features from layer
-    if (null !== this.#interaction.interaction) {
-      this.removeInteraction(this.#interaction.interaction);
-    }
-
-    // check if query map control is toggled and registered
-    if (null !== this.#interaction.mapcontrol) {
-      this.#interaction.mapcontrol.toggle(bool);
-    }
-
-    // reset values
-    Object.assign(this.#interaction, {
-      interaction:        null,
-      id:                 null,
-      toggleeventhandler: null,
-      mapcontrol:         null,
-    });
-
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
    * 
    * Adds feature to Features layer results
    *
@@ -2809,7 +2777,7 @@ export default new (class GUI extends Emitter {
     this.getMap().set('can_show_context_menu', !layer.addfeaturesresults.active);
 
     if (false === layer.addfeaturesresults.active) {
-      this.removeAddFeaturesLayerResultInteraction(true);
+      this.deactiveQueryInteractions(true);
     } else {
 
       // used by the following plugins: "bforest"
@@ -2863,18 +2831,40 @@ export default new (class GUI extends Emitter {
   }
 
   /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   * 
-   * used by the following plugins: "bforest"
+   * @param {boolean} bool since 4.2.0 - whether toggle mapcontrol
    * 
    * @since 4.1.0
    */
-  deactiveQueryInteractions() {
-    this.state.queried_layers
-    .filter(l =>  l.addfeaturesresults)
-    .forEach(l => l.addfeaturesresults.active = false)
+  deactiveQueryInteractions(bool) {
 
-    this.removeAddFeaturesLayerResultInteraction();
+    // BACKOMP: used by the following plugin: "bforest"
+    if (undefined !== bool) {
+      this.state.queried_layers
+        .filter(l =>  l.addfeaturesresults)
+        .forEach(l => l.addfeaturesresults.active = false);
+    }
+
+    if (null !== this.#interaction.toggleeventhandler) {
+      this.off('mapcontrol:toggled', this.#interaction.toggleeventhandler);
+    }
+
+    // remove current interaction to get features from layer
+    if (null !== this.#interaction.interaction) {
+      this.removeInteraction(this.#interaction.interaction);
+    }
+
+    // check if query map control is toggled and registered
+    if (null !== this.#interaction.mapcontrol) {
+      this.#interaction.mapcontrol.toggle(bool);
+    }
+
+    // reset values
+    Object.assign(this.#interaction, {
+      interaction:        null,
+      id:                 null,
+      toggleeventhandler: null,
+      mapcontrol:         null,
+    });
   }
 
   /**
@@ -2907,7 +2897,7 @@ export default new (class GUI extends Emitter {
     this.state.layeractiontool     = {};
     this.state.currentactiontools  = {};
     this.state.layersFeaturesBoxes = {};
-    this.removeAddFeaturesLayerResultInteraction();
+    this.deactiveQueryInteractions(false);
     this.#relations = (ApplicationState.project.getRelations() || []).reduce((group, r) => {
       group[r.referencedLayer] = group[r.referencedLayer] || [];
       group[r.referencedLayer].push(r);
