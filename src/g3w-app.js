@@ -3977,34 +3977,6 @@ export default new (class GUI extends Emitter {
   /**
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    * 
-   * register all events of layers and relative keys
-   * 
-   * @since 4.1.0
-   */
-  #setUpEventsKeysToLayers() {
-    // check if already store a key of events
-    this.#events.layers = [];
-
-    this.#events.layers.push({
-      event: 'addLayer',
-      key: ApplicationState.project.onafter('addLayer', l => {
-        if ('vector' === l.getType()) {
-          const olLayer = l.getOLLayer();
-          if (olLayer) {
-            this.getMap().addLayer(olLayer);
-          }
-        }
-      }),
-    });
-    this.#events.layers.push({
-      event: 'removeLayer',
-      key: ApplicationState.project.onafter('removeLayer', l => { 'vector' === l.getType() && this.#map.removeLayer(l.getOLLayer()) }),
-    });
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
    * @since 4.1.0
    */
   removeLayers() {
@@ -4802,8 +4774,23 @@ export default new (class GUI extends Emitter {
       this._setLegendParams();
     }
 
-    //setup events keys to layers
-    this.#setUpEventsKeysToLayers();
+    // setup events keys to layers
+    this.#events.layers = [];
+    this.#events.layers.push({
+      event: 'addLayer',
+      key: ApplicationState.project.onafter('addLayer', l => {
+        if ('vector' === l.getType()) {
+          const olLayer = l.getOLLayer();
+          if (olLayer) {
+            this.getMap().addLayer(olLayer);
+          }
+        }
+      }),
+    });
+    this.#events.layers.push({
+      event: 'removeLayer',
+      key: ApplicationState.project.onafter('removeLayer', l => { 'vector' === l.getType() && this.#map.removeLayer(l.getOLLayer()) }),
+    });
 
     this.#map_ready = true;
 
