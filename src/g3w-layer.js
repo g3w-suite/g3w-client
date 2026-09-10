@@ -725,7 +725,7 @@ export class Layer extends Emitter {
   }
 
   /**
-   * @returns { * | boolean } whether it has relations
+   * @returns { boolean } whether it has relations
    */
   hasRelations() {
     return this.#relations.getLength() > 0;
@@ -1065,7 +1065,7 @@ export class Layer extends Emitter {
    */
   async inverseSelection() {
     const selection = this.state.selection.fids;
-    /**invert selection */
+    // invert selection
     if (selection.has('__EXCLUDE__'))  { selection.delete('__EXCLUDE__'); }
     else if (selection.has('__ALL__')) { selection.delete('__ALL__'); }
     else if (selection.size > 0)       { selection.add('__EXCLUDE__'); }
@@ -1103,7 +1103,7 @@ export class Layer extends Emitter {
       }
     }
 
-    /** create filter token if needed */
+    // create filter token, if needed
     if (createToken && this.state.filter.active) {
       await this.#createToken();
     }
