@@ -660,7 +660,7 @@ export class Layer extends Emitter {
   }
 
   /**
-   * @param name
+   * @param name relation name
    * 
    * @returns { * | Array } relation fields
    */
