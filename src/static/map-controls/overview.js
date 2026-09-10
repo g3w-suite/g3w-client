@@ -30,7 +30,7 @@ GUI.setupControl.overview = async function() {
       throw `Project doesn't exist ${gid}`;
     }
 
-    const PROJECT  = gid === g3w.app.state.project.getGid() ? g3w.app.state.project : null;
+    const PROJECT  = gid === ApplicationState.project.getGid() ? ApplicationState.project : null;
 
     // fetch project configuration from remote server in case of overview project is different from current project
     const config = PROJECT?.state ?? await XHR.get({ 
