@@ -162,7 +162,6 @@ export default class Component extends Emitter {
    */
   setOpen(bool) {
     this.state.open = bool;
-    this._setOpen?.(bool);
   }
 
   /**
@@ -170,7 +169,6 @@ export default class Component extends Emitter {
    */
   setVisible(bool) {
     this.state.visible = bool;
-    this._setVisible?.(bool);
   }
 
   /**

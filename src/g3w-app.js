@@ -494,6 +494,7 @@ export default new (class GUI extends Emitter {
 
       ApplicationState.sidebar.components.push(component);
     }
+    return component;
   }
 
   /**
@@ -526,7 +527,7 @@ export default new (class GUI extends Emitter {
     }));
 
     // G3W-SEARCH
-    this.addComponent(Object.assign(new Component({
+    const comp = this.addComponent(Object.assign(new Component({
       id:         'search',
       visible:     true,
       icon:        "fas fa-search",
@@ -550,15 +551,15 @@ export default new (class GUI extends Emitter {
         removeTool()              {},
       }),
       vueComponentObject: require('components/Search.vue').default,
-    }), {
-      _setOpen: bool => {
-        const search = g3w.app.getComponent('search').getInternalComponent();
-        // autotogle query builder panel when there is no other saved search
-        if (bool && !search.state.searches.length && !search.state.tools.length && !search.state.querybuildersearches.length) {
-          search.showQueyBuilderPanel();
-        }
-      },
-    }));
+    })));
+
+    comp.onbefore('setOpen', bool => {
+      const search = g3w.app.getComponent('search').getInternalComponent();
+      // autotogle query builder panel when there is no other saved search
+      if (bool && !search.state.searches.length && !search.state.tools.length && !search.state.querybuildersearches.length) {
+        search.showQueyBuilderPanel();
+      }
+    });
 
     // G3W-TOOLS
     this.addComponent(new (function() {
@@ -637,12 +638,11 @@ export default new (class GUI extends Emitter {
         }))(),
       });
     
-      comp._setOpen = (b = false) => {
-        comp.internalComponent.state.open = b;
+      comp.onbefore('setOpen', (b = false) => {
         if (b) {
           g3w.app.closeContent();
         }
-      };
+      });
     
       return comp;
     }));
