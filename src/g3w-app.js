@@ -527,7 +527,7 @@ export default new (class GUI extends Emitter {
     }));
 
     // G3W-SEARCH
-    const comp = this.addComponent(Object.assign(new Component({
+    const comp = this.addComponent(new Component({
       id:         'search',
       visible:     true,
       icon:        "fas fa-search",
@@ -551,7 +551,7 @@ export default new (class GUI extends Emitter {
         removeTool()              {},
       }),
       vueComponentObject: require('components/Search.vue').default,
-    })));
+    }));
 
     comp.onbefore('setOpen', bool => {
       const search = g3w.app.getComponent('search').getInternalComponent();
@@ -596,12 +596,12 @@ export default new (class GUI extends Emitter {
       service.getState         = () => state;
       service.reload           = () => { service.removeTools(); };
       service.setLoading       = (bool = false) => { state.loading = bool; }
-    
+
       // static class field
       service.ACTIONS = ACTIONS;
-    
+
       const tools = ApplicationState.project.getState().tools || {};
-    
+
       for (let t in tools) {
         service.addToolGroup(0, t.toUpperCase());
         service.addTools(
@@ -609,7 +609,7 @@ export default new (class GUI extends Emitter {
           { position: 0, title: t.toUpperCase() }
         );
       }
-    
+
       const comp = new Component({
         id:          'tools',
         icon:        "fas fa-cogs",
