@@ -262,13 +262,6 @@ export class FormService extends Emitter {
   /**
    * @since 4.0.0. 
    */
-  setInitForm(opts = {}) {
-    this.#setInitForm(opts);
-  }
-
-  /**
-   * @since 4.0.0. 
-   */
   setFormStructure(formStructure) {
     this.state.formstructure = formStructure;
   }
@@ -320,7 +313,7 @@ export class FormService extends Emitter {
   /**
    * Init form options passed, for example, by editor
    */
-  #setInitForm(options = {}) {
+  setInitForm(options = {}) {
     const {
       fields,
       feature,
