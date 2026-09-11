@@ -559,11 +559,9 @@
     name: "modal-metadata",
 
     data() {
+      // get all layers with no geometry or with a valid EPSG code.
+      const layers  = ApplicationState.project.getLayers().filter(l => 'NoGeometry' === l.getGeometryType() || l.config.crs?.epsg);
       const project = ApplicationState.project.getState();
-      const layers  = Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? s : [])
-        .flatMap(s => s.showOnCatalog() ? s.getLayers() : [])
-        // In case of layers that has geometry and no epsg, filter according to filter of project layers
-        .filter(l => 'NoGeometry' === l.getGeometryType() || (l.config.crs && l.config.crs.epsg));
 
       // @since 4.1.0 set WMS URL if not set by QGIS project
       if (!project.metadata.wms_url) {

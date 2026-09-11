@@ -5,146 +5,150 @@
 import GUI from 'g3w-app';
 
 /**
- * ORIGINAL SOURCE: src/map/controls/interactioncontrol.js@v4.0.0
+ * Create a map control and, optionally, its OpenLayers interaction.
+ *
+ * When `options.ol` is supplied, the control wraps an existing OpenLayers
+ * control and skips creation of the default button.
+ *
+ * @param { Object }   [options={}]                        control configuration.
+ * @param { string }   options.name                        CSS-safe control name. Defaults to `''`.
+ * @param { boolean }  options.enabled                     whether the control accepts clicks.
+ * @param { boolean }  [options.visible=true]              whether the control is visible.
+ * @param { string }   [options.position='tl']             position code: `tl`, `tr`, `bl` or `br`.
+ * @param { string }   options.label                       visible button label or HTML content.
+ * @param { string }   options.tipLabel                    button tooltip; falls back to `name`.
+ * @param { string }   options.customClass                 CSS class for the button icon.
+ * @param { Function } options.onclick                     async handler run when the control is clicked.
+ * @param { Function } options.postRender                  callback invoked after the control is rendered.
+ * @param { Function } options.onSetMap                    callback invoked before and after `setMap`.
+ * @param { Function } options.onToggled                   callback invoked with the new toggled state.
+ * @param { boolean }  [options.clickmap=false]             whether the control interacts with the map.
+ * @param { boolean }  [options.autountoggle=false]         whether the interaction toggles itself off.
+ * @param { Array<string> } [options.geometryTypes=[]]     geometry types accepted by the interaction.
+ * @param { boolean }  [options.onhover=false]             whether hover behavior is enabled.
+ * @param { string }   options.help                        help text displayed for the control.
+ * @param { Object }   options.toggledTool                 deprecated tool displayed while toggled.
+ * @param { Function } options.interactionClass            OpenLayers interaction constructor.
+ * @param { Object }   options.interactionClassOptions     options passed to the interaction.
+ * @param { Array }    [options.layers=[]]                 layers used by the interaction.
+ * @param { 'intersects'|'within' } options.spatialMethod  spatial query method.
+ * @param { string }   options.cursorClass                 CSS class applied to the map cursor when active.
+ * @param { boolean }  [options.offline=true]              whether the control is available offline.
+ * @param { ol.control.Control } [options.ol]              existing OpenLayers control to wrap.
  */
 export default class MapControl extends ol.control.Control {
 
-  /**
-   * @param {Object}  options 
-   * @param {string}  options.name
-   * @param {boolean} options.enabled 
-   * @param {string}  options.cursorClass since 3.11.0
-   */
   constructor(options = {}) {
-
     // wrapper for native ol controls
     if (options.ol) {
       super({ element: options.ol.element });
       this._options     = options;
       this._control     = options.ol;
-      this.positionCode = options.position || 'tl';
+      this.positionCode = options.position ?? 'tl';
       this.offline      = true;
-      this._control.element.classList.add("ol-control-" + this.positionCode);
+      this._control.element.classList.add(`ol-control-${this.positionCode}`);
       return this;
     }
 
-    /** @TODO simplify */
     options.enabled = options.enabled ?? !!options.interactionClass;
     
     options.visible = options.visible ?? true;
 
-    const name = (options.name || '').split(' ').join('-').toLowerCase();
+    const name      = (options.name ?? '').split(' ').join('-').toLowerCase();
 
-    /** ORIGINAL SOURCE: src/components/MapControlButton.js@v3.10.0 */
-    options.element = options.element || (new (Vue.extend({
+    /** Create the default control button when one was not supplied. */
+    options.element = options.element ?? (new (Vue.extend({
       template: /* html */ `<div class="ol-${name} ol-unselectable ol-control">
         <button type="button" title="${(options.tipLabel || name).toString()}">
           ${ options.customClass ? '<i class="' + options.customClass + '" aria-hidden="true"></i>' : '' }
-          ${ options.label || options.tipLabel || name || '' }
+          ${ options.label ?? options.tipLabel ?? name ?? '' }
         </button>
       </div>`,
     }))()).$mount().$el;
 
     super(options);
 
+    /**
+     * @type { Object } normalized constructor options.
+     */
     this._options        = options;
 
     /**
-     * @since 3.11.0 
+     * @type { string|undefined } CSS class applied to the map cursor.
+     * 
+     * @since 3.11.0
      */
-    this.cursorClass     = options.cursorClass;
+    this.cursorClass = options.cursorClass;
 
     /**
-     * ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0
+     * @type { Function|null } original click handler restored by resetOriginalOnClickEvent().
      */
     this._originalonlick = null;
 
     /**
-     * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
-     *
-     * custom "onclick" handler
+     * @type { Function|undefined } custom handler for button clicks.
      */
-    this._onclick        = options.onclick; // a method trigger when click on map control button
+    this._onclick = options.onclick;
 
     /**
-     * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
-     *
-     * @FIXME add description
+     * @type {boolean} whether the control currently accepts clicks.
      */
-    this._enabled        = options.enabled;
+    this._enabled = options.enabled;
 
     /**
-     * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
-     *
-     * @FIXME add description
+     * @type { boolean } whether the control is available offline.
      */
-    this.offline         = options.offline ?? true;
+    this.offline = options.offline ?? true;
 
     /**
-     * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
-     *
-     * @FIXME add description
+     * @type { string } normalized control name.
      */
-    this.name            = name;
+    this.name = name;
 
     /**
-     * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
-     *
-     * @FIXME add description
+     * @type { string } unique identifier used to coordinate toggled controls.
      */
-    this.id              = `${this.name}_${(Math.floor(Math.random() * 1000000))}`;
+    this.id = `${this.name}_${(Math.floor(Math.random() * 1000000))}`;
 
     /**
-     * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
-     *
-     * store eventKey and original havenHandler
+     * @type { Object<string, {eventKey: Object, originalHandler: Function}> } registered event handlers.
      */
-    this.eventKeys       = {};
+    this.eventKeys = {};
 
     /**
-     * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
-     *
-     * tl: top-left
-     * tr: top-right
-     * bl: bottom-left
-     * bt: bottom-right
+     * @type { 'tl'|'tr'|'bl'|'br' } position code.
      */
-    this.positionCode    = options.position || 'tl';
+    this.positionCode = options.position || 'tl';
 
     /**
-     * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
-     *
-     * @FIXME add description
+     * @type { number } ordering priority among controls.
      */
-    this.priority        = options.priority ?? 0;
+    this.priority = options.priority ?? 0;
 
     /**
-     * @FIXME why?
+     * @type { boolean } whether the control interaction uses the map.
      * 
-     * @since 4.0.0 Add click map option
+     * @since 4.0.0
      */
-    this.clickmap       = options.clickmap ?? false;
+    this.clickmap = options.clickmap ?? false;
 
-    /**
-     * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
-     *
-     * button click handler
-     */
     this.element.querySelector('button').addEventListener('click', e => this._handleClick(e));
 
     this.setVisible(options.visible);
 
-    /**
-     * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
-     *
-     * @since 3.11.0
-     */
+    /** @since 3.11.0 */
     if (this._options.postRender) {
       this._options.postRender.call(this);
     }
 
-    this._toggled                 = false;
+    /**
+     * @type {boolean} Whether the control button is currently toggled.
+     */
+    this._toggled = false;
 
+    /**
+     * @type { Object } options passed to the interaction constructor.
+     */
     this._interactionClassOptions = options.interactionClassOptions;
 
     /** @since 3.11.0 */
@@ -154,14 +158,35 @@ export default class MapControl extends ol.control.Control {
   }
 
   /**
-   * @param toggled
+   * Toggle the cursor CSS class on the map viewport.
    *
+   * @param {boolean} toggled Whether the interaction is active.
+   * @param {string} [className=this.cursorClass] CSS class to toggle.
+   * 
    * @since 3.11.0
    */
   setMouseCursor(toggled, className = this.cursorClass) {
     this.getMap().getViewport().classList.toggle(className, toggled);
   }
 
+  /**
+   * Configure the optional OpenLayers interaction and its layer dependencies.
+   *
+   * @param { Object }  [options={}]                          interaction configuration.
+   * @param { boolean } [options.visible=true]                whether the interaction control is visible.
+   * @param { boolean } [options.enabled=true]                whether the interaction is enabled.
+   * @param { boolean } [options.toggled=false]               whether to toggle it when attached to a map.
+   * @param { boolean } [options.clickmap=false]              whether the interaction uses the map.
+   * @param { Function|null } [options.interactionClass=null] interaction constructor.
+   * @param { boolean } [options.autountoggle=false]          whether to disable after use.
+   * @param { Array<string> } [options.geometryTypes=[]]      accepted geometry types.
+   * @param { boolean } [options.onhover=false]               whether hover behavior is enabled.
+   * @param { string|null } [options.help=null]               help text associated with the control.
+   * @param { Object } [options.toggledTool]                  deprecated auxiliary tool configuration.
+   * @param { Object } [options.interactionClassOptions={}]   constructor options for the interaction.
+   * @param { Array }  [options.layers=[]]                    layers used by the interaction.
+   * @param { 'intersects'|'within' } [options.spatialMethod] spatial query method.
+   */
   initInteraction(options = {}) {
 
     const {
@@ -181,55 +206,82 @@ export default class MapControl extends ol.control.Control {
     } = options;
 
     /**
-     * Project layers dependencies
+     * @type {Array} Layers used by the interaction.
      * 
      * @since 3.8.0
      */
-    this.layers            = layers;
+    this.layers = layers;
 
     /**
+     * @type { Array } unwatch callbacks registered by the interaction.
+     * 
      * @since 3.8.0
      */
-    this.unwatches         = [];
+    this.unwatches = [];
 
-    this._visible          = visible;
     /**
-     * Check if interact with a map
+     * @type { boolean } whether the interaction control is visible.
      */
-    this.clickmap          = clickmap;
+    this._visible = visible;
 
+    /**
+     * @type { boolean } whether the interaction uses the map.
+     */
+    this.clickmap = clickmap;
+
+    /**
+     * @type { Function|null } OpenLayers interaction constructor.
+     */
     this._interactionClass = interactionClass;
 
-    this._interaction       = null;
-
-    this._autountoggle      = autountoggle;
-
     /**
-     * Array of types geometries
+     * @type { ol.interaction.Interaction|null } instantiated interaction.
      */
-    this._geometryTypes    = geometryTypes;
-
-    this._onhover          = onhover;
-
-    this._help             = help;
+    this._interaction = null;
 
     /**
-     * Used to show help info button
+     * @type { boolean } whether the interaction disables itself after use.
+     */
+    this._autountoggle = autountoggle;
+
+    /**
+     * @type { Array<string> } geometry types accepted by the interaction.
+     */
+    this._geometryTypes = geometryTypes;
+
+    /**
+     * @type { boolean } whether hover behavior is enabled.
+     */
+    this._onhover = onhover;
+
+    /**
+     * @type { string|null } help text associated with the control.
+     */
+    this._help = help;
+
+    /**
+     * @type { HTMLElement|undefined } optional help button element.
      */
     this._helpButton;
 
     /**
-     * Used to show toolbutton
+     * @type { HTMLElement|undefined } optional toggled-tool button element.
      */
     this._toolButton;
 
+    /**
+     * @type { Object|undefined } deprecated tool shown while the control is toggled.
+     */
     this.toggledTool;
 
     /**
-     * @type { 'intersect' | 'within' }
+     * @type { 'intersects'|'within'|undefined } spatial query method.
      */
-    this.spatialMethod            = spatialMethod;
+    this.spatialMethod = spatialMethod;
 
+    /**
+     * @type { Object } options passed to the interaction constructor.
+     */
     this._interactionClassOptions = interactionClassOptions;
 
     // in case of toggled true, then ... ?
@@ -270,10 +322,10 @@ export default class MapControl extends ol.control.Control {
   }
 
   /**
-   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   * Return whether this control uses the map.
    *
-   * @returns { boolean } whether is clickmap
-   *
+   * @returns { boolean } `true` when the control interacts with the map.
+   * 
    * @since 3.11.0
    */
   isClickMap() {
@@ -281,10 +333,10 @@ export default class MapControl extends ol.control.Control {
   }
 
   /**
-   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   * Return whether the control is toggled.
    *
-   * @FIXME add description
-   *
+   * @returns { boolean } current toggled state.
+   * 
    * @since 3.11.0
    */
   isToggled() {
@@ -292,10 +344,10 @@ export default class MapControl extends ol.control.Control {
   }
 
   /**
-   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   * Store an event key and its original listener for later replacement.
    *
-   * @FIXME add description
-   *
+   * @param {{ eventType: string, eventKey: Object }} event event registration data.
+   * 
    * @since 3.11.0
    */
   setEventKey({ eventType, eventKey }) {
@@ -306,12 +358,10 @@ export default class MapControl extends ol.control.Control {
   }
 
   /**
-   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   * Restore the original listener for a registered control event.
    *
-   * Reset the original handler method of control event.
+   * @param { string } type event type to restore.
    * 
-   * @param { string } type
-   *
    * @since 3.11.0
    */
   resetOriginalHandlerEvent(type) {
@@ -322,13 +372,10 @@ export default class MapControl extends ol.control.Control {
   }
 
   /**
-   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   * Replace the listener for a registered control event.
    *
-   * Override the original handler method of control event.
+   * @param {{ eventType: string, handler: Function }} event event type and replacement listener.
    * 
-   * @param {string} eventType
-   * @param {() => {}} handler
-   *
    * @since 3.11.0
    */
   overwriteEventHandler({ eventType, handler }) {
@@ -339,14 +386,16 @@ export default class MapControl extends ol.control.Control {
   }
 
   /**
-   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
-   *
-   * @param pos position code
+  * Convert a position code into edge flags.
+  *
+  * @param { string } [pos=this.positionCode] position code containing `t`, `r`, `b` and/or `l`.
+  * 
+  * @returns {{ top: boolean, left: boolean, bottom: boolean, right: boolean }}
    *
    * @since 3.11.0
    */
   getPosition(pos) {
-    pos = pos || this.positionCode;
+    pos = pos ?? this.positionCode;
     return {
       top:    pos.includes('t'),
       left:   pos.includes('l'),
@@ -356,12 +405,10 @@ export default class MapControl extends ol.control.Control {
   }
 
   /**
-   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   * Handle a click on the control button.
    *
-   * Handle toggle of map controls
+   * @param { Event } e button click event.
    * 
-   * @param e
-   *
    * @since 3.11.0
    */
   _handleClick(e) {
@@ -373,14 +420,12 @@ export default class MapControl extends ol.control.Control {
   }
 
   /**
-   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
+   * Attach the control to a map or remove it from the current map.
    *
-   * Called when a control is added ore removed to map
+   * @param { ol.Map|null } map map instance, or `null` when removing the control.
    * 
-   * @param {ol.Map | null} map instace to be added (null = remove from map)
+   * @fires setMap
    * 
-   * @fires setMap event
-   *
    * @since 3.11.0
    */
   setMap(map) {
@@ -406,7 +451,7 @@ export default class MapControl extends ol.control.Control {
       this._interaction.on('change:active', e => this.setMouseCursor(e.target.get(e.key)));
     }
 
-    /** ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0 */
+    // disable the button while the custom handler is running.
     if (this._onclick) {
       const buttons = Array.from(this.element.querySelectorAll('button'));
       let loading = false; // whether already clicked (waiting for async "_onclick" method)
@@ -431,16 +476,12 @@ export default class MapControl extends ol.control.Control {
   }
 
   /**
-   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
-   *
-   * Toggle pointer events and `g3w-ol-disabled` class on map control button
+   * @param {boolean} bool whether the button is clickable.
    * 
-   * @param { Boolean } bool whether the map control button is clickable
-   *
    * @since 3.11.0
    */
   setEnable(bool) {
-    this.element.querySelector('button')?.classList?.toggle('g3w-ol-disabled', !bool);
+    this.element.querySelector('button')?.classList?.toggle?.('g3w-ol-disabled', !bool);
     if (!bool && this._interaction) {
       this._interaction.setActive(false);
     }
@@ -448,10 +489,8 @@ export default class MapControl extends ol.control.Control {
   }
 
   /**
-   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
-   *
-   * @FIXME add description
-   *
+   * @returns { boolean } whether the control accepts clicks.
+   * 
    * @since 3.11.0
    */
   getEnable() {
@@ -459,10 +498,8 @@ export default class MapControl extends ol.control.Control {
   }
 
   /**
-   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
-   *
-   * @FIXME add description
-   *
+   * @param { boolean } [visible=true] whether the control should be displayed.
+   * 
    * @since 3.11.0
    */
   setVisible(visible = true) {
@@ -471,10 +508,8 @@ export default class MapControl extends ol.control.Control {
   }
 
   /**
-   * ORIGINAL SOURCE: src/app/g3w-ol/controls/control.js@v3.10.0
-   *
-   * @FIXME add description
-   *
+   * @returns { boolean } whether the control is visible.
+   * 
    * @since 3.11.0
    */
   isVisible() {
@@ -482,66 +517,65 @@ export default class MapControl extends ol.control.Control {
   }
 
   /**
-   * ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0
+   * Temporarily replace the custom click handler.
    *
+   * @param { Function } handler replacement click handler.
+   * 
    * @since 3.11.0
    */
   overwriteOnClickEvent(handler) {
-    this._originalonlick = this._originalonlick || this._onclick;
+    this._originalonlick = this._originalonlick ?? this._onclick;
     this._onclick        = handler;
   };
 
   /**
-   * ORIGINAL SOURCE: src/app/g3w-ol/controls/onclickcontrol.js@v3.10.0
-   *
-   * @since 3.11.0
+   * Restore the click handler saved by overwriteOnClickEvent().
    */
   resetOriginalOnClickEvent() {
-    this._onclick        = this._originalonlick || this._onclick;
+    this._onclick        = this._originalonlick ?? this._onclick;
     this._originalonlick = null;
   }
 
   /**
-   * @virtual method need to be implemented by subclasses
-   *
+   * Hook called when a layer is selected by the control.
+   * 
    * @since 3.8.0
    */
   onSelectLayer() {}
 
   /**
-   * @virtual method need to be implemented by subclasses
-   *
+   * Hook that executes the control's spatial query.
+   * 
    * @since 3.8.0
    */
   runSpatialQuery() {}
 
   /**
-   * @virtual method need to be implemented by subclasses
-   *
+   * Hook that clears the control's current query state.
+   * 
    * @since 3.8.0
    */
   clear() {}
 
   /**
-   * @virtual method need to be implemented by subclasses
-   *
+   * Hook called when an external layer is added.
+   * 
    * @since 3.8.0
    */
   onAddExternalLayer({ layer, unWatches } = {}) {}
 
   /**
-   * @virtual method need to be implemented by subclasses
-   *
+   * Hook called when an external layer is removed.
+   * 
    * @since 3.8.0
    */
   onRemoveExternalLayer(layer) {}
 
   /**
-   * @virtual method need to be implemented by subclasses
-   *
-   * @param layers
-   * @returns {boolean}
-   *
+   * @param { Array } layers layers to check.
+   * 
+   * @returns { boolean } whether the control can be used with the supplied layers.
+   * 
    * @since 3.8.0
    */
   checkVisibile(layers) {
@@ -549,23 +583,28 @@ export default class MapControl extends ol.control.Control {
   }
 
   /**
-   * Enable map control dom
+   * Enable the control's DOM state.
    */
   enable() {
     this.element.classList.remove('g3w-disabled');
   }
 
+  /**
+   * Disable the control's DOM state.
+   */
   disable() {
     this.element.classList.add('g3w-disabled');
   }
 
   /**
-   * @deprecated use `this.on('toggled', ({ toggled }) => {` instead
+   * Create the deprecated auxiliary tool shown for a toggled control.
    *
-   * @param { Object }                     toggledTool
-   * @param { 'spatialMethod' | 'custom' } toggledTool.type
-   * @param { 'toggled' | 'hover' }        toggledTool.how      "toggled" => (show tools when control is toggled); "hover" => (show button tool as info help)
-   * @param                                toggledTool.component vue component
+   * @deprecated Use `this.on('toggled', ({ toggled }) => {})` instead.
+   * 
+   * @param { Object } toggledTool auxiliary tool configuration.
+   * @param { 'spatialMethod'|'custom' } toggledTool.type tool type.
+   * @param { 'toggled'|'hover' } toggledTool.how when to show the tool.
+   * @param { Object } toggledTool.component Vue component for custom tools.
    */
   createControlTool(toggledTool = {}) {
 
@@ -594,23 +633,28 @@ export default class MapControl extends ol.control.Control {
 
     }
 
-    /**
-     * @TODO check if it is deprecated. It used to show help message for map control
-     */
+    /** Add the legacy hover button when requested. */
     if ('how' === toggledTool.how && this._onhover) {
-      this._toolButton = $(`<span style="display:none" class="tool_mapcontrol_button"><i class="fas fa-cog"></i></span>`);
-      $(this.element).prepend(this._toolButton);
-      this._toolButton.on('click', e => {
+      this._toolButton               = document.createElement('span');
+      this._toolButton.style.display = 'none';
+      this._toolButton.className     = 'tool_mapcontrol_button';
+      this._toolButton.innerHTML     = '<i class="fas fa-cog"></i>';
+      this.element.prepend(this._toolButton);
+      this._toolButton.addEventListener('click', e => {
         e.stopPropagation();
         this.showToggledTool(true);
       });
-      $(this.element).hover(() => this._toggled && this._toolButton.show());
-      $(this.element).mouseleave(() => this._toolButton.hide());
+      this.element.addEventListener('mouseover',  () => this._toggled && (this._toolButton.style.display = ''));
+      this.element.addEventListener('mouseleave', () => this._toolButton.style.display = 'none');
     }
   }
 
   /**
-   * @deprecated use `this.on('toggled', ({ toggled }) => {` instead
+   * Show or close the deprecated auxiliary tool.
+   *
+   * @deprecated Use `this.on('toggled', ({ toggled }) => {})` instead.
+   * 
+   * @param { boolean } [show=true] whether to show the tool.
    */
   showToggledTool(show = true) {
     console.warn('[G3W-CLIENT] this.toggledTool is deprecated');
@@ -620,7 +664,7 @@ export default class MapControl extends ol.control.Control {
         title:     this.toggledTool.__title,
         type:      'tool',
         iconClass: this.toggledTool.__iconClass,
-        closable:  this._toolButton ? true : false,
+        closable:  !!this._toolButton,
         hooks:     { body: this.toggledTool },
       });
     } else {
@@ -629,10 +673,13 @@ export default class MapControl extends ol.control.Control {
   }
 
   /**
-   * Set button status (pressed / not pressed)
-   * 
-   * @param { Boolean } toggled
-   * @param { Object } opts
+   * Set the pressed state of the control button.
+   *
+   * Enabling one control automatically untoggles other controls on the same map,
+   * except when their id matches `opts.parent`.
+   *
+   * @param { boolean } [toggled=!this._toggled] desired toggled state.
+   * @param {{ parent?: string|boolean }} [opts={}] toggle coordination options.
    */
   toggle(toggled = !this._toggled, opts = {}) {
 
@@ -663,19 +710,16 @@ export default class MapControl extends ol.control.Control {
     }
 
     /** Add or remove g3w-ol-toggled class to control button */
-    const btn = this.element.querySelector('button');
-    if (btn) {
-      btn.classList.toggle('g3w-ol-toggled', toggled);
-    }
+    this.element.querySelector('button')?.classList?.toggle?.('g3w-ol-toggled', toggled);
+    
 
-    /** @TODO Deprecated */
     if (toggled && this._toolButton) {
-      this._toolButton.show();
+      this._toolButton.style.display = '';
     } else if (!toggled && this._toolButton) {
-      this._toolButton.hide();
+      this._toolButton.style.display = 'none';
     }
 
-    //** if not toggled and has a toggle tool (e.g., measure map control) close user message tool  */
+    // close user message tool (eg. measure map control) 
     if (this.toggledTool) {
       this.showToggledTool(this._toggled);
     }
@@ -688,20 +732,29 @@ export default class MapControl extends ol.control.Control {
 
   }
 
+  /**
+   * @returns { Array<string> } geometry types accepted by the interaction.
+   */
   getGeometryTypes() {
     return this._geometryTypes;
   }
 
+  /**
+   * @param { Array<string> } types geometry types accepted by the interaction.
+   */
   setGeometryTypes(types) {
     this._geometryTypes = types;
   }
 
+  /**
+   * @returns { ol.interaction.Interaction|null } active OpenLayers interaction.
+   */
   getInteraction() {
     return this._interaction;
   }
 
   /**
-   * Method to set filter operation intersect or Contains
+   * @param {'intersects'|'within'} [method='intersects'] spatial filter operation.
    */
   setSpatialMethod(method = 'intersects') {
     this.spatialMethod = method;
@@ -711,16 +764,22 @@ export default class MapControl extends ol.control.Control {
     });
   }
 
+  /**
+   * @returns { 'intersects'|'within'|undefined } current spatial filter operation.
+   */
   getSpatialMethod() {
     return this.spatialMethod;
   }
 
+  /**
+   * @param { Array } [layers=[]] layers used by the interaction.
+   */
   setLayers(layers = []) {
     this.layers = layers;
   }
 
   /**
-   * @returns { ol.control }
+   * @returns { ol.control.Control|undefined } wrapped OpenLayers control, if any.
    * 
    * @since 3.11.0
    */
@@ -729,6 +788,8 @@ export default class MapControl extends ol.control.Control {
   }
 
   /**
+   * Toggle the visibility of the control element.
+   *
    * @since 3.11.0
    */
   showHide() {

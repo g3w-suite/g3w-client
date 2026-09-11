@@ -12,8 +12,6 @@ import { cloneDeep }    from 'utils/cloneDeep';
 import { waitFor }      from 'utils/waitFor';
 import { gettext as _ } from 'g3w-i18n';
 
-const TIMEOUT = 10000;
-
 /**
  * ORIGINAL SOURCE: src/app/core/plugin/plugin.js@v3.10.2
  */
@@ -28,8 +26,6 @@ export class Plugin extends Emitter {
     i18n         = null,
     fontClasses  = [],
     api          = {},
-    /** @since 4.1.0 */
-    layersStore  = false,
   } = {}) {
   
     super();
@@ -48,7 +44,7 @@ export class Plugin extends Emitter {
     // List of sidebar services that usually plugin need to interact with (hook = place/name of component)
     this.hookservices = {
       'search': GUI.getService('search'),
-      'tools':  GUI.getService('tools')
+      'tools':  GUI.getService('tools'),
     };
 
     // Automatically remove the loading plugin indicator after timeout
@@ -58,33 +54,28 @@ export class Plugin extends Emitter {
       if (this.name) {
         delete ApplicationState.layout[this.name];
       }
-    }, TIMEOUT);
+    }, 10000); // 10 seconds
 
-    if (layersStore && name) {
-      ApplicationState.layers[name] = layersStore;
-    }
   }
 
   /**
-   * Set plugin name
-   * @param { String } name
+   * @param { String } name plugin name
    */
   setName(name) {
     this.name = name;
   }
 
   /**
-   * Get plugin name
-   * @returns { String } name
+   * @returns { String } plugin name
    */
   getName() {
     return this.name;
   }
 
   /**
+   * @param { String | Object } i18n translations lang for the plugin
+   * 
    * @since 4.1.0
-   * Set i18n translations lang for the plugin
-   * @param { String | Object } i18n 
    */
   async setI18n(i18n) {
     //In case of missing i18n configuration, do nothing
@@ -119,23 +110,23 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * Set plugin configuration
-   * @param { Object } config
+   * @param { Object } config plugin configuration
    */
-  setConfig(config) {
+  setConfig(config = {}) {
     this.config = 'Object' === toRawType(config) ? config : null;
   }
 
   /**
-   * Get plugin configuration
-   * @param { String } name
+   * @param { String } name plugin name
+   * 
+   * @returns plugin configuration
    */
   getConfig(name) {
     return this.config || window.initConfig.plugins[name || this.name];
   }
 
   /**
-   * Register custom i18n strings (global context) 
+   * Register custom i18n strings (global context)
    * 
    * @param { string } lang 
    * @param {*} locale i18n object
@@ -160,7 +151,9 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * @FIXME add description
+   * @param { Object } service plugin service functionality (methods, events, ...) to interact with the plugin
+   * 
+   * @since 4.0.0
    */
   setService(service) {
     this.service = service;
@@ -170,22 +163,27 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * @FIXME add description
+   * @returns { Object } plugin service functionality (methods, events, ...) to interact with the plugin
+   * 
+   * @since 4.0.0 
    */
   getService() {
     return this.service;
   }
 
   /**
-   * @FIXME add description
-   * @param { Array } dependencies
+   * @param { Array } dependencies plugin dependencies (eg. ["editing", "processing"])
    */
   setDependencies(dependencies = []) {
     this.dependencies = dependencies;
   }
 
   /**
-   * @FIXME add description
+   * Set plugin API that expose plugin interaction from external
+   *   
+   * @param { Object } api
+   * 
+   * @since 4.0.0
    */
   setApi(api = {}) {
     this._api = api;
@@ -196,21 +194,33 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * @FIXME add description
+   * Return plugin API that expose plugin interaction from external
+   * 
+   * @returns { Object }
+   * 
+   * @since 4.0.0
    */
   getApi() {
     return this._api;
   }
 
   /**
-   * @FIXME add description
+   * Set the hook service to interact with a specific component (eg. "tools" interface on the left sidebar)
+   * 
+   * @param { string } hook
+   * 
+   * @since 4.0.0 
    */
   setHookService(hook) {
     this._hook = hook;
   }
 
   /**
-   * @FIXME add description
+   *  Get the hook service to interact with a specific component (eg. "tools" interface on the left sidebar)
+   * 
+   * @param { string } hook
+   * 
+   * @since 4.0.0 
    */
   getHookService(hook = "tools") {
     return this.hookservices[hook];
@@ -246,7 +256,7 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * @FIXME add description
+   * Set the current layout of the plugin as active
    * 
    * @see g3wsdk.core.ApplicationState.layout.__current
    */
@@ -255,7 +265,9 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * @FIXME add description
+   * Set the plugin as ready (eg. after initialization is complete)
+   * 
+   * @param { boolean } isReady
    */
   setReady(isReady) {
     this._ready = isReady;
@@ -270,7 +282,11 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * @FIXME add description
+   * Return a promise that resolves when the plugin is ready (eg. after "setReady(true)" is called)
+   * 
+   * @returns { Promise }
+   * 
+   * @since 4.0.0
    */
   isReady() {
     return new Promise((resolve) => {
@@ -281,6 +297,8 @@ export class Plugin extends Emitter {
   }
 
   /**
+   * @param { string } gid plugin's gid (eg: qdjango:1)
+   * 
    * @returns whether plugin is compatible with current projectId
    */
   isCurrentProjectCompatible(gid) {
@@ -289,6 +307,10 @@ export class Plugin extends Emitter {
 
   /**
    * Check and register plugin only when compatible with current projectId (eg: qdjango:1)
+   * 
+   * @param { string } gid plugin's gid (eg: qdjango:1)
+   * 
+   * @returns { boolean } whether plugin is compatible with current projectId
    */
   registerPlugin(gid) {
     const iscompatible  = this.isCurrentProjectCompatible(gid);
@@ -304,7 +326,9 @@ export class Plugin extends Emitter {
   /**
    * Used by the following plugins: "archiweb"
    * 
-   * Get plugin dependencies
+   * @param { Array } pluginsName plugin dependencies
+   * 
+   * @since 4.0.0
    */
   getDependencyPlugins(pluginsName) {
     this.dependencies = pluginsName || this.dependencies;
@@ -313,6 +337,10 @@ export class Plugin extends Emitter {
 
   /**
    * Used by the following plugins: "iframe", "sispi-worksite", "simplereporting"
+   * 
+   * @returns { Object } plugin dependencies API
+   * 
+   * @since 4.0.0
    */
   async getDependencyPluginsObject(pluginsName) {
     const api      = {};

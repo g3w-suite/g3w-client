@@ -288,9 +288,9 @@
       </li>
 
       <!-- THEME SELECTOR -->
-      <li id = "themes" class = "sidebar-item" v-show="ApplicationState.sidebar.open">
+      <li id = "themes" class = "sidebar-item" v-show = "ApplicationState.sidebar.open">
         <!-- whether at least one TOC layer is visible on toc -->
-        <template v-if = "ApplicationState.catalog.layerstrees.length && ApplicationState.catalog.layerstrees[0].tree[0].toc" >
+        <template v-if = "ApplicationState.project.state.layerstree[0].nodes.length" >
           <a
             href        = "#"
             style       = "display: flex; flex-wrap: wrap; align-items: center;"
@@ -439,19 +439,14 @@
         </a>
 
         <!-- LAYER TREES -->
-        <ul
-          v-for = "root in ApplicationState.catalog.layerstrees"
-          :key  = "root.storeid"
-          class = "tree-root"
-        >
+        <ul class = "tree-root">
           <catalog-tree
-            v-for                      = "tree in root.tree"
+            v-for                      = "tree in ApplicationState.project.state.layerstree"
             :key                       = "tree.id"
             :layerstree                = "tree"
             :root                      = "true"
             :legendplace               = "ApplicationState.project.state.legend_position || 'tab'"
             :parent_mutually_exclusive = "false"
-            :storeid                   = "root.storeid"
           />
         </ul>
 
@@ -926,7 +921,7 @@ export default {
      * @since 4.1.0
      */
     has_related_maps() {
-      return window.initConfig.macrogroups.length + window.initConfig.groups.length + window.initConfig.projects.length > 1;
+      return (window.initConfig.macrogroups.length + window.initConfig.groups.length + window.initConfig.projects.length) > 1;
     },
 
     main_title() {
@@ -946,7 +941,9 @@ export default {
     showtitle() {
       if (this.state.content.contentsdata.length > 0) {
         const options = this.state.content.contentsdata.at(-1).options;
-        if ( [true, false].includes(options.showtitle) ) { return options.showtitle }
+        if ( [true, false].includes(options.showtitle) ) {
+          return options.showtitle 
+        }
       }
       return true;
     },
@@ -961,7 +958,7 @@ export default {
     },
 
     contentTitle() {
-      if (this.state.content.contentsdata.length) {
+      if (this.state.content.contentsdata.length > 0) {
         return this.state.content.contentsdata.at(-1).options;
       }
     },
@@ -991,15 +988,15 @@ export default {
     },
 
     componentname() {
-      return ApplicationState.sidebar.components.length ? ApplicationState.sidebar.components.slice(-1)[0].getTitle(): '';
+      return ApplicationState.sidebar.components.length > 0 ? ApplicationState.sidebar.components.slice(-1)[0].getTitle(): '';
     },
 
     panelname() {
-      return this.panels.length ? this.panels.slice(-1)[0].content.getTitle() : '';
+      return this.panels.length > 0 ? this.panels.slice(-1)[0].content.getTitle() : '';
     },
 
     version() {
-      return 'Powered by G3W-SUITE ' + initConfig.version;
+      return `Powered by G3W-SUITE ${initConfig.version}`;
     },
 
     showmapunits() {
@@ -1014,7 +1011,7 @@ export default {
     },
 
     custom_theme_invalid() {
-      return this.custom_theme_input && this.ApplicationState.project.state.map_themes.project.concat(this.ApplicationState.project.state.map_themes.custom).find(({ theme }) => theme === this.custom_theme_input.trim());
+      return this.custom_theme_input && this.ApplicationState.project.state.map_themes.project.concat(this.ApplicationState.project.state.map_themes.custom).find(({ theme }) => this.custom_theme_input.trim() === theme);
     },
 
   },
@@ -1029,27 +1026,31 @@ export default {
         e.preventDefault();
         return item.onclick();
       }
+
       if (!['modal', 'metadata'].includes(item.type)) {
         return;
       }
+
       e.preventDefault();
       if (item.target && 'modal' === item.type && document.querySelector(item.target)) {
         return $(item.target).modal('show');
       }
+
       if (item.target && 'metadata' === item.type && document.querySelector('#modal-metadata')) {
         $('#modal-metadata').modal('show');
-        document.querySelector('#modal-metadata a[href="' + item.target + '"]').click();
+        document.querySelector(`#modal-metadata a[href="${ item.target }"]`).click();
         return;
       }
+      
       document.body.insertAdjacentHTML('beforeend', /* html */`
-        <div id = "custom_modal" class = "modal fade" tabindex="-1">
+        <div id = "custom_modal" class = "modal fade" tabindex = "-1">
           <div class = "modal-dialog">
-            <div class  = "modal-content">${ item.content }</div>
+            <div class = "modal-content">${ item.content }</div>
           </div>
         </div>
       `);
       $('#custom_modal').modal('show');
-      $('#custom_modal').on('hidden.bs.modal', () => document.querySelector('#custom_modal')?.remove());
+      $('#custom_modal').on('hidden.bs.modal', () => document.querySelector('#custom_modal')?.remove?.());
     },
 
     async showEmbedModal() {
@@ -1078,7 +1079,7 @@ export default {
     },
 
     isNotLastCrumb(index) {
-      return index < this.breadcrumb.length - 1;
+      return index < (this.breadcrumb.length - 1);
     },
 
     closeContent() {
@@ -1144,7 +1145,7 @@ export default {
         });
       };
 
-      const mouseup = async e => {
+      const mouseup = async () => {
         document.removeEventListener('mousemove', mousemove);
         if (!this.disabled && 'h' === this.state.split && panel.width > 65) {
           GUI.hideSidebar();
@@ -1378,8 +1379,9 @@ export default {
       GUI.closeContent();
 
       // change map theme
-      this.ApplicationState.map_theme.change = true;     
-      this.ApplicationState.catalog.layerstrees[0].checked = true;
+      this.ApplicationState.map_theme.change                    = true;  
+      //set root group checked to true in order to show all layers in TOC   
+      this.ApplicationState.project.state.layerstree[0].checked = true;
 
       const project  = ApplicationState.project;
 
@@ -1430,8 +1432,7 @@ export default {
                     changes[node.id].style = await project.getLayerById(node.id).changeCurrentStyle(node.style);
                     resolve();
                   };
-                  if (project.getLayersStore()) { changeStyle(node) }
-                  else { (node => setTimeout(() => changeStyle(node)))(node) }// case of starting project creation
+                  changeStyle(node);
                 });
                 promises.push(promise);
               }
@@ -1440,7 +1441,7 @@ export default {
       };
       traverse(
         theme.layerstree,
-        this.ApplicationState.catalog.layerstrees[0].tree[0].nodes ?? this.ApplicationState.project.state.layerstree
+        this.ApplicationState.project.state.layerstree?.[0]?.nodes,
       );
 
       await Promise.allSettled(promises);
@@ -1456,13 +1457,13 @@ export default {
       const styles  = (await this.getThemeConfig(map_theme)).styles;
 
       // clear categories
-      layers.forEach(id => {
-        if (!changes[id].visible) {
+      layers
+        .filter(id => !changes[id].visible)
+        .forEach(id => {
           const layer = getCatalogLayerById(id);
           layer.clearCategories();
           layer.change();
-        }
-      });
+        });
 
       // apply styles on each layer
       layers.forEach(id => GUI.emit('layer-change-style', { layerId: id, style: styles[id] }));
@@ -1521,7 +1522,7 @@ export default {
       };
 
       // loop through child nodes
-      traverse(this.ApplicationState.catalog.layerstrees[0].tree[0].nodes, params.layerstree);
+      traverse(this.ApplicationState.project.state.layerstree?.[0].nodes, params.layerstree);
 
       return params;
     },
@@ -1557,11 +1558,11 @@ export default {
         // close dialog
         this.theme_dialog_open    = false;
         //set as current active name map theme
-        this.active_theme.theme = this.custom_theme_input;
+        this.active_theme.theme   = this.custom_theme_input;
         //need to wait watch
         await this.$nextTick();
         //set custom map theme value to null. Reset value
-        this.custom_theme_input = null;
+        this.custom_theme_input   = null;
       } catch(e) {
         console.warn(e);
         GUI.showUserMessage({ type: 'alert', message: e.error || 'server_error' });
@@ -1650,9 +1651,8 @@ export default {
     language: {
       immediate: true,
       async handler(lang, plang) {
-        //In case of no language, loading time, set default language en
+        // no language → fallback to "en"
         if (!lang) {
-          // lazy load i18n translations
           _.register('en', (await import(`${initConfig.urls.clienturl}locales/en.js`)).default);
           return;
         }
@@ -1666,18 +1666,19 @@ export default {
           GUI.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
         }
 
-        //wait loading all plugins. Need to wait for plugins to be loaded when open apllication first time
+        // wait for all plugins (loading).
         await waitFor(() => 0 === ApplicationState.plugins.length);
 
         ApplicationState.language = lang;
 
-        //need to wait change laguage. Some plugins watch language change
+        // wait language change (some plugins may watch language change).
         await this.$nextTick();
 
-        //ge locale from current languare or previuous language to check if plugins are translated
-        const locale             = Object.keys(ApplicationState.locales[plang || lang]);
-        const installed_plugins  = Object.keys(initConfig.plugins); //plugins provided by the server
+        // retrieve plugins translations.
+        const locale             = Object.keys(ApplicationState.locales[plang || lang] || {});
+        const installed_plugins  = Object.keys(initConfig.plugins); // plugins provided by the server
         const i18n_plugins       = installed_plugins.filter(name => locale.find(k => k.includes(`plugins.${name}`)));
+
         // wait until all plugins have been translated
         await waitFor(() => {
           return i18n_plugins.length === i18n_plugins.filter(name => locale.find(key => key.startsWith(`plugins.${name}`))).length;

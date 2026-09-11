@@ -104,11 +104,9 @@ async function getFilterExpression({
     orderbyvalue
   } = field.input.options;
 
-  /**
-   * @FIXME should return Promise.reject('some error message') ?
-   */
   if (!filter_expression) {
-    return;
+    console.warn('No filter expression provided for field:', field.name);
+    return [];
   }
 
   loading.state = 'loading';
@@ -165,8 +163,9 @@ async function getFilterExpression({
       field.input.options.values = values;
 
       // see: https://github.com/g3w-suite/g3w-client/pull/856
-      if (parentData) {
-        ApplicationState.project.getLayerById(qgs_layer_id).config.editing.fields.find(f => f.name === field.name ).input.options.values = values;
+      const editing_field = parentData && GUI.getPlugin('editing')?.getEditingFields?.(qgs_layer_id)?.find?.(f => f.name === field.name);
+      if (editing_field) {
+        editing_field.input.options.values = values;
       }
     }
 
@@ -192,7 +191,7 @@ export class FormComponent extends Component {
       ...opts,
       id:                 opts.id || 'form',
       perc:               opts.layer?.config?.editing?.form?.perc ?? opts.perc,
-      service:            new (opts.service || FormService)(),
+      service:            new (opts.service || FormService)(opts),
       vueComponentObject: opts.vueComponentObject || vueComp,
     });
 
@@ -208,17 +207,11 @@ export class FormComponent extends Component {
 
     this.getService().addComponents(components);
     this.getService().setComponent(components[0].component);
-
-    this.onafter('mount', () => GUI.setModal(true))
   }
 
   addFormComponents(c = []) { this.getService().addComponents(c); }
   addFormComponent(c)       { c && this.getService().addComponent(c); }
   layout()                  { this.getInternalComponent()?.reloadLayout?.(); }
-
-  /** @TODO check if superflous */
-  mount(parent, append)     { return super.mount(parent, append).then(() => { GUI.setModal(true); }); }
-
 }
 
 /**
@@ -260,13 +253,8 @@ export class FormService extends Emitter {
       'postRender',
     ];
 
-  }
+    this.setInitForm(opts);
 
-  /**
-   * @since 4.0.0. 
-   */
-  setInitForm(opts = {}) {
-    this._setInitForm(opts);
   }
 
   /**
@@ -320,14 +308,10 @@ export class FormService extends Emitter {
     // hook for listener to change DOM
   }
 
-  init(opts = {}) {
-    this._setInitForm(opts);
-  }
-
   /**
    * Init form options passed, for example, by editor
    */
-  _setInitForm(options = {}) {
+  setInitForm(options = {}) {
     const {
       fields,
       feature,
