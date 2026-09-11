@@ -104,9 +104,6 @@ async function getFilterExpression({
     orderbyvalue
   } = field.input.options;
 
-  /**
-   * @FIXME should return Promise.reject('some error message') ?
-   */
   if (!filter_expression) {
     console.warn('No filter expression provided for field:', field.name);
     return [];
@@ -167,7 +164,10 @@ async function getFilterExpression({
 
       // see: https://github.com/g3w-suite/g3w-client/pull/856
       if (parentData) {
-        GUI.getPlugin('editing').getLayerById(qgs_layer_id).state.editing.fields.find(f => f.name === field.name ).input.options.values = values;
+        const editingField = GUI.getPlugin('editing').getEditingFields(qgs_layer_id).find(f => f.name === field.name);
+        if (editingField) {
+          editingField.input.options.values = values;
+        }
       }
     }
 

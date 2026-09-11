@@ -2297,6 +2297,8 @@ export default new (class GUI extends Emitter {
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
    * 
    * used by the following plugins: "qplotly"
+   *
+   * @param {string[]} ids queried layer ids to be used for plot rendering
    * 
    * @since 4.1.0
    */
