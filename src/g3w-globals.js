@@ -20,7 +20,6 @@ import { isLineGeometryType }                      from 'utils/isLineGeometryTyp
 import { isPolygonGeometryType }                   from 'utils/isPolygonGeometryType';
 import { createVectorLayerFromFile }               from 'utils/createVectorLayerFromFile';
 import { getAlphanumericProps }                    from 'utils/getAlphanumericProps';
-import { areCoordinatesEqual }                     from 'utils/areCoordinatesEqual';
 import { splitFeature }                            from 'utils/splitFeature';
 import { convertSingleMultiGeometry }              from 'utils/convertSingleMultiGeometry';
 import { within }                                  from 'utils/within';
@@ -215,7 +214,6 @@ globalThis.g3wsdk = {
       createVectorLayerFromFile: deprecate(createVectorLayerFromFile, '[G3W-CLIENT] g3wsdk.core.geoutils.createVectorLayerFromFile is deprecated'),
       getAlphanumericPropertiesFromFeature: getAlphanumericProps,
       getMapLayersByFilter: (f = {}, o = {}) => ApplicationState.project.getLayers({ GEOLAYER: true, ...(f || {}) }, o),
-      areCoordinatesEqual,
       splitFeature,
       convertSingleMultiGeometry,
       within,
