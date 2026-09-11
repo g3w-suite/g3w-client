@@ -592,7 +592,7 @@
         try {
           const editing = GUI.getPlugin('editing');
           return layer
-            ? !layer.external && !editing?.isLayerInEditing?.(layer.id)
+            ? !layer.external && editing?.getLayerById(layer.id)
             : Object.values(editing?.getEditableLayers() || {}).find(l => l.isGeoLayer() && !editing?.isLayerInEditing?.(l.getId()));
         } catch(e) {
           console.warn(e);
