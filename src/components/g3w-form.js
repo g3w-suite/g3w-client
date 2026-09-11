@@ -163,7 +163,7 @@ async function getFilterExpression({
       field.input.options.values = values;
 
       // see: https://github.com/g3w-suite/g3w-client/pull/856
-      const editing_field = parentData && GUI.getPlugin('editing').getEditingFields(qgs_layer_id).find(f => f.name === field.name);
+      const editing_field = parentData && GUI.getPlugin('editing')?.getEditingFields?.(qgs_layer_id)?.find?.(f => f.name === field.name);
       if (editing_field) {
         editing_field.input.options.values = values;
       }
