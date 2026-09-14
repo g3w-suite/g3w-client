@@ -59,25 +59,6 @@
       </ul>
     </li>
 
-    <!-- Edit Layer -->
-    <li
-      v-if                = "canEdit(layer)"
-      @click.prevent.stop = "0 === map_coords.length && startEditing(layer)"
-    >
-      <i class = "fas fa-pencil-alt"></i> {{ $t('Edit Layer') }} 
-      <i v-if = "'map' === context" class = "fas fa-chevron-right" style  = "position: absolute; right: 0; margin-top: 3px"></i>
-      <ul v-if = "'map' === context" class = "sub-contex-menu">
-        <li
-          v-for       = "layer in editableGeometryLayers()"
-          @click.stop = "startEditing({ id: layer.getId() })"
-          :key        = "layer.getId()"
-          style       = "display: list-item;"
-        >
-          <span style = "font-weight: bold">{{  layer.getName() }} </span>
-        </li>
-      </ul>
-    </li>
-
     <!-- Layer Legend -->
     <li
       v-if                = "['project', 'layer'].includes(context) && layerstree.geolayer"
@@ -585,97 +566,12 @@
       },
 
       /**
-       * @returns {Boolean} whether layer is editable
-       * @since 3.11.0
-       */
-       canEdit(layer) {
-        try {
-          const editing = GUI.getPlugin('editing');
-          return layer
-            ? !layer.external && editing?.getLayerById(layer.id)
-            : Object.values(editing?.getEditableLayers() || {}).find(l => l.isGeoLayer() && !editing?.isLayerInEditing?.(l.getId()));
-        } catch(e) {
-          console.warn(e);
-        } 
-      },
-
-      /**
        * @since 4.1.0
        */
       editableGeometryLayers() {
         return Object.values(GUI.getPlugin('editing')?.getEditableLayers() || {}).filter(l => l.isGeoLayer());
       },
-
-      /**
-       * @since 3.11.0
-       */
-      async startEditing(layer) {
-        //store toolboxes id 
-        const toolboxes = [];
-        if (layer) {
-          toolboxes.push(layer.id);
-        }
-
-        //In case of no layer, right click on group on TOC
-        //get layers belog to groups that are editable
-        if (!layer && false === this.layerstree?.root) {
-          const traverse = n => {
-            if (n.id && getCatalogLayerById(n.id).isEditable()) { toolboxes.push(n.id) }
-            if (n.nodes) { n.nodes.forEach(traverse); }
-          };
-          traverse(this.layerstree);
-        }
-          
-        this.closeMenu();
-        const editing = GUI.getPlugin('editing');
-        //check if has coordinates
-        if (2 === this.map_coords.length) {
-          try {
-            const project  = ApplicationState.project;
-            const response = await GUI.getData('query:coordinates', {
-              inputs: {
-                coordinates:           this.map_coords,
-                feature_count:         project.state.feature_count || 5,
-                query_point_tolerance: project.getQueryPointTolerance(),
-                layerIds:              [layer.id], //get layerId of editibale layers          
-              },
-              outputs: false //no content is show
-            });
-            if (response?.result && response?.data?.length) {
-
-              if (response?.data[0]?.features?.length) {
-                
-                editing.getToolBoxById(layer.id).start({
-                  filter: { fids: response?.data[0]?.features.map(f => f.getId()).join(',') }
-                });
-                
-              } 
-            }
-          } catch(e) {
-            console.warn('Error running spatial query: ', e);
-          }
-          editing.showPanel({ toolboxes });
-          return;
-
-        }
-
-        //Show all editing panel
-        if (0 === toolboxes.length) {
-          editing.showPanel();
-          return;
-          
-        }
-
-        //show some editing layers 
-        editing.showPanel({ toolboxes });
-        
-        //In case of just on layer in editing, start editing
-        if (1 === toolboxes.length) {
-          editing.startEditing(toolboxes[0]);
-        }
-
-      },
-
+      
       /**
        * @TODO refactor this, almost the same as: `CatalogTree.vue::canZoom(layer))`
        *
