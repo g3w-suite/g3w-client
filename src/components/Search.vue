@@ -59,8 +59,8 @@
     <!-- QUERY BUILDER -->
     <li
       class               = "menu-item"
-      @click.stop         = "showQueyBuilderPanel"
-      @keydown.enter.stop = "showQueyBuilderPanel"
+      @click.stop         = "showQueryBuilderPanel"
+      @keydown.enter.stop = "showQueryBuilderPanel"
       role                = "button"
       tabindex            = "0"
     >
@@ -99,7 +99,7 @@ export default {
 
   methods: {
     /**@since 4.1.0  ORIGINAL SOURCE: src/g3w-app.js@v4.0.0*/
-    showQueyBuilderPanel() {
+    showQueryBuilderPanel() {
       GUI.closeContent();
       GUI.closeSideBar();
       return new Panel({

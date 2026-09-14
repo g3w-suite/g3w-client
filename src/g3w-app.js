@@ -557,7 +557,7 @@ export default new (class GUI extends Emitter {
       const search = g3w.app.getComponent('search').getInternalComponent();
       // autotogle query builder panel when there is no other saved search
       if (bool && !search.state.searches.length && !search.state.tools.length && !search.state.querybuildersearches.length) {
-        search.showQueyBuilderPanel();
+        search.showQueryBuilderPanel();
       }
     });
 
