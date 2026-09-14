@@ -1592,8 +1592,9 @@ export default new (class GUI extends Emitter {
       let x_min, x_max, y_min, y_max, rotation, scale;
       this.setModal(false);
       this.#shadow.listener = this.getMap().on('postcompose', e => {
-        const ctx  = this.getMap().getViewport().querySelector('canvas').getContext('2d');
-        const size = this.getMap().getSize();
+        const ctx     = this.getMap().getViewport().querySelector('canvas').getContext('2d');
+        const size    = this.getMap().getSize();
+        const padding = this.getMap().getView().padding;
         // Inner polygon must be counter-clockwise
         const height = size[1] * ol.has.DEVICE_PIXEL_RATIO;
         const width  = size[0] * ol.has.DEVICE_PIXEL_RATIO;
@@ -1633,7 +1634,8 @@ export default new (class GUI extends Emitter {
           ctx.font = "bold 25px Arial";
           ctx.fillStyle = "#ffffff";
           ctx.textAlign = "center";
-          message.split('\n').forEach((m, i) => ctx.fillText(m, width / 2, (height / 2) + 30 * i));
+          //take in account view padding
+          message.split('\n').forEach((m, i) => ctx.fillText(m, (padding.at(-1) + width) / 2, ((height - padding.at(-2)) / 2) + 30 * i));
         }
         ctx.restore();
       });
