@@ -2723,25 +2723,6 @@ export class Layer extends Emitter {
     this.#color = color;
   }
 
-
-  /**
-   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   * 
-   * @since 4.1.0
-   */
-  getEditor() {
-    return this._editor;
-  }
-
-  /**
-   * @TODO Move it on  https://github.com/g3w-suite/g3w-client-plugin-editing
-   * 
-   * @since 4.1.0
-   */
-  isStarted() {
-    return this._editor?.isStarted()
-  }
-
   /**
    * @since 4.1.0
    */
