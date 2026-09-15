@@ -37,15 +37,8 @@ export class Plugin extends Emitter {
     this.setDependencies(dependencies);
     this.addFontClasses(fontClasses);
     this.setApi(api);
-    this.setHookService(null);
 
     this._ready = false;
-
-    // List of sidebar services that usually plugin need to interact with (hook = place/name of component)
-    this.hookservices = {
-      'search': GUI.getService('search'),
-      'tools':  GUI.getService('tools'),
-    };
 
     // Automatically remove the loading plugin indicator after timeout
     this._timeout = setTimeout(() => {
@@ -204,27 +197,6 @@ export class Plugin extends Emitter {
     return this._api;
   }
 
-  /**
-   * Set the hook service to interact with a specific component (eg. "tools" interface on the left sidebar)
-   * 
-   * @param { string } hook
-   * 
-   * @since 4.0.0 
-   */
-  setHookService(hook) {
-    this._hook = hook;
-  }
-
-  /**
-   *  Get the hook service to interact with a specific component (eg. "tools" interface on the left sidebar)
-   * 
-   * @param { string } hook
-   * 
-   * @since 4.0.0 
-   */
-  getHookService(hook = "tools") {
-    return this.hookservices[hook];
-  }
 
   /**
    * Override plugin's content default layout (eg. default panel width, height, ...)
@@ -362,80 +334,6 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * Handle a loading process of a specific hook service (e.g. "tools" interface on the left sidebar)
-   */
-  setHookLoading({ hook = "tools", loading = false } = {}) {
-    this.getHookService(hook).setLoading(loading);
-  }
-
-  /**
-   * @FIXME add description
-   */
-  addToolGroup({ hook = "tools", position:order, title:group } = {}) {
-    this.getHookService(hook).addToolGroup(order, group);
-  }
-
-  /**
-   * @FIXME add description
-   */
-  removeToolGroup({ hook, group } = {}) {
-    this.getHookService(hook).removeToolGroup(group.title);
-  }
-
-  /**
-   * @param tool
-   * @param group tools group
-   */
-  addTools(tool, group) {
-    const hook = tool.hook || 'tools';
-    let tools  = [];
-
-    if (!tool.action && !tool.type) {
-      this.removeToolGroup({ hook, group });
-    } else {
-      this.setHookService(hook);
-      tools = (this.config.configs || [this.config]).map(config => {
-          return {
-          icon:     tool.icon,
-          type:     tool.type,
-          name:     config?.name ?? tool.name,
-          html:     tool.html,
-          options:  tool.options || {},
-          action:   tool?.action?.bind?.(this, config),
-          loading:  tool?.loading ?? false,
-          disabled: tool?.disabled ?? false,
-          offline:  tool?.offline ?? true,
-          state:    tool?.state ?? ({ type: null, message: null })
-        };
-      });
-      this.getHookService(hook).addTools(tools, group);
-    }
-
-    return tools;
-  }
-
-  /**
-   * @FIXME add description
-   */
-  setToolState({ id, state = { type: null, message: null } } = {}) {
-    this.hookservices[this._hook].state.toolsGroups.find(g => {
-      const tool = g.tools.find(t => t.name === id);
-      if (tool) {
-        tool.state.type    = state.type;
-        tool.state.message = state.message;
-        return true;
-      }
-    });
-  }
-
-  /**
-   * @FIXME add description
-   */
-  removeTools() {
-    this.hookservices[this._hook].removeTools();
-  }
-
-  /**
    * Helper method to create and add a custom component item on the left sidebar
    * 
    * @param                      vue                               vue component object (SFC)
@@ -465,7 +363,7 @@ export class Plugin extends Emitter {
     opts.sidebarOptions     = opts.sidebarOptions ?? { position: 1 };
 
     GUI.addComponent(new Component(opts), opts.sidebarOptions);
-
+    
     return GUI.getComponent(opts.id) ;
   }
 

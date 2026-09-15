@@ -36,7 +36,6 @@ import { getCatalogLayers }                     from 'utils/getCatalogLayers';
 import { idb }                                  from 'utils/idb';
 import { waitFor }                              from 'utils/waitFor';
 import { debounce }                             from 'utils/debounce';
-import { noop }                                 from 'utils/noop';
 import { groupBy }                              from 'utils/groupBy';
 
 import PickCoordinatesInteraction               from 'interactions/pick-coordinates';
@@ -491,7 +490,6 @@ export default new (class GUI extends Emitter {
         }
         component.mount(sidebarItem.$refs['component-placeholder']);
       }).$mount();
-
       ApplicationState.sidebar.components.push(component);
     }
     return component;
@@ -537,16 +535,12 @@ export default new (class GUI extends Emitter {
       service: Object.assign(new Emitter, {
         state: {
           searches: (ApplicationState.project.state.search || []).sort((a, b) => `${a.name}`.localeCompare(b.name)),
-          tools: [],
           /** Retrieve saved searches from local storage */
           querybuildersearches:  ApplicationState.querybuilder?.searches?.[ApplicationState.project.getId()] ?? []
         },
         title:                    ApplicationState.project.state.search_title || "search",
-        addTool(t)                { this.state.tools.push(t); },
-        addTools(tt)              { for (const t of tt) this.addTool(t); },
         showPanel(o)              { return new (require('components/g3w-search')).SearchPanel(o, true) },
         getTitle()                { return this.title },
-        removeTools()             { this.state.tools.splice(0) },
         async stop(d)             { return d },
         removeTool()              {},
       }),
@@ -555,98 +549,11 @@ export default new (class GUI extends Emitter {
 
     comp.onbefore('setOpen', bool => {
       const search = g3w.app.getComponent('search').getInternalComponent();
-      // autotogle query builder panel when there is no other saved search
-      if (bool && !search.state.searches.length && !search.state.tools.length && !search.state.querybuildersearches.length) {
+      // autotoggle query builder panel when there is no other saved search
+      if (bool && !search.state.searches.length && !search.state.querybuildersearches.length) {
         search.showQueryBuilderPanel();
       }
     });
-
-    // G3W-TOOLS
-    this.addComponent(new (function() {
-      const state   = {
-        id:          'tools',
-        icon:        "fas fa-cogs",
-        iconColor:   '#FFE721',
-        toolsGroups: [],
-        visible: false,
-        loading: false
-      };
-    
-      const service = new Emitter({ setters: {
-        addTool(tool, { title, position }) {
-          let group = state.toolsGroups.find(g => g.name === title);
-          if (!group) { group = { name: title, tools: [] }; state.toolsGroups.splice(position, 0, group); }
-          return group.tools.push(Object.assign(tool, {
-            state:  tool.state || ({ type: null, message: null }),
-            action: tool.action || (ACTIONS[tool.type] || noop).bind(null, tool.options)
-          }));
-        },
-        addToolGroup(position, name) {
-          let group = state.toolsGroups.find(g => g.name === name);
-          if (!group) { group = { name, tools: [] }; state.toolsGroups.splice(position, 0, group); }
-          return group;  
-        },
-        addTools(tools, groupName)   { tools.forEach(t => this.addTool(t, groupName)); },
-        removeToolGroup(name)        { state.toolsGroups = state.toolsGroups.filter(g => g.name !== name); },
-        removeTools()                { state.toolsGroups.splice(0); },
-      }});
-    
-      service.state            = state;
-      service.config           = null;
-      service.getState         = () => state;
-      service.reload           = () => { service.removeTools(); };
-      service.setLoading       = (bool = false) => { state.loading = bool; }
-
-      // static class field
-      service.ACTIONS = ACTIONS;
-
-      const tools = ApplicationState.project.getState().tools || {};
-
-      for (let t in tools) {
-        service.addToolGroup(0, t.toUpperCase());
-        service.addTools(
-          tools[t].map(tool => ({ name: tool.name, action: ACTIONS[t].bind(null, tool) })),
-          { position: 0, title: t.toUpperCase() }
-        );
-      }
-
-      const comp = new Component({
-        id:          'tools',
-        icon:        "fas fa-cogs",
-        iconColor:   '#FFE721',
-        title: "tools",
-        service,
-        internalComponent: new (Vue.extend({
-          template: /* html */ `
-            <ul class="g3w-tools treeview-menu">
-              <div v-show = "state.loading" class = "bar-loader"></div>
-              <li v-for="g in state.toolsGroups" :key="g.name">
-                <div class="tool-header"><i class="fas fa-cog"></i><span>{{ g.name }}</span></div>
-                <div :id="g.name + '-tools'" class="tool-box"><g3w-tool v-for="t in g.tools" :key="t.name" :tool="t" /></div>
-              </li>
-            </ul>`,
-          components: { G3wTool: require('components/Tool.vue').default },
-          data: () => ({ state: null }),
-          watch: {
-            async 'state.toolsGroups'(g) {
-              comp.setVisible(g.length > 0);
-              this.$emit('visible', g.length > 0);
-              await g3w.app.isReady();
-              document.querySelector('#g3w-menu #tools').classList.toggle('single', 1 === g.length && 'EDITING' === g[0].name);
-            }
-          },
-        }))(),
-      });
-    
-      comp.onbefore('setOpen', (b = false) => {
-        if (b) {
-          g3w.app.closeContent();
-        }
-      });
-    
-      return comp;
-    }));
-   
 
     this.#CONTENTS = Object.assign(new Component({
       id:                 'contents',
