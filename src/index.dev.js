@@ -536,6 +536,9 @@ g3w.app.once('after:setupControls', () => {
                 const OUTPUT                      = document.querySelector('#response');
                 const g3w                         = IFRAME.g3w;
                 const { ApplicationState }        = IFRAME.g3wsdk.core;
+
+                const { waitFor }                 = IFRAME.g3wsdk.core.utils;
+
                 const { GEOMETRY_FIELDS,G3W_FID } = IFRAME.g3wsdk.constant;
                 const { GUI }                     = IFRAME.g3wsdk.gui;
                 const { ol }                      = IFRAME;
@@ -631,9 +634,11 @@ g3w.app.once('after:setupControls', () => {
                   if ('app:ready' !== message.data?.action) {
                     return;
                   }
+                  await waitFor(() => GUI.getPlugin('editing')?.isReady?.());
                   const layers = (message.data?.response?.data?.layers || []);
+                  console.log(layers)
                   layers
-                    .filter(l  => ApplicationState.project.getLayerById(l.id).isEditable())
+                    .filter(l  => GUI.getPlugin('editing')?.getLayerById(l.id))
                     .forEach(l => layerId.appendChild(Object.assign(document.createElement('option'), { value: l.id, text: l.id })));
                   // initial value
                   if (layers.length) {

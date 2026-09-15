@@ -36,7 +36,6 @@ import { getCatalogLayers }                     from 'utils/getCatalogLayers';
 import { idb }                                  from 'utils/idb';
 import { waitFor }                              from 'utils/waitFor';
 import { debounce }                             from 'utils/debounce';
-import { noop }                                 from 'utils/noop';
 import { groupBy }                              from 'utils/groupBy';
 
 import PickCoordinatesInteraction               from 'interactions/pick-coordinates';
@@ -81,12 +80,9 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   #events = {
-    ol:           [],
-    stores:       [], // layers stores
-    unwatches:    [],
-    query:        [],
+    unwatches: [],
+    query:     [],
   };
-
 
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
@@ -352,8 +348,6 @@ export default new (class GUI extends Emitter {
       /** @since 4.1.0 */
       'postRender',
       /** @since 4.1.0 */
-      'editFeature',
-      /** @since 4.1.0 */
       'removeFeatureFromResult',
       /** @since 4.1.0 */
       'addHideMap',
@@ -425,7 +419,7 @@ export default new (class GUI extends Emitter {
               style            = "display: flex; justify-content: space-between; align-items: center"
               :data-i18n-title = "sidebar.open ? '' : (component.title || '')"
               data-placement   = "right"
-              @click.prevent   
+              @click.prevent   = ""
             >
               <div>
                 <span v-if = "!sidebar.open"><i :class = "component.icon" :style = "{ color: component.iconColor }"></i></span>
@@ -496,9 +490,9 @@ export default new (class GUI extends Emitter {
         }
         component.mount(sidebarItem.$refs['component-placeholder']);
       }).$mount();
-
       ApplicationState.sidebar.components.push(component);
     }
+    return component;
   }
 
   /**
@@ -531,7 +525,7 @@ export default new (class GUI extends Emitter {
     }));
 
     // G3W-SEARCH
-    this.addComponent(Object.assign(new Component({
+    const comp = this.addComponent(new Component({
       id:         'search',
       visible:     true,
       icon:        "fas fa-search",
@@ -541,120 +535,25 @@ export default new (class GUI extends Emitter {
       service: Object.assign(new Emitter, {
         state: {
           searches: (ApplicationState.project.state.search || []).sort((a, b) => `${a.name}`.localeCompare(b.name)),
-          tools: [],
           /** Retrieve saved searches from local storage */
           querybuildersearches:  ApplicationState.querybuilder?.searches?.[ApplicationState.project.getId()] ?? []
         },
         title:                    ApplicationState.project.state.search_title || "search",
-        addTool(t)                { this.state.tools.push(t); },
-        addTools(tt)              { for (const t of tt) this.addTool(t); },
         showPanel(o)              { return new (require('components/g3w-search')).SearchPanel(o, true) },
         getTitle()                { return this.title },
-        removeTools()             { this.state.tools.splice(0) },
         async stop(d)             { return d },
         removeTool()              {},
       }),
       vueComponentObject: require('components/Search.vue').default,
-    }), {
-      _setOpen: bool => {
-        const search = g3w.app.getComponent('search').getInternalComponent();
-        // autotogle query builder panel when there is no other saved search
-        if (bool && !search.state.searches.length && !search.state.tools.length && !search.state.querybuildersearches.length) {
-          search.showQueyBuilderPanel();
-        }
-      },
     }));
 
-    // G3W-TOOLS
-    this.addComponent(new (function() {
-      const state   = {
-        id:          'tools',
-        icon:        "fas fa-cogs",
-        iconColor:   '#FFE721',
-        toolsGroups: [],
-        visible: false,
-        loading: false
-      };
-    
-      const service = new Emitter({ setters: {
-        addTool(tool, { title, position }) {
-          let group = state.toolsGroups.find(g => g.name === title);
-          if (!group) { group = { name: title, tools: [] }; state.toolsGroups.splice(position, 0, group); }
-          return group.tools.push(Object.assign(tool, {
-            state:  tool.state || ({ type: null, message: null }),
-            action: tool.action || (ACTIONS[tool.type] || noop).bind(null, tool.options)
-          }));
-        },
-        addToolGroup(position, name) {
-          let group = state.toolsGroups.find(g => g.name === name);
-          if (!group) { group = { name, tools: [] }; state.toolsGroups.splice(position, 0, group); }
-          return group;  
-        },
-        addTools(tools, groupName)   { tools.forEach(t => this.addTool(t, groupName)); },
-        removeToolGroup(name)        { state.toolsGroups = state.toolsGroups.filter(g => g.name !== name); },
-        removeTools()                { state.toolsGroups.splice(0); },
-      }});
-    
-      service.state            = state;
-      service.config           = null;
-      service.getState         = () => state;
-      service.reload           = () => { service.removeTools(); };
-      service.setLoading       = (bool = false) => { state.loading = bool; }
-    
-      // static class field
-      service.ACTIONS = ACTIONS;
-    
-      const tools = ApplicationState.project.getState().tools || {};
-    
-      for (let t in tools) {
-        service.addToolGroup(0, t.toUpperCase());
-        service.addTools(
-          tools[t].map(tool => ({ name: tool.name, action: ACTIONS[t].bind(null, tool) })),
-          { position: 0, title: t.toUpperCase() }
-        );
+    comp.onbefore('setOpen', bool => {
+      const search = g3w.app.getComponent('search').getInternalComponent();
+      // autotoggle query builder panel when there is no other saved search
+      if (bool && !search.state.searches.length && !search.state.querybuildersearches.length) {
+        search.showQueryBuilderPanel();
       }
-    
-      const comp = new Component({
-        id:          'tools',
-        icon:        "fas fa-cogs",
-        iconColor:   '#FFE721',
-        title: "tools",
-        service,
-        internalComponent: new (Vue.extend({
-          template: /* html */ `
-            <ul class="g3w-tools treeview-menu">
-              <div v-show = "state.loading" class = "bar-loader"></div>
-              <li v-for="g in state.toolsGroups" :key="g.name">
-                <div class="tool-header"><i class="fas fa-cog"></i><span>{{ g.name }}</span></div>
-                <div :id="g.name + '-tools'" class="tool-box"><g3w-tool v-for="t in g.tools" :key="t.name" :tool="t" /></div>
-              </li>
-            </ul>`,
-          components: { G3wTool: require('components/Tool.vue').default },
-          data: () => ({ state: null }),
-          watch: {
-            async 'state.toolsGroups'(g) {
-              comp.setVisible(g.length > 0);
-              this.$emit('visible', g.length > 0);
-              await g3w.app.isReady();
-              document.querySelector('#g3w-menu #tools').classList.toggle('single', 1 === g.length && 'EDITING' === g[0].name);
-            }
-          },
-        }))(),
-      });
-    
-      comp._setOpen = (b = false) => {
-        comp.internalComponent.state.open = b;
-        if (b) {
-          g3w.app.closeContent();
-        }
-      };
-    
-      return comp;
-    }));
-
-    ApplicationState.catalog.layerstrees.push(
-      ...Object.values(ApplicationState.layers).flatMap(s => s.showOnCatalog() ? ({ tree: s.getLayersTree(), storeid: s.getId() }) : [])
-    );
+    });
 
     this.#CONTENTS = Object.assign(new Component({
       id:                 'contents',
@@ -745,8 +644,7 @@ export default new (class GUI extends Emitter {
     if ('catalog' === componentId) {
       return this.#CATALOG;
     }
-    const component = this.getComponent(componentId);
-    return component && component.getService();
+    return this.getComponent(componentId)?.getService?.();
   }
 
   /**
@@ -954,7 +852,6 @@ export default new (class GUI extends Emitter {
     // remove all content stacks
     if (!pop && !backonclose){
       this.closeContent();
-      this.setModal(false);
     }
   }
 
@@ -1602,8 +1499,9 @@ export default new (class GUI extends Emitter {
       let x_min, x_max, y_min, y_max, rotation, scale;
       this.setModal(false);
       this.#shadow.listener = this.getMap().on('postcompose', e => {
-        const ctx  = this.getMap().getViewport().querySelector('canvas').getContext('2d');
-        const size = this.getMap().getSize();
+        const ctx     = this.getMap().getViewport().querySelector('canvas').getContext('2d');
+        const size    = this.getMap().getSize();
+        const padding = this.getMap().getView().padding;
         // Inner polygon must be counter-clockwise
         const height = size[1] * ol.has.DEVICE_PIXEL_RATIO;
         const width  = size[0] * ol.has.DEVICE_PIXEL_RATIO;
@@ -1643,7 +1541,8 @@ export default new (class GUI extends Emitter {
           ctx.font = "bold 25px Arial";
           ctx.fillStyle = "#ffffff";
           ctx.textAlign = "center";
-          message.split('\n').forEach((m, i) => ctx.fillText(m, width / 2, (height / 2) + 30 * i));
+          //take in account view padding
+          message.split('\n').forEach((m, i) => ctx.fillText(m, (padding.at(-1) + width) / 2, ((height - padding.at(-2)) / 2) + 30 * i));
         }
         ctx.restore();
       });
@@ -1740,7 +1639,7 @@ export default new (class GUI extends Emitter {
     })).filter(Boolean);
 
     const layersstree = traverse(
-      project.getLayersStore().state.layerstree[0].nodes, // current state
+      project.state.layerstree[0].nodes, // current state
       project.state.layerstree,                           // original state
     ).filter(Boolean);
 
@@ -1950,17 +1849,6 @@ export default new (class GUI extends Emitter {
 
     // update map padding
     this.getMap().getView().padding = padding;
-    // re-layout each component stored into the stack
-    ApplicationState.contentsdata.forEach(d => {
-      try {
-        if ('function' == typeof d.content.layout) {
-          d.content.layout(ApplicationState.content.sizes.width, parseFloat(contents.style.height));
-        }
-      } catch(e) {
-        this.showUserMessage({ type: 'warning', message: e.toString(), autoclose: true });
-        setTimeout(() => this.resize(), 1000);
-      }
-    });
 
     this.emit('resize');
 
@@ -2000,14 +1888,15 @@ export default new (class GUI extends Emitter {
    * clear all stacks
    */
   async #clearContents() {
-    await Promise.allSettled((ApplicationState.contentsdata || []).map(async d => {
-      if (d.content instanceof Component || d.content instanceof Panel) {
-        await d.content.unmount();
-      } else {
-        let parent = this.getComponent('contents').parent;
-        ('string' === typeof parent ? document.querySelector(parent) : parent)?.replaceChildren(); // removes all children
-      }
-    }));
+    await Promise.allSettled((ApplicationState.contentsdata || [])
+      .map(async d => {
+        if (d.content instanceof Component || d.content instanceof Panel) {
+          await d.content.unmount();
+        } else {
+          const parent = this.getComponent('contents').parent;
+          ('string' === typeof parent ? document.querySelector(parent) : parent)?.replaceChildren(); // removes all children
+        }
+      }));
     ApplicationState.contentsdata.splice(0, ApplicationState.contentsdata.length);
   }
 
@@ -2220,8 +2109,6 @@ export default new (class GUI extends Emitter {
           expandable:             true,
           addfeaturesresults:     { active: false },
           downloadformats:        { active: false },
-          editable:               is_layer   ? layer.isEditable() && layer.config.editing?.visible : false,
-          editing:                is_layer   ? layer.state.editing                                 : { inediting: false},
           source:                 is_layer   ? layer.getSource()                                   : undefined,
           infoformat:             is_layer   ? layer.getInfoFormat()                               : undefined,
           infoformats:            is_layer   ? layer.getInfoFormats()                              : [],
@@ -2291,13 +2178,15 @@ export default new (class GUI extends Emitter {
   postRender(element) {}
 
   /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   * 
-   * Setter method related to relation table
-   * 
-   * @since 4.1.0
+   * Method that call editing plugin method to edit a feature from a layer
+   * @since 4.2.0
    */
-  editFeature({ layer, feature } = {}) {}
+  editFeature({ layer, feature } = {}) {
+    this.getPlugin('editing')?.editFeature?.({
+      layer,
+      feature,
+    })
+  }
 
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
@@ -2317,11 +2206,13 @@ export default new (class GUI extends Emitter {
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
    * 
    * used by the following plugins: "qplotly"
+   *
+   * @param {string[]} ids queried layer ids to be used for plot rendering
    * 
    * @since 4.1.0
    */
-  addLayersPlotIds(layerIds = []) {
-    this.plotLayerIds = layerIds;
+  addLayersPlotIds(ids = []) {
+    this.plotLayerIds = ids;
   }
 
   /**
@@ -2370,7 +2261,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   updateLayerResultFeatures(responseLayer, replace = false) {
-    const layer = this.state.queried_layers.find(l => l.id === responseLayer.id);
+    const layer = this.state.queried_layers.find(l => responseLayer?.id === l.id);
 
     if (layer?.features?.length > 0) {
       const features_ids = replace ? [] : layer.features.map(f => this.#getFid(f, layer?.external)) // get features id from current layer on a result
@@ -2379,7 +2270,7 @@ export default new (class GUI extends Emitter {
         layer.features.forEach(f => delete this.state.layersFeaturesBoxes[this.getBoxId(layer, f)]);
         layer.features.splice(0);
       }
-      (responseLayer.features || []).forEach((feat, index) => {
+      (responseLayer?.features || []).forEach((feat, index) => {
         const feature_id = this.#getFid(feat, layer?.external);
         // If true, remove the feature because is already loaded
         if (features_ids.some(id => id === feature_id)) {
@@ -2410,12 +2301,12 @@ export default new (class GUI extends Emitter {
     }
 
     // no more features on layer → remove interaction pickcoordinate to get a result from a map
-    if (layer && 0 === (layer.features || []).length) {
+    if (0 === (layer?.features || []).length) {
       // due to vue reactivity, wait a little bit before update layers
       setTimeout(() => {
-        this.state.queried_layers = this.state.queried_layers.filter(l => l.id !== layer.id);
+        this.state.queried_layers = this.state.queried_layers.filter(l => layer.id !== l.id);
         this.highlight(false);
-        this.removeAddFeaturesLayerResultInteraction(true);
+        this.deactiveQueryInteractions(true);
       })
     }
 
@@ -2423,7 +2314,7 @@ export default new (class GUI extends Emitter {
     if (1 === this.state.queried_layers.length) {
       let type, geometry;
       const coordinates = this.state.queried_layers[0].features
-        .map(f => f.getGeometry ? f.getGeometry() : f.geometry)
+        .map(f => f.getGeometry?.() ?? f.geometry)
         .map(geom => {
           type = type ? type : (geom instanceof ol.geom.Geometry) ? geom.getType() : geom.type;
           return geom?.getCoordinates?.() ?? geom.coordinates;
@@ -2441,7 +2332,7 @@ export default new (class GUI extends Emitter {
     }
 
     // call "action.change"
-    this.state.layersactions[layer.id].forEach(action => action.change && action.change(layer));
+    this.state.layersactions[layer.id].forEach(action => action.change?.(layer));
 
     // reset actions tools
     (layer.features || []).forEach((_, idx) => {
@@ -2473,7 +2364,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   getBoxId(layer, feature, relation_index) {
-    return (null !== relation_index && undefined !== relation_index)
+    return (![null, undefined].includes(relation_index))
       ? `${layer.id}_${feature.id}_${relation_index}`
       : `${layer.id}_${feature.id}`;
   }
@@ -2535,9 +2426,7 @@ export default new (class GUI extends Emitter {
           id:       'show-query-relations',
           class:    "fas fa-sitemap",
           hint:     'Show Relations',
-          cbk: (layer, feature) => {
-            this.showRelations({ feature, layerId: layer.id });
-          },
+          cbk:      (layer, feature) => this.showRelations({ feature, layerId: layer.id }),
         },
 
         // print (atlas)
@@ -2596,7 +2485,7 @@ export default new (class GUI extends Emitter {
           clear() {
             this.unwatch && this.unwatch(); // remove action when destroy
           },
-          cbk: throttle((layer, feature) => { this.toggleSelection(layer, feature); })
+          cbk: throttle((layer, feature) => this.toggleSelection(layer, feature))
         },
 
         // permalink (click to copy)
@@ -2609,21 +2498,6 @@ export default new (class GUI extends Emitter {
             url.searchParams.set('zoom_to_fid', `${layer.id}|${feature.attributes[G3W_FID]}`);
             this.getPermalink(url, {});
           }
-        },
-
-        // edit
-        (layer.editable) && {
-          id:    'editing',
-          class: "fas fa-pencil-alt",
-          hint:  'Editing',
-          state:  Vue.observable({ disabled: layer.editing.inediting }), //disable when in editing
-          init() {
-             this.unwatch = Vue.watch(() => layer.editing.inediting, bool => this.state.disabled = bool );
-          },
-          clear() {
-            this.unwatch && this.unwatch(); // remove action when destroy
-          },
-          cbk:   (layer, feature) => this.editFeature({ layer, feature })
         },
 
       ]).filter(Boolean));
@@ -2661,9 +2535,7 @@ export default new (class GUI extends Emitter {
     layer,
     id,
   } = {}) {
-    if (this.state.layersactions[layer.id]) {
-      return this.state.layersactions[layer.id].find(action => action.id === id);
-    }
+    return this.state.layersactions[layer.id]?.find?.(a => id === a.id);
   }
 
   /**
@@ -2692,9 +2564,9 @@ export default new (class GUI extends Emitter {
 
     // need to check if pass component and
     if (
-      tools[index] &&                   // if component is set
-      action.id !== feats[index].id &&  // same action
-      feats[index].toggleable           // check if toggleable
+      tools[index]                     // if component is set
+      && action.id !== feats[index].id // same action
+      && feats[index].toggleable       // check if toggleable
     ) {
       feats[index].state.toggled[index] = false;
     }
@@ -2734,8 +2606,8 @@ export default new (class GUI extends Emitter {
     this.#events.query = [];
     this.highlight(false);
     this.#layer.getSource().clear();
-    this.removeAddFeaturesLayerResultInteraction(true);
-    //reset pagination
+    this.deactiveQueryInteractions(true);
+    // reset pagination
     this.#clearState();
     // used by the following plugins: "stress"
     this.emit('onbefore:closeComponent');
@@ -2743,11 +2615,6 @@ export default new (class GUI extends Emitter {
     this.emit('onafter:closeComponent');
     this.#layer.getSource().clear();
     this.getMap().removeLayer(this.#layer);
-
-    // clear map
-    this.#events.ol.forEach(key => ol.Observable.unByKey(key));
-    this.#events.ol.splice(0);
-    Object.values(ApplicationState.layers).forEach(this.#removeEventsKeysToLayersStore.bind(this));
 
     // exec lazy functions 
     setTimeout(() => {
@@ -2766,39 +2633,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   isOneLayerResult() {
-    return (1 === this.state.queried_layers.length);
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   *
-   * @param {boolean} toggle whether toggle mapcontrol
-   * 
-   * @since 4.1.0
-   */
-  removeAddFeaturesLayerResultInteraction(toggle) {
-    if (null !== this.#interaction.toggleeventhandler) {
-      this.off('mapcontrol:toggled', this.#interaction.toggleeventhandler);
-    }
-
-    // remove current interaction to get features from layer
-    if (null !== this.#interaction.interaction) {
-      this.removeInteraction(this.#interaction.interaction);
-    }
-
-    // check if query map control is toggled and registered
-    if (null !== this.#interaction.mapcontrol) {
-      this.#interaction.mapcontrol.toggle(toggle);
-    }
-
-    // reset values
-    Object.assign(this.#interaction, {
-      interaction:        null,
-      id:                 null,
-      toggleeventhandler: null,
-      mapcontrol:         null,
-    });
-
+    return 1 === this.state.queried_layers.length;
   }
 
   /**
@@ -2812,7 +2647,7 @@ export default new (class GUI extends Emitter {
    */
   addLayerFeaturesToResultsAction(layer) {
     const not_current = ![null, layer.id].includes(this.#interaction.id);
-    const new_layer   = not_current && this.state.queried_layers.find(l => l.id === this.#interaction.id);
+    const new_layer   = not_current && this.state.queried_layers.find(l => this.#interaction.id === l.id);
 
     // disable previous layer
     if (not_current && new_layer) {
@@ -2825,7 +2660,7 @@ export default new (class GUI extends Emitter {
     }
 
     // set new layer
-    this.#interaction.id = layer.id;
+    this.#interaction.id            = layer.id;
 
     layer.addfeaturesresults.active = !layer.addfeaturesresults.active;
 
@@ -2833,13 +2668,13 @@ export default new (class GUI extends Emitter {
     this.getMap().set('can_show_context_menu', !layer.addfeaturesresults.active);
 
     if (false === layer.addfeaturesresults.active) {
-      this.removeAddFeaturesLayerResultInteraction(true);
+      this.deactiveQueryInteractions(true);
     } else {
 
       // used by the following plugins: "bforest"
       this.emit('onbefore:activeMapInteraction');
 
-      const external_layer = (this.state.queried_layers.find(l => l.id === layer.id) || {}).external;
+      const external_layer = (this.state.queried_layers.find(l => layer.id === l.id) || {}).external;
 
       this.#interaction.mapcontrol  = this.#interaction.mapcontrol || this.getCurrentToggledMapControl() || null;
       this.#interaction.interaction = new PickCoordinatesInteraction();
@@ -2887,17 +2722,40 @@ export default new (class GUI extends Emitter {
   }
 
   /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   * 
-   * used by the following plugins: "bforest"
+   * @param {undefined | boolean} bool since 4.2.0 - whether toggle mapcontrol
    * 
    * @since 4.1.0
    */
-  deactiveQueryInteractions() {
-    this.state.queried_layers.forEach(l => {
-      if (l.addfeaturesresults) { l.addfeaturesresults.active = false }
-    })
-    this.removeAddFeaturesLayerResultInteraction();
+  deactiveQueryInteractions(bool) {
+
+    // BACKOMP: used by the following plugin: "bforest"
+    if (undefined !== bool) {
+      this.state.queried_layers
+        .filter(l =>  l.addfeaturesresults)
+        .forEach(l => l.addfeaturesresults.active = false);
+    }
+
+    if (null !== this.#interaction.toggleeventhandler) {
+      this.off('mapcontrol:toggled', this.#interaction.toggleeventhandler);
+    }
+
+    // remove current interaction to get features from layer
+    if (null !== this.#interaction.interaction) {
+      this.removeInteraction(this.#interaction.interaction);
+    }
+
+    // check if query map control is toggled and registered
+    if (null !== this.#interaction.mapcontrol) {
+      this.#interaction.mapcontrol.toggle(bool);
+    }
+
+    // reset values
+    Object.assign(this.#interaction, {
+      interaction:        null,
+      id:                 null,
+      toggleeventhandler: null,
+      mapcontrol:         null,
+    });
   }
 
   /**
@@ -2930,7 +2788,7 @@ export default new (class GUI extends Emitter {
     this.state.layeractiontool     = {};
     this.state.currentactiontools  = {};
     this.state.layersFeaturesBoxes = {};
-    this.removeAddFeaturesLayerResultInteraction();
+    this.deactiveQueryInteractions(false);
     this.#relations = (ApplicationState.project.getRelations() || []).reduce((group, r) => {
       group[r.referencedLayer] = group[r.referencedLayer] || [];
       group[r.referencedLayer].push(r);
@@ -3013,8 +2871,8 @@ export default new (class GUI extends Emitter {
     if (has_coords) {
       this.#map.forEachFeatureAtPixel(
         this.#map.getPixelFromCoordinate(coordinates),
-        f => { features.push(f); },
-        { layerFilter: l => l === layer }
+        f => features.push(f),
+        { layerFilter: l => layer === l }
       );
     }
 
@@ -4010,58 +3868,6 @@ export default new (class GUI extends Emitter {
   /**
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    * 
-   * remove all events of layersStore
-   * 
-   * @since 4.1.0
-   */
-  #removeEventsKeysToLayersStore(store) {
-    const id = store.getId();
-    if (this.#events.stores[id]) {
-      this.#events.stores[id].forEach(evt => { Object.entries(evt).forEach(([event, key]) => store.un(event, key)); });
-      delete this.#events.stores[id];
-    }
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * register all events of layersStore and relative keys
-   * 
-   * @since 4.1.0
-   */
-  #setUpEventsKeysToLayersStore(store) {
-    const id = store.getId();
-    // check if already store a key of events
-    this.#events.stores[id] = [];
-
-    //In the case of store that has layers @since 3.10.0
-    store.getLayers().forEach(l => {
-      if ('vector' === l.getType()) {
-        const olLayer = l.getOLLayer();
-        if (olLayer) {
-          this.getMap().addLayer(olLayer);
-        }
-      }
-    });
-
-    this.#events.stores[id].push({
-      addLayer: store.onafter('addLayer', l => {
-      if ('vector' === l.getType()) {
-        const olLayer = l.getOLLayer();
-        if (olLayer) {
-          this.getMap().addLayer(olLayer);
-        }
-      }
-    }),
-    });
-    this.#events.stores[id].push({
-      removeLayer: store.onafter('removeLayer', l => { 'vector' === l.getType() && this.#map.removeLayer(l.getOLLayer()) }),
-    });
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
    * @since 4.1.0
    */
   removeLayers() {
@@ -4760,9 +4566,7 @@ export default new (class GUI extends Emitter {
     // setup layers
 
     // sort layers by type: [0=BASE, 1=RASTER, 2=VECTOR]
-    Object
-      .values(ApplicationState.layers)
-      .flatMap(s => s.isQueryable() ? s.getLayers() : [])
+    ApplicationState.project.getLayers()
       .filter(l => l.isGeoLayer())
       .reduce((groups, l) => {
 
@@ -4835,43 +4639,46 @@ export default new (class GUI extends Emitter {
         this.addExternalLayer(olLayer, { ...layer.options, zoomToExtent: false });
       });
     });
-    
-    // setup ol events
 
-    // set change resolution
-    this.#events.ol.forEach(k => ol.Observable.unByKey(k));
-    this.#events.ol.push(
-      this.#map.getView().on('change:resolution', debounce(() => {
-        this.state.bbox       = this.getMapBBOX();
-        this.state.resolution = this.#map.getView().getResolution();
-        this.state.center     = this.#map.getView().getCenter();
-        this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, {}));
-        if (ApplicationState.project.state.context_base_legend) {
-          this._setLegendParams();
-        }
-      }))
-    );
+    // update legend (on map move)
+    this.#map.getView().on('change:resolution', debounce(() => {
+      this.state.bbox       = this.getMapBBOX();
+      this.state.resolution = this.#map.getView().getResolution();
+      this.state.center     = this.#map.getView().getCenter();
+      this.#layers.g3w.concat(this.#layers.base).forEach(l => this.updateMapLayer(l, {}));
+      if (ApplicationState.project.state.context_base_legend) {
+        this._setLegendParams();
+      }
+    }));
 
-    if (ApplicationState.project.state.context_base_legend) {
-      this.#events.ol.push(
-        this.#map.on('moveend', () => this._setLegendParams())
-      );
-    } else {
-      //set always to show legend at the start
+    // update legend (on map move)
+    this.#map.on('moveend', () => {
+      if (ApplicationState.project.state.context_base_legend) {
+        this._setLegendParams();
+      }
+    });
+
+    // show legend (at start)
+    if (!ApplicationState.project.state.context_base_legend) {
       this._setLegendParams();
     }
 
-    // CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
-    Object.values(ApplicationState.layers).forEach(this.#setUpEventsKeysToLayersStore.bind(this));
-    Vue.watch(
-      () => Object.keys(ApplicationState.layers),
-      (newVal, oldVal) => {
-        const added   = newVal.filter(key => !(key in oldVal));
-        const removed = oldVal.filter(key => !(key in newVal));
-        added.forEach(key   => this.#setUpEventsKeysToLayersStore(ApplicationState.layers[key]));
-        removed.forEach(key => this.#removeEventsKeysToLayersStore(ApplicationState.layers[key]));
+    // temp layers (add)
+    ApplicationState.project.onafter('addLayer', l => {
+      if ('vector' === l.getType()) {
+        const olLayer = l.getOLLayer();
+        if (olLayer) {
+          this.getMap().addLayer(olLayer);
+        }
       }
-    );
+    });
+
+    // temp layers (remove)
+    ApplicationState.project.onafter('removeLayer', l => {
+      if ('vector' === l.getType()) {
+        this.#map.removeLayer(l.getOLLayer());
+      }
+    });
 
     this.#map_ready = true;
 
@@ -5009,7 +4816,7 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   getProjectLayer(id) {
-    return Object.values(ApplicationState.layers).map(s => s.getLayerById(id)).find(l => l);
+    return ApplicationState.project.getLayerById(id);
   }
 
   /**
@@ -5446,23 +5253,7 @@ export default new (class GUI extends Emitter {
     return (
       await Promise.allSettled(
         Object.entries(
-          Object
-            .values(ApplicationState.layers)
-            // extract geolayers (from TOC)
-            .flatMap(s => {
-              if (!s.showOnCatalog()) {
-                return [];
-              }
-              const map    = s.getLayers().reduce((m, l) => (l.isGeoLayer() && (all || l.isVisible()) ? m.set(l.getId(), l) : m), new Map());
-              const tree   = s.getLayersTree?.()?.[0];
-              const layers = tree ? [] : [...map.values()];
-              const walk   = t => t?.nodes?.forEach(n => n.id ? map.has(n.id) && layers.push(map.get(n.id)) : walk(n));
-              // sorted by TOC
-              if (tree) {
-                walk(tree);
-              }
-              return layers;
-            })
+          (ApplicationState.project.getLayers({ GEOLAYER: true, ...(all ? {} : { VISIBLE: true }) }, { TOC_ORDER : true }) || [])
             .reduce((urls, layer) => {
               const url   = layer.getLegendUrl({
                 all:        !ApplicationState.project.state.context_base_legend, // true = dynamic legend
@@ -5572,14 +5363,13 @@ export default new (class GUI extends Emitter {
   } = {}) {
     let data       = [];
     const external = ApplicationState.catalog.external.vector.some(l => l.selected);
-    const layers   = Object.values(ApplicationState.layers)
-      .flatMap(s => s.isQueryable() ? s.getLayers({
+    const layers   = ApplicationState.project.getLayers({
         GEOLAYER:        true,
         QUERYABLE:       true,
         SELECTED_OR_ALL: (0 === layerIds.length),
         VISIBLE:         true,
         IDS:             layerIds.length ? layerIds.map(id => id) : undefined,
-      }) : []);
+      });
     const size           = this.getMap().getSize();
     const mapProjection  = this.getMap().getView().getProjection();
     const resolution     = this.getMap().getView().getResolution();
