@@ -35,12 +35,12 @@ const SERVER_URL = 'https://dev.g3wsuite.it/';
 	session.context = await session.browser.newContext();
 	session.page    = await session.context.newPage();
 
-	session.page.on('pageerror', error => session.errors.push(`[pageerror]\n${error.stack || error.message}`));
+	session.page.on('pageerror', error => session.errors.push(`[${page}] [pageerror]\n${error.stack || error.message}`));
 	session.page.on('console', msg => {
 		if (msg.type() !== 'error') return;
 		const location = msg.location();
 		const source   = location.url ? `${location.url}:${location.lineNumber}:${location.columnNumber}` : 'unknown source';
-		session.errors.push(`[console.error] ${source}\n${msg.text()}`);
+		session.errors.push(`[${page}] [console.error] ${source}\n${msg.text()}`);
 	});
 
 	await session.page.route('**/static/client/*', async (route, request) => {
@@ -63,7 +63,7 @@ const SERVER_URL = 'https://dev.g3wsuite.it/';
 	const g3w = await session.page.evaluate(() => window.g3w);
 
 	if (g3w.version.split('-')[0] !== packageJSON.version.split('-')[0]) {
-		session.errors.push(`[assert] invalid version: browser=${g3w.version}, package=${packageJSON.version}`);
+		session.errors.push(`[${page}] [assert] invalid version: browser=${g3w.version}, package=${packageJSON.version}`);
 	}
 
 	if (plugin) {
@@ -71,7 +71,7 @@ const SERVER_URL = 'https://dev.g3wsuite.it/';
 		const loaded = await session.page.evaluate(pluginName => !!window.g3w.app.getPlugin(pluginName), plugin);
 
 		if (!loaded) {
-			session.errors.push(`[assert] g3w.app.getPlugin('${plugin}') is UNDEFINED`);
+			session.errors.push(`[${page}] [assert] g3w.app.getPlugin('${plugin}') is UNDEFINED`);
 		}
 	}
 
