@@ -397,6 +397,11 @@ export class Plugin extends Emitter {
     fontClasses.forEach(fc => this.addFontClass(fc));
   }
 
+  /**
+   * @deprecated since v4.2.0
+   */
+  setHookLoading() {}
+
 }
 
 /**
