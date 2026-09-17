@@ -1640,7 +1640,7 @@ export default new (class GUI extends Emitter {
 
     const layersstree = traverse(
       project.state.layerstree[0].nodes, // current state
-      project.state.layerstree,                           // original state
+      project.config.layerstree,         // original state
     ).filter(Boolean);
 
     let response = await (await fetch('/api/embed/', {
