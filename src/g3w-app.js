@@ -4411,26 +4411,18 @@ export default new (class GUI extends Emitter {
     const initextent = map_extent?.split?.(',').map(coord => 1 * coord) ?? ApplicationState.project.state.initextent;
     const extent     = ApplicationState.project.state.extent;
 
-    const view = new ol.View({
-      padding,
-      extent,
-      projection: this.getProjection(),
-    });
-
     this.#map = new ol.Map({
       controls:            ol.control.defaults({ attribution: false, zoom: false, rotateOptions: { autoHide: true, tipLabel: "Reset rotation (CTRL+DRAG to rotate)" } }),
       interactions:        ol.interaction.defaults().extend([ new ol.interaction.DragRotate({ condition: ol.events.condition.platformModifierKeyOnly, }) ]),
       keyboardEventTarget: document,
       target:              'map',
-      view,
-    });
-
-    // Fit the initial extent into the usable viewport, excluding UI overlays
-    // such as sidebars and content panels through the view padding.
-    view.fit(initextent, {
-      size: [width, height],
-      padding,
-      nearest: false,
+      view:                new ol.View({
+        padding,
+        extent,
+        projection:    this.getProjection(),
+        center:        ol.extent.getCenter(initextent),
+        resolution:    Math.max(ol.extent.getWidth(initextent) / width, ol.extent.getHeight(initextent) / height), // max(xInitRes, yInitRes)
+      }),
     });
 
     //set application epsg and map unit
