@@ -4229,15 +4229,14 @@ export default new (class GUI extends Emitter {
       }
 
       // find project layer
-      const pLayer = ApplicationState.project.getLayers().find(l =>
-        id === l.id ||
-        id === l.name ||
-        id === l.origname
+      const layer = ApplicationState.project.getLayers().find(l =>
+        id === l.state.id ||
+        id === l.state.name ||
+        id === l.state.origname
       );
 
-      const layer = pLayer && ApplicationState.project.getLayerById(pLayer.id);
 
-      const r = pLayer && await this.getData('search:features', {
+      const r = layer && await this.getData('search:features', {
         inputs: {
           layer,
           filter: createFilterFromString({ layer, filter }),
