@@ -287,7 +287,7 @@ export default {
      * @param action
      */
     runAction(action, feature) {
-      action?.cbk?.({ id: this.layer.getId() }, feature, action);
+      action?.cbk?.(this.layer.state, feature, action);
     },
     /**
      * @param feature
@@ -295,7 +295,7 @@ export default {
      * @since 3.10.0
      */
     editFeature(feature) {
-      GUI.editFeature({ layer: { id: this.layer.getId() }, feature });
+      GUI.editFeature({ layer: this.layer.state, feature });
     },
 
     /**
@@ -303,7 +303,7 @@ export default {
      * 
      * @since 3.10.0
      */
-     async openForm(feature) {
+     async openForm(layer, feature) {
       try {
         await GUI.getData('search:fids', {
           inputs: {
@@ -334,7 +334,7 @@ export default {
      * 
      * @since 4.1.0
      */
-    showRelations(feature) {
+    showRelations(layer, feature) {
       GUI.showRelations({ feature, layerId: this.layer.getId(), push: false });
     },
 
