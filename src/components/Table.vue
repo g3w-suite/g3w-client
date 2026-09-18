@@ -271,8 +271,9 @@ export default {
   },
 
   methods: {
+    
     /**
-     * 
+     * @since 4.3.0 
      * @param action 
      * @param feature 
      */
@@ -335,7 +336,7 @@ export default {
      * @since 4.1.0
      */
     showRelations(layer, feature) {
-      GUI.showRelations({ feature, layerId: this.layer.getId(), push: false });
+      GUI.showRelations({ feature, layerId: layer.id, push: false });
     },
 
     /**
