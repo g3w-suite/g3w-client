@@ -4343,10 +4343,13 @@ export default new (class GUI extends Emitter {
       resolution = (curr < resolution) && (curr > resolution) ? curr : resolution;
     }
   
-    await (new Promise(done => {
-      view.once('change:center', () => setTimeout(done, 500));
-      view.fit(extent, { duration: 200, minResolution: resolution });
-    }));
+    await new Promise(done => {
+      view.fit(extent, {
+        duration:     200,
+        minResolution: resolution,
+        callback:     done,
+      });
+    });
 
     if (options.highLightGeometry) {
       await this.highlight(options.highLightGeometry, { zoom: false, duration: options.duration });
