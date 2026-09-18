@@ -93,7 +93,7 @@
                 <input type = "checkbox" :checked = "feature.selected" />
               </label>
               <i
-                v-if           = "layer.isEditable() && (layer.config.editing || {}).visible"
+                v-if           = "editable"
                 @click.stop    = "editFeature(feature)"
                 title          = "Editing"
                 data-placement = "top"
@@ -224,10 +224,12 @@ export default {
   },
 
   data() {
-    const layer   = getCatalogLayerById(this.$options.layerId);
-    const headers = layer.getTableHeaders();
+    const layer    = getCatalogLayerById(this.$options.layerId);
+    const headers  = layer.getTableHeaders();
+    const editable = GUI.getPlugin('editing').getToolBoxById(layer.getId())?.state?.visible;
     return {
       layer,
+      editable,
       state: {
         id:            layer.getId(),         // @since 4.1.0 aligned with query state layer
         selection:     layer.state.selection, // @since 4.1.0 aligned with query state layer
@@ -280,7 +282,7 @@ export default {
     },
     current_layout() {
       return ApplicationState.layout[ApplicationState.layout.__current];
-    }
+    },
 
   },
 
@@ -589,7 +591,6 @@ export default {
   },
 
   async created() {
-
     this.unSelectAll  = this.unSelectAll.bind(this);
     this.onGUIContent = this.onGUIContent.bind(this)
 
