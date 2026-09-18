@@ -63,9 +63,6 @@ export default Vue.extend({
       if (id !== this.currentid && this.headers.length > 1) {
         this.$emit('clickheader', id);
       }
-    },
-    resizeForm(perc) {
-      this.$emit('resize-form', perc);
     }
   }
 });

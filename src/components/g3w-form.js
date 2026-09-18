@@ -599,10 +599,6 @@ export class FormService extends Emitter {
       .forEach(name => this.evaluateFilterExpressionFields({ name }) );
   };
 
-  setCurrentFormPercentage(perc) {
-    this.layer.config.editing.form.perc = perc;
-  };
-
   setLoading(bool = false) {
     this.state.loading = bool;
   };

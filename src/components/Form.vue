@@ -17,7 +17,6 @@
       :headers     = "state.headers"
       :update      = "state.update"
       :valid       = "state.valid"
-      @resize-form = "resizeForm"
       @clickheader = "switchComponent"
     />
 
@@ -95,14 +94,11 @@ export default {
     handleRelation(relationId) {
       this.$options.service.handleRelation(relationId);
     },
-     disableComponent({ id, disabled = false }) {
-       this.$options.service.disableComponent({
-         id,
-         disabled
-       });
-     },
-    resizeForm(perc) {
-      this.$options.service.setCurrentFormPercentage(perc);
+    disableComponent({ id, disabled = false }) {
+      this.$options.service.disableComponent({
+        id,
+        disabled
+      });
     },
     switchComponent(id) {
       this.switchcomponent = true;

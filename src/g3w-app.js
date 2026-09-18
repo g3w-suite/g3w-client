@@ -4196,11 +4196,11 @@ export default new (class GUI extends Emitter {
       outputs: {
         show: {
           loading: false,
-          async condition({ data = [] } = {}) {
+          condition: async ({ data = [] } = {}) => {
             if (layer.isEditable()) {
-              await waitFor(() => undefined !== layer.config.editing);
+              await waitFor(() => this.getPlugin('editing')?.getToolBoxById?.(layer.getId())?.state?.visible);
             }
-            return !!(data[0] && data[0].features.length > 0);
+            return data?.at(0)?.features?.length > 0;
           }
         }
       }
@@ -4245,11 +4245,11 @@ export default new (class GUI extends Emitter {
         outputs: {
           show: {
             loading: false,
-            async condition({ data = [] } = {}) {
+            condition: async({ data = [] } = {}) => {
               if (layer.isEditable()) {
-                await waitFor(() => undefined !== layer.config.editing);
+                await waitFor(() => this.getPlugin('editing')?.getToolBoxById?.(layer.getId())?.state?.visible);
               }
-              return (data?.at(0)?.features ?? []).length > 0;
+              return data?.at(0)?.features?.length > 0;
             }
           }
         }
