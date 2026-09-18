@@ -207,10 +207,8 @@ export default {
   data() {
     const layer    = getCatalogLayerById(this.$options.layerId);
     const headers  = layer.getTableHeaders();
-    const editable = GUI.getPlugin('editing').getToolBoxById(layer.getId())?.state?.visible;
     return {
       layer,
-      editable,
       state: {
         id:            layer.getId(),         // @since 4.1.0 aligned with query state layer
         selection:     layer.state.selection, // @since 4.1.0 aligned with query state layer
