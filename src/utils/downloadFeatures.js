@@ -20,7 +20,7 @@ import shpwrite                from '@mapbox/shp-write';
 // set download action tool
 GUI.onafter('addActionsForLayers', (actions, layers) => {
   layers
-    .filter(l => l.downloads.length > 0)
+    .filter(l => l?.downloads?.length > 0)
     .forEach((layer) => {
       actions[layer.id].push({
         id:         'downloads',

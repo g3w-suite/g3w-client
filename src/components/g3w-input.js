@@ -4,9 +4,9 @@
  * ORIGINAL SOURCE: src/gui/inputs/input.js@v4.0.0
  * 
  */
-import ApplicationState                     from 'g3w-state';
-import BaseInputComponent                   from 'components/InputBase.vue'
-import { baseInputMixin as BaseInputMixin } from 'mixins';
+import ApplicationState                      from 'g3w-state';
+import BaseInputComponent                    from 'components/InputBase.vue'
+import { baseInputMixin as BaseInputMixin }  from 'mixins';
 import { QUERY_POINT_TOLERANCE }             from 'g3w-constants';
 import { gettext as _ }                      from 'g3w-i18n';
 import GUI                                   from 'g3w-app';

@@ -23,10 +23,6 @@
       <span>{{ search.name }}</span>
     </li>
 
-    <li v-for = "searchtool in state.tools">
-      <g3w-tool :tool = "searchtool" />
-    </li>
-
     <!-- ORIGINAL SOURCE: src/components/QueryBuilderSearch.vue@v3.9.3 -->
     <li
       v-for = "(search, i) in state.querybuildersearches"
@@ -59,8 +55,8 @@
     <!-- QUERY BUILDER -->
     <li
       class               = "menu-item"
-      @click.stop         = "showQueyBuilderPanel"
-      @keydown.enter.stop = "showQueyBuilderPanel"
+      @click.stop         = "showQueryBuilderPanel"
+      @keydown.enter.stop = "showQueryBuilderPanel"
       role                = "button"
       tabindex            = "0"
     >
@@ -78,7 +74,6 @@ import GUI                         from 'g3w-app';
 import { createFilterFromString }  from 'utils/createFilterFromString';
 import { getCatalogLayerById }     from 'utils/getCatalogLayerById';
 
-import G3WTool                     from 'components/Tool.vue';
 import vueComp                     from 'components/QueryBuilder.vue';
 import { gettext as _ }            from 'g3w-i18n';
 
@@ -93,13 +88,9 @@ export default {
     };
   },
 
-  components: {
-    'g3w-tool': G3WTool,
-  },
-
   methods: {
     /**@since 4.1.0  ORIGINAL SOURCE: src/g3w-app.js@v4.0.0*/
-    showQueyBuilderPanel() {
+    showQueryBuilderPanel() {
       GUI.closeContent();
       GUI.closeSideBar();
       return new Panel({

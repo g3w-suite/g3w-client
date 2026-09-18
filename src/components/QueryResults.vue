@@ -23,7 +23,7 @@
         style = "position: relative"
       >
         <li
-          v-for = "layer in state.queried_layers.filter(l => showLayer(l))"
+          v-for = "layer in state.queried_layers.filter(l => this.showLayer(l))"
         >
           <bar-loader :loading = "layer.loading"/>
           <div class = "box box-primary">
@@ -518,12 +518,12 @@
 
     </div>
 
-    <!-- TODO: SHOW SELECTED LAYER -->
-    <div v-if = "state.query" style="visibility: hidden; position: sticky; bottom: -8px; background: #eee; padding: 8px 0; display: flex; gap: 1em;">
+    <!-- SHOW SELECTED LAYER -->
+    <div style="position: sticky; bottom: -8px; background: #eee; padding: 8px 0; display: flex; gap: 1em;">
       <label style="margin-top: 5px;">{{ $t('Filter by:') }}</label>
-      <select style="flex: 1;">
-        <option v-for = "layer in queryableLayers" :selected = "layer === selectedLayer">{{ layer.getName() }}</option>
-        <option :selected = "!selectedLayer">{{ $t('__ALL__') }}</option>
+      <select @change = "filterLayerResult($event)" style="flex: 1;">
+        <option v-for = "layer in state.queried_layers" :selected = "layer === selectedLayer" :value = "layer.id">{{ layer.title }}</option>
+        <option :selected = "!selectedLayer" :value = "null">{{ $t('__ALL__') }}</option>
       </select>
     </div>
 
@@ -638,9 +638,7 @@
       },
 
       queryableLayers() {
-        return Object.values(ApplicationState.layers)
-          .flatMap(s => s.isQueryable() ? s.getLayers() : [])
-          .filter(l => l.isGeoLayer() && l.isQueryable());
+        return ApplicationState.project.getLayers({ GEOLAYER: true, QUERYABLE: true }) || [];
       },
 
       selectedLayer() {
@@ -650,7 +648,14 @@
     },
 
     methods: {
-
+      filterLayerResult(e) {
+        console.log(e.target.value)
+        if (e.target.value) {
+          if (this.state.queried_layers.forEach(l => l.show = l.id === e.target.value));
+          return;
+        }
+        this.state.queried_layers.forEach(l => l.show = true);
+      },
       /**
        * @since 4.1.1 - Inject layer data raw data within and <iframe>
        */
