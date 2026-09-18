@@ -416,7 +416,7 @@ g3w.app.onafter('showPanel', panel => {
  */
 g3w.app.onafter('addActionsForLayers', (actions, layers) => {
   Object.keys(actions)
-  .filter(id => layers.find(l => id === l.id).editable)
+  .filter(id => layers.find(l => id === l.id)?.editable)
   .forEach(id => {
     //Check only if has primay key value to ge unique feature to edit
     const pkField = g3w.app.getPlugin('editing').getEditingFields(id).find(f => f.pk);

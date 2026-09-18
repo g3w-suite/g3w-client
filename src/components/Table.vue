@@ -92,32 +92,13 @@
               >
                 <input type = "checkbox" :checked = "feature.selected" />
               </label>
-              <i
-                v-if           = "editable"
-                @click.stop    = "editFeature(feature)"
-                title          = "Editing"
+              <i v-for=" action in getFeatureActions(feature)" :key = "action.id"
+                @click.stop    = "runAction(action, feature)"
+                :title         = "action.hint"
                 data-placement = "top"
-                class          = "action-button skin-color fas fa-pencil-alt"
-              ></i>
-              <i
-                @click.stop    = "openForm(feature)"
-                title          = "Form View"
-                data-placement = "top"
-                class          = "action-button skin-color fas fa-table"
-              ></i>
-              <i
-                v-if           = "layer.hasRelations()"
-                @click.stop    = "showRelations(feature)"
-                title          = "Show Relations"
-                data-placement = "top"
-                class          = "action-button skin-color fas fa-sitemap"
-              ></i>
-              <i
-                v-if           = "layer.state.geolayer && !feature.geometry"
-                title          = "This item has no geometry"
-                data-placement = "top"
-                style          = "color: currentColor !important;"
-                class          = "action-button fas fa-exclamation-triangle"
+                class          = "action-button skin-color"
+                :class         = "action.class"
+                :style         = "action.style"
               ></i>
             </div>
           </td>
@@ -268,7 +249,7 @@ export default {
         in_bbox:   undefined,
         ordering:  headers?.[0]?.name,
         formatter: 1,
-      }
+      },
     };
   },
   
@@ -283,7 +264,6 @@ export default {
     current_layout() {
       return ApplicationState.layout[ApplicationState.layout.__current];
     },
-
   },
 
   watch: {
@@ -293,7 +273,24 @@ export default {
   },
 
   methods: {
-
+    /**
+     * 
+     * @param action 
+     * @param feature 
+     */
+    getFeatureActions(feature) {
+      return ApplicationState.layersactions[this.layer.getId()]?.filter(a => a.condition?.({ layer: this.layer, feature }) ?? a.show ?? true);
+    },
+    
+    /**
+     * @since 4.3.0
+     * @param action run Cbk action
+     * @param feature 
+     * @param action
+     */
+    runAction(action, feature) {
+      action?.cbk?.({ id: this.layer.getId() }, feature, action);
+    },
     /**
      * @param feature
      * 
@@ -623,6 +620,35 @@ export default {
 
     this.reload();
 
+    //set layer actions for the current layer
+    ApplicationState.layersactions[this.layer.getId()] = [
+      {
+        id :   "openform",
+        cbk:   this.openForm.bind(this),
+        hint:  "Form View",         
+        class: "fas fa-table",
+      },
+      this.layer.hasRelations() ? {
+        id:    "showreltions",
+        cbk:   this.showRelations.bind(this),
+        hint:  "Show Relations",         
+        class: "fas fa-sitemap",
+      }: {},
+       {
+        id:        "nogeometry",
+        hint:      "This item has no geometry",         
+        class:     "fa-exclamation-triangle",
+        style:     "color: currentColor !important;",
+        condition: ({ layer, feature } = {}) => layer.state.geolayer && !feature.geometry,
+      }   
+    ];
+
+    //call setters
+    GUI.addActionsForLayers(ApplicationState.layersactions, [ {
+      id:       this.layer.getId(),
+      features: this.state.features,
+    }]);
+
     const columns = {}; // store columns index value search
 
     this.changeColumn = debounce(async (e, i) => {
@@ -660,6 +686,9 @@ export default {
     this.$refs['table_metadata'].remove();
     this.$refs['table_info'].remove();
     this.$refs['table_search'].remove();
+
+    //reset layers actions
+    ApplicationState.layersactions = {};
   },
 
 };
