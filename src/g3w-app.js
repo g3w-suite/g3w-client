@@ -738,7 +738,7 @@ export default new (class GUI extends Emitter {
     // if request doesn't need to add to a current query result
     if (!output.add && ApplicationState.contentsdata.length > 0) {
       this.#clearState();
-      this.setContent({
+      await this.setContent({
         content:    new Component({
           id:                 'queryresults',
           service:            this,
@@ -780,7 +780,7 @@ export default new (class GUI extends Emitter {
 
       // check if data can be shown on query result content
       if (last && show && !output.add) {
-        this.setContent({
+        await this.setContent({
           content:    new Component({
             id:                 'queryresults',
             service:            this,
@@ -4207,7 +4207,7 @@ export default new (class GUI extends Emitter {
     });
 
     if (data?.at(0)?.features?.at(0)) {
-      await this.zoomToFeatures([data?.at(0)?.features?.at(0)]);
+      this.zoomToFeatures([data.at(0).features.at(0)]);
     }
   }
 
@@ -4481,9 +4481,9 @@ export default new (class GUI extends Emitter {
 
     let geom;
     if (zoom_to_fid) {
-      await this.#zoomToFid(zoom_to_fid);
+      this.#zoomToFid(zoom_to_fid);
     } else if (zoom_to_features) {
-      await this.#zoomToFeaturesUrl(zoom_to_features);
+      this.#zoomToFeaturesUrl(zoom_to_features);
     } else if (!isNaN(coords.lat) && !isNaN(coords.lon)) {
       geom = new ol.geom.Point(ol.proj.transform([coords.lon, coords.lat], 'EPSG:4326', this.getEpsg()));
     } else if (!isNaN(coords.x) && !isNaN(coords.y)) {
@@ -5225,10 +5225,11 @@ export default new (class GUI extends Emitter {
   async getData(func, options = {}) {
     const { inputs = {}, outputs = {} } = options;
     const promise = this['getData/' + func](inputs);
+    const data = await promise;
     if (outputs) {
-      this.showData(promise, outputs);
+      await this.showData(data, outputs);
     }
-    return await (await promise);
+    return data;
   }
 
   /**
