@@ -40,7 +40,6 @@
 
 <script>
 import G3wFormInputs from 'components/InputG3WFormInputs.vue';
-import { type } from 'jquery';
 
 /**
  * @TODO remove "Vue.extend" from module export

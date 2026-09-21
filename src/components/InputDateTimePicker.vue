@@ -165,7 +165,6 @@ export default {
         vertical:   layout.vertical   || 'top',
         horizontal: layout.horizontal || 'left'
       },
-      showClose:         true,
       locale:            this.service.getLocale(),
       enabledDates,
       disabledDates,

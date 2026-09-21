@@ -147,7 +147,6 @@ Vue.component('datetime', {
       useCurrent:        false,
       allowInputToggle:  true,
       enabledDates:      this.enabledDates,
-      showClose:         true,
       format:            this.format,
       locale:            ApplicationState.language,
       toolbarPlacement:  'top',

@@ -420,7 +420,6 @@
           allowInputToggle:  true,
           toolbarPlacement:  'top',
           widgetPositioning: { vertical: 'bottom', horizontal: 'left' },
-          showClose:         true,
           locale:            ApplicationState.language || 'en',
         });
 
