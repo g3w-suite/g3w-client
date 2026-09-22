@@ -340,8 +340,8 @@ document.addEventListener('click', function(e) {
         ignoreReadonly: false,
       }, options);
 
-      this.#input     = element.matches('input') ? element : element.querySelector('.datepickerinput') || element.querySelector('input');
-      this.#component = element.classList.contains('input-group') ? element.querySelector('.datepickerbutton, .input-group-addon') : null;
+      this.#input     = element.matches('input') ? element : element.querySelector('input');
+      this.#component = element.classList.contains('input-group') ? element.querySelector('.input-group-addon') : null;
       this.#widget    = null;
       this.#date      = null;
       this.#viewDate  = moment().locale(this.#options.locale);
@@ -802,8 +802,7 @@ document.addEventListener('click', function(e) {
   .datetimepicker thead tr:first-child th                  { cursor:pointer }
   .datetimepicker thead tr:first-child th:hover            { background:#eee }
   .datetimepicker td                                       { height:54px; line-height:54px; width:54px }
-  .datetimepicker .cw                                      { font-size:.8em; height:20px; line-height:20px; color:#777 }
-  .datetimepicker table td.day                             { height:20px; line-height:20px; width:20px }
+  .datetimepicker .day                                     { height:20px; line-height:20px; width:20px }
   .datetimepicker :is(.day, .hour, .minute, .second, span, .month, .year):hover { background:#eee; cursor:pointer }
   .datetimepicker :is(.old, .new, .old)                    { color:#777 }
   .datetimepicker .today                                   { position:relative }
