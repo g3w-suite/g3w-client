@@ -131,6 +131,7 @@ export class Layer extends Emitter {
       const layer = config;
       config = {
         id:         `layer_${layer.getMultiLayerId()}`,
+        /** @since 4.3.0 */
         name:       layer.getName(),
         projection: ApplicationState.project.getProjection(),
         format:     layer.getFormat(),
@@ -138,29 +139,28 @@ export class Layer extends Emitter {
           layer.isExternalWMS() && "arcgismapserver" === layer.state?.source?.type
           ? layer.state.source                                                                       // ARCGIS Layer (external)
           : {
-            type:
-              (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms') && 'XYZ') ||  // TMS Layer   (cached)
-              (layer.isCached() && 'wmts' === layer.state.cache_service_type && 'WMTS')          ||  // WMTS Layer  (cached)
-              (layer.isExternalWMS() && "wmst" === layer.state?.source?.type && 'WMTS')          ||  // WMS-T Layer (external)
-              layer.state.type || null,
-            url:               layer.isCached()      ? layer.getCacheUrl() : layer.getWmsUrl(),
-            http_method:       layer.isExternalWMS() ? 'GET'               : layer.getOwsMethod(),
-            extent:            (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms') && (layer.state.bbox ? [layer.state.bbox.minx, layer.state.bbox.miny, layer.state.bbox.maxx, layer.state.bbox.maxy] : null)) || layer.state.extent,
-            cache_provider:    layer.state.cache_provider,
-            cache_layer:       layer.state.cache_layer,
-            cache_extent:      layer.state.cache_extent,
-            cache_grid:        layer.state.cache_grid,
-            cache_grid_extent: layer.state.cache_grid_extent,
-          }
+              type:
+                (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms') && 'XYZ') ||  // TMS Layer   (cached)
+                (layer.isCached() && 'wmts' === layer.state.cache_service_type && 'WMTS')          ||  // WMTS Layer  (cached)
+                (layer.state?.ows.includes('WMTS') && layer.state?.wmtscapabilities && 'WMTS')     ||  /** @since 4.3.0 WMS Layer qgis project*/
+                (layer.isExternalWMS() && "wmst" === layer.state?.source?.type && 'WMTS')          ||  // WMS-T Layer (external)
+                layer.state.type || null,
+              url:               layer.isCached()      ? layer.getCacheUrl() : layer.getWmsUrl(),
+              http_method:       layer.isExternalWMS() ? 'GET'               : layer.getOwsMethod(),
+              extent:            (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms') && (layer.state.bbox ? [layer.state.bbox.minx, layer.state.bbox.miny, layer.state.bbox.maxx, layer.state.bbox.maxy] : null)) || layer.state.extent,
+              cache_provider:    layer.state.cache_provider,
+              cache_layer:       layer.state.cache_layer,
+              cache_extent:      layer.state.cache_extent,
+              cache_grid:        layer.state.cache_grid,
+              cache_grid_extent: layer.state.cache_grid_extent,
+              /** @since 4.3.0 */
+              wmtscapabilities: layer.state?.wmtscapabilities,
+            }
         ),
         /** @since 4.1.1 */
         servertype:       layer.state.servertype,
         /** @since 4.1.1 */
         source:           layer.state.source,
-        /** @since 4.3.0 */
-        ows:              layer.state?.ows,
-        /** @since 4.3.0 */
-        wmtscapabilities: layer.state?.wmtscapabilities,
       };
     } else if (config.id === "buildings_2f43dc1d_6725_42d2_a09b_dd446220104a") { 
        //FAKE multilayer configuration for a specific layer ID
@@ -3158,7 +3158,7 @@ export class Layer extends Emitter {
     }
 
     // BASE LAYER: "Bing Road", "Bing Aerial", "Bing Aerial (with labels)"
-    if ('Bing' === this.config.servertype && 'image' === this.getType()) {
+    else if ('Bing' === this.config.servertype && 'image' === this.getType()) {
       const name = ({
         streets:          'Road',
         aerial:           'Aerial',
@@ -3174,7 +3174,7 @@ export class Layer extends Emitter {
     }
 
     // ARCGIS LAYER
-    if (('ARCGISMAPSERVER' === this.config.servertype || this.isArcgisMapserver()) && ('image' === this.getType() || this.isMulti())) {
+    else if (('ARCGISMAPSERVER' === this.config.servertype || this.isArcgisMapserver()) && ('image' === this.getType() || this.isMulti())) {
       olLayer = new ol.layer.Tile({
         extent:  this.state.extent,
         visible: this.state.visible ?? true,
@@ -3188,7 +3188,7 @@ export class Layer extends Emitter {
     }
 
     // TMS LAYER (XYZ)
-    if (this.isXYZ() || ('TMS' === this.config.servertype && 'image' === this.getType())) {
+    else if (this.isXYZ() || ('TMS' === this.config.servertype && 'image' === this.getType())) {
       let projection;
       
       if (this.isXYZ()) {
@@ -3217,7 +3217,8 @@ export class Layer extends Emitter {
       });
     }
 
-    if (this.config.ows?.includes('WMTS') && this.config.wmtscapabilities) {
+    //WMTS Layer from qgis layer setting
+    else if ('WMTS' === this.config.type && this.config.wmtscapabilities) {
       const { format, grids } = this.config.wmtscapabilities;
       const extent            = grids?.at(0)?.extent;
       const size  = ol.extent.getWidth(extent) / 256;
@@ -3240,8 +3241,8 @@ export class Layer extends Emitter {
         })
       });
     }
-    // WMTS LAYER
-    if ('WMTS' === this.config.servertype && 'image' === this.getType()) {
+    // WMTS LAYER servertype
+    else if ('WMTS' === this.config.servertype && 'image' === this.getType()) {
       let resolutions, projection = this.state.projection;
 
       if (!projection) {
@@ -3278,7 +3279,7 @@ export class Layer extends Emitter {
       });
     }
     // WMTS LAYER (with mapproxy)
-    if ('WMTS' === this.state.type && 'mapproxy' === this.state.cache_provider) {
+    else if ('WMTS' === this.state.type && 'mapproxy' === this.state.cache_provider) {
       const resolutions = ol.tilegrid.createXYZ({ extent: this.state.cache_grid_extent }).getResolutions();
       olLayer = new ol.layer.Tile({
         source: new ol.source.WMTS({
@@ -3295,7 +3296,7 @@ export class Layer extends Emitter {
     }
 
     // WMTS LAYER
-    if ('WMTS' === this.config.type && 'mapproxy' !== this.state.cache_provider) {
+    else if ('WMTS' === this.config.type && 'mapproxy' !== this.state.cache_provider) {
       olLayer = new ol.layer.Tile({
         id:            this.state.id,
         name:          undefined,
@@ -3325,7 +3326,7 @@ export class Layer extends Emitter {
     }
 
     // WMS LAYER
-    if ('WMS' === this.config.servertype && 'image' === this.getType()) {
+    else if ('WMS' === this.config.servertype && 'image' === this.getType()) {
       this.state.crs.epsg = this.state.crs.epsg ? this.state.crs.epsg : 'EPSG:3857';
       let projection = ApplicationState.projections.get(this.state.crs);
       olLayer = new ol.layer.Image({
@@ -3361,7 +3362,7 @@ export class Layer extends Emitter {
     }
 
     // WMS LAYER
-    if (this.isMulti() && !olLayer) {
+    else if (this.isMulti() && !olLayer) {
       olLayer = new ol.layer.Image({
         id:            this.state.id,
         name:          undefined,
@@ -3391,7 +3392,7 @@ export class Layer extends Emitter {
     }
 
     // VECTOR LAYER
-    if ('vector' === this.getType()) {
+    else if ('vector' === this.getType()) {
       const style = 'G3WSUITE geojson' === `${this.state.servertype} ${this.state.source?.type}` ? this.state.style : (this.state?.editing?.style ?? this.getCustomStyle());
 
       olLayer = new ol.layer.Vector({
@@ -3413,7 +3414,7 @@ export class Layer extends Emitter {
     }
 
     /** @TODO check if deprecated */
-    if ('vector' === this.getType() && 'G3WSUITE geojson' === `${this.state.servertype} ${this.state.source?.type}`) {
+    else if ('vector' === this.getType() && 'G3WSUITE geojson' === `${this.state.servertype} ${this.state.source?.type}`) {
       XHR.get({ url: this.get('source').url }).then(d => {
         olLayer.getSource().addFeatures((new ol.format.GeoJSON()).readFeatures(d.results, {
           featureProjection: this.getProjection().getCode(),
