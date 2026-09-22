@@ -773,10 +773,10 @@ document.addEventListener('click', function(e) {
   .datetimepicker                                               { position: fixed; z-index: 1000; min-width: 160px; font-size: 14px; text-align: left; background-color: #fff; background-clip: padding-box; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 4px; border-color: #eee; margin: unset; inset: unset; position-area: bottom; padding: 4px; width: 19em; color: #000; }
   .datetimepicker a[data-action]                                { display:inline-block; padding:6px 12px }
   .datetimepicker a[data-action]:active                         { box-shadow:none }
-  .datetimepicker .picker-switch > a                            { font-size:1em; line-height:1 }
-  .datetimepicker .picker-switch > a[data-action="close"]       { font-size:1.5em; line-height:1 }
-  .datetimepicker table th:is(.prev, .next)                     { font-size:1.5em; line-height:1 }
+  .datetimepicker .picker-switch > a,
   .datetimepicker .timepicker-picker a[data-action]             { font-size:1em; line-height:1 }
+  .datetimepicker .picker-switch > a[data-action="close"],
+  .datetimepicker table th:is(.prev, .next)                     { font-size:1.5em; line-height:1 }
   .datetimepicker .timepicker-hour,
   .datetimepicker .timepicker-minute,
   .datetimepicker .timepicker-second                            { width:54px; font-weight:700; font-size:1.2em; margin:0 }
@@ -797,37 +797,22 @@ document.addEventListener('click', function(e) {
   .datetimepicker table td                                      { height:54px; line-height:54px; width:54px }
   .datetimepicker table td.cw                                   { font-size:.8em; height:20px; line-height:20px; color:#777 }
   .datetimepicker table td.day                                  { height:20px; line-height:20px; width:20px }
-  .datetimepicker table td.day:hover,
-  .datetimepicker table td.hour:hover,
-  .datetimepicker table td.minute:hover,
-  .datetimepicker table td.second:hover                         { background:#eee; cursor:pointer }
-  .datetimepicker table td.old,
-  .datetimepicker table td.new                                  { color:#777 }
+  .datetimepicker :is(table td:is(.day, .hour, .minute, .second), table td span, .datepicker-months .month, .datepicker-years .year):hover { background:#eee; cursor:pointer }
+  .datetimepicker table :is(td.old, td.new, td span.old)         { color:#777 }
   .datetimepicker table td.today                                { position:relative }
   .datetimepicker table td.today:before                         { content:""; display:inline-block; border:solid transparent; border-width:0 0 7px 7px; border-bottom-color:#337ab7; border-top-color:#0003; position:absolute; bottom:4px; right:4px }
   .datetimepicker table td.active,
   .datetimepicker table td.active:hover                         { background-color:#337ab7; color:#fff; text-shadow:0 -1px 0 rgba(0,0,0,.25) }
   .datetimepicker table td.active.today:before                  { border-bottom-color:#fff }
-  .datetimepicker table td.disabled,
-  .datetimepicker table td.disabled:hover                       { background:none; color:#777; cursor:not-allowed }
+  .datetimepicker table :is(th, td, td span):is(.disabled, .disabled:hover) { background:none; color:#777; cursor:not-allowed }
   .datetimepicker table td span                                 { display:inline-block; width:54px; height:54px; line-height:54px; margin:2px 1.5px; cursor:pointer; border-radius:4px }
-  .datetimepicker table td span:hover                           { background:#eee }
-  .datetimepicker table td span.active                          { background-color:#337ab7; color:#fff; text-shadow:0 -1px 0 rgba(0,0,0,.25) }
-  .datetimepicker table td span.old                             { color:#777 }
-  .datetimepicker table td span.disabled,
-  .datetimepicker table td span.disabled:hover                  { background:none; color:#777; cursor:not-allowed }
+  .datetimepicker :is(table td span, .datepicker-months .month, .datepicker-years .year).active { background-color:#337ab7; color:#fff; text-shadow:0 -1px 0 rgba(0,0,0,.25) }
   .datetimepicker .datepicker-months                            { display:none }
-  .datetimepicker .datepicker-months .month                     { cursor:pointer }
-  .datetimepicker .datepicker-months .month:hover               { background:#eee; cursor:pointer }
-  .datetimepicker .datepicker-months .month.active,
-  .datetimepicker .datepicker-months .month.active:hover        { background-color:#337ab7; color:#fff; text-shadow:0 -1px 0 rgba(0,0,0,.25) }
+  .datetimepicker .datepicker-months .month,
+  .datetimepicker .datepicker-years .year                       { cursor:pointer }
   .datetimepicker .datepicker.show-months .datepicker-days      { display:none }
   .datetimepicker .datepicker.show-months .datepicker-months    { display:table }
   .datetimepicker .datepicker-years                             { display:none }
-  .datetimepicker .datepicker-years .year                       { cursor:pointer }
-  .datetimepicker .datepicker-years .year:hover                 { background:#eee; cursor:pointer }
-  .datetimepicker .datepicker-years .year.active,
-  .datetimepicker .datepicker-years .year.active:hover          { background-color:#337ab7; color:#fff; text-shadow:0 -1px 0 rgba(0,0,0,.25) }
   .datetimepicker .datepicker.show-years .datepicker-days,
   .datetimepicker .datepicker.show-years .datepicker-months     { display:none }
   .datetimepicker .datepicker.show-years .datepicker-years      { display:table }
