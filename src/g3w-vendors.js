@@ -332,7 +332,6 @@ document.addEventListener('click', function(e) {
         widgetPositioning: { horizontal: 'auto', vertical: 'auto' },
         widgetParent: null,
         ignoreReadonly: false,
-        keepOpen: false,
       }, options, $(element).data().dateOptions || {});
 
       this.#input     = element.matches('input') ? element : element.querySelector('.datepickerinput') || element.querySelector('input');
@@ -593,7 +592,7 @@ document.addEventListener('click', function(e) {
         date.hour(this.#date.hour()).minute(this.#date.minute()).second(this.#date.second());
       }
       this.#setDate(date);
-      if (!this.#hasTime && !this.#options.keepOpen) {
+      if (!this.#hasTime) {
         this.hide();
       }
     }
