@@ -317,6 +317,7 @@ document.addEventListener('click', function(e) {
     #hasDate;
     #hasTime;
     #use24Hours;
+    #view = 'days';
 
     constructor(element, options) {
       this.#element = element;
@@ -431,12 +432,12 @@ document.addEventListener('click', function(e) {
     #buildWidget() {
       const widget = Object.assign(document.createElement('template'), {
         innerHTML: /* html */`
-          <div class = "datetimepicker bootstrap-datetimepicker-widget dropdown-menu${this.#use24Hours ? ' usetwentyfour' : ''}">
+          <div class = "datetimepicker bootstrap-datetimepicker-widget ${this.#use24Hours ? 'usetwentyfour' : ''}">
             <div class = "picker-switch">
               <a href = "#" data-action = "close"><span class = "glyphicon glyphicon-remove"></span></a>
             </div>
             ${this.#hasDate ? /* html */`
-              <div class = "datepicker">
+              <div class = "datepicker show-${this.#view}">
                 <div class = "datepicker-days">
                   <table class = "table-condensed">
                     <thead>
@@ -475,6 +476,11 @@ document.addEventListener('click', function(e) {
                 </div>
                 <div class = "datepicker-months">
                   <table class = "table-condensed">
+                    <thead><tr>
+                      <th class = "prev" data-action = "previous"><span class = "glyphicon glyphicon-chevron-left"></span></th>
+                      <th class = "picker-switch" data-action = "pickerSwitch" colspan = "1">${this.#viewDate.format('YYYY')}</th>
+                      <th class = "next" data-action = "next"><span class = "glyphicon glyphicon-chevron-right"></span></th>
+                    </tr></thead>
                     <tbody>${Array.from({ length: 4 }, (_, row) => /* html */`
                       <tr>${Array.from({ length: 3 }, (_, column) => ((month, index) => /* html */`
                         <td
@@ -487,6 +493,24 @@ document.addEventListener('click', function(e) {
                           data-month = "${index}"
                         >${month.format('MMM')}</td>
                       `)(this.#viewDate.clone().month(row * 3 + column), row * 3 + column)).join('')}</tr>
+                    `).join('')}</tbody>
+                  </table>
+                </div>
+                <div class = "datepicker-years">
+                  <table class = "table-condensed">
+                    <thead><tr>
+                      <th class = "prev" data-action = "previous"><span class = "glyphicon glyphicon-chevron-left"></span></th>
+                      <th class = "picker-switch" colspan = "1">${this.#viewDate.clone().subtract(5, 'year').format('YYYY')}-${this.#viewDate.clone().add(6, 'year').format('YYYY')}</th>
+                      <th class = "next" data-action = "next"><span class = "glyphicon glyphicon-chevron-right"></span></th>
+                    </tr></thead>
+                    <tbody>${Array.from({ length: 4 }, (_, row) => /* html */`
+                      <tr>${Array.from({ length: 3 }, (_, column) => ((year) => /* html */`
+                        <td
+                          class = "year ${this.#date?.isSame(year, 'year') && 'active'}"
+                          data-action = "selectYear"
+                          data-year = "${year.year()}"
+                        >${year.format('YYYY')}</td>
+                      `)(this.#viewDate.clone().subtract(5, 'year').add(row * 3 + column, 'year'))).join('')}</tr>
                     `).join('')}</tbody>
                   </table>
                 </div>
@@ -555,9 +579,13 @@ document.addEventListener('click', function(e) {
       ({
         previous:         () => this.#navigate(-1),
         next:             () => this.#navigate(1),
-        pickerSwitch:     () => this.#widget.querySelector('.datepicker').classList.add('show-months'),
+        pickerSwitch:     () => {
+          this.#view = this.#view === 'days' ? 'months' : 'years';
+          this.#render();
+        },
         selectDay:        target => this.#selectDate(target.dataset.date),
         selectMonth:      target => this.#selectMonth(Number(target.dataset.month)),
+        selectYear:       target => this.#selectYear(Number(target.dataset.year)),
         incrementHours:   () => this.#setDate((this.#date || moment()).clone().add(1, 'hour')),
         decrementHours:   () => this.#setDate((this.#date || moment()).clone().add(-1, 'hour')),
         incrementMinutes: () => this.#setDate((this.#date || moment()).clone().add(1, 'minute')),
@@ -572,18 +600,23 @@ document.addEventListener('click', function(e) {
     }
 
     #navigate(amount) {
-      this.#viewDate.add(amount, 'month');
+      this.#viewDate.add(amount * (this.#view === 'years' ? 12 : this.#view === 'months' ? 12 : 1), 'month');
       this.#render();
       this.#trigger('dp.update', { change: 'M', viewDate: this.#viewDate.clone() });
     }
 
     #selectMonth(month) {
       this.#viewDate.month(month);
-      this.#widget.querySelector('.datepicker').classList.remove('show-months');
-      this.#widget.querySelectorAll('.datepicker-months .month').forEach((cell, index) => {
-        cell.classList.toggle('active', this.#date?.isSame(this.#viewDate, 'year') && this.#date.month() === index);
-      });
+      this.#view = 'days';
+      this.#render();
       this.#trigger('dp.update', { change: 'M', viewDate: this.#viewDate.clone() });
+    }
+
+    #selectYear(year) {
+      this.#viewDate.year(year);
+      this.#view = 'months';
+      this.#render();
+      this.#trigger('dp.update', { change: 'y', viewDate: this.#viewDate.clone() });
     }
 
     #selectDate(value) {
@@ -746,19 +779,39 @@ document.addEventListener('click', function(e) {
   };
 
   document.head.insertAdjacentHTML('beforeend', /* html */`<style id ="g3w-date-css">
+  .box-header > .box-tools.pull-right .datetimepicker { right: 0; left: auto; }
+
+  .datetimepicker                                               { position: absolute; top: 100%; left: 0; z-index: 1000; display: none; float: left; min-width: 160px; padding: 5px 0; margin: 2px 0 0; font-size: 14px; text-align: left; list-style: none; background-color: #fff; background-clip: padding-box; border: 1px solid #ccc; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 4px; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175); }
+  .datetimepicker.pull-right                                    { right: 0; left: auto; }
+  .datetimepicker .divider                                      { height: 1px; margin: 9px 0; overflow: hidden; background-color: #e5e5e5; }
+  .datetimepicker > li > a                                      { display: block; padding: 3px 20px; clear: both; font-weight: 400; line-height: 1.42857143; color: #333; white-space: nowrap; }
+  .datetimepicker > li > a:is(:hover, :focus)                   { color: #262626; text-decoration: none; background-color: #f5f5f5; }
+  .datetimepicker > .active > a,
+  .datetimepicker > .active > a:is(:hover, :focus)              { color: #fff; text-decoration: none; background-color: #337ab7; outline: 0; }
+  .datetimepicker > .disabled > a,
+  .datetimepicker > .disabled > a:is(:hover, :focus)            { color: #777; }
+  .datetimepicker > .disabled > a:is(:hover, :focus)            { text-decoration: none; cursor: not-allowed; background-color: transparent; background-image: none; }
+  .open > .datetimepicker                                       { display: block; }
+  .pull-right > .datetimepicker                                 { right: 0; left: auto; }
+
+  .datetimepicker                                               { box-shadow: none; border-color: #eee; }
+  .datetimepicker > li > a                                      { color: #777; }
+  .datetimepicker > li > a:hover                                { background-color: #e1e3e9; color: #333; }
+  .datetimepicker > .divider                                    { background-color: #eee; }
+
   .datetimepicker { list-style:none }
-  .datetimepicker.dropdown-menu { display:block; margin:2px 0; padding:4px; width:19em }
-  @media (min-width: 768px) { .datetimepicker.dropdown-menu.timepicker-sbs { width:38em } }
-  @media (min-width: 992px) { .datetimepicker.dropdown-menu.timepicker-sbs { width:38em } }
-  @media (min-width: 1200px) { .datetimepicker.dropdown-menu.timepicker-sbs { width:38em } }
-  .datetimepicker.dropdown-menu:before,
-  .datetimepicker.dropdown-menu:after { content:""; display:inline-block; position:absolute }
-  .datetimepicker.dropdown-menu.bottom:before { border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:7px solid #ccc; border-bottom-color:#0003; top:-7px; left:7px }
-  .datetimepicker.dropdown-menu.bottom:after { border-left:6px solid transparent; border-right:6px solid transparent; border-bottom:6px solid white; top:-6px; left:8px }
-  .datetimepicker.dropdown-menu.top:before { border-left:7px solid transparent; border-right:7px solid transparent; border-top:7px solid #ccc; border-top-color:#0003; bottom:-7px; left:6px }
-  .datetimepicker.dropdown-menu.top:after { border-left:6px solid transparent; border-right:6px solid transparent; border-top:6px solid white; bottom:-6px; left:7px }
-  .datetimepicker.dropdown-menu.pull-right:before { left:auto; right:6px }
-  .datetimepicker.dropdown-menu.pull-right:after { left:auto; right:7px }
+  .datetimepicker { display:block; margin:2px 0; padding:4px; width:19em }
+  @media (min-width: 768px) { .datetimepicker.timepicker-sbs { width:38em } }
+  @media (min-width: 992px) { .datetimepicker.timepicker-sbs { width:38em } }
+  @media (min-width: 1200px) { .datetimepicke.timepicker-sbs { width:38em } }
+  .datetimepicker:before,
+  .datetimepicker:after { content:""; display:inline-block; position:absolute }
+  .datetimepicker.bottom:before { border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:7px solid #ccc; border-bottom-color:#0003; top:-7px; left:7px }
+  .datetimepicker.bottom:after { border-left:6px solid transparent; border-right:6px solid transparent; border-bottom:6px solid white; top:-6px; left:8px }
+  .datetimepicker.top:before { border-left:7px solid transparent; border-right:7px solid transparent; border-top:7px solid #ccc; border-top-color:#0003; bottom:-7px; left:6px }
+  .datetimepicker.top:after { border-left:6px solid transparent; border-right:6px solid transparent; border-top:6px solid white; bottom:-6px; left:7px }
+  .datetimepicker.pull-right:before { left:auto; right:6px }
+  .datetimepicker.pull-right:after { left:auto; right:7px }
   .datetimepicker a[data-action] { display:inline-block; padding:6px 12px }
   .datetimepicker a[data-action]:active { box-shadow:none }
   .datetimepicker .timepicker-hour,
@@ -807,15 +860,22 @@ document.addEventListener('click', function(e) {
   .datetimepicker .datepicker-months .month.active:hover { background-color:#337ab7; color:#fff; text-shadow:0 -1px 0 rgba(0,0,0,.25) }
   .datetimepicker .datepicker.show-months .datepicker-days { display:none }
   .datetimepicker .datepicker.show-months .datepicker-months { display:block }
+  .datetimepicker .datepicker-years { display:none }
+  .datetimepicker .datepicker-years .year { cursor:pointer }
+  .datetimepicker .datepicker-years .year:hover { background:#eee; cursor:pointer }
+  .datetimepicker .datepicker-years .year.active,
+  .datetimepicker .datepicker-years .year.active:hover { background-color:#337ab7; color:#fff; text-shadow:0 -1px 0 rgba(0,0,0,.25) }
+  .datetimepicker .datepicker.show-years .datepicker-days,
+  .datetimepicker .datepicker.show-years .datepicker-months { display:none }
+  .datetimepicker .datepicker.show-years .datepicker-years { display:block }
   .datetimepicker.usetwentyfour td.hour { height:27px; line-height:27px }
-  .datetimepicker.wider { width:21em }
   .datetimepicker .datepicker-decades .decade { line-height:1.8em!important }
   .input-group.date .input-group-addon { cursor:pointer }
 
   .datetimepicker a > span:is(.glyphicon-remove, .glyphicon-time, .glyphicon-calendar, .glyphicon-chevron-up, .glyphicon-chevron-down) { color: var(--skin-color); }
   .datetimepicker .datepicker .active                      { background-color: var(--skin-color); }
-  .datetimepicker.dropdown-menu                            { color: #000; white-space: normal !important; }
-  .datetimepicker.dropdown-menu:after,
-  .datetimepicker.dropdown-menu:before                     { content: none !important; }
+  .datetimepicker                            { color: #000; white-space: normal !important; }
+  .datetimepicker:after,
+  .datetimepicker:before                     { content: none !important; }
   </style>`);
 })();
