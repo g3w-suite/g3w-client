@@ -417,7 +417,6 @@
           defaultDate:       null,
           format:            input.options.format.displayformat,
           ignoreReadonly:    true,
-          allowInputToggle:  true,
           toolbarPlacement:  'top',
           widgetPositioning: { vertical: 'bottom', horizontal: 'left' },
           locale:            ApplicationState.language || 'en',

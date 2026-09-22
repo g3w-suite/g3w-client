@@ -306,32 +306,22 @@ document.addEventListener('click', function(e) {
 (function() {
   class DateTimePicker {
     #element;
-    #optionsValue;
+    #options;
     #input;
     #component;
     #widget;
-    #dateValue;
-    #viewDateValue;
-    #actualFormat;
+    #date;
+    #viewDate;
+    #format;
     #bound;
-    #formats;
     #hasDate;
     #hasTime;
     #use24Hours;
 
-    static #parseDate(value, options, formats) {
-      if (value === false || value === null || value === undefined || value === '') return null;
-      if (moment.isMoment(value)) return value.clone();
-      if (value instanceof Date) return moment(value);
-      return moment(value, formats, options.useStrict);
-    }
-
     constructor(element, options) {
       this.#element = element;
-      this.#optionsValue = $.extend(true, {}, {
+      this.#options = $.extend(true, {}, {
         format: false,
-        extraFormats: false,
-        stepping: 1,
         minDate: false,
         maxDate: false,
         useCurrent: true,
@@ -339,75 +329,74 @@ document.addEventListener('click', function(e) {
         defaultDate: false,
         disabledDates: false,
         enabledDates: false,
-        useStrict: false,
-        daysOfWeekDisabled: false,
         widgetPositioning: { horizontal: 'auto', vertical: 'auto' },
         widgetParent: null,
         ignoreReadonly: false,
         keepOpen: false,
-        inline: false,
-        allowInputToggle: false,
-        disabledTimeIntervals: false,
-        disabledHours: false,
-        enabledHours: false,
-        datepickerInput: '.datepickerinput',
       }, options, $(element).data().dateOptions || {});
-      this.#input = element.matches('input') ? element : element.querySelector(this.#optionsValue.datepickerInput) || element.querySelector('input');
+
+      this.#input     = element.matches('input') ? element : element.querySelector('.datepickerinput') || element.querySelector('input');
       this.#component = element.classList.contains('input-group') ? element.querySelector('.datepickerbutton, .input-group-addon') : null;
-      this.#widget = null;
-      this.#dateValue = null;
-      this.#viewDateValue = moment().locale(this.#optionsValue.locale);
-      this.#formats = [];
-      this.#bound = {
-        change: () => this.#setDate(this.#input.value),
-        focus: () => this.#show(),
-        blur: () => this.hide(),
-        keydown: event => this.#onKeyDown(event),
-        componentClick: () => this.#widget ? this.hide() : this.#show(),
+      this.#widget    = null;
+      this.#date      = null;
+      this.#viewDate  = moment().locale(this.#options.locale);
+      this.#bound     = {
         documentClick: event => this.#onDocumentClick(event),
-        resize: () => this.#place(),
+        resize:        () => this.#place(),
       };
 
-      if (!this.#input && !this.#optionsValue.inline) {
+      if (!this.#input) {
         throw new Error('Could not initialize DateTimePicker without an input element');
       }
 
-      const locale       = moment.localeData(this.#optionsValue.locale);
-      this.#actualFormat = (this.#optionsValue.format || 'L LT').replace(/LTS|LT|LL?L?L?/g, token => locale.longDateFormat(token) || token);
-      this.#formats      = [...(this.#optionsValue.extraFormats || []), this.#actualFormat];
-      this.#hasDate      = /Y|M|D/.test(this.#actualFormat);
-      this.#hasTime      = /H|h|m|s/.test(this.#actualFormat);
-      this.#use24Hours   = !/h|a/i.test(this.#actualFormat.replace(/\[.*?]/g, ''));
+      const locale     = moment.localeData(this.#options.locale);
+      this.#format     = (this.#options.format || 'L LT').replace(/LTS|LT|LL?L?L?/g, token => locale.longDateFormat(token) || token);
+      this.#hasDate    = /Y|M|D/.test(this.#format);
+      this.#hasTime    = /H|h|m|s/.test(this.#format);
+      this.#use24Hours = !/h|a/i.test(this.#format.replace(/\[.*?]/g, ''));
 
-      if (this.#optionsValue.minDate) {
-        this.#optionsValue.minDate = DateTimePicker.#parseDate(this.#optionsValue.minDate, this.#optionsValue, this.#formats);
+      if (this.#options.minDate) {
+        this.#options.minDate = this.#parseDate(this.#options.minDate);
       }
 
-      if (this.#optionsValue.maxDate) {
-        this.#optionsValue.maxDate = DateTimePicker.#parseDate(this.#optionsValue.maxDate, this.#optionsValue, this.#formats);
+      if (this.#options.maxDate) {
+        this.#options.maxDate = this.#parseDate(this.#options.maxDate);
       }
 
-      if (this.#optionsValue.defaultDate) {
-        this.#optionsValue.defaultDate = DateTimePicker.#parseDate(this.#optionsValue.defaultDate, this.#optionsValue, this.#formats);
+      if (this.#options.defaultDate) {
+        this.#options.defaultDate = this.#parseDate(this.#options.defaultDate);
       }
 
-      this.#optionsValue.enabledDates  = this.#indexDates(this.#optionsValue.enabledDates);
-      this.#optionsValue.disabledDates = this.#indexDates(this.#optionsValue.disabledDates);
-      this.#optionsValue.enabledHours  = this.#indexHours(this.#optionsValue.enabledHours);
-      this.#optionsValue.disabledHours = this.#indexHours(this.#optionsValue.disabledHours);
+      this.#options.enabledDates  = this.#indexDates(this.#options.enabledDates);
+      this.#options.disabledDates = this.#indexDates(this.#options.disabledDates);
 
       // attach events
-      this.#input.addEventListener('change', this.#bound.change);
-      this.#input.addEventListener('keydown', this.#bound.keydown);
-      this.#input.addEventListener('blur', this.#bound.blur);
-      if (this.#element.matches('input') || this.#optionsValue.allowInputToggle) {
-        this.#input.addEventListener('focus', this.#bound.focus);
+      this.#input.addEventListener('change',  () => this.#setDate(this.#input.value));
+      this.#input.addEventListener('keydown', event => this.#onKeyDown(event));
+      this.#input.addEventListener('blur',    () => this.hide());
+      if (this.#element.matches('input')) {
+        this.#input.addEventListener('focus', () => this.#show());
       }
-      this.#component?.addEventListener('click', this.#bound.componentClick);
+      this.#component?.addEventListener('click', () => this.#widget ? this.hide() : this.#show());
 
-      if (this.#input.value.trim()) this.#setDate(this.#input.value);
-      else if (this.#optionsValue.defaultDate) this.#setDate(this.#optionsValue.defaultDate);
-      if (this.#optionsValue.inline) this.#show();
+      if (this.#input.value.trim()) {
+        this.#setDate(this.#input.value);
+      } else if (this.#options.defaultDate) {
+        this.#setDate(this.#options.defaultDate);
+      }
+    }
+
+    #parseDate(value, formats = [this.#format]) {
+      if (value === false || value === null || value === undefined || value === '') {
+        return null;
+      }
+      if (moment.isMoment(value)) {
+        return value.clone();
+      }
+      if (value instanceof Date) {
+        return moment(value);
+      }
+      return moment(value, formats, false);
     }
 
     #trigger(type, values) {
@@ -421,34 +410,23 @@ document.addEventListener('click', function(e) {
         maxDate,
         enabledDates,
         disabledDates,
-        daysOfWeekDisabled,
-        enabledHours,
-        disabledHours,
-        disabledTimeIntervals
-      } = this.#optionsValue;
+      } = this.#options;
       if (minDate && date.isBefore(minDate, granularity)) return false;
       if (maxDate && date.isAfter(maxDate, granularity)) return false;
       if (enabledDates && !enabledDates[date.format('YYYY-MM-DD')]) return false;
       if (disabledDates && disabledDates[date.format('YYYY-MM-DD')]) return false;
-      if (daysOfWeekDisabled && daysOfWeekDisabled.includes(date.day())) return false;
-      if (enabledHours && !enabledHours[date.hour()]) return false;
-      if (disabledHours && disabledHours[date.hour()]) return false;
-      return !Array.isArray(disabledTimeIntervals) || !disabledTimeIntervals.some(([start, end]) => date.isBetween(start, end));
+      return true;
     }
 
     #indexDates(dates) {
       if (!dates) return false;
       return dates.reduce((indexed, date) => {
-        const parsed = DateTimePicker.#parseDate(date, this.#optionsValue, this.#formats);
-        if (parsed?.isValid()) indexed[parsed.format('YYYY-MM-DD')] = true;
+        const parsed = this.#parseDate(date);
+        if (parsed?.isValid()) {
+          indexed[parsed.format('YYYY-MM-DD')] = true;
+        }
         return indexed;
       }, {});
-    }
-
-    #indexHours(hours) {
-      return hours
-        ? hours.reduce((indexed, hour) => ({ ...indexed, [hour]: true }), {})
-        : false;
     }
 
     #buildWidget() {
@@ -465,17 +443,17 @@ document.addEventListener('click', function(e) {
                     <thead>
                       <tr>
                         <th class = "prev" data-action = "previous"><span class = "glyphicon glyphicon-chevron-left"></span></th>
-                        <th class = "picker-switch" data-action = "pickerSwitch" colspan = "5">${this.#viewDateValue.format('MMMM YYYY')}</th>
+                        <th class = "picker-switch" data-action = "pickerSwitch" colspan = "5">${this.#viewDate.format('MMMM YYYY')}</th>
                         <th class = "next" data-action = "next"><span class = "glyphicon glyphicon-chevron-right"></span></th>
                       </tr>
                       <tr>
-                        <th class = "dow">${this.#viewDateValue.localeData().weekdaysMin()[0]}</th>
-                        <th class = "dow">${this.#viewDateValue.localeData().weekdaysMin()[1]}</th>
-                        <th class = "dow">${this.#viewDateValue.localeData().weekdaysMin()[2]}</th>
-                        <th class = "dow">${this.#viewDateValue.localeData().weekdaysMin()[3]}</th>
-                        <th class = "dow">${this.#viewDateValue.localeData().weekdaysMin()[4]}</th>
-                        <th class = "dow">${this.#viewDateValue.localeData().weekdaysMin()[5]}</th>
-                        <th class = "dow">${this.#viewDateValue.localeData().weekdaysMin()[6]}</th>
+                        <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[0]}</th>
+                        <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[1]}</th>
+                        <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[2]}</th>
+                        <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[3]}</th>
+                        <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[4]}</th>
+                        <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[5]}</th>
+                        <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[6]}</th>
                       </tr>
                     </thead>
                     <tbody>${Array.from({ length: 6 }, (_, week) => /* html */`
@@ -483,8 +461,8 @@ document.addEventListener('click', function(e) {
                         <td
                           class = "${[
                             'day',
-                            !date.isSame(this.#viewDateValue, 'month') && (date.isBefore(this.#viewDateValue, 'month') ? 'old' : 'new'),
-                            this.#dateValue?.isSame(date, 'day') && 'active',
+                            !date.isSame(this.#viewDate, 'month') && (date.isBefore(this.#viewDate, 'month') ? 'old' : 'new'),
+                            this.#date?.isSame(date, 'day') && 'active',
                             date.isSame(moment(), 'day') && 'today',
                             (date.day() === 0 || date.day() === 6) && 'weekend',
                             !this.#isValid(date, 'day') && 'disabled',
@@ -492,7 +470,7 @@ document.addEventListener('click', function(e) {
                           data-action = "selectDay"
                           data-date = "${date.format('YYYY-MM-DD')}"
                         >${date.date()}</td>
-                      `)(this.#viewDateValue.clone().startOf('month').startOf('week').add(week * 7 + day, 'day'))).join('')}</tr>
+                      `)(this.#viewDate.clone().startOf('month').startOf('week').add(week * 7 + day, 'day'))).join('')}</tr>
                     `).join('')}</tbody>
                   </table>
                 </div>
@@ -503,13 +481,13 @@ document.addEventListener('click', function(e) {
                         <td
                           class = "${[
                             'month',
-                            this.#dateValue?.isSame(month, 'year') && this.#dateValue.month() === index && 'active',
+                            this.#date?.isSame(month, 'year') && this.#date.month() === index && 'active',
                             !this.#isValid(month, 'month') && 'disabled',
                           ].filter(Boolean).join(' ')}"
                           data-action = "selectMonth"
                           data-month = "${index}"
                         >${month.format('MMM')}</td>
-                      `)(this.#viewDateValue.clone().month(row * 3 + column), row * 3 + column)).join('')}</tr>
+                      `)(this.#viewDate.clone().month(row * 3 + column), row * 3 + column)).join('')}</tr>
                     `).join('')}</tbody>
                   </table>
                 </div>
@@ -522,28 +500,28 @@ document.addEventListener('click', function(e) {
                     <td><a href = "#" tabindex = "-1" data-action = "incrementHours"><span class = "glyphicon glyphicon-chevron-up"></span></a></td>
                     <td class = "separator">:</td>
                     <td><a href = "#" tabindex = "-1" data-action = "incrementMinutes"><span class = "glyphicon glyphicon-chevron-up"></span></a></td>
-                    ${/s/.test(this.#actualFormat) ? /* html */`
+                    ${/s/.test(this.#format) ? /* html */`
                       <td class = "separator">:</td>
                       <td><a href = "#" tabindex = "-1" data-action = "incrementSeconds"><span class = "glyphicon glyphicon-chevron-up"></span></a></td>
                     ` : ''}
                   </tr>
                   <tr>
-                    <td><span data-action = "showHours">${this.#dateValue.format(this.#use24Hours ? 'HH' : 'hh')}</span></td>
+                    <td><span data-action = "showHours">${this.#date.format(this.#use24Hours ? 'HH' : 'hh')}</span></td>
                     <td class = "separator">:</td>
-                    <td><span data-action = "showMinutes">${this.#dateValue.format('mm')}</span></td>
-                    ${/s/.test(this.#actualFormat) ? /* html */`
+                    <td><span data-action = "showMinutes">${this.#date.format('mm')}</span></td>
+                    ${/s/.test(this.#format) ? /* html */`
                       <td class = "separator">:</td>
-                      <td><span data-action = "showSeconds">${this.#dateValue.format('ss')}</span></td>
+                      <td><span data-action = "showSeconds">${this.#date.format('ss')}</span></td>
                     ` : ''}
                     ${!this.#use24Hours ? /* html */`
-                      <td><button class = "btn btn-primary" data-action = "togglePeriod">${this.#dateValue.format('A')}</button></td>
+                      <td><button class = "btn btn-primary" data-action = "togglePeriod">${this.#date.format('A')}</button></td>
                     ` : ''}
                   </tr>
                   <tr>
                     <td><a href = "#" tabindex = "-1" data-action = "decrementHours"><span class = "glyphicon glyphicon-chevron-down"></span></a></td>
                     <td class = "separator">:</td>
                     <td><a href = "#" tabindex = "-1" data-action = "decrementMinutes"><span class = "glyphicon glyphicon-chevron-down"></span></a></td>
-                    ${/s/.test(this.#actualFormat) ? /* html */`
+                    ${/s/.test(this.#format) ? /* html */`
                       <td class = "separator">:</td>
                       <td><a href = "#" tabindex = "-1" data-action = "decrementSeconds"><span class = "glyphicon glyphicon-chevron-down"></span></a></td>
                     ` : ''}
@@ -560,7 +538,9 @@ document.addEventListener('click', function(e) {
     }
 
     #render() {
-      if (!this.#widget) return;
+      if (!this.#widget) {
+        return;
+      }
       const replacement = this.#buildWidget();
       this.#widget.replaceWith(replacement);
       this.#widget = replacement;
@@ -569,7 +549,9 @@ document.addEventListener('click', function(e) {
 
     #onWidgetClick(event) {
       const action = event.target.closest('[data-action]')?.dataset.action;
-      if (!action || event.target.closest('.disabled')) return;
+      if (!action || event.target.closest('.disabled')) {
+        return;
+      }
       event.preventDefault();
       ({
         previous:         () => this.#navigate(-1),
@@ -577,13 +559,13 @@ document.addEventListener('click', function(e) {
         pickerSwitch:     () => this.#widget.querySelector('.datepicker').classList.add('show-months'),
         selectDay:        target => this.#selectDate(target.dataset.date),
         selectMonth:      target => this.#selectMonth(Number(target.dataset.month)),
-        incrementHours:   () => this.#setDate((this.#dateValue || moment()).clone().add(1, 'hour')),
-        decrementHours:   () => this.#setDate((this.#dateValue || moment()).clone().subtract(1, 'hour')),
-        incrementMinutes: () => this.#setDate((this.#dateValue || moment()).clone().add(this.#optionsValue.stepping, 'minute')),
-        decrementMinutes: () => this.#setDate((this.#dateValue || moment()).clone().subtract(this.#optionsValue.stepping, 'minute')),
-        incrementSeconds: () => this.#setDate((this.#dateValue || moment()).clone().add(1, 'second')),
-        decrementSeconds: () => this.#setDate((this.#dateValue || moment()).clone().subtract(1, 'second')),
-        togglePeriod:     () => this.#setDate((this.#dateValue || moment()).clone().add(this.#dateValue.hour() >= 12 ? -12 : 12, 'hour')),
+        incrementHours:   () => this.#setDate((this.#date || moment()).clone().add(1, 'hour')),
+        decrementHours:   () => this.#setDate((this.#date || moment()).clone().add(-1, 'hour')),
+        incrementMinutes: () => this.#setDate((this.#date || moment()).clone().add(1, 'minute')),
+        decrementMinutes: () => this.#setDate((this.#date || moment()).clone().add(-1, 'minute')),
+        incrementSeconds: () => this.#setDate((this.#date || moment()).clone().add(1, 'second')),
+        decrementSeconds: () => this.#setDate((this.#date || moment()).clone().add(-1, 'second')),
+        togglePeriod:     () => this.#setDate((this.#date || moment()).clone().add(this.#date.hour() >= 12 ? -12 : 12, 'hour')),
         today:            () => this.#setDate(moment()),
         clear:            () => this.#setDate(null),
         close:            () => this.hide(),
@@ -591,25 +573,29 @@ document.addEventListener('click', function(e) {
     }
 
     #navigate(amount) {
-      this.#viewDateValue.add(amount, 'month');
+      this.#viewDate.add(amount, 'month');
       this.#render();
-      this.#trigger('dp.update', { change: 'M', viewDate: this.#viewDateValue.clone() });
+      this.#trigger('dp.update', { change: 'M', viewDate: this.#viewDate.clone() });
     }
 
     #selectMonth(month) {
-      this.#viewDateValue.month(month);
+      this.#viewDate.month(month);
       this.#widget.querySelector('.datepicker').classList.remove('show-months');
       this.#widget.querySelectorAll('.datepicker-months .month').forEach((cell, index) => {
-        cell.classList.toggle('active', this.#dateValue?.isSame(this.#viewDateValue, 'year') && this.#dateValue.month() === index);
+        cell.classList.toggle('active', this.#date?.isSame(this.#viewDate, 'year') && this.#date.month() === index);
       });
-      this.#trigger('dp.update', { change: 'M', viewDate: this.#viewDateValue.clone() });
+      this.#trigger('dp.update', { change: 'M', viewDate: this.#viewDate.clone() });
     }
 
     #selectDate(value) {
-      const date = DateTimePicker.#parseDate(value, this.#optionsValue, ['YYYY-MM-DD']);
-      if (this.#dateValue) date.hour(this.#dateValue.hour()).minute(this.#dateValue.minute()).second(this.#dateValue.second());
+      const date = this.#parseDate(value, ['YYYY-MM-DD']);
+      if (this.#date) {
+        date.hour(this.#date.hour()).minute(this.#date.minute()).second(this.#date.second());
+      }
       this.#setDate(date);
-      if (!this.#hasTime && !this.#optionsValue.keepOpen) this.hide();
+      if (!this.#hasTime && !this.#options.keepOpen) {
+        this.hide();
+      }
     }
 
     #onKeyDown(event) {
@@ -620,15 +606,19 @@ document.addEventListener('click', function(e) {
     }
 
     #onDocumentClick(event) {
-      if (!this.#element.contains(event.target) && !this.#widget?.contains(event.target)) this.hide();
+      if (!this.#element.contains(event.target) && !this.#widget?.contains(event.target)) {
+        this.hide();
+      }
     }
 
     #place() {
-      if (!this.#widget || this.#optionsValue.inline) return;
-      const parent = this.#optionsValue.widgetParent?.jquery ? this.#optionsValue.widgetParent[0] : this.#optionsValue.widgetParent || this.#element;
+      if (!this.#widget) {
+        return;
+      }
+      const parent = this.#options.widgetParent?.jquery ? this.#options.widgetParent[0] : this.#options.widgetParent || this.#element;
       parent.append(this.#widget);
       const anchor = this.#component || this.#element;
-      if (this.#optionsValue.widgetParent) {
+      if (this.#options.widgetParent) {
         this.#widget.classList.remove('top', 'pull-right');
         this.#widget.classList.add('bottom');
         this.#widget.style.inset = `${anchor.offsetHeight}px auto auto 0px`;
@@ -636,12 +626,12 @@ document.addEventListener('click', function(e) {
       }
       const anchorRect = anchor.getBoundingClientRect();
       const referenceRect = parent.getBoundingClientRect();
-      const vertical = this.#optionsValue.widgetPositioning.vertical === 'auto'
+      const vertical = this.#options.widgetPositioning.vertical === 'auto'
         ? (anchorRect.bottom + this.#widget.offsetHeight > window.innerHeight && anchorRect.top > this.#widget.offsetHeight ? 'top' : 'bottom')
-        : this.#optionsValue.widgetPositioning.vertical;
-      const horizontal = this.#optionsValue.widgetPositioning.horizontal === 'auto'
+        : this.#options.widgetPositioning.vertical;
+      const horizontal = this.#options.widgetPositioning.horizontal === 'auto'
         ? (anchorRect.left + this.#widget.offsetWidth > window.innerWidth ? 'right' : 'left')
-        : this.#optionsValue.widgetPositioning.horizontal;
+        : this.#options.widgetPositioning.horizontal;
       const top = anchorRect.top - referenceRect.top;
       const left = parent === this.#element ? 0 : anchorRect.left - referenceRect.left;
       this.#widget.classList.toggle('top', vertical === 'top');
@@ -652,34 +642,40 @@ document.addEventListener('click', function(e) {
     }
 
     #setDate(value) {
-      const date = DateTimePicker.#parseDate(value, this.#optionsValue, this.#formats);
-      const oldDate = this.#dateValue?.clone() || false;
+      const date    = this.#parseDate(value);
+      const oldDate = this.#date?.clone() || false;
       if (!date) {
-        this.#dateValue = null;
+        this.#date = null;
         this.#input.value = '';
         this.#trigger('dp.change', { date: false, oldDate });
         this.#render();
         return this;
       }
-      date.locale(this.#optionsValue.locale);
+      date.locale(this.#options.locale);
       if (!this.#isValid(date)) {
         this.#trigger('dp.error', { date, oldDate });
         return this;
       }
-      this.#dateValue = date;
-      this.#viewDateValue = date.clone();
-      this.#input.value = date.format(this.#actualFormat);
-      if (!oldDate || !date.isSame(oldDate)) this.#trigger('dp.change', { date: date.clone(), oldDate });
+      this.#date        = date;
+      this.#viewDate    = date.clone();
+      this.#input.value = date.format(this.#format);
+      if (!oldDate || !date.isSame(oldDate)) {
+        this.#trigger('dp.change', { date: date.clone(), oldDate });
+      }
       this.#render();
       return this;
     }
 
     #show() {
-      if (this.#widget || this.#input.disabled || (this.#input.readOnly && !this.#optionsValue.ignoreReadonly)) return this;
-      if (!this.#dateValue && this.#optionsValue.useCurrent) {
+      if (this.#widget || this.#input.disabled || (this.#input.readOnly && !this.#options.ignoreReadonly)) {
+        return this;
+      }
+      if (!this.#date && this.#options.useCurrent) {
         const date = moment();
-        const granularity = typeof this.#optionsValue.useCurrent === 'string' ? this.#optionsValue.useCurrent : null;
-        if (granularity) date.startOf(granularity);
+        const granularity = typeof this.#options.useCurrent === 'string' ? this.#options.useCurrent : null;
+        if (granularity) {
+          date.startOf(granularity);
+        }
         this.#setDate(date);
       }
       this.#widget = this.#buildWidget();
@@ -691,36 +687,41 @@ document.addEventListener('click', function(e) {
     }
 
     hide() {
-      if (!this.#widget) return this;
-      this.#widget.remove(); this.#widget = null;
-      window.removeEventListener('resize', this.#bound.resize);
-      document.removeEventListener('mousedown', this.#bound.documentClick);
-      this.#trigger('dp.hide', { date: this.#dateValue?.clone() || false });
+      if (this.#widget) {
+        this.#widget.remove(); this.#widget = null;
+        window.removeEventListener('resize', this.#bound.resize);
+        document.removeEventListener('mousedown', this.#bound.documentClick);
+        this.#trigger('dp.hide', { date: this.#date?.clone() || false });
+      }
       return this;
     }
 
     date(value) {
-      return arguments.length
-        ? this.#setDate(value)
-        : this.#dateValue?.clone() || null;
+      if (arguments.length) {
+        return this.#setDate(value);
+      }
+      return this.#date?.clone() || null;
     }
 
     minDate(value) {
-      return arguments.length
-        ? (this.#optionsValue.minDate = value ? DateTimePicker.#parseDate(value, this.#optionsValue, this.#formats) : false, this.#render(), this)
-        : this.#optionsValue.minDate?.clone() || false;
+      if (arguments.length) {
+        return (this.#options.minDate = value ? this.#parseDate(value) : false, this.#render(), this);
+      }
+      return this.#options.minDate?.clone() || false;
     }
 
     maxDate(value) {
-      return arguments.length
-        ? (this.#optionsValue.maxDate = value ? DateTimePicker.#parseDate(value, this.#optionsValue, this.#formats) : false, this.#render(), this)
-        : this.#optionsValue.maxDate?.clone() || false;
+      if (arguments.length) {
+        return (this.#options.maxDate = value ? this.#parseDate(value) : false, this.#render(), this)
+      }
+      return this.#options.maxDate?.clone() || false;
     }
 
     enabledDates(value) {
-      return arguments.length
-        ? (this.#optionsValue.enabledDates = this.#indexDates(value), this.#optionsValue.disabledDates = false, this.#render(), this)
-        : $.extend({}, this.#optionsValue.enabledDates);
+      if (arguments.length) {
+        return (this.#options.enabledDates = this.#indexDates(value), this.#options.disabledDates = false, this.#render(), this);
+      }
+      return $.extend({}, this.#options.enabledDates);
     }
 
   }

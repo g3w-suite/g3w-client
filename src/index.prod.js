@@ -145,7 +145,6 @@ Vue.component('datetime', {
       maxDate:           this.maxDate,
       defaultDate:       this.datetimevalue,
       useCurrent:        false,
-      allowInputToggle:  true,
       enabledDates:      this.enabledDates,
       format:            this.format,
       locale:            ApplicationState.language,

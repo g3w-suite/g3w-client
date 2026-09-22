@@ -158,7 +158,6 @@ export default {
       defaultDate:       date,
       format:            this.datetimedisplayformat,
       ignoreReadonly:    true,
-      allowInputToggle:  true,
       toolbarPlacement: 'top',
       widgetParent:      $(this.$refs.datimewidget_container),
       widgetPositioning: {
