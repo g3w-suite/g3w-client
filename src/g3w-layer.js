@@ -131,6 +131,7 @@ export class Layer extends Emitter {
       const layer = config;
       config = {
         id:         `layer_${layer.getMultiLayerId()}`,
+        name:       layer.getName(),
         projection: ApplicationState.project.getProjection(),
         format:     layer.getFormat(),
         ...(
@@ -139,8 +140,8 @@ export class Layer extends Emitter {
           : {
             type:
               (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms') && 'XYZ') ||  // TMS Layer   (cached)
-              (layer.isCached() && 'wmts' === layer.state.cache_service_type && 'WMTS') ||           // WMTS Layer  (cached)
-              (layer.isExternalWMS() && "wmst" === layer.state?.source?.type && 'WMTS') ||           // WMS-T Layer (external)
+              (layer.isCached() && 'wmts' === layer.state.cache_service_type && 'WMTS')          ||  // WMTS Layer  (cached)
+              (layer.isExternalWMS() && "wmst" === layer.state?.source?.type && 'WMTS')          ||  // WMS-T Layer (external)
               layer.state.type || null,
             url:               layer.isCached()      ? layer.getCacheUrl() : layer.getWmsUrl(),
             http_method:       layer.isExternalWMS() ? 'GET'               : layer.getOwsMethod(),
@@ -153,17 +154,23 @@ export class Layer extends Emitter {
           }
         ),
         /** @since 4.1.1 */
-        servertype: layer.state.servertype,
+        servertype:       layer.state.servertype,
         /** @since 4.1.1 */
-        source:     layer.state.source,
+        source:           layer.state.source,
+        /** @since 4.3.0 */
+        ows:              layer.state?.ows,
+        /** @since 4.3.0 */
+        wmtscapabilities: layer.state?.wmtscapabilities,
       };
+    } else if (config.id === "buildings_2f43dc1d_6725_42d2_a09b_dd446220104a") { 
+       //FAKE multilayer configuration for a specific layer ID
+      config.multilayer = 2;
     }
 
     const layerType = `${config.servertype} ${config?.source?.type}`;
 
     // Check Layer Type
     if (!options.TYPE) {
-
       // TABLE LAYERS
       if ('NoGeometry' === config.geometrytype && [
         "QGIS virtual",
@@ -375,7 +382,7 @@ export class Layer extends Emitter {
 
       /** @since 4.0.0 */
       ows_method: config.ows_method,
-   
+
       /** @type {number} opacity range = [0, 100] (since 3.8) */
       opacity: config.opacity || 100,
 
@@ -3210,6 +3217,29 @@ export class Layer extends Emitter {
       });
     }
 
+    if (this.config.ows?.includes('WMTS') && this.config.wmtscapabilities) {
+      const { format, grids } = this.config.wmtscapabilities;
+      const extent            = grids?.at(0)?.extent;
+      const size  = ol.extent.getWidth(extent) / 256;
+      const resolutions = Array.from({ length: grids?.at(0)?.levels ?? 18 }, (_, z) => size / Math.pow(2, z));
+      olLayer = new ol.layer.Tile({
+        opacity: this.state.matrixSet ? .7 : 1,
+        source: new ol.source.WMTS({
+          url:             this.state.url,
+          projection:      grids?.at(0)?.crs ?? 'EPSG:3857',
+          layer:           this.config.name,
+          matrixSet:       `${grids?.at(0)?.crs ?? 'EPSG:3857'}`,
+          transparent:     false,
+          format:          format?.at(0) ?? 'image/png',
+          style:           'default',
+          tileGrid: new ol.tilegrid.WMTS({
+            origin:      ol.extent.getTopLeft(extent),
+            resolutions,
+            matrixIds:   resolutions.map((_, z) => z),
+          }),
+        })
+      });
+    }
     // WMTS LAYER
     if ('WMTS' === this.config.servertype && 'image' === this.getType()) {
       let resolutions, projection = this.state.projection;
@@ -3247,7 +3277,6 @@ export class Layer extends Emitter {
         })
       });
     }
-
     // WMTS LAYER (with mapproxy)
     if ('WMTS' === this.state.type && 'mapproxy' === this.state.cache_provider) {
       const resolutions = ol.tilegrid.createXYZ({ extent: this.state.cache_grid_extent }).getResolutions();
