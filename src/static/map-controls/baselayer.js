@@ -133,7 +133,13 @@ class BaseLayerControl extends ol.control.Control {
     if (!baseLayer) {
       return `${GUI.getResourcesUrl()}images/nobaselayer.png`;
     }
-    return `${GUI.getResourcesUrl()}images/${image || 'no-image.svg'}`;
+    if (!image) {
+      return `${GUI.getResourcesUrl()}images/no-image.svg`;
+    }
+    else {
+      // Custom base layer icons are not stored on the client but on the media url
+      return `${GUI.getMediaUrl()}${image}`;
+    }
   }
 
   /** Keep layer visibility/checked status in sync */
