@@ -162,9 +162,6 @@ export class Layer extends Emitter {
         /** @since 4.1.1 */
         source:           layer.state.source,
       };
-    } else if (config.id === "buildings_2f43dc1d_6725_42d2_a09b_dd446220104a") { 
-       //FAKE multilayer configuration for a specific layer ID
-      config.multilayer = 2;
     }
 
     const layerType = `${config.servertype} ${config?.source?.type}`;
@@ -3220,23 +3217,31 @@ export class Layer extends Emitter {
     //WMTS Layer from qgis layer setting
     else if ('WMTS' === this.config.type && this.config.wmtscapabilities) {
       const { format, grids } = this.config.wmtscapabilities;
-      const extent            = grids?.at(0)?.extent;
-      const size  = ol.extent.getWidth(extent) / 256;
-      const resolutions = Array.from({ length: grids?.at(0)?.levels ?? 18 }, (_, z) => size / Math.pow(2, z));
+      const projection = ol.proj.get(`${grids?.at(0)?.crs ?? 'EPSG:3857'}`);
+      const projectionExtent = projection.getExtent();
+      const size = ol.extent.getWidth(projectionExtent) / 256;
+      const levels = grids?.at(0)?.levels ?? 18;
+      const resolutions = new Array(levels);
+      const matrixIds = new Array(levels);
+      for (let z = 0; z < levels; ++z) {
+          resolutions[z] = size / Math.pow(2, z);
+          matrixIds[z] = z; // QGIS Server solitamente usa l'indice numerico (0, 1, 2...) come ID matrice
+      }
+
       olLayer = new ol.layer.Tile({
         opacity: this.state.matrixSet ? .7 : 1,
         source: new ol.source.WMTS({
           url:             this.state.url,
-          projection:      grids?.at(0)?.crs ?? 'EPSG:3857',
+          projection,
           layer:           this.config.name,
           matrixSet:       `${grids?.at(0)?.crs ?? 'EPSG:3857'}`,
           transparent:     false,
           format:          format?.at(0) ?? 'image/png',
           style:           'default',
           tileGrid: new ol.tilegrid.WMTS({
-            origin:      ol.extent.getTopLeft(extent),
+            origin:      ol.extent.getTopLeft(projectionExtent),
             resolutions,
-            matrixIds:   resolutions.map((_, z) => z),
+            matrixIds,
           }),
         })
       });
