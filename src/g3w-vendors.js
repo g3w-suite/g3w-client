@@ -522,36 +522,38 @@ document.addEventListener('click', function(e) {
             ` : ''}
             ${this.#hasTime ? /* html */`
               <table class = "timepicker-picker">
-                <tr>
-                  <td><a href = "#" tabindex = "-1" data-action = "incrementHours" aria-label = "Increment hours">&uarr;</a></td>
-                  <td class = "separator">:</td>
-                  <td><a href = "#" tabindex = "-1" data-action = "incrementMinutes" aria-label = "Increment minutes">&uarr;</a></td>
-                  ${/s/.test(this.#format) ? /* html */`
+                <tbody>
+                  <tr>
+                    <td><a href = "#" tabindex = "-1" data-action = "incrementHours" aria-label = "Increment hours">&uarr;</a></td>
                     <td class = "separator">:</td>
-                    <td><a href = "#" tabindex = "-1" data-action = "incrementSeconds" aria-label = "Increment seconds">&uarr;</a></td>
-                  ` : ''}
-                </tr>
-                <tr>
-                  <td><span data-action = "showHours">${this.#date.format(this.#use24Hours ? 'HH' : 'hh')}</span></td>
-                  <td class = "separator">:</td>
-                  <td><span data-action = "showMinutes">${this.#date.format('mm')}</span></td>
-                  ${/s/.test(this.#format) ? /* html */`
+                    <td><a href = "#" tabindex = "-1" data-action = "incrementMinutes" aria-label = "Increment minutes">&uarr;</a></td>
+                    ${/s/.test(this.#format) ? /* html */`
+                      <td class = "separator">:</td>
+                      <td><a href = "#" tabindex = "-1" data-action = "incrementSeconds" aria-label = "Increment seconds">&uarr;</a></td>
+                    ` : ''}
+                  </tr>
+                  <tr>
+                    <td><span data-action = "showHours">${this.#date.format(this.#use24Hours ? 'HH' : 'hh')}</span></td>
                     <td class = "separator">:</td>
-                    <td><span data-action = "showSeconds">${this.#date.format('ss')}</span></td>
-                  ` : ''}
-                  ${!this.#use24Hours ? /* html */`
-                    <td><button class = "btn btn-primary" data-action = "togglePeriod">${this.#date.format('A')}</button></td>
-                  ` : ''}
-                </tr>
-                <tr>
-                  <td><a href = "#" tabindex = "-1" data-action = "decrementHours" aria-label = "Decrement hours">&darr;</a></td>
-                  <td class = "separator">:</td>
-                  <td><a href = "#" tabindex = "-1" data-action = "decrementMinutes" aria-label = "Decrement minutes">&darr;</a></td>
-                  ${/s/.test(this.#format) ? /* html */`
+                    <td><span data-action = "showMinutes">${this.#date.format('mm')}</span></td>
+                    ${/s/.test(this.#format) ? /* html */`
+                      <td class = "separator">:</td>
+                      <td><span data-action = "showSeconds">${this.#date.format('ss')}</span></td>
+                    ` : ''}
+                    ${!this.#use24Hours ? /* html */`
+                      <td><button class = "btn btn-primary" data-action = "togglePeriod">${this.#date.format('A')}</button></td>
+                    ` : ''}
+                  </tr>
+                  <tr>
+                    <td><a href = "#" tabindex = "-1" data-action = "decrementHours" aria-label = "Decrement hours">&darr;</a></td>
                     <td class = "separator">:</td>
-                    <td><a href = "#" tabindex = "-1" data-action = "decrementSeconds" aria-label = "Decrement seconds">&darr;</a></td>
-                  ` : ''}
-                </tr>
+                    <td><a href = "#" tabindex = "-1" data-action = "decrementMinutes" aria-label = "Decrement minutes">&darr;</a></td>
+                    ${/s/.test(this.#format) ? /* html */`
+                      <td class = "separator">:</td>
+                      <td><a href = "#" tabindex = "-1" data-action = "decrementSeconds" aria-label = "Decrement seconds">&darr;</a></td>
+                    ` : ''}
+                  </tr>
+                </tbody>
               </table>
             ` : ''}
           </div>
@@ -594,7 +596,10 @@ document.addEventListener('click', function(e) {
         decrementMinutes: () => this.#setDate((this.#date || moment()).clone().add(-1, 'minute')),
         incrementSeconds: () => this.#setDate((this.#date || moment()).clone().add(1, 'second')),
         decrementSeconds: () => this.#setDate((this.#date || moment()).clone().add(-1, 'second')),
-        togglePeriod:     () => this.#setDate((this.#date || moment()).clone().add(this.#date.hour() >= 12 ? -12 : 12, 'hour')),
+        togglePeriod:     () => {
+          const date = (this.#date || moment()).clone();
+          return this.#setDate(date.add(date.hour() >= 12 ? -12 : 12, 'hour'));
+        },
         today:            () => this.#setDate(moment()),
         clear:            () => this.#setDate(null),
         close:            () => this.hide(),
