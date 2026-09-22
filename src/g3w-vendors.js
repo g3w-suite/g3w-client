@@ -772,31 +772,34 @@ document.addEventListener('click', function(e) {
   };
 
   document.head.insertAdjacentHTML('beforeend', /* html */`<style id ="g3w-date-css">
-  .datetimepicker                                          { position: fixed; z-index: 1000; min-width: 160px; font-size: 14px; text-align: left; background-color: #fff; background-clip: padding-box; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 4px; border-color: #eee; margin: unset; inset: unset; position-area: bottom; padding: 4px; width: 19em; color: #000; }
-  .datetimepicker a[data-action]                           { display:inline-block; padding:6px 12px }
+  .datetimepicker                                          { position: fixed; z-index: 1000; min-width: min(260px, calc(100vw - 24px)); width: min(28rem, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow: auto; font-size: 14px; text-align: left; background-color: #fff; background-clip: padding-box; border: 1px solid rgba(0, 0, 0, .18); border-radius: 6px; margin: unset; inset: unset; position-area: bottom; position-try-fallbacks: flip-block; position-try-order: most-height; padding: 10px; color: #263238; box-shadow: 0 10px 28px rgba(0, 0, 0, .24); }
+  .datetimepicker a[data-action]                           { display:inline-block; padding:7px 12px; color: #607d8b; text-decoration: none; border-radius: 4px; }
+  .datetimepicker a[data-action]:hover,
+  .datetimepicker a[data-action]:focus-visible             { color: var(--skin-color); background: rgba(0, 0, 0, .06); outline: none; }
   .datetimepicker a[data-action]:active                    { box-shadow:none }
   .datetimepicker .picker-switch > a,
-  .datetimepicker .timepicker-picker a[data-action]        { font-size:1em; line-height:1 }
+  .datetimepicker .timepicker-picker a[data-action]        { font-size:1em; line-height:1; padding:6px 4px; }
   .datetimepicker .picker-switch > a[data-action="close"],
   .datetimepicker th:is(.prev, .next)                      { font-size:1.5em; line-height:1 }
   .datetimepicker .timepicker-hour,
   .datetimepicker .timepicker-minute,
   .datetimepicker .timepicker-second                       { width:54px; font-weight:700; font-size:1.2em; margin:0 }
   .datetimepicker button[data-action]                      { padding:6px }
-  .datetimepicker .picker-switch                           { text-align:center; padding:2px 0 }
+  .datetimepicker .picker-switch                           { text-align:center; padding:2px 0; font-weight: 700; }
   .datetimepicker .picker-switch a                         { min-width:34px; text-align:center }
   .datetimepicker table                                    { width:100%; margin:0 }
-  .datetimepicker :is(td, th)                              { text-align:center; border-radius:4px; height:20px; line-height:20px; width:20px; }
+  .datetimepicker :is(td, th)                              { text-align:center; border-radius:4px; height:34px; line-height:34px; width:34px; }
   .datetimepicker .disabled,
   .datetimepicker .disabled:hover                          { background:none; color:#777; cursor:not-allowed }
   .datetimepicker .prev:after                              { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0,0,0,0); border:0; content:"Previous Month" }
   .datetimepicker .next:after                              { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0,0,0,0); border:0; content:"Next Month" }
   .datetimepicker thead tr:first-child th                  { cursor:pointer }
-  .datetimepicker thead tr:first-child th:hover            { background:#eee }
-  .datetimepicker td                                       { height:54px; line-height:54px; width:54px }
-  .datetimepicker .day                                     { height:20px; line-height:20px; width:20px }
+  .datetimepicker thead tr:first-child th:hover,
+  .datetimepicker thead tr:first-child th:focus-visible    { background:#eef3f4; outline: none; }
+  .datetimepicker td                                       { height:42px; line-height:42px; width:42px }
+  .datetimepicker .day                                     { height:30px; line-height:30px; width:30px }
   .datetimepicker :is(.day, .hour, .minute, .second, span, .month, .year):hover { background:#eee; cursor:pointer }
-  .datetimepicker :is(.old, .new, .old)                    { color:#777 }
+  .datetimepicker :is(.old, .new)                          { color:#90a0a8 }
   .datetimepicker .today                                   { position:relative }
   .datetimepicker .today:before                            { content:""; display:inline-block; border:solid transparent; border-width:0 0 7px 7px; border-bottom-color:#337ab7; border-top-color:#0003; position:absolute; bottom:4px; right:4px }
   .datetimepicker .active,
@@ -805,7 +808,13 @@ document.addEventListener('click', function(e) {
   .datetimepicker .active                                  { background-color:#337ab7; color:#fff; text-shadow:0 -1px 0 rgba(0,0,0,.25) }
   .datetimepicker .active                                  { background-color: var(--skin-color); }
   .datetimepicker :is(.disabled, .disabled:hover)          { background:none; color:#777; cursor:not-allowed }
-  .datetimepicker span                                     { display:inline-block; width:54px; height:54px; line-height:54px; margin:2px 1.5px; cursor:pointer; border-radius:4px }
+  .datetimepicker span                                     { display:inline-block; width:42px; height:42px; line-height:42px; margin:2px 1.5px; cursor:pointer; border-radius:4px }
+  .datetimepicker :is(.day, .hour, .minute, .second, span, .month, .year):focus-visible { outline: 2px solid var(--skin-color); outline-offset: 1px; }
+  .datetimepicker .timepicker-picker                     { width: 100%; table-layout: fixed; margin-top: 6px; border-top: 1px solid #e6eaec; }
+  .datetimepicker .timepicker-picker td                   { width: auto; height: 30px; line-height: 30px; padding: 0 2px; }
+  .datetimepicker .timepicker-picker span                 { width: auto; min-width: 28px; height: 34px; line-height: 34px; font-weight: 700; }
+  .datetimepicker .timepicker-picker .separator           { width: 10px; padding: 0; }
+  .datetimepicker .timepicker-picker button               { min-width: 38px; padding: 6px 8px; }
   .datetimepicker .months                                  { display:none }
   .datetimepicker .month,
   .datetimepicker .year                                    { cursor:pointer }
