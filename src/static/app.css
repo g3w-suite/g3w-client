@@ -907,20 +907,10 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 [role="button"]                                                { cursor: pointer; }
 
 .input-group                                                   { position: relative; display: flex; }
-.input-group .form-control                                     { position: relative; z-index: 2; float: left; width: 100%; margin-bottom: 0; }
-.input-group .form-control:focus                               { z-index: 3; }
-
-.input-group .form-control                                     { display: table-cell; }
-.input-group-addon:not(:first-child):not(:last-child),
-.input-group .form-control:not(:first-child):not(:last-child)  { border-radius: 0; }
-.input-group-addon                                             { vertical-align: middle; padding: 6px 12px; font-size: 14px; font-weight: 400; line-height: 1; color: #555; text-align: center; background-color: #eee; border: 1px solid #ccc; border-radius: 4px; }
+.input-group .form-control                                     { position: relative; float: left; width: 100%; margin-bottom: 0; display: table-cell; }
 .input-group-addon input:is([type="radio"], [type="checkbox"]) { margin-top: 0; }
-.input-group .form-control:first-child,
-.input-group-addon:first-child                                 { border-top-right-radius: 0; border-bottom-right-radius: 0; }
-.input-group-addon:first-child                                 { border-right: 0; }
-.input-group .form-control:last-child,
-.input-group-addon:last-child                                  { border-top-left-radius: 0; border-bottom-left-radius: 0; }
-.input-group-addon:last-child                                  { border-left: 0; }
+.input-group .form-control,
+.input-group-addon                                             { padding: 9px 12px; font-size: 14px; font-weight: 400; line-height: 1; color: #555; text-align: center; background-color: #eee; border: 1px solid #ccc; border-radius: 4px; border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 0; border-radius: 0; border-color: #d2d6de; background-color: #fff; }
 
 .form-group                                     { margin-bottom: 15px; }
 .radio,
@@ -960,7 +950,6 @@ textarea.form-control                     { height: auto; }
 .form-control:-ms-input-placeholder,
 .form-control::-webkit-input-placeholder           { color: #bbb; opacity: 1; }
 .form-control:not(select)                          { appearance: none; }
-.input-group .input-group-addon                    { border-radius: 0; border-color: #d2d6de; background-color: #fff; }
 .icheck > label                                    { padding-left: 0; }
 
 .g3w_input_help                                    { font-weight: normal; text-align: justify; padding: 5px; border-radius: 3px; margin-top: 5px; }
@@ -1021,7 +1010,7 @@ textarea.form-control                     { height: auto; }
 .g3w-form .form-control.picklayerinput                           { cursor: pointer; }
 .g3w-form .photo-preview                                         { margin-bottom: 5px; max-width: 300px; margin-top: 5px; }
 
-.g3wform_body :is(.input-group-addon, .g3w-icon, .relation-editbtn),
+.g3wform_body :is(.g3w-icon, .relation-editbtn),
 :is(.g3w-form, .g3wform_footer) .btn-add,
 :is(.g3w-form, .g3wform_footer) .link,
 .g3wform_body form .box-primary                                         { border-top-color: var(--skin-color); }
