@@ -305,8 +305,11 @@ document.addEventListener('click', function(e) {
  */
 (function() {
   class DateTimePicker {
+    static #uid = 0;
+
     #element;
     #options;
+    #anchorName;
     #input;
     #component;
     #widget;
@@ -321,6 +324,7 @@ document.addEventListener('click', function(e) {
 
     constructor(element, options) {
       this.#element = element;
+      this.#anchorName = `--datetimepicker-${++DateTimePicker.#uid}`;
       this.#options = $.extend(true, {}, {
         format: false,
         minDate: false,
@@ -330,8 +334,6 @@ document.addEventListener('click', function(e) {
         defaultDate: false,
         disabledDates: false,
         enabledDates: false,
-        widgetPositioning: { horizontal: 'auto', vertical: 'auto' },
-        widgetParent: null,
         ignoreReadonly: false,
       }, options, $(element).data().dateOptions || {});
 
@@ -371,12 +373,10 @@ document.addEventListener('click', function(e) {
       this.#options.disabledDates = this.#indexDates(this.#options.disabledDates);
 
       // attach events
-      this.#input.addEventListener('change',  () => this.#setDate(this.#input.value));
-      this.#input.addEventListener('keydown', event => this.#onKeyDown(event));
-      this.#input.addEventListener('blur',    () => this.hide());
-      if (this.#element.matches('input')) {
-        this.#input.addEventListener('focus', () => this.#show());
-      }
+      this.#input.addEventListener('change',     () => this.#setDate(this.#input.value));
+      this.#input.addEventListener('keydown',     e => this.#onKeyDown(e));
+      this.#input.addEventListener('blur',       () => this.hide());
+      this.#input.addEventListener('focus',      () => this.#show());
       this.#component?.addEventListener('click', () => this.#widget ? this.hide() : this.#show());
 
       if (this.#input.value.trim()) {
@@ -432,31 +432,31 @@ document.addEventListener('click', function(e) {
     #buildWidget() {
       const widget = Object.assign(document.createElement('template'), {
         innerHTML: /* html */`
-          <div class = "datetimepicker bootstrap-datetimepicker-widget ${this.#use24Hours ? 'usetwentyfour' : ''}">
+          <div class = "datetimepicker ${this.#use24Hours ? 'usetwentyfour' : ''}" popover="manual">
             <div class = "picker-switch">
-              <a href = "#" data-action = "close"><span class = "glyphicon glyphicon-remove"></span></a>
+              <a href = "#" data-action = "close" aria-label = "Close">&times;</a>
             </div>
             ${this.#hasDate ? /* html */`
               <div class = "datepicker show-${this.#view}">
-                <div class = "datepicker-days">
-                  <table class = "table-condensed">
-                    <thead>
-                      <tr>
-                        <th class = "prev" data-action = "previous"><span class = "glyphicon glyphicon-chevron-left"></span></th>
-                        <th class = "picker-switch" data-action = "pickerSwitch" colspan = "5">${this.#viewDate.format('MMMM YYYY')}</th>
-                        <th class = "next" data-action = "next"><span class = "glyphicon glyphicon-chevron-right"></span></th>
-                      </tr>
-                      <tr>
-                        <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[0]}</th>
-                        <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[1]}</th>
-                        <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[2]}</th>
-                        <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[3]}</th>
-                        <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[4]}</th>
-                        <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[5]}</th>
-                        <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[6]}</th>
-                      </tr>
-                    </thead>
-                    <tbody>${Array.from({ length: 6 }, (_, week) => /* html */`
+                <table class = "datepicker-days">
+                  <thead>
+                    <tr>
+                      <th class = "prev" data-action = "previous" aria-label = "Previous month">&lsaquo;</th>
+                      <th class = "picker-switch" data-action = "pickerSwitch" colspan = "5">${this.#viewDate.format('MMMM YYYY')}</th>
+                      <th class = "next" data-action = "next" aria-label = "Next month">&rsaquo;</th>
+                    </tr>
+                    <tr>
+                      <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[0]}</th>
+                      <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[1]}</th>
+                      <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[2]}</th>
+                      <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[3]}</th>
+                      <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[4]}</th>
+                      <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[5]}</th>
+                      <th class = "dow">${this.#viewDate.localeData().weekdaysMin()[6]}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${Array.from({ length: 6 }, (_, week) => /* html */`
                       <tr>${Array.from({ length: 7 }, (_, day) => ((date) => /* html */`
                         <td
                           class = "${[
@@ -471,17 +471,19 @@ document.addEventListener('click', function(e) {
                           data-date = "${date.format('YYYY-MM-DD')}"
                         >${date.date()}</td>
                       `)(this.#viewDate.clone().startOf('month').startOf('week').add(week * 7 + day, 'day'))).join('')}</tr>
-                    `).join('')}</tbody>
-                  </table>
-                </div>
-                <div class = "datepicker-months">
-                  <table class = "table-condensed">
-                    <thead><tr>
-                      <th class = "prev" data-action = "previous"><span class = "glyphicon glyphicon-chevron-left"></span></th>
+                    `).join('')}
+                  </tbody>
+                </table>
+                <table class = "datepicker-months">
+                  <thead>
+                    <tr>
+                      <th class = "prev" data-action = "previous" aria-label = "Previous year">&lsaquo;</th>
                       <th class = "picker-switch" data-action = "pickerSwitch" colspan = "1">${this.#viewDate.format('YYYY')}</th>
-                      <th class = "next" data-action = "next"><span class = "glyphicon glyphicon-chevron-right"></span></th>
-                    </tr></thead>
-                    <tbody>${Array.from({ length: 4 }, (_, row) => /* html */`
+                      <th class = "next" data-action = "next" aria-label = "Next year">&rsaquo;</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${Array.from({ length: 4 }, (_, row) => /* html */`
                       <tr>${Array.from({ length: 3 }, (_, column) => ((month, index) => /* html */`
                         <td
                           class = "${[
@@ -493,17 +495,19 @@ document.addEventListener('click', function(e) {
                           data-month = "${index}"
                         >${month.format('MMM')}</td>
                       `)(this.#viewDate.clone().month(row * 3 + column), row * 3 + column)).join('')}</tr>
-                    `).join('')}</tbody>
-                  </table>
-                </div>
-                <div class = "datepicker-years">
-                  <table class = "table-condensed">
-                    <thead><tr>
-                      <th class = "prev" data-action = "previous"><span class = "glyphicon glyphicon-chevron-left"></span></th>
+                    `).join('')}
+                  </tbody>
+                </table>
+                <table class = "datepicker-years">
+                  <thead>
+                    <tr>
+                      <th class = "prev" data-action = "previous" aria-label = "Previous decade">&lsaquo;</th>
                       <th class = "picker-switch" colspan = "1">${this.#viewDate.clone().subtract(5, 'year').format('YYYY')}-${this.#viewDate.clone().add(6, 'year').format('YYYY')}</th>
-                      <th class = "next" data-action = "next"><span class = "glyphicon glyphicon-chevron-right"></span></th>
-                    </tr></thead>
-                    <tbody>${Array.from({ length: 4 }, (_, row) => /* html */`
+                      <th class = "next" data-action = "next" aria-label = "Next decade">&rsaquo;</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${Array.from({ length: 4 }, (_, row) => /* html */`
                       <tr>${Array.from({ length: 3 }, (_, column) => ((year) => /* html */`
                         <td
                           class = "year ${this.#date?.isSame(year, 'year') && 'active'}"
@@ -511,46 +515,44 @@ document.addEventListener('click', function(e) {
                           data-year = "${year.year()}"
                         >${year.format('YYYY')}</td>
                       `)(this.#viewDate.clone().subtract(5, 'year').add(row * 3 + column, 'year'))).join('')}</tr>
-                    `).join('')}</tbody>
-                  </table>
-                </div>
+                    `).join('')}
+                  </tbody>
+                </table>
               </div>
             ` : ''}
             ${this.#hasTime ? /* html */`
-              <div class = "timepicker">
-                <table class = "table-condensed timepicker-picker">
-                  <tr>
-                    <td><a href = "#" tabindex = "-1" data-action = "incrementHours"><span class = "glyphicon glyphicon-chevron-up"></span></a></td>
+              <table class = "timepicker-picker">
+                <tr>
+                  <td><a href = "#" tabindex = "-1" data-action = "incrementHours" aria-label = "Increment hours">&uarr;</a></td>
+                  <td class = "separator">:</td>
+                  <td><a href = "#" tabindex = "-1" data-action = "incrementMinutes" aria-label = "Increment minutes">&uarr;</a></td>
+                  ${/s/.test(this.#format) ? /* html */`
                     <td class = "separator">:</td>
-                    <td><a href = "#" tabindex = "-1" data-action = "incrementMinutes"><span class = "glyphicon glyphicon-chevron-up"></span></a></td>
-                    ${/s/.test(this.#format) ? /* html */`
-                      <td class = "separator">:</td>
-                      <td><a href = "#" tabindex = "-1" data-action = "incrementSeconds"><span class = "glyphicon glyphicon-chevron-up"></span></a></td>
-                    ` : ''}
-                  </tr>
-                  <tr>
-                    <td><span data-action = "showHours">${this.#date.format(this.#use24Hours ? 'HH' : 'hh')}</span></td>
+                    <td><a href = "#" tabindex = "-1" data-action = "incrementSeconds" aria-label = "Increment seconds">&uarr;</a></td>
+                  ` : ''}
+                </tr>
+                <tr>
+                  <td><span data-action = "showHours">${this.#date.format(this.#use24Hours ? 'HH' : 'hh')}</span></td>
+                  <td class = "separator">:</td>
+                  <td><span data-action = "showMinutes">${this.#date.format('mm')}</span></td>
+                  ${/s/.test(this.#format) ? /* html */`
                     <td class = "separator">:</td>
-                    <td><span data-action = "showMinutes">${this.#date.format('mm')}</span></td>
-                    ${/s/.test(this.#format) ? /* html */`
-                      <td class = "separator">:</td>
-                      <td><span data-action = "showSeconds">${this.#date.format('ss')}</span></td>
-                    ` : ''}
-                    ${!this.#use24Hours ? /* html */`
-                      <td><button class = "btn btn-primary" data-action = "togglePeriod">${this.#date.format('A')}</button></td>
-                    ` : ''}
-                  </tr>
-                  <tr>
-                    <td><a href = "#" tabindex = "-1" data-action = "decrementHours"><span class = "glyphicon glyphicon-chevron-down"></span></a></td>
+                    <td><span data-action = "showSeconds">${this.#date.format('ss')}</span></td>
+                  ` : ''}
+                  ${!this.#use24Hours ? /* html */`
+                    <td><button class = "btn btn-primary" data-action = "togglePeriod">${this.#date.format('A')}</button></td>
+                  ` : ''}
+                </tr>
+                <tr>
+                  <td><a href = "#" tabindex = "-1" data-action = "decrementHours" aria-label = "Decrement hours">&darr;</a></td>
+                  <td class = "separator">:</td>
+                  <td><a href = "#" tabindex = "-1" data-action = "decrementMinutes" aria-label = "Decrement minutes">&darr;</a></td>
+                  ${/s/.test(this.#format) ? /* html */`
                     <td class = "separator">:</td>
-                    <td><a href = "#" tabindex = "-1" data-action = "decrementMinutes"><span class = "glyphicon glyphicon-chevron-down"></span></a></td>
-                    ${/s/.test(this.#format) ? /* html */`
-                      <td class = "separator">:</td>
-                      <td><a href = "#" tabindex = "-1" data-action = "decrementSeconds"><span class = "glyphicon glyphicon-chevron-down"></span></a></td>
-                    ` : ''}
-                  </tr>
-                </table>
-              </div>
+                    <td><a href = "#" tabindex = "-1" data-action = "decrementSeconds" aria-label = "Decrement seconds">&darr;</a></td>
+                  ` : ''}
+                </tr>
+              </table>
             ` : ''}
           </div>
         `
@@ -647,30 +649,10 @@ document.addEventListener('click', function(e) {
       if (!this.#widget) {
         return;
       }
-      const parent = this.#options.widgetParent?.jquery ? this.#options.widgetParent[0] : this.#options.widgetParent || this.#element;
-      parent.append(this.#widget);
-      const anchor = this.#component || this.#element;
-      if (this.#options.widgetParent) {
-        this.#widget.classList.remove('top', 'pull-right');
-        this.#widget.classList.add('bottom');
-        this.#widget.style.inset = `${anchor.offsetHeight}px auto auto 0px`;
-        return;
-      }
-      const anchorRect = anchor.getBoundingClientRect();
-      const referenceRect = parent.getBoundingClientRect();
-      const vertical = this.#options.widgetPositioning.vertical === 'auto'
-        ? (anchorRect.bottom + this.#widget.offsetHeight > window.innerHeight && anchorRect.top > this.#widget.offsetHeight ? 'top' : 'bottom')
-        : this.#options.widgetPositioning.vertical;
-      const horizontal = this.#options.widgetPositioning.horizontal === 'auto'
-        ? (anchorRect.left + this.#widget.offsetWidth > window.innerWidth ? 'right' : 'left')
-        : this.#options.widgetPositioning.horizontal;
-      const top = anchorRect.top - referenceRect.top;
-      const left = parent === this.#element ? 0 : anchorRect.left - referenceRect.left;
-      this.#widget.classList.toggle('top', vertical === 'top');
-      this.#widget.classList.toggle('bottom', vertical !== 'top');
-      this.#widget.classList.toggle('pull-right', horizontal === 'right');
-      this.#widget.style.top = `${vertical === 'top' ? top - this.#widget.offsetHeight : top + anchorRect.height}px`;
-      this.#widget.style.left = `${horizontal === 'right' ? left + anchorRect.width - this.#widget.offsetWidth : left}px`;
+      this.#element.append(this.#widget);
+      this.#element.style.anchorName = this.#anchorName;
+      this.#widget.style.positionAnchor = this.#anchorName;
+      this.#widget.showPopover();
     }
 
     #setDate(value) {
@@ -720,7 +702,11 @@ document.addEventListener('click', function(e) {
 
     hide() {
       if (this.#widget) {
-        this.#widget.remove(); this.#widget = null;
+        if (this.#widget.matches(':popover-open')) {
+          this.#widget.hidePopover();
+        }
+        this.#widget.remove();
+        this.#widget = null;
         window.removeEventListener('resize', this.#bound.resize);
         document.removeEventListener('mousedown', this.#bound.documentClick);
         this.#trigger('dp.hide', { date: this.#date?.clone() || false });
@@ -779,103 +765,68 @@ document.addEventListener('click', function(e) {
   };
 
   document.head.insertAdjacentHTML('beforeend', /* html */`<style id ="g3w-date-css">
-  .box-header > .box-tools.pull-right .datetimepicker { right: 0; left: auto; }
-
-  .datetimepicker                                               { position: absolute; top: 100%; left: 0; z-index: 1000; display: none; float: left; min-width: 160px; padding: 5px 0; margin: 2px 0 0; font-size: 14px; text-align: left; list-style: none; background-color: #fff; background-clip: padding-box; border: 1px solid #ccc; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 4px; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175); }
-  .datetimepicker.pull-right                                    { right: 0; left: auto; }
-  .datetimepicker .divider                                      { height: 1px; margin: 9px 0; overflow: hidden; background-color: #e5e5e5; }
-  .datetimepicker > li > a                                      { display: block; padding: 3px 20px; clear: both; font-weight: 400; line-height: 1.42857143; color: #333; white-space: nowrap; }
-  .datetimepicker > li > a:is(:hover, :focus)                   { color: #262626; text-decoration: none; background-color: #f5f5f5; }
-  .datetimepicker > .active > a,
-  .datetimepicker > .active > a:is(:hover, :focus)              { color: #fff; text-decoration: none; background-color: #337ab7; outline: 0; }
-  .datetimepicker > .disabled > a,
-  .datetimepicker > .disabled > a:is(:hover, :focus)            { color: #777; }
-  .datetimepicker > .disabled > a:is(:hover, :focus)            { text-decoration: none; cursor: not-allowed; background-color: transparent; background-image: none; }
-  .open > .datetimepicker                                       { display: block; }
-  .pull-right > .datetimepicker                                 { right: 0; left: auto; }
-
-  .datetimepicker                                               { box-shadow: none; border-color: #eee; }
-  .datetimepicker > li > a                                      { color: #777; }
-  .datetimepicker > li > a:hover                                { background-color: #e1e3e9; color: #333; }
-  .datetimepicker > .divider                                    { background-color: #eee; }
-
-  .datetimepicker { list-style:none }
-  .datetimepicker { display:block; margin:2px 0; padding:4px; width:19em }
-  @media (min-width: 768px) { .datetimepicker.timepicker-sbs { width:38em } }
-  @media (min-width: 992px) { .datetimepicker.timepicker-sbs { width:38em } }
-  @media (min-width: 1200px) { .datetimepicke.timepicker-sbs { width:38em } }
-  .datetimepicker:before,
-  .datetimepicker:after { content:""; display:inline-block; position:absolute }
-  .datetimepicker.bottom:before { border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:7px solid #ccc; border-bottom-color:#0003; top:-7px; left:7px }
-  .datetimepicker.bottom:after { border-left:6px solid transparent; border-right:6px solid transparent; border-bottom:6px solid white; top:-6px; left:8px }
-  .datetimepicker.top:before { border-left:7px solid transparent; border-right:7px solid transparent; border-top:7px solid #ccc; border-top-color:#0003; bottom:-7px; left:6px }
-  .datetimepicker.top:after { border-left:6px solid transparent; border-right:6px solid transparent; border-top:6px solid white; bottom:-6px; left:7px }
-  .datetimepicker.pull-right:before { left:auto; right:6px }
-  .datetimepicker.pull-right:after { left:auto; right:7px }
-  .datetimepicker a[data-action] { display:inline-block; padding:6px 12px }
-  .datetimepicker a[data-action]:active { box-shadow:none }
+  .datetimepicker                                               { position: fixed; z-index: 1000; min-width: 160px; font-size: 14px; text-align: left; background-color: #fff; background-clip: padding-box; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 4px; border-color: #eee; margin: unset; inset: unset; position-area: bottom; padding: 4px; width: 19em; color: #000; }
+  .datetimepicker a[data-action]                                { display:inline-block; padding:6px 12px }
+  .datetimepicker a[data-action]:active                         { box-shadow:none }
+  .datetimepicker .picker-switch > a                            { font-size:1em; line-height:1 }
+  .datetimepicker .picker-switch > a[data-action="close"]       { font-size:1.5em; line-height:1 }
+  .datetimepicker table th:is(.prev, .next)                     { font-size:1.5em; line-height:1 }
+  .datetimepicker .timepicker-picker a[data-action]             { font-size:1em; line-height:1 }
   .datetimepicker .timepicker-hour,
   .datetimepicker .timepicker-minute,
-  .datetimepicker .timepicker-second { width:54px; font-weight:700; font-size:1.2em; margin:0 }
-  .datetimepicker button[data-action] { padding:6px }
-  .datetimepicker .picker-switch { text-align:center; padding:2px 0 }
-  .datetimepicker .picker-switch a { min-width:34px; text-align:center }
-  .datetimepicker table { width:100%; margin:0 }
+  .datetimepicker .timepicker-second                            { width:54px; font-weight:700; font-size:1.2em; margin:0 }
+  .datetimepicker button[data-action]                           { padding:6px }
+  .datetimepicker .picker-switch                                { text-align:center; padding:2px 0 }
+  .datetimepicker .picker-switch a                              { min-width:34px; text-align:center }
+  .datetimepicker table                                         { width:100%; margin:0 }
   .datetimepicker table td,
-  .datetimepicker table th { text-align:center; border-radius:4px }
-  .datetimepicker table th { height:20px; line-height:20px; width:20px }
-  .datetimepicker table th.picker-switch { width:145px }
+  .datetimepicker table th                                      { text-align:center; border-radius:4px }
+  .datetimepicker table th                                      { height:20px; line-height:20px; width:20px }
+  .datetimepicker table th.picker-switch                        { width:145px }
   .datetimepicker table th.disabled,
-  .datetimepicker table th.disabled:hover { background:none; color:#777; cursor:not-allowed }
-  .datetimepicker table th.prev:after { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0,0,0,0); border:0; content:"Previous Month" }
-  .datetimepicker table th.next:after { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0,0,0,0); border:0; content:"Next Month" }
-  .datetimepicker table thead tr:first-child th { cursor:pointer }
-  .datetimepicker table thead tr:first-child th:hover { background:#eee }
-  .datetimepicker table td { height:54px; line-height:54px; width:54px }
-  .datetimepicker table td.cw { font-size:.8em; height:20px; line-height:20px; color:#777 }
-  .datetimepicker table td.day { height:20px; line-height:20px; width:20px }
+  .datetimepicker table th.disabled:hover                       { background:none; color:#777; cursor:not-allowed }
+  .datetimepicker table th.prev:after                           { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0,0,0,0); border:0; content:"Previous Month" }
+  .datetimepicker table th.next:after                           { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0,0,0,0); border:0; content:"Next Month" }
+  .datetimepicker table thead tr:first-child th                 { cursor:pointer }
+  .datetimepicker table thead tr:first-child th:hover           { background:#eee }
+  .datetimepicker table td                                      { height:54px; line-height:54px; width:54px }
+  .datetimepicker table td.cw                                   { font-size:.8em; height:20px; line-height:20px; color:#777 }
+  .datetimepicker table td.day                                  { height:20px; line-height:20px; width:20px }
   .datetimepicker table td.day:hover,
   .datetimepicker table td.hour:hover,
   .datetimepicker table td.minute:hover,
-  .datetimepicker table td.second:hover { background:#eee; cursor:pointer }
+  .datetimepicker table td.second:hover                         { background:#eee; cursor:pointer }
   .datetimepicker table td.old,
-  .datetimepicker table td.new { color:#777 }
-  .datetimepicker table td.today { position:relative }
-  .datetimepicker table td.today:before { content:""; display:inline-block; border:solid transparent; border-width:0 0 7px 7px; border-bottom-color:#337ab7; border-top-color:#0003; position:absolute; bottom:4px; right:4px }
+  .datetimepicker table td.new                                  { color:#777 }
+  .datetimepicker table td.today                                { position:relative }
+  .datetimepicker table td.today:before                         { content:""; display:inline-block; border:solid transparent; border-width:0 0 7px 7px; border-bottom-color:#337ab7; border-top-color:#0003; position:absolute; bottom:4px; right:4px }
   .datetimepicker table td.active,
-  .datetimepicker table td.active:hover { background-color:#337ab7; color:#fff; text-shadow:0 -1px 0 rgba(0,0,0,.25) }
-  .datetimepicker table td.active.today:before { border-bottom-color:#fff }
+  .datetimepicker table td.active:hover                         { background-color:#337ab7; color:#fff; text-shadow:0 -1px 0 rgba(0,0,0,.25) }
+  .datetimepicker table td.active.today:before                  { border-bottom-color:#fff }
   .datetimepicker table td.disabled,
-  .datetimepicker table td.disabled:hover { background:none; color:#777; cursor:not-allowed }
-  .datetimepicker table td span { display:inline-block; width:54px; height:54px; line-height:54px; margin:2px 1.5px; cursor:pointer; border-radius:4px }
-  .datetimepicker table td span:hover { background:#eee }
-  .datetimepicker table td span.active { background-color:#337ab7; color:#fff; text-shadow:0 -1px 0 rgba(0,0,0,.25) }
-  .datetimepicker table td span.old { color:#777 }
+  .datetimepicker table td.disabled:hover                       { background:none; color:#777; cursor:not-allowed }
+  .datetimepicker table td span                                 { display:inline-block; width:54px; height:54px; line-height:54px; margin:2px 1.5px; cursor:pointer; border-radius:4px }
+  .datetimepicker table td span:hover                           { background:#eee }
+  .datetimepicker table td span.active                          { background-color:#337ab7; color:#fff; text-shadow:0 -1px 0 rgba(0,0,0,.25) }
+  .datetimepicker table td span.old                             { color:#777 }
   .datetimepicker table td span.disabled,
-  .datetimepicker table td span.disabled:hover { background:none; color:#777; cursor:not-allowed }
-  .datetimepicker .datepicker-months { display:none }
-  .datetimepicker .datepicker-months .month { cursor:pointer }
-  .datetimepicker .datepicker-months .month:hover { background:#eee; cursor:pointer }
+  .datetimepicker table td span.disabled:hover                  { background:none; color:#777; cursor:not-allowed }
+  .datetimepicker .datepicker-months                            { display:none }
+  .datetimepicker .datepicker-months .month                     { cursor:pointer }
+  .datetimepicker .datepicker-months .month:hover               { background:#eee; cursor:pointer }
   .datetimepicker .datepicker-months .month.active,
-  .datetimepicker .datepicker-months .month.active:hover { background-color:#337ab7; color:#fff; text-shadow:0 -1px 0 rgba(0,0,0,.25) }
-  .datetimepicker .datepicker.show-months .datepicker-days { display:none }
-  .datetimepicker .datepicker.show-months .datepicker-months { display:block }
-  .datetimepicker .datepicker-years { display:none }
-  .datetimepicker .datepicker-years .year { cursor:pointer }
-  .datetimepicker .datepicker-years .year:hover { background:#eee; cursor:pointer }
+  .datetimepicker .datepicker-months .month.active:hover        { background-color:#337ab7; color:#fff; text-shadow:0 -1px 0 rgba(0,0,0,.25) }
+  .datetimepicker .datepicker.show-months .datepicker-days      { display:none }
+  .datetimepicker .datepicker.show-months .datepicker-months    { display:table }
+  .datetimepicker .datepicker-years                             { display:none }
+  .datetimepicker .datepicker-years .year                       { cursor:pointer }
+  .datetimepicker .datepicker-years .year:hover                 { background:#eee; cursor:pointer }
   .datetimepicker .datepicker-years .year.active,
-  .datetimepicker .datepicker-years .year.active:hover { background-color:#337ab7; color:#fff; text-shadow:0 -1px 0 rgba(0,0,0,.25) }
+  .datetimepicker .datepicker-years .year.active:hover          { background-color:#337ab7; color:#fff; text-shadow:0 -1px 0 rgba(0,0,0,.25) }
   .datetimepicker .datepicker.show-years .datepicker-days,
-  .datetimepicker .datepicker.show-years .datepicker-months { display:none }
-  .datetimepicker .datepicker.show-years .datepicker-years { display:block }
-  .datetimepicker.usetwentyfour td.hour { height:27px; line-height:27px }
-  .datetimepicker .datepicker-decades .decade { line-height:1.8em!important }
-  .input-group.date .input-group-addon { cursor:pointer }
-
-  .datetimepicker a > span:is(.glyphicon-remove, .glyphicon-time, .glyphicon-calendar, .glyphicon-chevron-up, .glyphicon-chevron-down) { color: var(--skin-color); }
-  .datetimepicker .datepicker .active                      { background-color: var(--skin-color); }
-  .datetimepicker                            { color: #000; white-space: normal !important; }
-  .datetimepicker:after,
-  .datetimepicker:before                     { content: none !important; }
+  .datetimepicker .datepicker.show-years .datepicker-months     { display:none }
+  .datetimepicker .datepicker.show-years .datepicker-years      { display:table }
+  .datetimepicker.usetwentyfour td.hour                         { height:27px; line-height:27px }
+  .datetimepicker .datepicker-decades .decade                   { line-height:1.8em!important }
   </style>`);
 })();

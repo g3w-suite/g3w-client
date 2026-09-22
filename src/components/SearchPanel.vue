@@ -124,7 +124,7 @@
             </label>
             <div :ref = "'date_' + input.id" class = "input-group date">
               <input :id = "input.id" type = 'text' class = "form-control" />
-              <span class = "input-group-addon skin-color">
+              <span class = "input-group-addon skin-color" style="cursor:pointer;">
                 <span :class = "input.options.format.time ? 'far fa-clock': 'fas fa-calendar-alt'"></span>
               </span>
             </div>
@@ -414,12 +414,9 @@
         input.options.format.displayformat = convertQGISDateTimeFormatToMoment(input.options.format.displayformat);
 
         $(this.$refs[`date_${input.id}`]).datetimepicker({
-          defaultDate:       null,
-          format:            input.options.format.displayformat,
-          ignoreReadonly:    true,
-          toolbarPlacement:  'top',
-          widgetPositioning: { vertical: 'bottom', horizontal: 'left' },
-          locale:            ApplicationState.language || 'en',
+          format:         input.options.format.displayformat,
+          ignoreReadonly: true,
+          locale:         ApplicationState.language || 'en',
         });
 
         $(this.$refs[`date_${input.id}`]).on("dp.change", () => {

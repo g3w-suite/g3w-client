@@ -907,17 +907,14 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 
 [role="button"]                                                { cursor: pointer; }
 
-.input-group                                                   { position: relative; display: table; border-collapse: separate; }
-.input-group[class*="col-"]                                    { float: none; padding-right: 0; padding-left: 0; }
+.input-group                                                   { position: relative; display: flex; }
 .input-group .form-control                                     { position: relative; z-index: 2; float: left; width: 100%; margin-bottom: 0; }
 .input-group .form-control:focus                               { z-index: 3; }
 
-.input-group-addon,
 .input-group .form-control                                     { display: table-cell; }
 .input-group-addon:not(:first-child):not(:last-child),
 .input-group .form-control:not(:first-child):not(:last-child)  { border-radius: 0; }
-.input-group-addon                                             { width: 1%; white-space: nowrap; vertical-align: middle; }
-.input-group-addon                                             { padding: 6px 12px; font-size: 14px; font-weight: 400; line-height: 1; color: #555; text-align: center; background-color: #eee; border: 1px solid #ccc; border-radius: 4px; }
+.input-group-addon                                             { vertical-align: middle; padding: 6px 12px; font-size: 14px; font-weight: 400; line-height: 1; color: #555; text-align: center; background-color: #eee; border: 1px solid #ccc; border-radius: 4px; }
 .input-group-addon input:is([type="radio"], [type="checkbox"]) { margin-top: 0; }
 .input-group .form-control:first-child,
 .input-group-addon:first-child                                 { border-top-right-radius: 0; border-bottom-right-radius: 0; }
