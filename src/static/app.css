@@ -157,7 +157,6 @@ dialog form                                 { padding: 14px; }
 .collapse                   { display: none; }
 .collapse.in                { display: block; }
 .collapsing                 { position: relative; height: 0; overflow: hidden; transition-property: height, visibility; transition-duration: 0.35s; transition-timing-function: ease; }
-.caret                      { display: inline-block; width: 0; height: 0; margin-left: 2px; vertical-align: middle; border-top: 4px dashed; border-top: 4px solid \9; border-right: 4px solid transparent; border-left: 4px solid transparent; }
 
 .label                      { display: inline; padding: 0.2em 0.6em 0.3em; font-size: 75%; font-weight: 700; line-height: 1; color: #fff; text-align: center; white-space: nowrap; vertical-align: baseline; border-radius: 0.25em; }
 a.label:is(:hover, :focus)  { color: #fff; text-decoration: none; cursor: pointer; }

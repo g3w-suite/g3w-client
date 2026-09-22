@@ -115,7 +115,7 @@ Vue.component('datetime', {
       <div class = "form-group">
         <div class = 'input-group date' ref = "iddatetimepicker">
           <input :id = "id" ref = "idinputdatetimepiker" type = 'text' @change = "changeInput" class = "form-control" />
-          <span class = "input-group-addon caret" style="cursor:pointer;">
+          <span class = "input-group-addon" style="cursor:pointer;">
             <span class  = "datetimeinput" :class = "g3wtemplate.getFontClass('time' === type ? 'time': 'calendar')"></span>
           </span>
         </div>
