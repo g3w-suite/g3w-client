@@ -347,7 +347,6 @@ document.addEventListener('click', function(e) {
       this.#viewDate  = moment().locale(this.#options.locale);
       this.#bound     = {
         documentClick: event => this.#onDocumentClick(event),
-        resize:        () => this.#place(),
       };
 
       if (!this.#input) {
@@ -568,13 +567,15 @@ document.addEventListener('click', function(e) {
     }
 
     #render() {
-      if (!this.#widget) {
-        return;
+      if (this.#widget) {
+        const replacement = this.#buildWidget();
+        this.#widget.replaceWith(replacement);
+        this.#widget = replacement;
+        this.#element.append(this.#widget);
+        this.#element.style.anchorName    = this.#anchorName;
+        this.#widget.style.positionAnchor = this.#anchorName;
+        this.#widget.showPopover();
       }
-      const replacement = this.#buildWidget();
-      this.#widget.replaceWith(replacement);
-      this.#widget = replacement;
-      this.#place();
     }
 
     #onWidgetClick(event) {
@@ -653,16 +654,6 @@ document.addEventListener('click', function(e) {
       }
     }
 
-    #place() {
-      if (!this.#widget) {
-        return;
-      }
-      this.#element.append(this.#widget);
-      this.#element.style.anchorName = this.#anchorName;
-      this.#widget.style.positionAnchor = this.#anchorName;
-      this.#widget.showPopover();
-    }
-
     #setDate(value) {
       const date    = this.#parseDate(value);
       const oldDate = this.#date?.clone() || false;
@@ -701,8 +692,10 @@ document.addEventListener('click', function(e) {
         this.#setDate(date);
       }
       this.#widget = this.#buildWidget();
-      this.#place();
-      window.addEventListener('resize', this.#bound.resize);
+      this.#element.append(this.#widget);
+      this.#element.style.anchorName    = this.#anchorName;
+      this.#widget.style.positionAnchor = this.#anchorName;
+      this.#widget.showPopover();
       document.addEventListener('mousedown', this.#bound.documentClick);
       this.#trigger('show');
       return this;
@@ -715,7 +708,6 @@ document.addEventListener('click', function(e) {
         }
         this.#widget.remove();
         this.#widget = null;
-        window.removeEventListener('resize', this.#bound.resize);
         document.removeEventListener('mousedown', this.#bound.documentClick);
         this.#trigger('hide', { date: this.#date?.clone() || false });
       }
