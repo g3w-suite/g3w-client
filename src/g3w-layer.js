@@ -3130,11 +3130,11 @@ export class Layer extends Emitter {
 
     /** @since 4.3.0 WMTS Layer from qgis layer setting */
     else if ('WMTS' === this.config.type && this.config.wmtscapabilities) {
-      const { format, grids } = this.config.wmtscapabilities;
-      const projection       = ApplicationState.projections.set(`${grids?.at(0)?.crs ?? 'EPSG:3857'}`);
-      const projectionExtent = projection.getExtent();
-      const size             = ol.extent.getWidth(projectionExtent) / 256;
-      const resolutions      = Array.from({ length: grids?.at?.(0)?.levels ?? 18 }, (_, z) => size / Math.pow(2, z));;
+      const { formats, grids } = this.config.wmtscapabilities;
+      const projection         = ApplicationState.projections.set(`${grids?.at(0)?.crs ?? 'EPSG:3857'}`);
+      const projectionExtent   = projection.getExtent();
+      const size               = ol.extent.getWidth(projectionExtent) / 256;
+      const resolutions        = Array.from({ length: grids?.at?.(0)?.levels ?? 18 }, (_, z) => size / Math.pow(2, z));;
       olLayer = new ol.layer.Tile({
         source: new ol.source.WMTS({
           url:             this.state.url,
@@ -3142,7 +3142,7 @@ export class Layer extends Emitter {
           layer:           this.config.name,
           matrixSet:       `${grids?.at?.(0)?.crs ?? 'EPSG:3857'}`,
           transparent:     false,
-          format:          format?.at?.(0) ?? 'image/png',
+          format:          formats?.at?.(0) ?? 'image/png',
           style:           'default',
           tileGrid: new ol.tilegrid.WMTS({
             origin:      ol.extent.getTopLeft(projectionExtent),
