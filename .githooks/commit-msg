@@ -12,6 +12,11 @@ if echo "$commit_msg" | grep -qEq "^Merge branch '|^Revert \""; then
     exit 0
 fi
 
+# Bypass npm version messages
+if echo "$commit_msg" | grep -qE '^v?[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$'; then
+    exit 0
+fi
+
 # Check for Conventional Commits
 if ! echo "$commit_msg" | grep -Eq "$REGEXP"; then
     echo "❌ ERROR: Commit message does not follow Conventional Commits standard!"

@@ -15,7 +15,7 @@ let conf = {
    * @deprecated since 4.1.0, use index.dev.js instead.
    */
   devConfig() {
-    if (g3wsdk.version.version.localeCompare('4.1.0', undefined, { numeric: true }) < 0) {
+    if (g3wsdk.version.localeCompare('4.1.0', undefined, { numeric: true }) < 0) {
       g3wsdk.core.ApplicationService.once('ready', () => { });
       g3wsdk.core.ApplicationService.once('initconfig', () => {
         initConfig.group.plugins = Object.assign(initConfig.group.plugins || {}, conf.plugins.reduce((a, v) => ({ ...a, [v]: { ...initConfig.group.plugins[v], gid: initConfig.group.initproject, baseUrl: initConfig.staticurl }}), {}));
