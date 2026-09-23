@@ -10,7 +10,7 @@ let conf = {
     // "your-plugin-folder-name-2",
     // "your-plugin-folder-name-3",
   ],
-  proxy:                  'https://dev.g3wsuite.it/',                       // remote server url to be proxied
+  proxy:                  'https://v311.g3wsuite.it/',                       // remote server url to be proxied
   /**
    * @deprecated since 4.1.0, use index.dev.js instead.
    */

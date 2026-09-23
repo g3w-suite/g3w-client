@@ -9,7 +9,7 @@ const fs           = require('fs');
 const packageJSON  = require('../../package.json');
 const conf         = require('../../config');
 
-const SERVER_URL = 'https://dev.g3wsuite.it/';
+const SERVER_URL = 'https://v311.g3wsuite.it/';
 
 console.log(conf);
 
