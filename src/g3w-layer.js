@@ -132,7 +132,7 @@ export class Layer extends Emitter {
       config = {
         id:         `layer_${layer.getMultiLayerId()}`,
         /** @since 4.3.0 */
-        name:       layer.getName(),
+        name:       layer.getWMSLayerName(),
         projection: ApplicationState.project.getProjection(),
         format:     layer.getFormat(),
         ...(
