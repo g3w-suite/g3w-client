@@ -3295,16 +3295,16 @@ export class Layer extends Emitter {
           || (/^(Polygon|MultiPolygon)/.test(this.getGeometryType()) && { stroke: new ol.style.Stroke({ color: '#000', width: 1 }), fill: new ol.style.Fill({ color: this.getColor() }) })
         ),
       });
-    }
 
-    /** @TODO check if deprecated */
-    else if ('vector' === this.getType() && 'G3WSUITE geojson' === `${this.state.servertype} ${this.state.source?.type}`) {
-      XHR.get({ url: this.get('source').url }).then(d => {
-        olLayer.getSource().addFeatures((new ol.format.GeoJSON()).readFeatures(d.results, {
-          featureProjection: this.getProjection().getCode(),
-          dataProjection:    'EPSG:4326',
-        }));
-      });
+      /** @TODO check if deprecated */
+      if ('G3WSUITE geojson' === `${this.state.servertype} ${this.state.source?.type}`) {
+        XHR.get({ url: this.get('source').url }).then(d => {
+          olLayer.getSource().addFeatures((new ol.format.GeoJSON()).readFeatures(d.results, {
+            featureProjection: this.getProjection().getCode(),
+            dataProjection:    'EPSG:4326',
+          }));
+        });
+      }
     }
 
     // WMS LAYER
