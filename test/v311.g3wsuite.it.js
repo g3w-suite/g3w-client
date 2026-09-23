@@ -9,7 +9,7 @@ const path         = require('path');
 const packageJSON  = require('../package.json');
 const conf         = require('../config');
 
-const SERVER_URL = 'https://311.g3wsuite.it/';
+const SERVER_URL = 'https://v311.g3wsuite.it/';
 
 // run tests in sequential order
 [
