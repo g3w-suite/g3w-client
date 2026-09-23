@@ -781,11 +781,6 @@ export default new (class GUI extends Emitter {
     return window.initConfig.staticurl + window.initConfig.client;
   }
 
-  getMediaUrl() {
-    return window.initConfig.mediaUrl;
-  }
-
-
   /**
    * Called by `getData` (output)
    * 
