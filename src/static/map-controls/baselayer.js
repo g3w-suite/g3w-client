@@ -119,7 +119,7 @@ class BaseLayerControl extends ol.control.Control {
     const baseLayer = this.layers.find(l => layerId === l.getId())?.state;
     // NB: custom icons are stored in media url (by django)
     if (baseLayer?.icon) {
-      return `${window.initConfig.mediaUrl}${baseLayer.icon}`;
+      return `${window.initConfig.mediaurl}${baseLayer.icon}`;
     }
     if (!baseLayer) {
       return `${GUI.getResourcesUrl()}images/nobaselayer.png`;
