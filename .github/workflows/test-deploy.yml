@@ -1,4 +1,4 @@
-name: Test deploy (dev.g3wsuite.it)
+name: Test deploy (v311.g3wsuite.it)
 on:
   push:
     branches:
@@ -44,4 +44,4 @@ jobs:
         run: npm run build:ci
 
       - name: Run tests
-        run: node test/dev.g3wsuite.it.js
+        run: node test/v311.g3wsuite.it.js
