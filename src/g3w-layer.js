@@ -131,7 +131,7 @@ export class Layer extends Emitter {
               type:
                 (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms') && 'XYZ') ||  // TMS Layer   (cached)
                 (layer.isCached() && 'wmts' === layer.state.cache_service_type && 'WMTS')          ||  // WMTS Layer  (cached)
-                (layer.state?.ows.includes('WMTS') && layer.state?.wmtscapabilities && 'WMTS')     ||  /** @since 4.3.0 WMS Layer qgis project*/
+                (layer.state?.ows?.includes('WMTS') && layer.state?.wmtscapabilities && 'WMTS')     ||  /** @since 4.3.0 WMS Layer qgis project*/
                 (layer.isExternalWMS() && "wmst" === layer.state?.source?.type && 'WMTS')          ||  // WMS-T Layer (external)
                 layer.state.type || null,
               url:               layer.isCached()      ? layer.getCacheUrl() : layer.getWmsUrl(),
