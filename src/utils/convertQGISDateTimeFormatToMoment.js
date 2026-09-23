@@ -6,7 +6,7 @@
  * @returns {*}
  */
 export function convertQGISDateTimeFormatToMoment(datetimeformat) {
-  datetimeformat = datetimeformat.replace(/y/g, 'Y');
-  if (datetimeformat.match(/d/g)?.length < 3) { datetimeformat = datetimeformat.replace(/d/g, 'D'); }
-  return datetimeformat;
+  return datetimeformat
+    .replace(/y/g, 'Y')
+    .replace(/\bd{1,2}\b/g, match => match.toUpperCase());
 }
