@@ -3134,16 +3134,15 @@ export class Layer extends Emitter {
       const projection       = ApplicationState.projections.set(`${grids?.at(0)?.crs ?? 'EPSG:3857'}`);
       const projectionExtent = projection.getExtent();
       const size             = ol.extent.getWidth(projectionExtent) / 256;
-      const resolutions      = Array.from({ length: grids?.at(0)?.levels ?? 18 }, (_, z) => size / Math.pow(2, z));;
+      const resolutions      = Array.from({ length: grids?.at?.(0)?.levels ?? 18 }, (_, z) => size / Math.pow(2, z));;
       olLayer = new ol.layer.Tile({
-        opacity: this.state.matrixSet ? .7 : 1,
         source: new ol.source.WMTS({
           url:             this.state.url,
           projection,
           layer:           this.config.name,
-          matrixSet:       `${grids?.at(0)?.crs ?? 'EPSG:3857'}`,
+          matrixSet:       `${grids?.at?.(0)?.crs ?? 'EPSG:3857'}`,
           transparent:     false,
-          format:          format?.at(0) ?? 'image/png',
+          format:          format?.at?.(0) ?? 'image/png',
           style:           'default',
           tileGrid: new ol.tilegrid.WMTS({
             origin:      ol.extent.getTopLeft(projectionExtent),
