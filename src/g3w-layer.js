@@ -3128,12 +3128,10 @@ export class Layer extends Emitter {
       });
     }
 
-    //WMTS Layer from qgis layer setting
+    /** @since 4.3.0 WMTS Layer from qgis layer setting */
     else if ('WMTS' === this.config.type && this.config.wmtscapabilities) {
       const { format, grids } = this.config.wmtscapabilities;
-      /** @TODO check if epsg exist otherwise get */
-      const projection       = ol.proj.get(`${grids?.at(0)?.crs ?? 'EPSG:3857'}`);
-      
+      const projection       = ApplicationState.projections.set(`${grids?.at(0)?.crs ?? 'EPSG:3857'}`);
       const projectionExtent = projection.getExtent();
       const size             = ol.extent.getWidth(projectionExtent) / 256;
       const resolutions      = Array.from({ length: grids?.at(0)?.levels ?? 18 }, (_, z) => size / Math.pow(2, z));;
