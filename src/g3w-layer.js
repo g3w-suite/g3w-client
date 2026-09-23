@@ -3275,36 +3275,6 @@ export class Layer extends Emitter {
       });
     }
 
-    // WMS LAYER
-    else if (this.isMulti() && !olLayer) {
-      olLayer = new ol.layer.Image({
-        id:            this.state.id,
-        name:          undefined,
-        opacity:       this.state.opacity ?? 1.0,
-        source:        new ol.source.ImageWMS({
-          ratio:      1,
-          url:        this.layers[0]?.getWmsUrl ? this.layers[0].getWmsUrl() : this.state.url,
-          projection: this.state.projection ? this.state.projection.getCode() : null,
-          params:     {
-            ...Object.fromEntries(
-              Object.entries({
-                DPI:         DOTS_PER_INCH,
-                TRANSPARENT: true,
-                FORMAT:      !(('WMS' === this.config.servertype && 'image' === this.getType()) || ('WMTS' === this.config.type && 'mapproxy' !== this.state.cache_provider)) ? this.state.format : undefined,
-                LAYERS:       (withLayers ? this.layers.map(l => l.getWMSLayerName()) : this.layers) ?? '',
-                VERSION:     '1.3.0',
-                SLD_VERSION: '1.1.0',
-              })
-              // prevents sending "FORMAT" parameter when undefined
-              .filter(([key, val]) => ('FORMAT' !== key ? true : undefined !== val))
-          ),
-          ...(this.state.http_params)
-          },
-          imageLoadFunction: ((ApplicationState.iframe && !this.isExternalWMS()) || 'POST' === this.state.http_method) ? this.#fetchTile.bind(this) : undefined,
-        })
-      });
-    }
-
     // VECTOR LAYER
     else if ('vector' === this.getType()) {
       const style = 'G3WSUITE geojson' === `${this.state.servertype} ${this.state.source?.type}` ? this.state.style : (this.state?.editing?.style ?? this.getCustomStyle());
@@ -3334,6 +3304,36 @@ export class Layer extends Emitter {
           featureProjection: this.getProjection().getCode(),
           dataProjection:    'EPSG:4326',
         }));
+      });
+    }
+
+    // WMS LAYER
+    if (this.isMulti() && !olLayer) {
+      olLayer = new ol.layer.Image({
+        id:            this.state.id,
+        name:          undefined,
+        opacity:       this.state.opacity ?? 1.0,
+        source:        new ol.source.ImageWMS({
+          ratio:      1,
+          url:        this.layers[0]?.getWmsUrl ? this.layers[0].getWmsUrl() : this.state.url,
+          projection: this.state.projection ? this.state.projection.getCode() : null,
+          params:     {
+            ...Object.fromEntries(
+              Object.entries({
+                DPI:         DOTS_PER_INCH,
+                TRANSPARENT: true,
+                FORMAT:      !(('WMS' === this.config.servertype && 'image' === this.getType()) || ('WMTS' === this.config.type && 'mapproxy' !== this.state.cache_provider)) ? this.state.format : undefined,
+                LAYERS:       (withLayers ? this.layers.map(l => l.getWMSLayerName()) : this.layers) ?? '',
+                VERSION:     '1.3.0',
+                SLD_VERSION: '1.1.0',
+              })
+              // prevents sending "FORMAT" parameter when undefined
+              .filter(([key, val]) => ('FORMAT' !== key ? true : undefined !== val))
+          ),
+          ...(this.state.http_params)
+          },
+          imageLoadFunction: ((ApplicationState.iframe && !this.isExternalWMS()) || 'POST' === this.state.http_method) ? this.#fetchTile.bind(this) : undefined,
+        })
       });
     }
 
