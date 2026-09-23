@@ -416,7 +416,7 @@ g3w.app.onafter('showPanel', panel => {
  */
 g3w.app.onafter('addActionsForLayers', (actions, layers) => {
   Object.keys(actions)
-  .filter(id => layers.find(l => id === l.id).editable)
+  .filter(id => layers.find(l => id === l.id)?.editable)
   .forEach(id => {
     //Check only if has primay key value to ge unique feature to edit
     const pkField = g3w.app.getPlugin('editing').getEditingFields(id).find(f => f.pk);
@@ -536,6 +536,9 @@ g3w.app.once('after:setupControls', () => {
                 const OUTPUT                      = document.querySelector('#response');
                 const g3w                         = IFRAME.g3w;
                 const { ApplicationState }        = IFRAME.g3wsdk.core;
+
+                const { waitFor }                 = IFRAME.g3wsdk.core.utils;
+
                 const { GEOMETRY_FIELDS,G3W_FID } = IFRAME.g3wsdk.constant;
                 const { GUI }                     = IFRAME.g3wsdk.gui;
                 const { ol }                      = IFRAME;
@@ -631,9 +634,11 @@ g3w.app.once('after:setupControls', () => {
                   if ('app:ready' !== message.data?.action) {
                     return;
                   }
+                  await waitFor(() => GUI.getPlugin('editing')?.isReady?.());
                   const layers = (message.data?.response?.data?.layers || []);
+                  console.log(layers)
                   layers
-                    .filter(l  => ApplicationState.project.getLayerById(l.id).isEditable())
+                    .filter(l  => GUI.getPlugin('editing')?.getLayerById(l.id))
                     .forEach(l => layerId.appendChild(Object.assign(document.createElement('option'), { value: l.id, text: l.id })));
                   // initial value
                   if (layers.length) {

@@ -7,16 +7,6 @@
   <baseinput :state = "state">
     <div slot = "body" ref = "datetimepicker_body">
 
-      <div
-        ref    = "datimewidget_container"
-        :style = "{
-          top:      widget_container.top + 'px',
-          left:     widget_container.left + 'px',
-          position: 'fixed',
-          zIndex:   10000,
-        }"
-      ></div>
-
       <div class = 'input-group date' :id = 'iddatetimepicker' v-disabled = "!editable">
         <input
           type      = 'text'
@@ -26,7 +16,7 @@
           :class    = "{'input-error-validation' : notvalid}"
           class     = "form-control"
         />
-        <span class = "input-group-addon caret">
+        <span class = "input-group-addon" style="cursor:pointer;">
           <span :class = "[ timeOnly() ? 'far fa-clock' : 'fas fa-calendar-alt' ]"></span>
         </span>
       </div>
@@ -54,7 +44,6 @@ export default {
   data() {
     const uniqueValue = getUniqueDomId();
     return {
-      widget_container:     { top: 0, left: 0 },
       iddatetimepicker:     `datetimepicker_${uniqueValue}`,
       idinputdatetimepiker: `inputdatetimepicker_${uniqueValue}`,
     }
@@ -88,17 +77,7 @@ export default {
      * @since 3.8.0
      */
     onDatePickerShow(evt) {
-      // reset positions
-      this.widget_container.top  = 0;
-      this.widget_container.left = 0;
-      // wait until widget is present in DOM  
-      setTimeout(() => {
-        const container            = this.$refs.datetimepicker_body.getBoundingClientRect();
-        const modal                = this.$refs.datimewidget_container.querySelector('.bootstrap-datetimepicker-widget').getBoundingClientRect();
-        this.widget_container.top  = container.top  + (container.top < modal.height ? container.height + Math.abs(container.top - modal.height) + 20 : 0); // 20 = padding
-        this.widget_container.left = container.left - Math.max(container.width, modal.width);
-        this.$emit('datetimepickershow');
-      });
+      this.$emit('datetimepickershow');
     },
 
     /**
@@ -125,11 +104,6 @@ export default {
 
   async mounted() {
     const {
-      formats = [],
-      layout  = { vertical: "top", horizontal: "left"}
-    } = this.state.input.options;
-
-    const {
       minDate,
       maxDate,
       fieldformat,
@@ -137,7 +111,7 @@ export default {
       disabledDates,
       displayformat,
       useCurrent
-    } = formats[0];
+    } = (this.state.input.options.formats || [])[0];
 
     await this.$nextTick();
 
@@ -158,14 +132,6 @@ export default {
       defaultDate:       date,
       format:            this.datetimedisplayformat,
       ignoreReadonly:    true,
-      allowInputToggle:  true,
-      toolbarPlacement: 'top',
-      widgetParent:      $(this.$refs.datimewidget_container),
-      widgetPositioning: {
-        vertical:   layout.vertical   || 'top',
-        horizontal: layout.horizontal || 'left'
-      },
-      showClose:         true,
       locale:            this.service.getLocale(),
       enabledDates,
       disabledDates,
