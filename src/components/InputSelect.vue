@@ -59,7 +59,7 @@
         </option>
 
         <option
-          v-for  = "({ key, value }) in state.input.options.values"
+          v-for  = "({ key, value }) in state.input.options.values" :key = "value"
           :value = "getValue(value)">
             {{ key }}
         </option>
