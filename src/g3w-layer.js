@@ -1351,7 +1351,7 @@ export class Layer extends Emitter {
       'QGIS delimitedtext',
       'QGIS wfs',
     ].includes(layerType)) {
-      response = await this.#getFeaturesQGIS({ editing: false }, {
+      response = await this.#getFeaturesQGIS({
         ...custom_params,
         field,
         page,
@@ -1930,15 +1930,10 @@ export class Layer extends Emitter {
 
   }
 
-  /** Load editing features (Read / Write) */
-  async #getFeaturesQGIS(options = {}, params = {}) {
+  /** Load features (Read / Write) for filter (queryby), query */
+  async #getFeaturesQGIS(params = {}) {
     // filter null values
     Object.entries(params).forEach(([key, value]) => { if ([null, undefined].includes(value)) { delete params[key]; } });
-
-    // editing mode
-    if (options.editing) {
-      return await GUI.getPlugin('editing').fetchVectorData(this, options, params);
-    }
 
     // read mode
     const response = await XHR.post({
@@ -2167,6 +2162,7 @@ export class Layer extends Emitter {
    * @returns provider by type
    */
   getProvider(type) {
+    console.log(type)
     if (this.#providers[type]) {
       return this.#providers[type]; 
     }
@@ -2176,23 +2172,6 @@ export class Layer extends Emitter {
       query:       () => [],
       getFeatures: (() => console.log('overwriteby single provider')),
     };
-
-    // QGIS - raw layer data (editing)
-    if ([
-      'data QGIS virtual',       'search QGIS virtual',            'filtertoken QGIS virtual',
-      'data QGIS postgres',      'search QGIS postgres',           'filtertoken QGIS postgres',
-      'data QGIS oracle',        'search QGIS oracle',             'filtertoken QGIS oracle',
-      'data QGIS mssql',         'search QGIS mssql',              'filtertoken QGIS mssql',
-      'data QGIS spatialite',    'search QGIS spatialite',         'filtertoken QGIS spatialite',
-      'data QGIS ogr',           'search QGIS ogr',                'filtertoken QGIS ogr',
-      'data QGIS delimitedtext', 'search QGIS delimitedtext',      'filtertoken QGIS delimitedtext',
-      'data QGIS wfs',           'search QGIS wfs',
-                                 'search QGIS arcgisfeatureserver'
-    ].includes(providerType)) {
-      provider.getFeatures = this.#getFeaturesQGIS.bind(this);
-      provider.query       = this.#queryQGIS.bind(this);
-      provider.getConfig   = () => XHR.get({ url: this.getUrl('config') });
-    }
 
     // GEOJSON
     if (['data G3WSUITE geojson', 'query G3WSUITE geojson'].includes(providerType)) {
