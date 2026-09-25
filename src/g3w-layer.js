@@ -143,7 +143,7 @@ export class Layer extends Emitter {
               cache_grid:        layer.state.cache_grid,
               cache_grid_extent: layer.state.cache_grid_extent,
               /** @since 4.3.0 */
-              wmtscapabilities: layer.state?.wmtscapabilities,
+              wmtscapabilities:  layer.state?.wmtscapabilities ?? {},
             }
         ),
         /** @since 4.1.1 */
@@ -3047,7 +3047,7 @@ export class Layer extends Emitter {
     }
 
     // BASE LAYER: "Bing Road", "Bing Aerial", "Bing Aerial (with labels)"
-    else if ('Bing' === this.config.servertype && 'image' === this.getType()) {
+    if ('Bing' === this.config.servertype && 'image' === this.getType()) {
       const name = ({
         streets:          'Road',
         aerial:           'Aerial',
@@ -3063,7 +3063,7 @@ export class Layer extends Emitter {
     }
 
     // ARCGIS LAYER
-    else if (('ARCGISMAPSERVER' === this.config.servertype || this.isArcgisMapserver()) && ('image' === this.getType() || this.isMulti())) {
+    if (('ARCGISMAPSERVER' === this.config.servertype || this.isArcgisMapserver()) && ('image' === this.getType() || this.isMulti())) {
       olLayer = new ol.layer.Tile({
         extent:  this.state.extent,
         visible: this.state.visible ?? true,
@@ -3077,7 +3077,7 @@ export class Layer extends Emitter {
     }
 
     // TMS LAYER (XYZ)
-    else if (this.isXYZ() || ('TMS' === this.config.servertype && 'image' === this.getType())) {
+    if (this.isXYZ() || ('TMS' === this.config.servertype && 'image' === this.getType())) {
       let projection;
       
       if (this.isXYZ()) {
@@ -3107,9 +3107,9 @@ export class Layer extends Emitter {
     }
 
     /** @since 4.3.0 WMTS Layer from qgis layer setting */
-    else if ('WMTS' === this.config.type && this.config.wmtscapabilities) {
+    if ('WMTS' === this.config.type && Object.entries(this.config.wmtscapabilities ?? {}).length > 0) {
       const { formats, grids } = this.config.wmtscapabilities;
-      const projection         = ApplicationState.projections.set(`${grids?.at(0)?.crs ?? 'EPSG:3857'}`);
+      const projection         = ol.proj.get(`${grids?.at(0)?.crs }`) ?? ApplicationState.project.getProjection();
       const projectionExtent   = projection.getExtent();
       const size               = ol.extent.getWidth(projectionExtent) / 256;
       const resolutions        = Array.from({ length: grids?.at?.(0)?.levels ?? 18 }, (_, z) => size / Math.pow(2, z));;
@@ -3131,7 +3131,7 @@ export class Layer extends Emitter {
       });
     }
     // WMTS LAYER servertype
-    else if ('WMTS' === this.config.servertype && 'image' === this.getType()) {
+    if ('WMTS' === this.config.servertype && 0 === Object.entries(this.config.wmtscapabilities ?? {}).length && 'image' === this.getType()) {
       let resolutions, projection = this.state.projection;
 
       if (!projection) {
@@ -3168,7 +3168,7 @@ export class Layer extends Emitter {
       });
     }
     // WMTS LAYER (with mapproxy)
-    else if ('WMTS' === this.state.type && 'mapproxy' === this.state.cache_provider) {
+    if ('WMTS' === this.state.type && 'mapproxy' === this.state.cache_provider) {
       const resolutions = ol.tilegrid.createXYZ({ extent: this.state.cache_grid_extent }).getResolutions();
       olLayer = new ol.layer.Tile({
         source: new ol.source.WMTS({
@@ -3185,7 +3185,7 @@ export class Layer extends Emitter {
     }
 
     // WMTS LAYER
-    else if ('WMTS' === this.config.type && 'mapproxy' !== this.state.cache_provider) {
+    if ('WMTS' === this.config.type && 0 === Object.entries(this.config.wmtscapabilities ?? {}).length && 'mapproxy' !== this.state.cache_provider ) {
       olLayer = new ol.layer.Tile({
         id:            this.state.id,
         name:          undefined,
@@ -3215,7 +3215,7 @@ export class Layer extends Emitter {
     }
 
     // WMS LAYER
-    else if ('WMS' === this.config.servertype && 'image' === this.getType()) {
+    if ('WMS' === this.config.servertype && 'image' === this.getType()) {
       this.state.crs.epsg = this.state.crs.epsg ? this.state.crs.epsg : 'EPSG:3857';
       let projection = ApplicationState.projections.get(this.state.crs);
       olLayer = new ol.layer.Image({
@@ -3251,7 +3251,7 @@ export class Layer extends Emitter {
     }
 
     // VECTOR LAYER
-    else if ('vector' === this.getType()) {
+    if ('vector' === this.getType()) {
       const style = 'G3WSUITE geojson' === `${this.state.servertype} ${this.state.source?.type}` ? this.state.style : (this.state?.editing?.style ?? this.getCustomStyle());
 
       olLayer = new ol.layer.Vector({
