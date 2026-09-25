@@ -2162,7 +2162,6 @@ export class Layer extends Emitter {
    * @returns provider by type
    */
   getProvider(type) {
-    console.log(type)
     if (this.#providers[type]) {
       return this.#providers[type]; 
     }
