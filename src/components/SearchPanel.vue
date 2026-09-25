@@ -253,7 +253,7 @@
         //@since v4.0 reset all form values after clear
         this.state.forminputs.forEach(i => {
           if (['selectfield','autocompletefield'].includes(i.type)) {
-            i.value = 'in' === i.operator ? [i.values[0].value] : i.values[0].value; //set all or first value
+            i.value = 'in' === i.operator ? [i.values?.[0]?.value] : i.values?.[0]?.value; //set all or first value
           } else {
             i.value = null;
           }
@@ -307,10 +307,11 @@
 
           /** @TODO check if it has one reason to trim  */
           if (!['textfield', 'textField'].includes(input.type)) {
-            value = Array.isArray(value) ? value.map(v => v.trim()) : value.trim();
+            value = Array.isArray(value) ? value.map(v => v?.trim?.()) : value?.trim?.();
           }
 
-          input.value = value;
+          //in case of undefined or null, set to null
+          input.value = value ?? null;
 
           // loop and update dependants
           await (Promise.allSettled(deps.map(async d => {

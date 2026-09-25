@@ -120,31 +120,36 @@ export class Layer extends Emitter {
       const layer = config;
       config = {
         id:         `layer_${layer.getMultiLayerId()}`,
+        /** @since 4.3.0 */
+        name:       layer.getWMSLayerName(),
         projection: ApplicationState.project.getProjection(),
         format:     layer.getFormat(),
         ...(
           layer.isExternalWMS() && "arcgismapserver" === layer.state?.source?.type
           ? layer.state.source                                                                       // ARCGIS Layer (external)
           : {
-            type:
-              (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms') && 'XYZ') ||  // TMS Layer   (cached)
-              (layer.isCached() && 'wmts' === layer.state.cache_service_type && 'WMTS') ||           // WMTS Layer  (cached)
-              (layer.isExternalWMS() && "wmst" === layer.state?.source?.type && 'WMTS') ||           // WMS-T Layer (external)
-              layer.state.type || null,
-            url:               layer.isCached()      ? layer.getCacheUrl() : layer.getWmsUrl(),
-            http_method:       layer.isExternalWMS() ? 'GET'               : layer.getOwsMethod(),
-            extent:            (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms') && (layer.state.bbox ? [layer.state.bbox.minx, layer.state.bbox.miny, layer.state.bbox.maxx, layer.state.bbox.maxy] : null)) || layer.state.extent,
-            cache_provider:    layer.state.cache_provider,
-            cache_layer:       layer.state.cache_layer,
-            cache_extent:      layer.state.cache_extent,
-            cache_grid:        layer.state.cache_grid,
-            cache_grid_extent: layer.state.cache_grid_extent,
-          }
+              type:
+                (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms') && 'XYZ') ||  // TMS Layer   (cached)
+                (layer.isCached() && 'wmts' === layer.state.cache_service_type && 'WMTS')          ||  // WMTS Layer  (cached)
+                (layer.state?.ows?.includes('WMTS') && layer.state?.wmtscapabilities && 'WMTS')     ||  /** @since 4.3.0 WMS Layer qgis project*/
+                (layer.isExternalWMS() && "wmst" === layer.state?.source?.type && 'WMTS')          ||  // WMS-T Layer (external)
+                layer.state.type || null,
+              url:               layer.isCached()      ? layer.getCacheUrl() : layer.getWmsUrl(),
+              http_method:       layer.isExternalWMS() ? 'GET'               : layer.getOwsMethod(),
+              extent:            (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms') && (layer.state.bbox ? [layer.state.bbox.minx, layer.state.bbox.miny, layer.state.bbox.maxx, layer.state.bbox.maxy] : null)) || layer.state.extent,
+              cache_provider:    layer.state.cache_provider,
+              cache_layer:       layer.state.cache_layer,
+              cache_extent:      layer.state.cache_extent,
+              cache_grid:        layer.state.cache_grid,
+              cache_grid_extent: layer.state.cache_grid_extent,
+              /** @since 4.3.0 */
+              wmtscapabilities:  layer.state?.wmtscapabilities ?? {},
+            }
         ),
         /** @since 4.1.1 */
-        servertype: layer.state.servertype,
+        servertype:       layer.state.servertype,
         /** @since 4.1.1 */
-        source:     layer.state.source,
+        source:           layer.state.source,
       };
     }
 
@@ -152,7 +157,6 @@ export class Layer extends Emitter {
 
     // Check Layer Type
     if (!options.TYPE) {
-
       // TABLE LAYERS
       if ('NoGeometry' === config.geometrytype && [
         "QGIS virtual",
@@ -360,7 +364,7 @@ export class Layer extends Emitter {
 
       /** @since 4.0.0 */
       ows_method: config.ows_method,
-   
+
       /** @type {number} opacity range = [0, 100] (since 3.8) */
       opacity: config.opacity ?? 100,
 
@@ -1347,7 +1351,7 @@ export class Layer extends Emitter {
       'QGIS delimitedtext',
       'QGIS wfs',
     ].includes(layerType)) {
-      response = await this.#getFeaturesQGIS({ editing: false }, {
+      response = await this.#getFeaturesQGIS({
         ...custom_params,
         field,
         page,
@@ -1926,15 +1930,10 @@ export class Layer extends Emitter {
 
   }
 
-  /** Load editing features (Read / Write) */
-  async #getFeaturesQGIS(options = {}, params = {}) {
+  /** Load features (Read / Write) for filter (queryby), query */
+  async #getFeaturesQGIS(params = {}) {
     // filter null values
     Object.entries(params).forEach(([key, value]) => { if ([null, undefined].includes(value)) { delete params[key]; } });
-
-    // editing mode
-    if (options.editing) {
-      return await GUI.getPlugin('editing').fetchVectorData(this, options, params);
-    }
 
     // read mode
     const response = await XHR.post({
@@ -2172,23 +2171,6 @@ export class Layer extends Emitter {
       query:       () => [],
       getFeatures: (() => console.log('overwriteby single provider')),
     };
-
-    // QGIS - raw layer data (editing)
-    if ([
-      'data QGIS virtual',       'search QGIS virtual',            'filtertoken QGIS virtual',
-      'data QGIS postgres',      'search QGIS postgres',           'filtertoken QGIS postgres',
-      'data QGIS oracle',        'search QGIS oracle',             'filtertoken QGIS oracle',
-      'data QGIS mssql',         'search QGIS mssql',              'filtertoken QGIS mssql',
-      'data QGIS spatialite',    'search QGIS spatialite',         'filtertoken QGIS spatialite',
-      'data QGIS ogr',           'search QGIS ogr',                'filtertoken QGIS ogr',
-      'data QGIS delimitedtext', 'search QGIS delimitedtext',      'filtertoken QGIS delimitedtext',
-      'data QGIS wfs',           'search QGIS wfs',
-                                 'search QGIS arcgisfeatureserver'
-    ].includes(providerType)) {
-      provider.getFeatures = this.#getFeaturesQGIS.bind(this);
-      provider.query       = this.#queryQGIS.bind(this);
-      provider.getConfig   = () => XHR.get({ url: this.getUrl('config') });
-    }
 
     // GEOJSON
     if (['data G3WSUITE geojson', 'query G3WSUITE geojson'].includes(providerType)) {
@@ -3124,8 +3106,32 @@ export class Layer extends Emitter {
       });
     }
 
-    // WMTS LAYER
-    if ('WMTS' === this.config.servertype && 'image' === this.getType()) {
+    /** @since 4.3.0 WMTS Layer from qgis layer setting */
+    if ('WMTS' === this.config.type && Object.entries(this.config.wmtscapabilities ?? {}).length > 0) {
+      const { formats, grids } = this.config.wmtscapabilities;
+      const projection         = ol.proj.get(`${grids?.at(0)?.crs }`) ?? ApplicationState.project.getProjection();
+      const projectionExtent   = projection.getExtent();
+      const size               = ol.extent.getWidth(projectionExtent) / 256;
+      const resolutions        = Array.from({ length: grids?.at?.(0)?.levels ?? 18 }, (_, z) => size / Math.pow(2, z));;
+      olLayer = new ol.layer.Tile({
+        source: new ol.source.WMTS({
+          url:             this.state.url,
+          projection,
+          layer:           this.config.name,
+          matrixSet:       `${grids?.at?.(0)?.crs ?? 'EPSG:3857'}`,
+          transparent:     false,
+          format:          formats?.at?.(0) ?? 'image/png',
+          style:           'default',
+          tileGrid: new ol.tilegrid.WMTS({
+            origin:      ol.extent.getTopLeft(projectionExtent),
+            resolutions,
+            matrixIds: resolutions.map((_, z) => z),
+          }),
+        })
+      });
+    }
+    // WMTS LAYER servertype
+    if ('WMTS' === this.config.servertype && 0 === Object.entries(this.config.wmtscapabilities ?? {}).length && 'image' === this.getType()) {
       let resolutions, projection = this.state.projection;
 
       if (!projection) {
@@ -3161,7 +3167,6 @@ export class Layer extends Emitter {
         })
       });
     }
-
     // WMTS LAYER (with mapproxy)
     if ('WMTS' === this.state.type && 'mapproxy' === this.state.cache_provider) {
       const resolutions = ol.tilegrid.createXYZ({ extent: this.state.cache_grid_extent }).getResolutions();
@@ -3180,7 +3185,7 @@ export class Layer extends Emitter {
     }
 
     // WMTS LAYER
-    if ('WMTS' === this.config.type && 'mapproxy' !== this.state.cache_provider) {
+    if ('WMTS' === this.config.type && 0 === Object.entries(this.config.wmtscapabilities ?? {}).length && 'mapproxy' !== this.state.cache_provider ) {
       olLayer = new ol.layer.Tile({
         id:            this.state.id,
         name:          undefined,
@@ -3245,6 +3250,38 @@ export class Layer extends Emitter {
       });
     }
 
+    // VECTOR LAYER
+    if ('vector' === this.getType()) {
+      const style = 'G3WSUITE geojson' === `${this.state.servertype} ${this.state.source?.type}` ? this.state.style : (this.state?.editing?.style ?? this.getCustomStyle());
+
+      olLayer = new ol.layer.Vector({
+        id:             this.getId(),
+        __g3w_editable: this.isEditable(), //@since 3.11.0 is a attribute to specify if layer OL is editable or not for G3W-SUITE
+        source:         new ol.source.Vector({ features: new ol.Collection() }),
+        opacity:        !style && /^(Polygon|MultiPolygon)/.test(this.getGeometryType()) ? 0.6 : 1,
+        style:          new ol.style.Style(
+          (style && Object.entries(style || {}).reduce((styles, [type, config]) => Object.assign(styles, {
+            image:  'point'   === type && config.icon ? new ol.style.Icon({ src: config.icon.url, imageSize: config.icon.width }) : undefined,
+            stroke: 'line'    === type                ? new ol.style.Stroke({ color: config.color, width: config.width })         : undefined,
+            fill:   'polygon' === type                ? new ol.style.Fill({ color: config.color })                                : undefined,
+          }), {}))
+          || (/^(Point|MultiPoint)/.test(this.getGeometryType())     && { image: new ol.style.Circle({ fill: new ol.style.Fill({ color: this.getColor() }), radius: 5, })})
+          || (/^(Line|MultiLine)/.test(this.getGeometryType())       && { stroke: new ol.style.Stroke({ color: this.getColor(), width: 3 }) })
+          || (/^(Polygon|MultiPolygon)/.test(this.getGeometryType()) && { stroke: new ol.style.Stroke({ color: '#000', width: 1 }), fill: new ol.style.Fill({ color: this.getColor() }) })
+        ),
+      });
+
+      /** @TODO check if deprecated */
+      if ('G3WSUITE geojson' === `${this.state.servertype} ${this.state.source?.type}`) {
+        XHR.get({ url: this.get('source').url }).then(d => {
+          olLayer.getSource().addFeatures((new ol.format.GeoJSON()).readFeatures(d.results, {
+            featureProjection: this.getProjection().getCode(),
+            dataProjection:    'EPSG:4326',
+          }));
+        });
+      }
+    }
+
     // WMS LAYER
     if (this.isMulti() && !olLayer) {
       olLayer = new ol.layer.Image({
@@ -3272,38 +3309,6 @@ export class Layer extends Emitter {
           },
           imageLoadFunction: ((ApplicationState.iframe && !this.isExternalWMS()) || 'POST' === this.state.http_method) ? this.#fetchTile.bind(this) : undefined,
         })
-      });
-    }
-
-    // VECTOR LAYER
-    if ('vector' === this.getType()) {
-      const style = 'G3WSUITE geojson' === `${this.state.servertype} ${this.state.source?.type}` ? this.state.style : (this.state?.editing?.style ?? this.getCustomStyle());
-
-      olLayer = new ol.layer.Vector({
-        id:             this.getId(),
-        __g3w_editable: this.isEditable(), //@since 3.11.0 is a attribute to specify if layer OL is editable or not for G3W-SUITE
-        source:         new ol.source.Vector({ features: new ol.Collection() }),
-        opacity:        !style && /^(Polygon|MultiPolygon)/.test(this.getGeometryType()) ? 0.6 : 1,
-        style:          new ol.style.Style(
-          (style && Object.entries(style || {}).reduce((styles, [type, config]) => Object.assign(styles, {
-            image:  'point'   === type && config.icon ? new ol.style.Icon({ src: config.icon.url, imageSize: config.icon.width }) : undefined,
-            stroke: 'line'    === type                ? new ol.style.Stroke({ color: config.color, width: config.width })         : undefined,
-            fill:   'polygon' === type                ? new ol.style.Fill({ color: config.color })                                : undefined,
-          }), {}))
-          || (/^(Point|MultiPoint)/.test(this.getGeometryType())     && { image: new ol.style.Circle({ fill: new ol.style.Fill({ color: this.getColor() }), radius: 5, })})
-          || (/^(Line|MultiLine)/.test(this.getGeometryType())       && { stroke: new ol.style.Stroke({ color: this.getColor(), width: 3 }) })
-          || (/^(Polygon|MultiPolygon)/.test(this.getGeometryType()) && { stroke: new ol.style.Stroke({ color: '#000', width: 1 }), fill: new ol.style.Fill({ color: this.getColor() }) })
-        ),
-      });
-    }
-
-    /** @TODO check if deprecated */
-    if ('vector' === this.getType() && 'G3WSUITE geojson' === `${this.state.servertype} ${this.state.source?.type}`) {
-      XHR.get({ url: this.get('source').url }).then(d => {
-        olLayer.getSource().addFeatures((new ol.format.GeoJSON()).readFeatures(d.results, {
-          featureProjection: this.getProjection().getCode(),
-          dataProjection:    'EPSG:4326',
-        }));
       });
     }
 
