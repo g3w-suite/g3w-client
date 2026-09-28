@@ -124,8 +124,8 @@ class XSelect extends HTMLElement {
   static observedAttributes = ['disabled', 'search-placeholder'];
 
   attributeChangedCallback(attr) {
-    // make reactive: "disabled" attribute
-    if ('disabled' === attr) {
+    // make reactive: "disabled" attribute and need to check if container is initialized
+    if ('disabled' === attr && this.container) {
       this.#onDisabled()
     }
     // make reactive: "search-placeholder" attribute
@@ -252,9 +252,9 @@ class XSelect extends HTMLElement {
 
   disconnectedCallback() {
     document.removeEventListener('pointerup', this._onClickOutside);
-    window.removeEventListener('scroll', this._onPageScroll, true);
-    window.removeEventListener('resize', this._onPageResize);
-    window.removeEventListener('keydown', this._onPageKeyDown);
+    window.removeEventListener('scroll',      this._onPageScroll, true);
+    window.removeEventListener('resize',      this._onPageResize);
+    window.removeEventListener('keydown',     this._onPageKeyDown);
     this.observer?.disconnect();
     this.langWatcher();
   }
