@@ -564,13 +564,6 @@
         }
         this.closeMenu();
       },
-
-      /**
-       * @since 4.1.0
-       */
-      editableGeometryLayers() {
-        return Object.values(GUI.getPlugin('editing')?.getEditableLayers() || {}).filter(l => l.isGeoLayer());
-      },
       
       /**
        * @TODO refactor this, almost the same as: `CatalogTree.vue::canZoom(layer))`
