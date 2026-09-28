@@ -817,24 +817,6 @@ export default new (class GUI extends Emitter {
     this.setLoadingContent(this.showData.reqs.length > 0);
   }
 
-  showForm(opts = {}) {
-    const { FormComponent } = require('components/g3w-form');
-    // new instance every time
-    const formComponent = opts.formComponent ? new opts.formComponent(opts) : new FormComponent(opts);
-    this.setContent({
-      perc:       opts.perc,
-      //@since 4.1.0 used instead crumb
-      title:      formComponent?.layer?.getName?.(),
-      content:    formComponent,
-      split:      undefined !== opts.split ? opts.split : 'h',
-      push:       !!opts.push, //only one (if other deletes previous component)
-      showgoback: !!opts.showgoback,
-      closable:   false
-    });
-    // return service
-    return formComponent.getService();
-  }
-
   /**
    *
    * @param pop remove or not content or pop

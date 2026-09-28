@@ -83,7 +83,6 @@ import { gettext as _ }                            from 'g3w-i18n';
 import { Plugin, PluginService }                   from 'g3w-plugin';
 import MapControl                                  from 'g3w-control';
 import { SearchPanel }                             from 'components/g3w-search';
-import { FormComponent, FormService }              from 'components/g3w-form';
 
 //Inputs
 import InputCheckbox                               from 'components/InputCheckbox.vue';
@@ -348,7 +347,6 @@ globalThis.g3wsdk = {
       Component,
       Panel,
       SearchPanel,
-      FormComponent,
       Inputs: {
         G3wFormInputs,
         G3WInput,
@@ -375,9 +373,6 @@ globalThis.g3wsdk = {
       },
       Fields,
       Mixins,
-      services: {
-        FormService
-      }
     }
   },
 

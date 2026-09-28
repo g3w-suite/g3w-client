@@ -1644,15 +1644,6 @@ export class Layer extends Emitter {
   }
 
   /**
-   * Used by the following plugins "geonotes"
-   * 
-   * @returns {*} origin name
-   */
-  getOrigName() {
-    return this.state.origname;
-  }
-
-  /**
    * @returns { string } Server type
    */
   getServerType() {
@@ -3003,19 +2994,6 @@ export class Layer extends Emitter {
     if (this.isRaster() && this.isWMS()) {
       this.update(mapState, params);
     }
-  }
-
-  /**
-   * Used by the following plugins "iternet", "geonotes"
-   * 
-   * ORIGINAL SOURCE: src/map/layers/vectorlayer.js@v4.0.0
-   * ORIGINAL SOURCE: src/map/layers/imagelayer.js@v4.0.0
-   *
-   * @since 4.1.0
-   */
-  getMapLayer() {
-    console.warn('[G3W-LAYER] getMapLayer is depecrated');
-    return this;
   }
 
   /**
