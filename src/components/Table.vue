@@ -273,7 +273,7 @@ export default {
   methods: {
     
     /**
-     * @since 4.3.0 
+     * @since 4.2.0 
      * @param action 
      * @param feature 
      */
@@ -282,7 +282,7 @@ export default {
     },
     
     /**
-     * @since 4.3.0
+     * @since 4.2.0
      * @param action run Cbk action
      * @param feature 
      * @param action

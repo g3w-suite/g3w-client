@@ -120,7 +120,7 @@ export class Layer extends Emitter {
       const layer = config;
       config = {
         id:         `layer_${layer.getMultiLayerId()}`,
-        /** @since 4.3.0 */
+        /** @since 4.2.0 */
         name:       layer.getWMSLayerName(),
         projection: ApplicationState.project.getProjection(),
         format:     layer.getFormat(),
@@ -131,7 +131,7 @@ export class Layer extends Emitter {
               type:
                 (layer.isCached() && 'tms' === (layer.state.cache_service_type || 'tms') && 'XYZ') ||  // TMS Layer   (cached)
                 (layer.isCached() && 'wmts' === layer.state.cache_service_type && 'WMTS')          ||  // WMTS Layer  (cached)
-                (layer.state?.ows?.includes('WMTS') && layer.state?.wmtscapabilities && 'WMTS')     ||  /** @since 4.3.0 WMS Layer qgis project*/
+                (layer.state?.ows?.includes('WMTS') && layer.state?.wmtscapabilities && 'WMTS')     ||  /** @since 4.2.0 WMS Layer qgis project*/
                 (layer.isExternalWMS() && "wmst" === layer.state?.source?.type && 'WMTS')          ||  // WMS-T Layer (external)
                 layer.state.type || null,
               url:               layer.isCached()      ? layer.getCacheUrl() : layer.getWmsUrl(),
@@ -142,7 +142,7 @@ export class Layer extends Emitter {
               cache_extent:      layer.state.cache_extent,
               cache_grid:        layer.state.cache_grid,
               cache_grid_extent: layer.state.cache_grid_extent,
-              /** @since 4.3.0 */
+              /** @since 4.2.0 */
               wmtscapabilities:  layer.state?.wmtscapabilities ?? {},
             }
         ),
@@ -3106,7 +3106,7 @@ export class Layer extends Emitter {
       });
     }
 
-    /** @since 4.3.0 WMTS Layer from qgis layer setting */
+    /** @since 4.2.0 WMTS Layer from qgis layer setting */
     if ('WMTS' === this.config.type && Object.entries(this.config.wmtscapabilities ?? {}).length > 0) {
       const { formats, grids } = this.config.wmtscapabilities;
       const projection         = ol.proj.get(`${grids?.at(0)?.crs }`) ?? ApplicationState.project.getProjection();
