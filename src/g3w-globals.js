@@ -70,7 +70,6 @@ import { toRawType }                               from 'utils/toRawType';
 import { throttle }                                from 'utils/throttle';
 import { debounce }                                from 'utils/debounce';
 import { XHR }                                     from 'utils/XHR';
-import { createFilterFormInputs }                  from 'utils/createFilterFormInputs';
 import { getCatalogLayerById }                     from 'utils/getCatalogLayerById';
 import { getCatalogLayers }                        from 'utils/getCatalogLayers';
 import { cloneDeep }                               from 'utils/cloneDeep';
@@ -203,7 +202,6 @@ globalThis.g3wsdk = {
       throttle,
       debounce,
       toRawType,
-      createFilterFormInputs,
       noop,
       waitFor,
       cloneDeep
