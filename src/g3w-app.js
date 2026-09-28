@@ -4421,9 +4421,13 @@ export default new (class GUI extends Emitter {
       view:                new ol.View({
         padding,
         extent,
-        projection:    this.getProjection(),
-        center:        ol.extent.getCenter(initextent),
-        resolution:    Math.max(ol.extent.getWidth(initextent) / width, ol.extent.getHeight(initextent) / height), // max(xInitRes, yInitRes)
+        /**@since 4.3.0 set center constraint */
+        constrainOnlyCenter: true,
+        projection:          this.getProjection(),
+        center:              ol.extent.getCenter(initextent),
+        resolution:          Math.max(ol.extent.getWidth(initextent) / width, ol.extent.getHeight(initextent) / height), // max(xInitRes, yInitRes)
+        /**@since 4.3.0 set max resolution */
+        maxResolution:       Math.max(ol.extent.getWidth(extent) / width, ol.extent.getHeight(extent) / height),
       }),
     });
 
