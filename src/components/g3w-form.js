@@ -157,8 +157,10 @@ async function getFilterExpression({
         field.value = values.find(({ key }) => key == field.value)?.value ?? field.value;
       }
 
+      // In case of multi values, avoid to add {1,2,3,} value
       // see: https://github.com/g3w-suite/g3w-client/pull/843
-      if (field.value && !values.find(({ value }) => value == field.value)) {
+      // see: https://github.com/g3w-suite/g3w-client/pull/984
+      if (field.value &&  !(field.input.options.allowmulti && /^\{.*\}$/.test(`${field.value}`)) && !values.find(({ value }) => value == field.value)) {
         values.unshift({ key: `(${field.value})`, value: field.value, });
       }
 
