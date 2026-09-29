@@ -289,7 +289,7 @@
        * @since 3.9.0
        */
       showTools() {
-        return [!!this.isEditable, !!this.form_structure, !!this.table.features?.some(f => f.geometry)].filter(Boolean).length;
+        return [!!this.layer.isEditable(), !!this.form_structure, !!this.table.features?.some(f => f.geometry)].filter(Boolean).length;
       },
 
       /**
@@ -325,15 +325,6 @@
        */
       columns() {
         return this.layer.getTableHeaders();
-      },
-
-      /**
-       * @returns { boolean } whether relation layer is editable
-       * 
-       * @since 4.1.0 
-       */
-      isEditable() {
-        return this.layer.isEditable() && !this.layer.isInEditing();
       },
 
       /**
