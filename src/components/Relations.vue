@@ -130,26 +130,13 @@
                 v-if  = "showTools"
                 class = "table-tools"
               >
-                <span
-                  v-if           = "table.features[i].geometry"
-                  @click.stop    = "zoomToGeometry(table.features[i].geometry)"
-                  class          = "action-button row-form skin-color fas fa-map-marker-alt"
-                  title          = "Zoom to Geometry"
+                <span v-for = "action in getFeatureActions(feature)" :key = "action.id"
+                  @click.stop    = "runAction(action, i)"
+                  :title         = "action.hint"
                   data-placement = "right"
-                ></span>
-                <span
-                  v-if           = "form_structure"
-                  @click.stop    = "showForm(i)"
-                  title          = "Form View"
-                  data-placement = "right"
-                  class          = "action-button row-form skin-color fas fa-table"
-                ></span>
-                <span
-                  v-if           = "isEditable"
-                  @click.stop    = "editFeature(i)"
-                  class          = "action-button row-form skin-color fas fa-pencil-alt"
-                  title          = "Edit"
-                  data-placement = "right"
+                  class          = "action-button row-form skin-color"
+                  :class         = "action.class"
+                  :style         = "action.style"
                 ></span>
               </td>
               <td v-for = "value in row">
@@ -395,6 +382,25 @@
     methods: {
 
       /**
+       * @since 4.3.0
+       * @param action the action to run
+       * @param feature the feature on which the action is run
+       * @param i the index of the action in the list
+       */
+      runAction(action, i) {
+        action?.cbk?.(this.layer.state, this.table.features[i], action);
+      },
+
+      /**
+       * @since 4.3.0 
+       * @param action 
+       * @param feature 
+       */
+      getFeatureActions(feature) {
+        return ApplicationState.layersactions[this.layer.getId()]?.filter(a => a.condition?.({ layer: this.layer, feature }) ?? a.show ?? true);
+      },
+
+      /**
        * @param relation
        * 
        * @since 4.1.0
@@ -523,15 +529,15 @@
       /**
        * @param i index
        */
-      async showForm(i) {
+      async showForm(layer, feature) {
         GUI.showContent({
           content: new Component({
             internalComponent: new (Vue.extend({
               data: () => ({
-                layerid:        this.table.layerId,
-                feature:        this.table.features[i],
+                layerid:        layer.id,
+                feature:        feature,
                 fields:         this.columns.map(c => Object.assign(c, {
-                  value: this.table.features[i].attributes[c.name],
+                  value: feature.attributes[c.name],
                   query: true,
                   input: {
                     type: `${FieldsService.getType(c)}`
@@ -577,23 +583,10 @@
               }
             }))
           }),
-          title:      this.table.features[i].id,
+          title:      feature.id,
           text:       true,
           push:       true,
           showgoback: true,
-        });
-      },
-
-      /**
-       * @param index
-       */
-      editFeature(index) {
-        GUI.editFeature({
-          layer: {
-            id:         this?.nmRelation?.referencedLayer ?? this.relation.referencingLayer,
-            attributes: this.columns,
-          },
-          feature: this.table.features[index],
         });
       },
 
@@ -733,6 +726,30 @@
     },
 
     async mounted() {
+
+      //set layer actions for the current layer
+      ApplicationState.layersactions[this.layer.getId()] = [
+        {
+          id :   "zoomgeometry",
+          cbk:   this.zoomToGeometry.bind(this),
+          hint:  "Zoom to Geometry",         
+          class: "fas fa-map-marker-alt",
+          condition: ({ layer, feature } = {}) => layer.state.geolayer && feature.geometry,
+        },
+        {
+          id:        "showform",
+          hint:      "Show Form",         
+          class:     "fas fa-table",
+          cbk:       this.showForm.bind(this),
+          condition: () => this.form_structure,
+        }   
+      ];
+
+      //call setters
+      GUI.addActionsForLayers(ApplicationState.layersactions, [ {
+        id:       this.layer.getId(),
+        features: this.state.features,
+      }]);
       this.changeColumn = debounce((e, i) => {
         this.columns[i].search = e.target.value.trim();
         this.getData();
