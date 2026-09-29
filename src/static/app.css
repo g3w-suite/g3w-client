@@ -647,6 +647,7 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
 .g3w-content .error-message                                                 { font-weight: bold; font-size: 1.2em; color: red; padding: 5px; margin: 3px; }
 .g3w-content .table-header-tool                                             { padding: 10px; color: #fff; font-size: 1.3em; }
 .g3w-content .action-button                                                 { display:inline-block; text-align: center; padding: 3px 3px 5px 3px; cursor: pointer; border-radius: 5px; caret-color: rgba(0,0,0,0); }
+.g3w-content .action-button.disabled                                        { cursor: not-allowed; opacity: 0.5; }
 .g3w-content button.action-button                                           { border: unset; background-color: unset; color: var(--skin-color); padding-top: 6px; }
 .g3w-content button.action-button:hover,
 .g3w-content .action-button:hover,

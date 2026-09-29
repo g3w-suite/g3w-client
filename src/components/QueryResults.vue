@@ -1290,8 +1290,5 @@
   font-weight: bold;
   font-size: 0.8em;
 }
-.action-button.disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
+
 </style>

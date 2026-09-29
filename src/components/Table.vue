@@ -769,8 +769,4 @@ export default {
     content: "▾";
   }
 
-  .action-button.disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
 </style>
