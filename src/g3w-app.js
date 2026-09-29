@@ -2160,17 +2160,6 @@ export default new (class GUI extends Emitter {
   postRender(element) {}
 
   /**
-   * Method that call editing plugin method to edit a feature from a layer
-   * @since 4.2.0
-   */
-  editFeature({ layer, feature } = {}) {
-    this.getPlugin('editing')?.editFeature?.({
-      layer,
-      feature,
-    })
-  }
-
-  /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
    * 
    * Remove a feature from current layer result
