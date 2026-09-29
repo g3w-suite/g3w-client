@@ -290,14 +290,7 @@ export default {
     runAction(action, feature) {
       action?.cbk?.(this.layer.state, feature, action);
     },
-    /**
-     * @param feature
-     * 
-     * @since 3.10.0
-     */
-    editFeature(feature) {
-      GUI.editFeature({ layer: this.layer.state, feature });
-    },
+   
 
     /**
      * @param feature
