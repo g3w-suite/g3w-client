@@ -278,6 +278,8 @@
          * @since 4.1.0
          */
         layerId:     this.$options.layerId,
+        /**@since 4.2.0 contains array of action feature */
+        actions:     { [layer.getId()]: [] },
       };
     },
 
@@ -388,7 +390,7 @@
        * @param feature 
        */
       getFeatureActions(feature) {
-        return ApplicationState.layersactions[this.layer.getId()]?.filter(a => a.condition?.({ layer: this.layer, feature }) ?? a.show ?? true);
+        return this.actions[this.layer.getId()]?.filter(a => a.condition?.({ layer: this.layer, feature }) ?? a.show ?? true);
       },
 
       /**
@@ -725,8 +727,7 @@
 
       // autoload selected relation
       if (this.relation) {
-        //set layer actions for the current layer
-        ApplicationState.layersactions[this.layer.getId()] = [
+        this.actions[this.table.layerId].push(...[
           {
             id :   "zoomgeometry",
             cbk:   this.zoomToGeometry.bind(this),
@@ -741,11 +742,10 @@
             cbk:       this.showForm.bind(this),
             condition: () => this.form_structure,
           }   
-        ];
-
+        ]);
         //call setters
-        GUI.addActionsForLayers(ApplicationState.layersactions, [ {
-          id:       this.layer.getId(),
+        GUI.addActionsForLayers(this.actions, [ {
+          id:       this.table.layerId,
           features: this.state.features,
         }]);
         
@@ -776,6 +776,8 @@
       if (1 === this.relations.length) {
         delete this.relations[0].noback;
       }
+
+      this.actions[this.table.layerId] = [];
     },
 
   };
@@ -914,7 +916,5 @@
     flex-grow: 1;
     overflow: auto;
   }
-
- 
 
 </style>
