@@ -154,6 +154,7 @@ class XSelect extends HTMLElement {
       this.content   = this.querySelector('.x-selected-content');
       this.container = this.querySelector('.x-options');
       this.input     = this.querySelector('.x-search-box');
+      this.#onDisabled();
 
       Array.from(this.querySelectorAll(':scope > x-option')).forEach(opt => {
         this.container.appendChild(opt);
@@ -256,7 +257,7 @@ class XSelect extends HTMLElement {
     window.removeEventListener('resize',      this._onPageResize);
     window.removeEventListener('keydown',     this._onPageKeyDown);
     this.observer?.disconnect();
-    this.langWatcher();
+    this.langWatcher?.();
   }
 
   #onDisabled() {
