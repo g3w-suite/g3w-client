@@ -815,7 +815,6 @@
 
   .layer-relation:not([style*="display: none"]) {
     margin-top: 3px;
-    display: flex !important;
     flex-direction: column;
   }
 
