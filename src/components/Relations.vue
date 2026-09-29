@@ -382,7 +382,7 @@
     methods: {
 
       /**
-       * @since 4.3.0
+       * @since 4.2.0
        * @param action the action to run
        * @param feature the feature on which the action is run
        * @param i the index of the action in the list
@@ -392,7 +392,7 @@
       },
 
       /**
-       * @since 4.3.0 
+       * @since 4.2.0 
        * @param action 
        * @param feature 
        */
@@ -727,29 +727,6 @@
 
     async mounted() {
 
-      //set layer actions for the current layer
-      ApplicationState.layersactions[this.layer.getId()] = [
-        {
-          id :   "zoomgeometry",
-          cbk:   this.zoomToGeometry.bind(this),
-          hint:  "Zoom to Geometry",         
-          class: "fas fa-map-marker-alt",
-          condition: ({ layer, feature } = {}) => layer.state.geolayer && feature.geometry,
-        },
-        {
-          id:        "showform",
-          hint:      "Show Form",         
-          class:     "fas fa-table",
-          cbk:       this.showForm.bind(this),
-          condition: () => this.form_structure,
-        }   
-      ];
-
-      //call setters
-      GUI.addActionsForLayers(ApplicationState.layersactions, [ {
-        id:       this.layer.getId(),
-        features: this.state.features,
-      }]);
       this.changeColumn = debounce((e, i) => {
         this.columns[i].search = e.target.value.trim();
         this.getData();
@@ -757,6 +734,31 @@
 
       // autoload selected relation
       if (this.relation) {
+        //set layer actions for the current layer
+        ApplicationState.layersactions[this.layer.getId()] = [
+          {
+            id :   "zoomgeometry",
+            cbk:   this.zoomToGeometry.bind(this),
+            hint:  "Zoom to Geometry",         
+            class: "fas fa-map-marker-alt",
+            condition: ({ layer, feature } = {}) => layer.state.geolayer && feature.geometry,
+          },
+          {
+            id:        "showform",
+            hint:      "Show Form",         
+            class:     "fas fa-table",
+            cbk:       this.showForm.bind(this),
+            condition: () => this.form_structure,
+          }   
+        ];
+
+        //call setters
+        GUI.addActionsForLayers(ApplicationState.layersactions, [ {
+          id:       this.layer.getId(),
+          features: this.state.features,
+        }]);
+        
+
         this.relation.title = this.relation.name;
         if ('ONE' !== this.relation.type) {
           this.getData();
