@@ -92,7 +92,7 @@
               >
                 <input type = "checkbox" :checked = "feature.selected" />
               </label>
-              <i v-for=" action in getFeatureActions(feature)" :key = "action.id"
+              <i v-for = "action in getFeatureActions(feature)" :key = "action.id"
                 @click.stop    = "runAction(action, feature)"
                 :title         = "action.hint"
                 data-placement = "top"
