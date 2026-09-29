@@ -97,7 +97,7 @@
                 :title         = "action.hint"
                 data-placement = "top"
                 class          = "action-button skin-color"
-                :class         = "action.class"
+                :class         = "[action.class, { 'disabled': !!(action.state || {}).disabled }]"
                 :style         = "action.style"
               ></i>
             </div>
@@ -767,5 +767,10 @@ export default {
 
   th.desc::after {
     content: "▾";
+  }
+
+  .action-button.disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
 </style>

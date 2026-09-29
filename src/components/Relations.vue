@@ -135,7 +135,7 @@
                   :title         = "action.hint"
                   data-placement = "right"
                   class          = "action-button row-form skin-color"
-                  :class         = "action.class"
+                  :class         = "[action.class, { 'disabled': !!(action.state || {}).disabled }]"
                   :style         = "action.style"
                 ></span>
               </td>
@@ -913,6 +913,11 @@
     margin-top: 3px;
     flex-grow: 1;
     overflow: auto;
+  }
+
+  .action-button.disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
 
 </style>
