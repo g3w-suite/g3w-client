@@ -81,7 +81,7 @@ export default class Component extends Emitter {
       });
     }
 
-    if (this.internalComponent) {
+    if (this.internalComponent && this.#service.state) {
       this.internalComponent.state = this.#service.state;
     }
 
