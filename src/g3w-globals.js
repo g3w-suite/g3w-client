@@ -37,7 +37,6 @@ import { getListableProjects }                     from 'utils/getListableProjec
  * Single File Components
  */
 import G3WInput                                    from 'components/InputG3W.vue';
-import G3wFormInputs                               from 'components/InputG3WFormInputs.vue';
 
 /**
  * CORE modules
@@ -346,7 +345,6 @@ globalThis.g3wsdk = {
       Panel,
       SearchPanel,
       Inputs: {
-        G3wFormInputs,
         G3WInput,
         InputsComponents: {
           'text_input':                Vue.extend(InputText),
@@ -367,7 +365,45 @@ globalThis.g3wsdk = {
           'color_input':               Vue.extend(InputColor),
           'slider_input':              Vue.extend(InputSliderRange),
           'lonlat_input':              Vue.extend(InputLonLat),
-        }
+        },
+        /** @deprecated used by the following plugins: "billboards" */
+        G3wFormInputs: {
+          name: 'g3w-form-inputs',
+          components: { 'g3w-input': G3WInput },
+          props: {
+            state:                       { type: Object, default: () => ({ fields: [] }), },
+            addToValidate:               { type: Function },
+            changeInput:                 { type: Function },
+            removeToValidate:            { type: Function },
+            show_required_field_message: { type: Boolean, default: false },
+          },
+          template: /* html */ `
+            <form class="form-horizontal g3w-form">
+              <div class="box-primary">
+                <div class="box-body" style="padding: 5px">
+                  <g3w-input
+                    v-for             = "field in state.fields"
+                    :key              = "field.name"
+                    :state            = "field"
+                    :removeToValidate = "removeToValidate"
+                    :addToValidate    = "addToValidate"
+                    :changeInput      = "changeInput"
+                    @addToValidate    = "addToValidate"
+                    @changeInput      = "changeInput"
+                  />
+                </div>
+                <div
+                  v-if  = "show_required_field_message"
+                  id    = "g3w-for-inputs-required-inputs-message"
+                  style = "caret-color: transparent; margin-bottom: 5px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center"
+                >
+                  <span>*</span>
+                  <span v-t="'sdk.form.footer.required_fields'"></span>
+                </div>
+              </div>
+            </form>
+          `,
+        },
       },
       Fields,
       Mixins,
