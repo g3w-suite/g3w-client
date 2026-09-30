@@ -97,7 +97,7 @@ const Validators = {
 /**
 * ORIGINAL SOURCE: src/app/gui/inputs/service.js@v4.0.0 
 */
-export class Service {
+class Service {
   
   constructor(options = {}) {
     // set state of input
@@ -256,7 +256,7 @@ export class Service {
 /**
 * ORIGINAL SOURCE: src/app/gui/inputs/checkbox/service.js@v4.0.0 
 */
-export class CheckBoxService extends Service {
+class CheckBoxService extends Service {
   constructor(opts = {}) {
     opts.validatorOptions = {
       values: opts.state.input.options.values.map(v => v)
@@ -268,7 +268,7 @@ export class CheckBoxService extends Service {
 /**
 * ORIGINAL SOURCE: src/app/gui/inputs/range/service.js@v4.0.0 
 */
-export class RangeService extends Service {
+class RangeService extends Service {
   constructor(opts = {}) {
     const { min, max } = opts.state.input.options.values[0];
     opts.state.info = `[MIN: ${min} - MAX: ${max}]`;
@@ -289,7 +289,7 @@ export class RangeService extends Service {
 /**
 * ORIGINAL SOURCE: src/app/gui/inputs/datetimepicker/service.js@v4.0.0 
 */
-export class DateTimePickerService extends Service {
+class DateTimePickerService extends Service {
   constructor(opts = {}) {
     super(opts);
 
@@ -312,7 +312,7 @@ export class DateTimePickerService extends Service {
 /**
 * ORIGINAL SOURCE: src/app/gui/inputs/lonlat/service.js@v4.0.0 
 */
-export class LonLatService extends Service {
+class LonLatService extends Service {
   constructor(opts = {}) {
     super(opts);
     this.coordinatebutton;
@@ -374,7 +374,7 @@ export class LonLatService extends Service {
 /**
 * ORIGINAL SOURCE: src/app/gui/inputs/select/service.js@v4.0.0 
 */
-export class SelectService extends Service {
+class SelectService extends Service {
   constructor(opts = {}) {
     super(opts);
     this.layer = null;
@@ -459,7 +459,7 @@ export class SelectService extends Service {
 /**
 * ORIGINAL SOURCE: src/app/gui/inputs/sliderrange/service.js@v4.0.0 
 */
-export class SliderRangeService extends Service {
+class SliderRangeService extends Service {
   constructor(opts = {}) {
     const { state } = opts;
     opts.state.info = `[MIN: ${state.input.options.min} - MAX: ${state.input.options.max}]`;
@@ -568,30 +568,6 @@ export class PickLayerService {
   }
 };
 
-/**
-* ORIGINAL SOURCE: src/app/gui/inputs/services.js@v4.0.0 
-*/
-const InputServices = {
-  'text':                Service,
-  'textarea':            Service,
-  'texthtml':            Service,
-  'integer':             Service,
-  'string':              Service,
-  'float':               Service,
-  'radio':               Service,
-  'check':               CheckBoxService,
-  'range':               RangeService,
-  'datetimepicker':      DateTimePickerService,
-  'unique':              Service,
-  'select':              SelectService,
-  'media':               Service,
-  'select_autocomplete': SelectService,
-  'color':               Service,
-  'slider':              SliderRangeService,
-  'lonlat':              LonLatService,
-  'picklayer':           PickLayerService,
-};
-
 export default {
   props:      ['state'],
   mixins:     [BaseInputMixin],
@@ -610,7 +586,26 @@ export default {
     }
   },
   created() {
-    this.service = new InputServices[this.state.input.type]({ state: this.state });
+    this.service = new ({
+      'text':                Service,
+      'textarea':            Service,
+      'texthtml':            Service,
+      'integer':             Service,
+      'string':              Service,
+      'float':               Service,
+      'radio':               Service,
+      'check':               CheckBoxService,
+      'range':               RangeService,
+      'datetimepicker':      DateTimePickerService,
+      'unique':              Service,
+      'select':              SelectService,
+      'media':               Service,
+      'select_autocomplete': SelectService,
+      'color':               Service,
+      'slider':              SliderRangeService,
+      'lonlat':              LonLatService,
+      'picklayer':           PickLayerService,
+    })[this.state.input.type]({ state: this.state });
 
     this.$watch(
       () => ApplicationState.language,
