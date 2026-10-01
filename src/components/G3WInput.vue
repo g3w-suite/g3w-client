@@ -830,7 +830,7 @@
         const picker = $(`#${this.iddatetimepicker}`);
         if (picker && picker.data('DateTimePicker')) { picker.data('DateTimePicker').hide(); }
         if (!ApplicationState.ismobile) {
-          this.$el.querySelectorAll('x-select').forEach(select => select.close());
+          this.$el?.querySelectorAll?.('x-select').forEach(select => select.close());
         }
       },
       /**
@@ -989,7 +989,7 @@
        * Synchronize relation filter controls after their values or options change.
        */
       syncRelationSelects() {
-        this.$el.querySelectorAll('x-select[data-filter-id]').forEach(select => {
+        this.$el?.querySelectorAll?.('x-select[data-filter-id]').forEach(select => {
           const filter = this.filterFields.find(filter => `${filter.id}` === select.dataset.filterId);
           if (filter) { this.syncXSelect(select, filter.value); }
         });
