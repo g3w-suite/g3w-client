@@ -49,8 +49,21 @@
                   :class = "{'mobile': isMobile()}"
                 >
                   <template v-for = "column in row">
-                    <component
-                      v-if              = "'field' === getNodeType(column)"
+                    <g3w-field
+                      v-if              = "'field' === getNodeType(column) && getNodeField(column).query"
+                      style             = "padding: 5px 3px 5px 3px;"
+                      :state            = "getNodeField(column)"
+                      :field-type       = "getNodeField(column).input.type"
+                      @changeinput      = "changeInput"
+                      @addinput         = "addToValidate"
+                      @removeinput      = "removeToValidate"
+                      :changeInput      = "changeInput"
+                      :addToValidate    = "addToValidate"
+                      :removeToValidate = "removeToValidate"
+                      :feature          = "feature"
+                    />
+                    <g3w-input
+                      v-else-if         = "'field' === getNodeType(column)"
                       style             = "padding: 5px 3px 5px 3px;"
                       :state            = "getNodeField(column)"
                       @changeinput      = "changeInput"
@@ -59,8 +72,7 @@
                       :changeInput      = "changeInput"
                       :addToValidate    = "addToValidate"
                       :removeToValidate = "removeToValidate"
-                      :feature          = "feature"
-                      :is               = "getNodeComponent(getNodeField(column))"/>
+                    />
                     <tabs
                       v-else-if = "'group' === getNodeType(column)"
                       class     = "sub-group" style = "width: 100% !important"
@@ -96,8 +108,21 @@
           :class = "{'mobile': isMobile()}"
         >
           <template v-for = "column in row">
-            <component
-              v-if              = "'field' === getNodeType(column)"
+            <g3w-field
+              v-if              = "'field' === getNodeType(column) && getNodeField(column).query"
+              style             = "padding: 5px 3px 5px 3px;"
+              :state            = "getNodeField(column)"
+              :field-type       = "getNodeField(column).input.type"
+              @changeinput      = "changeInput"
+              @addinput         = "addToValidate"
+              @removeinput      = "removeToValidate"
+              :changeInput      = "changeInput"
+              :addToValidate    = "addToValidate"
+              :removeToValidate = "removeToValidate"
+              :feature          = "feature"
+            />
+            <g3w-input
+              v-else-if         = "'field' === getNodeType(column)"
               style             = "padding: 5px 3px 5px 3px;"
               :state            = "getNodeField(column)"
               @changeinput      = "changeInput"
@@ -106,8 +131,7 @@
               :changeInput      = "changeInput"
               :addToValidate    = "addToValidate"
               :removeToValidate = "removeToValidate"
-              :feature          = "feature"
-              :is               = "getNodeComponent(getNodeField(column))"/>
+            />
             <tabs
               v-else-if = "'group' === getNodeType(column)"
               class     = "sub-group" style = "width: 100% !important"
@@ -141,12 +165,7 @@
   import ApplicationState         from 'g3w-state';
   import { G3W_FID }              from 'g3w-constants';
   import G3wInput                 from 'components/InputG3W.vue';
-  import Text                     from 'components/FieldText.vue';
-  import Link                     from 'components/FieldLink.vue';
-  import Image                    from 'components/FieldImage.vue';
-  import Geo                      from 'components/FieldGeo.vue';
-  import Media                    from 'components/FieldMedia.vue';
-  import VueField                 from 'components/FieldVue.vue';
+  import Field                    from 'components/Field.vue';
   import GUI                      from 'g3w-app';
   import { getAlphanumericProps } from 'utils/getAlphanumericProps';
   import { getUniqueDomId }       from 'utils/getUniqueDomId';
@@ -293,11 +312,6 @@
         field.showlabel = node.showlabel;
         return field;
       },
-      getNodeComponent(field) {
-        if (field.relation) { return }
-        if (field.query) { return field.input.type }
-        return 'g3w-input';
-      },
       loadingRelation(relation) {
         return (ApplicationState.project.getLayerById(this.layerid)?.getRelationById(relation.name) || { state: { loading: false } }).state;
       },
@@ -327,14 +341,7 @@
     },
     components: {
       G3wInput,
-      simple_field: Text,
-      text_field:   Text,
-      link_field:   Link,
-      image_field:  Image,
-      geo_field:    Geo,
-      photo_field:  Image,
-      media_field:  Media,
-      vue_field:    VueField
+      'g3w-field': Field,
     },
     async created() {
       this.unwatch = [];

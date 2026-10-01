@@ -140,7 +140,7 @@
                 ></span>
               </td>
               <td v-for = "value in row">
-                <component :is = "getFieldType({ value })" :state = "{ value }" />
+                <g3w-field :field-type = "getFieldType({ value })" :state = "{ value }" />
               </td>
             </tr>
           </tbody>
@@ -196,12 +196,7 @@
   import { G3W_FID, PAGELENGTHS, TIMEOUT } from 'g3w-constants';
   import ApplicationState                  from 'g3w-state';
   import Component                         from 'g3w-component';
-  import Text                              from 'components/FieldText.vue';
-  import Link                              from 'components/FieldLink.vue';
-  import Image                             from 'components/FieldImage.vue';
-  import Geo                               from 'components/FieldGeo.vue';
-  import Media                             from 'components/FieldMedia.vue';
-  import VueField                          from 'components/FieldVue.vue';
+  import Field                             from 'components/Field.vue';
   import { toRawType }                     from 'utils/toRawType';
   import GUI                               from 'g3w-app';
   import { debounce }                      from 'utils/debounce';
@@ -216,14 +211,7 @@
     name: 'relation',
 
     components: {
-      simple_field: Text,
-      text_field:   Text,
-      link_field:   Link,
-      image_field:  Image,
-      geo_field:    Geo,
-      photo_field:  Image,
-      media_field:  Media,
-      vue_field:    VueField,
+      'g3w-field': Field,
     },
 
     data() {

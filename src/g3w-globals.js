@@ -98,12 +98,7 @@ import InputTextHtml                               from 'components/InputTextHtm
 import InputUnique                                 from 'components/InputUnique.vue';
 
 //Fields
-import Text                                        from 'components/FieldText.vue';
-import Link                                        from 'components/FieldLink.vue';
-import Image                                       from 'components/FieldImage.vue';
-import Geo                                         from 'components/FieldGeo.vue';
-import Media                                       from 'components/FieldMedia.vue';
-import VueField                                    from 'components/FieldVue.vue';
+import Field                                       from 'components/Field.vue';
 
 import 'components/x-select';
 
@@ -384,14 +379,46 @@ globalThis.g3wsdk = {
       Panel,
       SearchPanel,
       Fields: {
-        simple_field: Text,
-        text_field:   Text,
-        link_field:   Link,
-        image_field:  Image,
-        geo_field:    Geo,
-        photo_field:  Image,
-        media_field:  Media,
-        vue_field:    VueField
+        simple_field: {
+          name: 'field-text',
+          extends: Field,
+          props: { fieldType: { type: String, default: 'text' } }
+        },
+        text_field: {
+          name: 'field-text',
+          extends: Field,
+          props: { fieldType: { type: String, default: 'text' } }
+        },
+        link_field: {
+          name: 'field-link',
+          extends: Field,
+          props: { fieldType: { type: String, default: 'link' } }
+        },
+        image_field: {
+          name: 'field-image',
+          extends: Field,
+          props: { fieldType: { type: String, default: 'image' } }
+        },
+        geo_field: {
+          name: 'g3w-geospatial',
+          extends: Field,
+          props: { fieldType: { type: String, default: 'geo' } }
+        },
+        photo_field: {
+          name: 'field-image',
+          extends: Field,
+          props: { fieldType: { type: String, default: 'image' } }
+        },
+        media_field: {
+          name: 'g3w-media',
+          extends: Field,
+          props: { fieldType: { type: String, default: 'media' } }
+        },
+        vue_field: {
+          name: 'vuefield',
+          extends: Field,
+          props: { fieldType: { type: String, default: 'vue' } }
+        }
       },
       Inputs: {
         G3WInput,

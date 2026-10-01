@@ -62,11 +62,11 @@
         <bar-loader :loading="loading" />
 
         <!-- Uploaded media preview -->
-        <g3w-media :state = "data">
+        <g3w-field field-type = "media" :state = "data">
           <div class = "clearmedia" @click.stop = "clearMedia">
             <i :class = "g3wtemplate.font['trash-o']" class = "g3w-icon"></i>
           </div>
-        </g3w-media>
+        </g3w-field>
       </div>
       <p
         v-if   = "notvalid"
@@ -93,7 +93,7 @@ import ApplicationState from 'g3w-state';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 import { gettext as _ } from 'g3w-i18n';
 import { toRawType } from 'utils/toRawType';
-import MediaField from 'components/FieldMedia.vue';
+import Field from 'components/Field.vue';
 
 /** Maintains the field's default, validation, and update state. */
 
@@ -103,7 +103,7 @@ export default {
 
   props: ['state'],
   components: {
-    'g3w-media': MediaField,
+    'g3w-field': Field,
   },
   watch: {
     notvalid(notvalid) {

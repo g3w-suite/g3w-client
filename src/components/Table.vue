@@ -103,8 +103,8 @@
             </div>
           </td>
           <td v-for = "header in state.headers">
-            <component
-              :is      = "getFieldType({ value: Array.isArray(feature.attributes[header.name]) ? feature.attributes[header.name].join(',') : feature.attributes[header.name] })"
+            <g3w-field
+              :field-type = "getFieldType({ value: Array.isArray(feature.attributes[header.name]) ? feature.attributes[header.name].join(',') : feature.attributes[header.name] })"
               :feature = "feature"
               :state   = "({ 
                 label: undefined,
@@ -191,12 +191,7 @@
 import { PAGELENGTHS }         from 'g3w-constants';
 import Component               from 'g3w-component';
 import ApplicationState        from 'g3w-state';
-import Text                    from 'components/FieldText.vue';
-import Link                    from 'components/FieldLink.vue';
-import Image                   from 'components/FieldImage.vue';
-import Geo                     from 'components/FieldGeo.vue';
-import Media                   from 'components/FieldMedia.vue';
-import VueField                from 'components/FieldVue.vue';
+import Field                   from 'components/Field.vue';
 import { toRawType }           from 'utils/toRawType';
 import GUI                     from 'g3w-app';
 import { debounce }            from 'utils/debounce';
@@ -208,14 +203,7 @@ export default {
   name: "G3WTable",
 
   components: {
-    simple_field: Text,
-    text_field:   Text,
-    link_field:   Link,
-    image_field:  Image,
-    geo_field:    Geo,
-    photo_field:  Image,
-    media_field:  Media,
-    vue_field:    VueField
+    'g3w-field': Field,
   },
 
   data() {
