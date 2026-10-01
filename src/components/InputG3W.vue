@@ -59,28 +59,6 @@
   import InputTextHtml                               from 'components/InputTextHtml.vue';
   import InputUnique                                 from 'components/InputUnique.vue';
 
-  const Inputs = {
-    'text_input':                Vue.extend(InputText),
-    'texthtml_input':            Vue.extend(InputTextHtml),
-    'textarea_input':            Vue.extend(InputTextArea),
-    'integer_input':             Vue.extend(InputInteger),
-    'bigint_input':              Vue.extend(InputInteger),
-    'string_input':              Vue.extend(InputText), //temporary
-    'float_input':               Vue.extend(InputFloat),
-    'radio_input':               Vue.extend(InputRadio),
-    'check_input':               Vue.extend(InputCheckbox),
-    'range_input':               Vue.extend(InputRange),
-    'datetimepicker_input':      Vue.extend(InputDateTimePicker),
-    'unique_input':              Vue.extend(InputUnique),
-    'select_input':              Vue.extend(InputSelect),
-    'media_input':               Vue.extend(InputMedia),
-    'select_autocomplete_input': Vue.extend(InputSelect),
-    'picklayer_input':           Vue.extend(InputPickLayer),
-    'color_input':               Vue.extend(InputColor),
-    'slider_input':              Vue.extend(InputSliderRange),
-    'lonlat_input':              Vue.extend(InputLonLat),
-  };
-
   export default {
     name: "g3w-input",
     props: {
@@ -101,7 +79,25 @@
       }
     },
     components: {
-      ...Inputs
+      'text_input':                InputText,
+      'texthtml_input':            InputTextHtml,
+      'textarea_input':            InputTextArea,
+      'integer_input':             InputInteger,
+      'bigint_input':              InputInteger,
+      'string_input':              InputText, //temporary
+      'float_input':               InputFloat,
+      'radio_input':               InputRadio,
+      'check_input':               InputCheckbox,
+      'range_input':               InputRange,
+      'datetimepicker_input':      InputDateTimePicker,
+      'unique_input':              InputUnique,
+      'select_input':              InputSelect,
+      'media_input':               InputMedia,
+      'select_autocomplete_input': InputSelect,
+      'picklayer_input':           InputPickLayer,
+      'color_input':               InputColor,
+      'slider_input':              InputSliderRange,
+      'lonlat_input':              InputLonLat,
     },
     computed: {
       type() {
