@@ -103,7 +103,8 @@
             </div>
           </td>
           <td v-for = "header in state.headers">
-            <field
+            <component
+              :is      = "getFieldType({ value: Array.isArray(feature.attributes[header.name]) ? feature.attributes[header.name].join(',') : feature.attributes[header.name] })"
               :feature = "feature"
               :state   = "({ 
                 label: undefined,
@@ -190,7 +191,13 @@
 import { PAGELENGTHS }         from 'g3w-constants';
 import Component               from 'g3w-component';
 import ApplicationState        from 'g3w-state';
-import Field                   from 'components/FieldG3W.vue';
+import Text                    from 'components/FieldText.vue';
+import Link                    from 'components/FieldLink.vue';
+import Image                   from 'components/FieldImage.vue';
+import Geo                     from 'components/FieldGeo.vue';
+import Media                   from 'components/FieldMedia.vue';
+import VueField                from 'components/FieldVue.vue';
+import { toRawType }           from 'utils/toRawType';
 import GUI                     from 'g3w-app';
 import { debounce }            from 'utils/debounce';
 import { getCatalogLayerById } from 'utils/getCatalogLayerById';
@@ -201,7 +208,14 @@ export default {
   name: "G3WTable",
 
   components: {
-    Field
+    simple_field: Text,
+    text_field:   Text,
+    link_field:   Link,
+    image_field:  Image,
+    geo_field:    Geo,
+    photo_field:  Image,
+    media_field:  Media,
+    vue_field:    VueField
   },
 
   data() {
@@ -271,6 +285,35 @@ export default {
   },
 
   methods: {
+    getFieldType(field) {
+      let type = field.type;
+      if ('vue' !== type) {
+        const fieldValue = field.value;
+        const value = fieldValue && 'Object' === toRawType(fieldValue) && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
+        if (!value) {
+          type = 'simple';
+        } else if (value && 'object' === typeof value) {
+          if (value.coordinates) {
+            type = 'geo';
+          } else if (value.vue) {
+            type = 'vue';
+          }
+        } else if (value && Array.isArray(value)) {
+          if (value.length && value[0].photo) {
+            type = 'photo';
+          } else {
+            type = 'simple'
+          }
+        } else if (value.toString().toLowerCase().match(/^(https?:\/\/[^\s]+)\.(png|jpg|jpeg|gif)$/g)) {
+          type = 'photo';
+        } else if (value.toString().match(/^(https?:\/\/[^\s]+)/g)) {
+          type = 'link';
+        } else {
+          type = 'simple';
+        }
+      }
+      return `${type}_field`;
+    },
     
     /**
      * @since 4.2.0 
