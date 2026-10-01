@@ -206,6 +206,8 @@ button.close                { padding: 0; cursor: pointer; background: transpare
 .spinner-wrapper .spinner.transparent { border: 8px solid var(--skin-color); border-top-color: transparent; }
 .spinner-wrapper .spinner.blue        { border: 8px solid #fff; border-top-color: transparent; }
 .spinner-wrapper.blue                 { background-color: var(--skin-primary); color: white;}
+/* same insets as the map view padding (sidebar, content, footer) */
+#map-spinner                          { position: absolute; inset: 0 var(--mr, 0px) var(--mb, 0px) var(--ml, 0px); z-index: 1; display: flex; align-items: center; justify-content: center; pointer-events: none; }
 
 .bar-loader                           { height: 4px; width: 100%; position: relative; overflow: hidden; background-color: #ddd; }
 .bar-loader:before                    { background-color: hsl(from var(--skin-color) h s calc(l - 20)); display: block; position: absolute; content: ''; left: -200px; width: 200px; height: 4px; animation: loading 1s linear infinite; }

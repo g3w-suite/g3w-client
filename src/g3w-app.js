@@ -4503,7 +4503,7 @@ export default new (class GUI extends Emitter {
 
     this.#map.getViewport().insertAdjacentHTML(
       'afterbegin',
-      /* html */`<div id="map-spinner" style="position:absolute; top: 50%; right: 50%; z-index: 1;"></div>`
+      /* html */`<div id="map-spinner"></div>`
     );
 
     this.#map.getInteractions().forEach(int => this.#watchInteraction(int));
