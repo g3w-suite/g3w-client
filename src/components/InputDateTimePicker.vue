@@ -47,7 +47,7 @@
             :class    = "{'input-error-validation' : notvalid}"
             class     = "form-control"
           />
-          <span class="input-group-addon" style="cursor:pointer">
+          <span class="input-group-addon skin-color" style="border: 1px solid #ccc; cursor:pointer">
             <span :class="[timeOnly() ? 'far fa-clock' : 'fas fa-calendar-alt']"></span>
           </span>
         </div>
