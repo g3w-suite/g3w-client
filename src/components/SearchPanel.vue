@@ -96,21 +96,36 @@
               class = "bar-loader"
               style = "border: 0"
             ></div>
-            <select
-              :name      = "input.attribute"
-              class      = "form-control"
-              :id        = "input.id"
-              v-disabled = "input.disabled || input.loading"
-            >
-              <option
-                v-for  = "opt in input.values"
-                :key   = "opt.value"
-                :value = "opt.value"
+            <div class = "search-select-control">
+              <x-select
+                :data-input-id = "input.id"
+                :value        = "getSelectInputValue(input)"
+                :multiple     = "'in' === input.operator"
+                :searchable   = "true"
+                :disabled     = "input.disabled || input.loading"
+                @change       = "onSelectInputChange(input, $event)"
+                @search-input = "searchAutocomplete(input, $event)"
+                @click.capture = "resetAutocompleteStatus(input, $event)"
+                @keydown.capture = "resetAutocompleteStatus(input, $event)"
               >
-                <span v-if = "allvalue === opt.value" v-t = "'sdk.search.all'"></span>
-                <span v-else>{{ opt.key }}</span>
-              </option>
-            </select>
+                <x-option
+                  v-for  = "opt in input.values"
+                  :key   = "opt.value"
+                  :value = "getSelectInputOptionValue(opt.value)"
+                >
+                  <span v-if = "allvalue === opt.value" v-t = "'sdk.search.all'"></span>
+                  <span v-else>{{ opt.key }}</span>
+                </x-option>
+              </x-select>
+              <button
+                v-if    = "'autocompletefield' === input.type && 'in' !== input.operator && ![null, undefined, allvalue].includes(input.value)"
+                type    = "button"
+                class   = "btn btn-default search-select-clear"
+                :title  = "$t('Clear Selection')"
+                :aria-label = "$t('Clear Selection')"
+                @click  = "clearAutocomplete(input)"
+              ><i aria-hidden = "true" class = "fas fa-times"></i></button>
+            </div>
           </div>
 
           <!-- DATETIME FIELD -->
@@ -196,10 +211,6 @@
   import { getRelationLayerById }              from 'utils/getRelationLayerById';
   import { throttle }                          from 'utils/throttle';
   import { debounce }                          from 'utils/debounce';
-  import { gettext as _ }                      from 'g3w-i18n';
-
-  // store all select2 inputs
-  const SELECTS = [];
 
   export default {
 
@@ -263,7 +274,9 @@
         GUI.closeContent();
       },
       resize() {
-        SELECTS.forEach(s2 => !ApplicationState.ismobile && s2.select2('close'));
+        if (!ApplicationState.ismobile) {
+          this.$el.querySelectorAll('x-select').forEach(select => select.close());
+        }
       },
 
       /**
@@ -393,12 +406,134 @@
           console.warn(e);
         } finally {
           this.state.searching = false;
+          await this.$nextTick();
+          this.syncSelectInputs();
         }
       },
 
       doSearch(e) {
         e.preventDefault();
         this.$options.service.run();
+      },
+
+      getSelectInputValue(input) {
+        return [].concat(input.value ?? this.allvalue).map(value => this.getSelectInputOptionValue(value)).join(',');
+      },
+
+      getSelectInputOptionValue(value) {
+        return null === value ? 'null' : `${value}`;
+      },
+
+      syncSelectInput(input) {
+        const select = Array.from(this.$el.querySelectorAll('x-select[data-input-id]'))
+          .find(select => select.dataset.inputId === `${input.id}`);
+        if (!select?.container) { return; }
+        if ('autocompletefield' === input.type && !select.container.querySelector('.search-select-status')) {
+          const status = document.createElement('div');
+          status.className = 'search-select-status';
+          status.setAttribute('role', 'status');
+          status.style.cssText = 'padding: 8px 12px; color: #444;';
+          status.textContent = `${this.$t('Please enter')} ${this.getAutocompleteMinimum(input)} ${this.$t('or more characters')}`;
+          select.container.appendChild(status);
+        }
+        const multiple = 'in' === input.operator;
+        const values = [].concat(input.value ?? this.allvalue).map(value => this.getSelectInputOptionValue(value));
+        const options = Array.from(select.container.querySelectorAll('x-option'));
+        select.selected_options = [];
+        options.forEach(option => option.removeAttribute('selected'));
+        values.forEach(value => {
+          const option = options.find(option => option.value === value);
+          if (option) { select.select(option, { autoclose: false, emit: false }); }
+        });
+        if (multiple) {
+          select.select(null, { autoclose: false, emit: false });
+        } else if (!select.selected_options.length) {
+          select.content.textContent = `${g3w?.gettext?.('Select') || 'Select'}...`;
+        }
+        select.setAttribute('value', multiple ? values.join(',') : values[0]);
+      },
+
+      syncSelectInputs() {
+        this.state.forminputs.forEach(input => this.syncSelectInput(input));
+      },
+
+      onSelectInputChange(input, event) {
+        if ('in' === input.operator) {
+          const values = event.target.selected_options.map(option => option.value);
+          input.value = values.at(-1) === this.allvalue
+            ? [this.allvalue]
+            : values.filter(value => value !== this.allvalue);
+          if (!input.value.length) { input.value = [this.allvalue]; }
+        } else {
+          input.value = event.target.value;
+        }
+        this.changeInput(input);
+      },
+
+      clearAutocomplete(input) {
+        input.value = this.allvalue;
+        this.changeInput(input);
+      },
+
+      getAutocompleteMinimum(input) {
+        const digits = Number(input.options.numdigaut);
+        return Number.isFinite(digits) && digits > 0 ? digits : 2;
+      },
+
+      resetAutocompleteStatus(input, event) {
+        if ('autocompletefield' !== input.type || !event.target.closest('.x-select-trigger')) { return; }
+        const status = event.currentTarget.container?.querySelector('.search-select-status');
+        if (status) {
+          status.hidden = false;
+          status.textContent = `${this.$t('Please enter')} ${this.getAutocompleteMinimum(input)} ${this.$t('or more characters')}`;
+        }
+      },
+
+      searchAutocomplete(input, { target, detail: { value = '' } = {} }) {
+        clearTimeout(input._xSelectSearchTimer);
+        const request = input._xSelectSearchRequest = (input._xSelectSearchRequest || 0) + 1;
+        if ('autocompletefield' !== input.type) { return; }
+        const term = value.trim();
+        const minimum = this.getAutocompleteMinimum(input);
+        const status = target.container?.querySelector('.search-select-status');
+        if (term.length < minimum) {
+          if (status) {
+            status.hidden = false;
+            status.textContent = `${this.$t('Please enter')} ${minimum} ${this.$t('or more characters')}`;
+          }
+          return;
+        }
+        if (status) {
+          status.hidden = false;
+          status.textContent = this.$t('Searching ...');
+        }
+
+        input._xSelectSearchTimer = setTimeout(async () => {
+          try {
+            const results = await getDataForSearchInput({
+              state: this.state,
+              layerid: input.alternativeuniquelayer,
+              field: input.attribute,
+              suggest: `${input.attribute}|${term}`,
+            });
+            if (request !== input._xSelectSearchRequest) { return; }
+
+            const selected = new Set([].concat(input.value ?? []).map(value => `${value}`));
+            const retained = input.values.filter(option => selected.has(`${option.value}`));
+            input.values = Array.from(new Map([...retained, ...results].map(option => [`${option.value}`, option])).values());
+            await this.$nextTick();
+            this.syncSelectInput(input);
+            if (status) {
+              status.hidden = results.length > 0;
+              status.textContent = this.$t('No results');
+            }
+          } catch (error) {
+            if (request === input._xSelectSearchRequest) {
+              console.warn(error);
+              if (status) { status.textContent = this.$t('Error Loading Data'); }
+            }
+          }
+        }, 500);
       },
 
       /**
@@ -433,161 +568,19 @@
         }
       },
 
-      /**
-       * ORIGINAL SOURCE: src/components/SearchSelect2.vue@v3.9.3
-       */
-      async initSelect2Field(input) {
-        if (!['selectfield', 'autocompletefield'].includes(input.type)) {
-          return;
-        }
-
-        await this.$nextTick();
-
-        const numdigaut        = input.options.numdigaut;
-        const has_autocomplete = 'autocompletefield' === input.type;
-        const is_multiple      = 'in' === input.operator; //@since 4.0.0 set multiple select2 only for select box
-        const ajax             = has_autocomplete ? {
-          delay: 500,
-          transport: async (d, ok, ko) => {
-            try      {
-              ok({
-                results: (await getDataForSearchInput({
-                  state:    this.state,
-                  layerid:  input.alternativeuniquelayer,
-                  field:    input.attribute,
-                  suggest: `${input.attribute}|${d.data.q}`,
-                })).map(d => ({ id: d.value, text: d.key })
-                )
-              });
-            }
-            catch(e) { ko(e); }
-          }
-        } : null;
-
-        const select2 = $(`#${input.id}`).select2({
-          ajax,
-          width:              '100%',
-          dropdownParent:     this.$el.querySelector('.g3w-search-form'),
-          minimumInputLength: has_autocomplete && (numdigaut && !Number.isNaN(1 * numdigaut) && 1 * numdigaut > 0 && 1 * numdigaut || 2) || 0, // get numdigaut and validate it
-          allowClear:         has_autocomplete,
-          placeholder:        has_autocomplete ? '' : null,
-          multiple:           is_multiple, 
-          /**
-           * @param { Object } params
-           * @param params.term the term that is used for searching
-           * @param { Object } data
-           * @param data.text the text that is displayed for the data object
-           */
-          matcher: (params, data) => {
-            const search = params?.term?.toLowerCase();
-            if ('' === (search || '').toString().trim())                             { return data }        // no search terms → get all of the data
-            if (data.text.toLowerCase().includes(search) && undefined !== data.text) { return { ...data } } // the searched term
-            return null;                                                                                    // hide the term
-          },
-          language: {
-            noResults:     () => _('No results'),
-            errorLoading:  () => _('Error Loading Data'),
-            searching:     () => _('Searching ...'),
-            inputTooShort: d => `${_('Please enter')} ${d.minimum - d.input.length} ${_('or more characters')}`,
-          },
-        });
-
-        SELECTS.push(select2);
-
-        select2.on('select2:select select2:unselecting', e => {
-
-          //Add/Change value
-
-          if ('select2:select' === e.type || has_autocomplete) {
-            const value = e.params.data ? `${e.params.data.id}` : SEARCH_ALLVALUE;
-
-            
-            if (is_multiple && input.value.find(v => value === v)) {
-              input.value = input.value.filter(v => value !== v);
-            }
-
-            if (is_multiple && !input.value.find(v => value === v)) {
-              //remove alway SEARCH_ALLVALUE value
-              input.value = input.value.filter(v => !(value === SEARCH_ALLVALUE) && SEARCH_ALLVALUE !== v);
-              input.value.push(value);
-            }
-
-            if (!is_multiple) {
-              input.value = value;
-            }
-            
-          }
-
-          //remove value  
-          if ('select2:unselecting' === e.type && is_multiple) {
-            input.value = input.value.filter(v => e.params?.args?.data?.id !== v);
-            //If we remove all values, we set the SEARCH_ALLVALUE
-            if (0 === input.value.length) {
-              input.value = [SEARCH_ALLVALUE];
-            }
-          }
-
-          this.changeInput(input);
-
-
-        }
-      );
-
-        // trigger select2 change on input value change
-        this.$watch(() => input.value, async (value, oldVal) => {
-          //Need to convert to an array to consider 'in' operator type
-          if ((new Set([].concat(value))).difference((new Set([].concat(oldVal)))) || [].conact(value).find(v => SEARCH_ALLVALUE === v)) {
-            select2.val(value).trigger('change');
-          }
-        });
-
-        // recreate select2 value when language change
-        GUI.on('i18n-ready', () => {
-          this.clearSelect2();
-          this.initSelect2Field(input);
-        });
-
-        // set initial value
-        select2.val(input.value).trigger('change');
-      },
-
-      clearSelect2() {
-        // remove all select2 DOM events
-        SELECTS.forEach(select2 => {
-          select2.select2('destroy');
-          select2.off();
-          select2 = null;
-        })
-        // reset SELECTS to an empty array
-        SELECTS.splice(0);
-      },
-
-      /**
-       * Reload select2Inputs
-        * @return {Promise<void>}
-       */
-      async reloadSelect2Inputs() {
-        //Already reload from another layer
-        if (this.reload) { return }
-
+      async reloadSearchInputs() {
+        if (this.reload) { return; }
         this.reload = true;
-        //wait to be sure that another layer is call to reload
         await this.$nextTick();
-
         try {
           await this.$options.service.setInputs();
-        } catch(e) {
-          console.warn(e);
+        } catch (error) {
+          console.warn(error);
+        } finally {
+          this.reload = false;
+          await this.$nextTick();
+          this.syncSelectInputs();
         }
-
-        this.clearSelect2();
-        try {
-          await Promise.allSettled(this.state.forminputs.map(input => this.initSelect2Field(input)));
-        } catch(e) {
-          console.warn(e);
-        }
-
-        this.reload = false;
       }
 
     },
@@ -606,19 +599,18 @@
       //Listen change filtertoken on layer
       //Need to listen on each layer instead to watch ApplicationState.tokens.filtertoken changes
       //because when create a new filter with new rules, the filtertoken string doesn't change
-      this.search_layers.forEach(l => l.on('filtertokenchange', this.reloadSelect2Inputs));
+      this.search_layers.forEach(l => l.on('filtertokenchange', this.reloadSearchInputs));
     },
 
     async mounted() {
       this.$nextTick().then(() => this.resize?.());
 
-      //@since 3.11.0 Need to add $nextTick()
-      // because can happen that .g3w-search-form is not yet visible for select2 dropdownParent:$('.g3w-search-form:visible'),
       await Promise.allSettled([this.$nextTick(), this.state.mounted]);
       for (const input of this.state.forminputs) {
-        await this.initSelect2Field(input);
         await this.initDateTimeField(input);
       }
+      await this.$nextTick();
+      this.syncSelectInputs();
     },
 
     beforeDestroy() {
@@ -626,14 +618,32 @@
       this.delayResize = null;
       this.delayTime   = null;
 
-      this.search_layers.forEach(l => l.off('filtertokenchange', this.reloadSelect2Inputs));
-      this.clearSelect2();
+      this.state.forminputs.forEach(input => {
+        clearTimeout(input._xSelectSearchTimer);
+        input._xSelectSearchRequest = (input._xSelectSearchRequest || 0) + 1;
+      });
+      this.search_layers.forEach(l => l.off('filtertokenchange', this.reloadSearchInputs));
     }
 
   };
 </script>
 
 <style scoped>
+  .search-select-control {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .search-select-control x-select {
+    flex: 1;
+    min-width: 0;
+    color: #333;
+  }
+  .search-select-clear {
+    flex: 0 0 34px;
+    height: 34px;
+    padding: 0;
+  }
   .g3w-search-form label {
     color: #fff;
   }

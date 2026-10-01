@@ -201,17 +201,27 @@
           </g3w-field>
         </div>
 
-        <!-- Unique values use Select2 tags only when the schema allows editing. -->
+        <!-- Unique values can add tags only when the schema allows editing. -->
         <div v-else-if = "'unique_input' === type" v-disabled = "!editable">
-          <select :id = "uniqueId" style = "width:100%" :tabIndex = "tabIndex" class = "form-control">
-            <option value = "null"></option>
-            <option v-for = "value in state.input.options.values" :key = "value" :value = "getValue(value)">
+          <x-select
+            ref               = "select"
+            :value            = "getValue(state.value)"
+            :tabIndex         = "tabIndex"
+            searchable
+            :createTag        = "state.input.options.editable ? '' : null"
+            @change           = "onUniqueSelect"
+          >
+            <x-option value = "null"></x-option>
+            <x-option v-for = "value in state.input.options.values" :key = "value" :value = "getValue(value)">
               {{ getValue(value) }}
-            </option>
-          </select>
+            </x-option>
+            <x-option v-if = "null !== state.value && !state.input.options.values.some(value => getValue(value) === getValue(state.value))" :value = "getValue(state.value)">
+              {{ getValue(state.value) }}
+            </x-option>
+          </x-select>
         </div>
 
-        <!-- Select2 handles fixed choices, autocomplete, map picking and relation filters. -->
+        <!-- Fixed choices, autocomplete, map picking and relation filters. -->
         <div v-else-if = "['select_input', 'select_autocomplete_input'].includes(type)">
           <!-- The map-pick affordance is available only for eligible autocomplete layers. -->
           <span
@@ -227,29 +237,34 @@
             class = "g3w-relation-reference-fields-content"
           >
             <template v-for = "(filter, index) in filterFields">
-              <select
-                v-select2      = "'filterFields'"
-                :select2_value = "filter.value"
-                :indexItem     = "index"
-                :id            = "filter.id"
-                style          = "width:100%"
-                class          = "form-control"
-                :disabled      = "filter.disabled"
-                :ref           = "`filterField_${filter.id}`"
+              <x-select
+                :data-filter-id = "filter.id"
+                :value          = "filter.value"
+                :disabled       = "filter.disabled"
+                searchable
+                @change         = "onRelationFilterChange(filter, $event)"
               >
-                <option v-for = "option in filter.values" :value = "getValue(option.value)">{{ option.key }}</option>
-              </select>
+                <x-option v-for = "option in filter.values" :key = "option.value" :value = "getValue(option.value)">{{ option.key }}</x-option>
+              </x-select>
             </template>
             <span class = "divider"></span>
           </div>
-          <!-- Select2 owns this native select; disabled state includes loading and errors. -->
+          <!-- Disabled state includes loading and errors. -->
           <div v-disabled = "disabled" :tabIndex = "tabIndex">
-            <select ref = "select" style = "width:100%" class = "form-control">
-              <option v-if = "showNullOption" :value = "select2NullValue"></option>
-              <option v-for = "({key, value}) in state.input.options.values" :key = "value" :value = "getValue(value)">
+            <x-select
+              ref               = "select"
+              :value            = "getSelectValue()"
+              :multiple         = "multiple"
+              :searchable       = "true"
+              :disabled         = "disabled"
+              @change           = "onSelectChange"
+              @search-input     = "searchAutocomplete"
+            >
+              <x-option v-if = "showNullOption" value = "null"></x-option>
+              <x-option v-for = "({key, value}) in state.input.options.values" :key = "value" :value = "getValue(value)">
                 {{ key }}
-              </option>
-            </select>
+              </x-option>
+            </x-select>
           </div>
           <!-- Surface remote option-load failures without replacing the select control. -->
           <p v-if = "'error' === loadingState" class = "error-input-message" v-t = "'server_error'"></p>
@@ -415,8 +430,6 @@
   import PickCoordinatesInteraction                  from 'interactions/pick-coordinates';
   import { getCatalogLayerById }                     from 'utils/getCatalogLayerById';
 
-  const G3W_SELECT2_NULL_VALUE = null;
-
   /**
    * Encode one or more values in the filter syntax used by getFilterData().
    * @param {Object} options Field name, values, comparison operator and join operator.
@@ -537,7 +550,7 @@
         return 'select_autocomplete' === this.state.input.type && this.state.input.options.usecompleter;
       },
       /**
-       * Whether Select2 should use its multiple-value encoding.
+      * Whether this select uses the multiple-value encoding.
        * @returns {boolean}
        */
       multiple() {
@@ -549,13 +562,6 @@
        */
       showNullOption() {
         return false === this.multiple && [undefined, true].includes(this.state.nullOption);
-      },
-      /**
-       * Value placed on Select2's blank option when null is allowed.
-       * @returns {null|boolean}
-       */
-      select2NullValue() {
-        return this.showNullOption && G3W_SELECT2_NULL_VALUE;
       },
       /**
        * Whether the field can currently be edited.
@@ -698,7 +704,6 @@
         radioIds: Array.from({ length: (this.state.input?.options?.values || []).length }, () => getUniqueDomId()),
         mediaData: { value: null, mime_type: null },
         mediaid: `media_${getUniqueDomId()}`,
-        uniqueId: `unique_${getUniqueDomId()}`,
         iddatetimepicker: `datetimepicker_${getUniqueDomId()}`,
         idinputdatetimepiker: `inputdatetimepicker_${getUniqueDomId()}`,
         lonId: getUniqueDomId(),
@@ -726,14 +731,21 @@
        * Refresh validation styling for controls whose UI is outside Vue's DOM.
        */
       async notvalid(notvalid) {
-        // Native controls render their own message; Select2 needs its container styled directly.
+        // Native controls render their own message; custom selects need their trigger styled directly.
         if (this.isNativeInput && notvalid) { this.service.setErrorMessage(); }
         if (['unique_input', 'select_input', 'select_autocomplete_input'].includes(this.type)) {
           await this.$nextTick();
-          if (this.select2) {
-            this.select2.data('select2').$container[notvalid ? 'addClass' : 'removeClass']('input-error-validation');
-          }
+          this.$refs.select?.trigger?.classList.toggle('input-error-validation', notvalid);
         }
+      },
+      filterFields: {
+        deep: true,
+        handler() {
+          this.$nextTick(() => this.syncRelationSelects());
+        }
+      },
+      isFilterFieldsReady(ready) {
+        if (ready) { this.$nextTick(() => this.syncRelationSelects()); }
       },
       /**
        * Reflect external value changes in media, Quill and date-picker widgets.
@@ -761,29 +773,31 @@
           await this.$nextTick();
           $(`#${this.idinputdatetimepiker}`).val(date);
         }
+        if (['unique_input', 'select_input', 'select_autocomplete_input'].includes(this.type)) {
+          await this.$nextTick();
+          this.setValue();
+        }
       },
       /**
-       * Keep Select2's selected option aligned when its available values change.
+       * Keep the selected option aligned when its available values change.
        */
       async 'state.input.options.values'(values = []) {
-        // Autocomplete owns its remote result set; update only mounted fixed-value Select2 widgets.
-        if (!['select_input', 'select_autocomplete_input'].includes(this.type) || !this.select2 || this.autocomplete) { return; }
+        if (!['select_input', 'select_autocomplete_input'].includes(this.type) || this.autocomplete) { return; }
         await this.$nextTick();
         const empty = 0 === values.length;
         let value;
         // Empty option lists and cleared multi-selects reset to the null sentinel.
         if (empty || (this.multiple && 0 === this.getMultiValues().length)) {
-          value = G3W_SELECT2_NULL_VALUE;
-        // Keep a valid serialized multi-value string when its options are refreshed.
-        } else if (this.multiple && this.getMultiValues().length) {
+          value = null;
+        } else if (this.multiple) {
           value = `{${this.getMultiValues().join()}}`;
         // A removed single-select option must not remain selected.
         } else if (!this.multiple) {
-          value = (values.find(option => option.value == this.state.value) || { value: G3W_SELECT2_NULL_VALUE }).value;
+          value = (values.find(option => option.value == this.state.value) || { value: null }).value;
         }
         const changed = value != this.state.value;
-        this.state.value = value;
-        this.select2.val(this.multiple ? this.getMultiValues() : this.state.value).trigger('change');
+        if (undefined !== value) { this.state.value = value; }
+        this.setValue();
         if (changed) { this.change(); }
       }
     },
@@ -810,12 +824,14 @@
         this.change();
       },
       /**
-       * Close active date-picker or Select2 overlays after a layout resize.
+       * Close active date-picker or select overlays after a layout resize.
        */
       resize() {
         const picker = $(`#${this.iddatetimepicker}`);
         if (picker && picker.data('DateTimePicker')) { picker.data('DateTimePicker').hide(); }
-        if (this.select2 && !ApplicationState.ismobile) { this.select2.select2('close'); }
+        if (!ApplicationState.ismobile) {
+          this.$el.querySelectorAll('x-select').forEach(select => select.close());
+        }
       },
       /**
        * Determine whether the configured date format contains only a time.
@@ -918,12 +934,12 @@
         return null === value ? 'null' : value;
       },
       /**
-       * Convert the Select2 empty-option sentinel back to null and validate it.
-       * @param {*} value Value received from Select2.
+      * Convert the select empty-option sentinel back to null and validate it.
+      * @param {*} value Value received from the select.
        * @returns {Promise<void>} Resolves after Vue applies the updated selection.
        */
       async changeSelect(value) {
-        // Select2 represents its blank option as the string sentinel "null".
+        // The blank option uses the string sentinel "null".
         this.state.value = 'null' === value ? null : value;
         await this.$nextTick();
         this.change();
@@ -935,22 +951,111 @@
         this.state.input.options.values.splice(0);
       },
       /**
-       * Return the configured UI language, falling back to English.
-       * @returns {string}
-       */
-      getLanguage() {
-        return window.initConfig.user.i18n || 'en';
-      },
-      /**
-       * Synchronize the stored coordinate pair or current Select2 value to its widget.
+       * Synchronize the stored coordinate pair or current select value to its widget.
        */
       setValue() {
-        // Coordinate fields store a coordinate tuple; Select2 stores its selection in the widget.
         if ('lonlat_input' === this.type) {
           this.state.value = [[1 * this.state.values.lon, 1 * this.state.values.lat]];
-        } else if (this.select2) {
-          this.select2.val(`${this.state.value}`).trigger('change');
+        } else if (this.$refs.select) {
+          this.syncXSelect(this.$refs.select, this.getSelectValue(), this.multiple);
         }
+        this.syncRelationSelects();
+      },
+      /**
+       * Synchronize an existing x-select through its public selection methods.
+       * @param {HTMLElement} select x-select element.
+       * @param {string} value Serialized value to select.
+       * @param {boolean} multiple Whether values are comma-separated.
+       */
+      syncXSelect(select, value, multiple = false) {
+        if (!select?.container) { return false; }
+        const options = Array.from(select.container.querySelectorAll('x-option'));
+        const values = multiple ? `${value || ''}`.split(',').filter(Boolean) : [`${value ?? ''}`];
+        select.selected_options = [];
+        options.forEach(option => option.removeAttribute('selected'));
+        values.forEach(value => {
+          const option = options.find(option => option.value === value);
+          if (option) { select.select(option, { autoclose: false, emit: false }); }
+        });
+        if (multiple) {
+          select.select(null, { autoclose: false, emit: false });
+        } else if (!select.selected_options.length) {
+          select.content.textContent = `${g3w?.gettext?.('Select') || 'Select'}...`;
+        }
+        select.setAttribute('value', multiple ? values.join(',') : values[0]);
+        return true;
+      },
+      /**
+       * Synchronize relation filter controls after their values or options change.
+       */
+      syncRelationSelects() {
+        this.$el.querySelectorAll('x-select[data-filter-id]').forEach(select => {
+          const filter = this.filterFields.find(filter => `${filter.id}` === select.dataset.filterId);
+          if (filter) { this.syncXSelect(select, filter.value); }
+        });
+      },
+      /**
+       * Return the selected value in x-select's single- or multiple-value format.
+       * @returns {string}
+       */
+      getSelectValue() {
+        return this.multiple ? this.getMultiValues().join(',') : this.getValue(this.state.value);
+      },
+      /**
+       * Store a selection made in the unique-value field.
+       * @param {CustomEvent} event Change emitted by x-select.
+       */
+      async onUniqueSelect(event) {
+        const selected = event.target.value;
+        const value = 'null' === selected
+          ? null
+          : ['integer', 'float', 'bigint'].includes(this.state.type) ? Number(selected) : selected;
+        await this.changeSelect(value);
+      },
+      /**
+       * Store the selected field values in the form's serialized representation.
+       * @param {CustomEvent} event Change emitted by x-select.
+       */
+      onSelectChange(event) {
+        if (this.multiple) {
+          const values = event.target.selected_options.map(option => option.value).filter(value => 'null' !== value);
+          this.changeSelect(values.length ? `{${values.join()}}` : null);
+        } else {
+          this.changeSelect(event.target.value);
+        }
+      },
+      /**
+       * Store relation-filter changes after the control has been initialized.
+       * @param {Object} filter Relation filter state.
+       * @param {CustomEvent} event Change emitted by x-select.
+       */
+      onRelationFilterChange(filter, event) {
+        filter.value = event.target.value;
+      },
+      /**
+       * Load remote autocomplete options while retaining the current selection.
+       * @param {CustomEvent} event Search emitted by x-select.
+       */
+      searchAutocomplete({ detail: { value = '' } = {} }) {
+        clearTimeout(this.autocompleteSearchTimer);
+        const request = this.autocompleteSearchId = (this.autocompleteSearchId || 0) + 1;
+        const query = value.trim();
+        if (!this.autocomplete || this.state.input.options.filter_expression || !query) { return; }
+        this.autocompleteSearchTimer = setTimeout(async () => {
+          try {
+            const options = this.state.input.options;
+            const results = await this.getData({ key: options.value, value: options.key, search: query });
+            if (request !== this.autocompleteSearchId) { return; }
+            const selected = new Set((this.multiple ? this.getMultiValues() : [this.state.value]).map(value => `${value}`));
+            const retained = options.values.filter(option => selected.has(`${option.value}`));
+            const values = [...retained, ...results.map(({ text, id }) => ({ key: text, value: id }))];
+            options.values = Array.from(new Map(values.map(option => [`${option.value}`, option])).values());
+            await this.$nextTick();
+            this.setValue();
+          } catch (error) {
+            console.warn(error);
+          }
+        }, 250);
       },
       /**
        * Append one option to the field's reactive option list.
@@ -985,7 +1090,7 @@
       /**
        * Query a catalog layer for autocomplete suggestions or selected values.
        * @param {Object} options Layer id, key/value fields and search term(s).
-       * @returns {Promise<Array<Object>>} Select2-compatible result records.
+      * @returns {Promise<Array<Object>>} Search result records.
        */
       getData({
         layer_id = this.state.input.options.layer_id,
@@ -1017,37 +1122,6 @@
           ? []
           : Array.from(new Set(`${this.state.value}`.replace(/^{|}$/g, '').replace(/"/g, '').split(',')))
             .filter(value => this.autocomplete || this.state.input.options.values.map(option => `${option.value}`).includes(`${value}`));
-      },
-      /**
-       * Bind Select2 events and serialize selections into the field's value format.
-       */
-      setAndListenSelect2Change() {
-        this.select2.on('select2:unselect', event => {
-          const value = event.params.data.$value ? event.params.data.$value : event.params.data.id;
-          // Multiple values are serialized as a brace-delimited list; autocomplete also drops stale labels.
-          if (this.multiple) {
-            const values = this.getMultiValues().filter(item => item != value);
-            if (this.autocomplete) {
-              this.state.input.options.values = this.state.input.options.values.filter(item => value != item.value);
-            }
-            this.changeSelect(0 === values.length ? null : `{${values.join()}}`);
-          }
-          // A single-select can be cleared only when its schema exposes the empty option.
-          if (this.showNullOption && !this.multiple) { this.changeSelect(null); }
-        });
-        this.select2.on('select2:select', event => {
-          let value = event.params.data.$value ? event.params.data.$value : event.params.data.id;
-          value = this.showNullOption
-            ? value === G3W_SELECT2_NULL_VALUE ? null : value.toString()
-            : value.toString();
-          // Keep the selected value representation consistent with the unselect path.
-          if (this.multiple) {
-            value = this.getMultiValues().length
-              ? `{${[...this.getMultiValues(), value].join()}}`
-              : `{${value}}`;
-          }
-          this.changeSelect(value);
-        });
       },
       /**
        * Pick a feature, update the selected value and report the pick outcome.
@@ -1082,7 +1156,7 @@
             }
             if (!this.autocomplete && !this.state.input.options.values.find(item => item.value == value)) { value = null; }
             await this.changeSelect(value);
-            this.select2.val(this.multiple ? this.getMultiValues() : value).trigger('change');
+            this.setValue();
           }
           // Successful matches close the transient feedback automatically.
           if (value) { GUI.showUserMessage({ type: 'success', autoclose: true }); }
@@ -1341,7 +1415,7 @@
         }).initialize(options);
       },
       /**
-       * Configure Select2, autocomplete data access and optional map picking.
+      * Configure autocomplete data access and optional map picking.
        * @returns {Promise<void>} Resolves after relation filters are initialized.
        */
       async initializeSelect() {
@@ -1410,12 +1484,12 @@
               fformatter: referencingField[0],
               order: referencingField[0],
               ffield: filter_fields.map((field, index) => {
-                const value = undefined === feature.get(field) ? `${G3W_SELECT2_NULL_VALUE}` : feature.get(field);
+                const value = undefined === feature.get(field) ? `${null}` : feature.get(field);
                 this.filterFields.push({
                   id: field,
-                  values: [{ key: getFilterLabel(field), value: `${G3W_SELECT2_NULL_VALUE}` }],
+                  values: [{ key: getFilterLabel(field), value: `${null}` }],
                   value,
-                  disabled: chain_filters && index > 0 && `${G3W_SELECT2_NULL_VALUE}` === this.filterFields[index - 1]?.value,
+                  disabled: chain_filters && index > 0 && `${null}` === this.filterFields[index - 1]?.value,
                 });
                 return createSingleFieldParameter({ field, value });
               }).join('|AND,'),
@@ -1456,8 +1530,8 @@
           (await Promise.allSettled(filter_fields.map((field, index) => {
             this.filterFields.push({
               id: field,
-              values: [{ key: getFilterLabel(field), value: `${G3W_SELECT2_NULL_VALUE}` }],
-              value: `${G3W_SELECT2_NULL_VALUE}`,
+              values: [{ key: getFilterLabel(field), value: `${null}` }],
+              value: `${null}`,
               disabled: chain_filters && index > 0,
             });
             return relationLayer.getFilterData({ unique: field, formatter: 0, ordering: field });
@@ -1475,13 +1549,13 @@
             // Reset downstream values before requesting options for the changed parent filter.
             if (chain_filters) {
               for (let i = index + 1; i < this.filterFields.length; i++) {
-                this.filterFields[i].value = `${G3W_SELECT2_NULL_VALUE}`;
+                this.filterFields[i].value = `${null}`;
                 this.filterFields[i].values = [this.filterFields[i].values[0]];
-                this.filterFields[i].disabled = `${G3W_SELECT2_NULL_VALUE}` === value;
+                this.filterFields[i].disabled = `${null}` === value;
               }
               try {
                 const filterString = this.filterFields.slice(0, index + 1)
-                  .filter(item => `${G3W_SELECT2_NULL_VALUE}` !== item.value)
+                  .filter(item => `${null}` !== item.value)
                   .map(item => createSingleFieldParameter({ field: item.id, value: item.value }))
                   .join('|AND,');
                 const { data = [] } = await relationLayer.getFilterData({ field: filterString });
@@ -1504,12 +1578,11 @@
               fformatter: referencingField[0],
               ordering: referencingField[0],
               ffield: this.filterFields
-                .filter(item => `${G3W_SELECT2_NULL_VALUE}` !== item.value)
+                .filter(item => `${null}` !== item.value)
                 .map(item => createSingleFieldParameter({ field: item.id, value: item.value }))
                 .join('|AND,'),
             })).data || []).map(([value, key]) => ({ key, value }));
             this.state.value = this.state.input.options.values?.[0]?.value ?? null;
-            this.select2.val(this.state.value).trigger('change');
             await this.changeSelect(this.state.value);
             this.setLoading(false);
           }
@@ -1741,71 +1814,16 @@
      * Attach external widgets after their DOM nodes have been rendered.
      */
     async mounted() {
-      // Select2 needs the rendered select element and may preload existing values.
+      // Remote autocomplete may need to preload labels for existing values.
       if (['select_input', 'select_autocomplete_input'].includes(this.type)) {
         await this.$nextTick();
         this.resize?.();
-        const selectElement = $(this.$refs.select);
-        const language = window.initConfig.user.i18n || 'en';
-        const dropdownParent = undefined === this.state.dropdownParent && document.querySelector('#g3w-content');
-        // Autocomplete either uses schema-provided rows or an AJAX transport to the layer.
-        if (this.autocomplete) {
-          this.select2 = selectElement.select2({
-            minimumInputLength: 1,
-            dropdownParent,
-            multiple: this.multiple,
-            allowClear: this.showNullOption,
-            placeholder: '',
-            language,
-            // Filter expressions require a fixed client-side option list instead of remote search.
-            data: this.state.input.options.filter_expression
-              ? this.state.input.options.values.map(({ key, value }) => ({ text: key, id: value, $value: value }))
-              : null,
-            ajax: this.state.input.options.filter_expression
-              ? null
-              : {
-                  delay: 250,
-                  transport: (params, success, failure) => {
-                    const search = params.data.term;
-                    const loading = document.querySelector('.select2-results__option.loading-results');
-                    [...(loading?.parentNode?.children || [])].forEach(sibling => {
-                      if (sibling !== loading) { sibling.style.display = 'none'; }
-                    });
-                    this.getData({
-                      key: this.state.input.options.value,
-                      value: this.state.input.options.key,
-                      search,
-                    }).then(success).catch(error => {
-                      console.warn(error);
-                      failure(error);
-                    });
-                  },
-                  processResults: (data, params) => ({
-                    results: data,
-                    pagination: { more: false },
-                  }),
-                },
-          });
-          // Load labels for stored IDs before assigning the existing selection to Select2.
-          if (this.state.value) {
-            this.state.input.options.values.splice(0);
-            await this.getKeyByValue({ search: this.multiple ? this.getMultiValues() : this.state.value });
-          }
-        } else {
-          this.select2 = selectElement.select2({
-            language,
-            dropdownParent,
-            multiple: this.multiple,
-            minimumResultsForSearch: this.isMobile() ? -1 : null,
-          });
+        if (this.autocomplete && this.state.value) {
+          this.state.input.options.values.splice(0);
+          await this.getKeyByValue({ search: this.multiple ? this.getMultiValues() : this.state.value });
         }
-        this.setAndListenSelect2Change();
-        // Select2 expects an array for multi-selects and a scalar for single-selects.
-        if (this.multiple && this.getMultiValues().length) {
-          this.select2.val(this.getMultiValues()).trigger('change');
-        } else {
-          this.setValue();
-        }
+        await this.$nextTick();
+        this.setValue();
         return;
       }
       // The date-picker stores field-format values but displays localized dates.
@@ -1837,19 +1855,7 @@
       // The unique selector permits tagging and converts numeric values on selection.
       if ('unique_input' === this.type) {
         await this.$nextTick();
-        this.select2 = $(`#${this.uniqueId}`).select2({
-          dropdownParent: document.querySelector('#g3w-content'),
-          tags: this.state.input.options.editable,
-          language: window.initConfig.user.i18n || 'en',
-        });
-        if (null !== this.state.value) { this.select2.val(this.state.value).trigger('change'); }
-        this.select2.on('select2:select', async event => {
-          const selected = event.params.data.$value || event.params.data.id;
-          const value = 'null' === selected
-            ? null
-            : ['integer', 'float', 'bigint'].includes(this.state.type) ? Number(selected) : selected;
-          await this.changeSelect(value);
-        });
+        this.setValue();
         return;
       }
       // Quill edits rich text as HTML unless the source-view toggle is active.
@@ -1927,6 +1933,8 @@
         this.delayTime = null;
       }
       if (['select_input', 'select_autocomplete_input'].includes(this.type)) {
+        clearTimeout(this.autocompleteSearchTimer);
+        this.autocompleteSearchId = (this.autocompleteSearchId || 0) + 1;
         GUI.off('resize', this.delayResize);
         this.delayResize = null;
         this.delayTime = null;
@@ -1936,12 +1944,6 @@
           this.pickLayerInputService.clear();
         }
         this.pickLayerInputService = null;
-      }
-      // Destroy third-party instances before Vue removes their host elements.
-      if (this.select2) {
-        this.select2.select2('destroy');
-        this.select2.off();
-        this.select2 = null;
       }
       if (this.quill) {
         this.quill.off('text-change', this.quillHandler);

@@ -616,9 +616,9 @@ export default class MapControl extends ol.control.Control {
         this.toggledTool = {
           template: /*html */ `
             <div style = "width: 100%; padding: 5px;">
-              <select ref = "select" style = "width: 100%" :search = "false" v-select2 = "'method'">
-                <option v-for = "method in methods">{{ method }}</option>
-              </select>
+              <x-select :value = "method" @change = "method = $event.target.value">
+                <x-option v-for = "method in methods" :key = "method" :value = "method">{{ method }}</x-option>
+              </x-select>
             </div>`,
           data:           () => ({ methods: ['intersects', 'within'], method: this.getSpatialMethod() }),
           watch:          { method: m => this.setSpatialMethod(m) },
