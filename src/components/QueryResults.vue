@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file Display query results grouped by layer.
   @since v3.7
 -->
 
@@ -25,7 +25,7 @@
         <li
           v-for = "layer in state.queried_layers.filter(l => this.showLayer(l))"
         >
-          <bar-loader :loading = "layer.loading"/>
+          <div v-if = "layer.loading" class = "bar-loader" style = "border: 0"></div>
           <div class = "box box-primary">
             <div
               class           = "box-header with-border"
@@ -441,7 +441,7 @@
                     >
                       <!-- LAYER WITH A FORM STRUCTURE -->
                       <!-- @since v3.10.0  Reference to content of feature html response -->
-                      <tabs
+                      <g3w-tabs
                         v-if     = "hasFormStructure(layer)"
                         :fields  = "getQueryFields(layer, feature)"
                         :layerid = "layer.id"
@@ -534,7 +534,8 @@
 <script>
   import ApplicationState         from 'g3w-state';
   import { toRawType }            from 'utils/toRawType';
-  import Field                    from 'components/Field.vue';
+  import G3WField                 from 'components/G3WField.vue';
+  import G3WTabs                  from 'components/G3WTabs.vue';
   import { throttle }             from 'utils/throttle';
   import { getCatalogLayerById }  from 'utils/getCatalogLayerById';
   import { downloadFeatures }     from 'utils/downloadFeatures';
@@ -568,7 +569,8 @@
     },
 
     components: {
-      'g3w-field': Field,
+      'g3w-field': G3WField,
+      'g3w-tabs':  G3WTabs,
     },
 
     computed: {

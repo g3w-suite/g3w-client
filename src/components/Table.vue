@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file Display and interact with layer attribute tables.
   @since v3.7
 -->
 
@@ -191,7 +191,7 @@
 import { PAGELENGTHS }         from 'g3w-constants';
 import Component               from 'g3w-component';
 import ApplicationState        from 'g3w-state';
-import Field                   from 'components/Field.vue';
+import G3WField                from 'components/G3WField.vue';
 import { toRawType }           from 'utils/toRawType';
 import GUI                     from 'g3w-app';
 import { debounce }            from 'utils/debounce';
@@ -203,7 +203,7 @@ export default {
   name: "G3WTable",
 
   components: {
-    'g3w-field': Field,
+    'g3w-field': G3WField,
   },
 
   data() {

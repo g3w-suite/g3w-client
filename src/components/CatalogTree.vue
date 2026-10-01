@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file Render the project layer and theme catalog tree.
   @since v3.7
 -->
 

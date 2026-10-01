@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file Render nested tab and group form layouts.
   @since v4.2
 -->
 
@@ -73,7 +73,7 @@
                       :addToValidate    = "addToValidate"
                       :removeToValidate = "removeToValidate"
                     />
-                    <tabs
+                    <g3w-tabs
                       v-else-if = "'group' === getNodeType(column)"
                       class     = "sub-group" style = "width: 100% !important"
                       v-bind    = "{ ...$props, group: true, tabs: [column] }"/>
@@ -83,7 +83,7 @@
                       @click.stop    = "handleRelation({ relation: column, feature: feature, layerId: layerid })"
                       :style         = "{cursor: showRelationByField && 'pointer'}"
                     >
-                      <bar-loader :loading = "loadingRelation(column).loading"/>
+                      <div v-if = "loadingRelation(column).loading" class = "bar-loader" style = "border: 0"></div>
                       <div style = "display: flex; align-items: center">
                         <div class = "query_relation_field">
                           <i :class = "g3wtemplate.font[contenttype === 'query' ? 'relation' : 'pencil']"></i>
@@ -132,7 +132,7 @@
               :addToValidate    = "addToValidate"
               :removeToValidate = "removeToValidate"
             />
-            <tabs
+            <g3w-tabs
               v-else-if = "'group' === getNodeType(column)"
               class     = "sub-group" style = "width: 100% !important"
               v-bind    = "{ ...$props, group: true, tabs: [column] }"/>
@@ -142,7 +142,7 @@
               @click.stop = "handleRelation({ relation: column, feature: feature, layerId: layerid })"
               :style      = "{cursor: showRelationByField && 'pointer'}"
             >
-              <bar-loader :loading = "loadingRelation(column).loading"/>
+              <div v-if = "loadingRelation(column).loading" class = "bar-loader" style = "border: 0"></div>
               <div style = "display: flex; align-items: center">
                 <div class = "query_relation_field">
                   <i :class = "g3wtemplate.font[contenttype === 'query' ? 'relation' : 'pencil']"></i>
@@ -164,8 +164,8 @@
 
   import ApplicationState         from 'g3w-state';
   import { G3W_FID }              from 'g3w-constants';
-  import G3WInput                 from 'components/Input.vue';
-  import Field                    from 'components/Field.vue';
+  import G3WInput                 from 'components/G3WInput.vue';
+  import G3WField                 from 'components/G3WField.vue';
   import GUI                      from 'g3w-app';
   import { getAlphanumericProps } from 'utils/getAlphanumericProps';
   import { getUniqueDomId }       from 'utils/getUniqueDomId';
@@ -195,7 +195,7 @@
   }
 
   export default {
-    name: "tabs",
+    name: "g3w-tabs",
     props: {
       group: {
         type:    Boolean,
@@ -341,7 +341,7 @@
     },
     components: {
       'g3w-input': G3WInput,
-      'g3w-field': Field,
+      'g3w-field': G3WField,
     },
     async created() {
       this.unwatch = [];

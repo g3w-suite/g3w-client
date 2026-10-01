@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file Browse related features and relation records.
   @since v3.7
 -->
 
@@ -196,7 +196,8 @@
   import { G3W_FID, PAGELENGTHS, TIMEOUT } from 'g3w-constants';
   import ApplicationState                  from 'g3w-state';
   import Component                         from 'g3w-component';
-  import Field                             from 'components/Field.vue';
+  import G3WField                          from 'components/G3WField.vue';
+  import G3WTabs                           from 'components/G3WTabs.vue';
   import { toRawType }                     from 'utils/toRawType';
   import GUI                               from 'g3w-app';
   import { debounce }                      from 'utils/debounce';
@@ -211,7 +212,7 @@
     name: 'relation',
 
     components: {
-      'g3w-field': Field,
+      'g3w-field': G3WField,
     },
 
     data() {
@@ -555,6 +556,9 @@
         GUI.showContent({
           content: new Component({
             internalComponent: new (Vue.extend({
+              components: {
+                'g3w-tabs': G3WTabs,
+              },
               data: () => ({
                 layerid:        layer.id,
                 feature:        feature,
@@ -586,7 +590,7 @@
                       <tbody>
                         <tr class="featurebox-body">
                           <td>
-                            <tabs
+                            <g3w-tabs
                               :layerid = "layerid"
                               :feature = "feature"
                               :fields  = "fields"

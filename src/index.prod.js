@@ -24,7 +24,7 @@ import GUI                from 'g3w-app';
 
 // components
 import App                from 'components/App.vue';
-import Tabs               from 'components/Tabs.vue';
+import G3WTabs            from 'components/G3WTabs.vue';
 
 // directives
 import vDisabled          from 'directives/v-disabled';
@@ -55,7 +55,7 @@ Object
     Component,
     GUI,
     App,
-    Tabs,
+    G3WTabs,
     Layer
   })
   .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
@@ -223,7 +223,7 @@ Vue.component('range', {
 /**
  * @deprecated global `<tabs>` component
  */
-Vue.component(Tabs.name, Tabs);
+Vue.component('tabs', G3WTabs);
 
 /**
  * Install global directives

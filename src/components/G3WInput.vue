@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file Render and validate form input controls.
   @since v4.2
 -->
 
@@ -40,7 +40,7 @@
 
         <!-- Show progress only while the input's remote options are loading. -->
         <div v-if = "loadingState === 'loading'" style = "position:relative; width: 100%">
-          <bar-loader :loading = "true" />
+          <div class = "bar-loader" style = "border: 0"></div>
         </div>
 
         <!-- Text and string schemas share the same single-line editor. -->
@@ -193,7 +193,7 @@
               >
             </i>
           </div>
-          <bar-loader :loading = "loading" />
+          <div v-if = "loading" class = "bar-loader" style = "border: 0"></div>
           <g3w-field field-type = "media" :state = "mediaData">
             <div class = "clearmedia" @click.stop = "clearMedia">
               <i :class = "g3wtemplate.font['trash-o']" class = "g3w-icon"></i>
@@ -240,7 +240,7 @@
                 <option v-for = "option in filter.values" :value = "getValue(option.value)">{{ option.key }}</option>
               </select>
             </template>
-            <divider />
+            <span class = "divider"></span>
           </div>
           <!-- Select2 owns this native select; disabled state includes loading and errors. -->
           <div v-disabled = "disabled" :tabIndex = "tabIndex">
@@ -374,7 +374,7 @@
         :is               = "type"
       ></component>
       <!-- Legacy standalone adapters can suppress the divider; form fields keep it by default. -->
-      <divider v-if = "showDivider"/>
+      <span v-if = "showDivider" class = "divider"></span>
     </div>
 
     <!-- Child groups preserve their field tree and forward the same validation events. -->
@@ -400,7 +400,7 @@
 </template>
 
 <script>
-  import Field                                       from 'components/Field.vue';
+  import G3WField                                    from 'components/G3WField.vue';
   import GUI                                         from 'g3w-app';
   import ApplicationState                            from 'g3w-state';
   import { QUERY_POINT_TOLERANCE }                   from 'g3w-constants';
@@ -490,7 +490,7 @@
       }
     },
     components: {
-      'g3w-field': Field,
+      'g3w-field': G3WField,
     },
     /**
      * Values derived from the field schema and the selected input adapter.

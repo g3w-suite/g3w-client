@@ -1,5 +1,5 @@
 /**
- * @file inspired by "select2" (v4.0.4)
+ * @file Provide a custom select element (inspired by "select2" v4.0.4).
  */
 
 /**

@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file Render formatted field values and custom field content.
   @since v4.2
 -->
 

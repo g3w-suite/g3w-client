@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file Render and execute configured search forms.
   @since v3.7
 -->
 
@@ -8,7 +8,7 @@
     class      = "g3w-search-panel form-group"
     v-disabled = "state.searching || loading || reload"
   >
-    <bar-loader :loading = "state.searching || loading || reload"/>
+    <div v-if = "state.searching || loading || reload" class = "bar-loader" style = "border: 0"></div>
     <h4><b>{{ state.title }}</b></h4>
 
     <section v-if = "filterlayers.length > 0" id = "g3w-search-filter-layers" style = "display: flex; justify-content: space-between">
@@ -91,10 +91,11 @@
               <span class = "skin-color">{{ getLabelOperator(input.operator)}}</span>
             </label>
 
-            <bar-loader
-              v-if     = "input.dependance"
-              :loading = "state.loading[input.dependance] || input.loading"
-            />
+            <div
+              v-if  = "input.dependance && (state.loading[input.dependance] || input.loading)"
+              class = "bar-loader"
+              style = "border: 0"
+            ></div>
             <select
               :name      = "input.attribute"
               class      = "form-control"

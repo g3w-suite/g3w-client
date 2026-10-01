@@ -1,5 +1,5 @@
 /**
- * @file
+ * @file Provide the application search service and panel.
  * @since 3.10.0
  */
 

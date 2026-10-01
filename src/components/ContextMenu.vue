@@ -1,5 +1,5 @@
 <!--
-  @file ORIGINAL SOURCE: src/components/CatalogContextMenu.vue@v4.0.0
+  @file Render contextual actions for catalog items.
   @since v4.1.0
 -->
 

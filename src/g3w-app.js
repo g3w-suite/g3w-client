@@ -3547,7 +3547,7 @@ export default new (class GUI extends Emitter {
             style  = "padding-bottom:5px; border-bottom: 1px solid #eee;"
             :style = "{ backgroundColor: backgroundLegend }"
           >
-            <bar-loader :loading = "url.loading" />
+            <div v-if = "url.loading" class = "bar-loader" style = "border: 0"></div>
             <img
               v-show = "!url.loading && !url.error"
               :src   = "url.url"
