@@ -24,7 +24,7 @@ import GUI                from 'g3w-app';
 
 // components
 import App                from 'components/App.vue';
-import Tabs               from 'components/GlobalTabs.vue';
+import Tabs               from 'components/Tabs.vue';
 
 // directives
 import vDisabled          from 'directives/v-disabled';

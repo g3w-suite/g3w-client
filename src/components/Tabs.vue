@@ -1,6 +1,6 @@
 <!--
   @file
-  @since v3.7
+  @since v4.2
 -->
 
 <template>
@@ -164,7 +164,7 @@
 
   import ApplicationState         from 'g3w-state';
   import { G3W_FID }              from 'g3w-constants';
-  import G3wInput                 from 'components/InputG3W.vue';
+  import G3WInput                 from 'components/Input.vue';
   import Field                    from 'components/Field.vue';
   import GUI                      from 'g3w-app';
   import { getAlphanumericProps } from 'utils/getAlphanumericProps';
@@ -340,7 +340,7 @@
 
     },
     components: {
-      G3wInput,
+      'g3w-input': G3WInput,
       'g3w-field': Field,
     },
     async created() {

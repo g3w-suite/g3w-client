@@ -36,7 +36,7 @@ import { getListableProjects }                     from 'utils/getListableProjec
 /**
  * Single File Components
  */
-import G3WInput                                    from 'components/InputG3W.vue';
+import G3WInput                                    from 'components/Input.vue';
 
 /**
  * CORE modules
@@ -78,24 +78,6 @@ import { gettext as _ }                            from 'g3w-i18n';
 import { Plugin, PluginService }                   from 'g3w-plugin';
 import MapControl                                  from 'g3w-control';
 import { SearchPanel }                             from 'components/g3w-search';
-
-//Inputs
-import InputCheckbox                               from 'components/InputCheckbox.vue';
-import InputColor                                  from 'components/InputColor.vue';
-import InputDateTimePicker                         from 'components/InputDateTimePicker.vue';
-import InputFloat                                  from 'components/InputFloat.vue';
-import InputInteger                                from 'components/InputInteger.vue';
-import InputLonLat                                 from 'components/InputLonLat.vue';
-import InputMedia                                  from 'components/InputMedia.vue';
-import InputPickLayer                              from 'components/InputPickLayer.vue';
-import InputRadio                                  from 'components/InputRadio.vue';
-import InputSelect                                 from 'components/InputSelect.vue';
-import InputRange                                  from 'components/InputRange.vue';
-import InputSliderRange                            from 'components/InputSliderRange.vue';
-import InputText                                   from 'components/InputText.vue';
-import InputTextArea                               from 'components/InputTextArea.vue';
-import InputTextHtml                               from 'components/InputTextHtml.vue';
-import InputUnique                                 from 'components/InputUnique.vue';
 
 //Fields
 import Field                                       from 'components/Field.vue';
@@ -423,24 +405,25 @@ globalThis.g3wsdk = {
       Inputs: {
         G3WInput,
         InputsComponents: {
-          'text_input':                Vue.extend(InputText),
-          'texthtml_input':            Vue.extend(InputTextHtml),
-          'textarea_input':            Vue.extend(InputTextArea),
-          'integer_input':             Vue.extend(InputInteger),
-          'string_input':              Vue.extend(InputText), //temporary
-          'float_input':               Vue.extend(InputFloat),
-          'radio_input':               Vue.extend(InputRadio),
-          'check_input':               Vue.extend(InputCheckbox),
-          'range_input':               Vue.extend(InputRange),
-          'datetimepicker_input':      Vue.extend(InputDateTimePicker),
-          'unique_input':              Vue.extend(InputUnique),
-          'select_input':              Vue.extend(InputSelect),
-          'media_input':               Vue.extend(InputMedia),
-          'select_autocomplete_input': Vue.extend(InputSelect),
-          'picklayer_input':           Vue.extend(InputPickLayer),
-          'color_input':               Vue.extend(InputColor),
-          'slider_input':              Vue.extend(InputSliderRange),
-          'lonlat_input':              Vue.extend(InputLonLat),
+          'text_input':                { name: 'input-text',            extends: G3WInput, props: { inputType: { type: String, default: 'text_input' },                showDivider: { type: Boolean, default: false } } },
+          'texthtml_input':            { name: 'input-html',            extends: G3WInput, props: { inputType: { type: String, default: 'texthtml_input' },            showDivider: { type: Boolean, default: false } } },
+          'textarea_input':            { name: 'input-textarea',        extends: G3WInput, props: { inputType: { type: String, default: 'textarea_input' },            showDivider: { type: Boolean, default: false } } },
+          'integer_input':             { name: 'input-integer',         extends: G3WInput, props: { inputType: { type: String, default: 'integer_input' },             showDivider: { type: Boolean, default: false } } },
+          'bigint_input':              { name: 'input-integer',         extends: G3WInput, props: { inputType: { type: String, default: 'bigint_input' },              showDivider: { type: Boolean, default: false } } },
+          'string_input':              { name: 'input-text',            extends: G3WInput, props: { inputType: { type: String, default: 'string_input' },              showDivider: { type: Boolean, default: false } } },
+          'float_input':               { name: 'input-float',           extends: G3WInput, props: { inputType: { type: String, default: 'float_input' },               showDivider: { type: Boolean, default: false } } },
+          'radio_input':               { name: 'input-radio',           extends: G3WInput, props: { inputType: { type: String, default: 'radio_input' },               showDivider: { type: Boolean, default: false } } },
+          'check_input':               { name: 'input-checkbox',        extends: G3WInput, props: { inputType: { type: String, default: 'check_input' },               showDivider: { type: Boolean, default: false } } },
+          'range_input':               { name: 'input-range',           extends: G3WInput, props: { inputType: { type: String, default: 'range_input' },               showDivider: { type: Boolean, default: false } } },
+          'datetimepicker_input':      { name: 'input-datetime-picker', extends: G3WInput, props: { inputType: { type: String, default: 'datetimepicker_input' },      showDivider: { type: Boolean, default: false } } },
+          'unique_input':              { name: 'input-unique',          extends: G3WInput, props: { inputType: { type: String, default: 'unique_input' },              showDivider: { type: Boolean, default: false } } },
+          'select_input':              { name: 'input-select',          extends: G3WInput, props: { inputType: { type: String, default: 'select_input' },              showDivider: { type: Boolean, default: false } } },
+          'media_input':               { name: 'input-media',           extends: G3WInput, props: { inputType: { type: String, default: 'media_input' },               showDivider: { type: Boolean, default: false } } },
+          'select_autocomplete_input': { name: 'input-select',          extends: G3WInput, props: { inputType: { type: String, default: 'select_autocomplete_input' }, showDivider: { type: Boolean, default: false } } },
+          'picklayer_input':           { name: 'input-picklayer',       extends: G3WInput, props: { inputType: { type: String, default: 'picklayer_input' },           showDivider: { type: Boolean, default: false } } },
+          'color_input':               { name: 'input-color',           extends: G3WInput, props: { inputType: { type: String, default: 'color_input' },               showDivider: { type: Boolean, default: false } } },
+          'slider_input':              { name: 'input-slider-range',    extends: G3WInput, props: { inputType: { type: String, default: 'slider_input' },              showDivider: { type: Boolean, default: false } } },
+          'lonlat_input':              { name: 'input-lonlat',          extends: G3WInput, props: { inputType: { type: String, default: 'lonlat_input' },              showDivider: { type: Boolean, default: false } } },
         },
         /** @deprecated used by the following plugins: "billboards" */
         G3wFormInputs: {
