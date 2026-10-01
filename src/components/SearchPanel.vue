@@ -193,15 +193,14 @@
   import { convertQGISDateTimeFormatToMoment } from 'utils/convertQGISDateTimeFormatToMoment';
   import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
   import { getRelationLayerById }              from 'utils/getRelationLayerById';
-  import resizeMixin                           from 'mixins/resize';
+  import { throttle }                          from 'utils/throttle';
+  import { debounce }                          from 'utils/debounce';
   import { gettext as _ }                      from 'g3w-i18n';
 
   // store all select2 inputs
   const SELECTS = [];
 
   export default {
-
-    mixins: [resizeMixin],
 
     data() {
       return {
@@ -599,6 +598,10 @@
     },
 
     async created() {
+      const delayWrapper = this.delayType && { throttle, debounce }[this.delayType] || throttle;
+      this.delayResize   = this.resize ? delayWrapper(this.resize.bind(this), this.delayTime) : null;
+      GUI.on('resize', this.delayResize);
+
       //Listen change filtertoken on layer
       //Need to listen on each layer instead to watch ApplicationState.tokens.filtertoken changes
       //because when create a new filter with new rules, the filtertoken string doesn't change
@@ -606,6 +609,8 @@
     },
 
     async mounted() {
+      this.$nextTick().then(() => this.resize?.());
+
       //@since 3.11.0 Need to add $nextTick()
       // because can happen that .g3w-search-form is not yet visible for select2 dropdownParent:$('.g3w-search-form:visible'),
       await Promise.allSettled([this.$nextTick(), this.state.mounted]);
@@ -616,6 +621,10 @@
     },
 
     beforeDestroy() {
+      GUI.off('resize', this.delayResize);
+      this.delayResize = null;
+      this.delayTime   = null;
+
       this.search_layers.forEach(l => l.off('filtertokenchange', this.reloadSelect2Inputs));
       this.clearSelect2();
     }

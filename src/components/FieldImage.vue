@@ -4,22 +4,24 @@
 -->
 
 <template>
-  <field :state = "state">
-    <div slot = "field" style = "text-align: left; display: inline-block;">
-      <img
-        v-for       = "(img, i) in images"
-        class       = "img-responsive"
-        style       = "max-height: 50px; cursor: pointer;"
-        @click.stop = "showGallery(images, i)"
-        :src        = "img.src"
-        loading     = "lazy"
-      />
+  <div class = "field g3w-field">
+    <div v-if = "state.showlabel" class = "field_label">{{ state.label }}</div>
+    <div class = "field_value">
+      <div style = "text-align: left; display: inline-block;">
+        <img
+          v-for       = "(img, i) in images"
+          class       = "img-responsive"
+          style       = "max-height: 50px; cursor: pointer;"
+          @click.stop = "showGallery(images, i)"
+          :src        = "img.src"
+          loading     = "lazy"
+        />
+      </div>
     </div>
-  </field>
+  </div>
 </template>
 
 <script>
-import Field from 'components/Field.vue';
 import GUI   from 'g3w-app';
 
 export default {
@@ -32,10 +34,6 @@ export default {
       required: true, 
       type:     Object 
     }
-  },
-
-  components: {
-    Field,
   },
 
   computed: {

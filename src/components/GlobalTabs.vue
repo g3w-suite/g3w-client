@@ -81,12 +81,176 @@
 
   import ApplicationState         from 'g3w-state';
   import { G3W_FID }              from 'g3w-constants';
-  import Node                     from 'components/GlobalTabsNode.vue';
+  import G3wInput                 from 'components/InputG3W.vue';
+  import Text                     from 'components/FieldText.vue';
+  import Link                     from 'components/FieldLink.vue';
+  import Image                    from 'components/FieldImage.vue';
+  import Geo                      from 'components/FieldGeo.vue';
+  import Media                    from 'components/FieldMedia.vue';
+  import VueField                 from 'components/FieldVue.vue';
   import GUI                      from 'g3w-app';
   import { getAlphanumericProps } from 'utils/getAlphanumericProps';
   import { getUniqueDomId }       from 'utils/getUniqueDomId';
   import { noop }                 from 'utils/noop';
   import { XHR }                  from 'utils/XHR';
+
+  const Node = {
+    name: 'node',
+    template: /* html */`
+      <div class = "tab-node group">
+        <h5
+          v-if   = "showGroupTile"
+          class  = "title group-title"
+          :class = "{'mobile': isMobile()}"
+          :style = "{fontSize: isMobile() ? '1em' : '1.1em'}">{{ node.name }}
+        </h5>
+        <div
+          v-for  = "row in rows"
+          class  = "node-row"
+          :class = "{'mobile': isMobile()}"
+        >
+          <template v-for = "column in columnNumber" style = "padding:2px">
+            <template v-if = "getNode(row, column)">
+              <component
+                v-if              = "'field' === getNodeType(getNode(row, column))"
+                style             = "padding: 5px 3px 5px 3px;"
+                :state            = "getField(getNode(row, column))"
+                @changeinput      = "changeInput"
+                @addinput         = "addToValidate"
+                @removeinput      = "removeToValidate"
+                :changeInput      = "changeInput"
+                :addToValidate    = "addToValidate"
+                :removeToValidate = "removeToValidate"
+                :feature          = "feature"
+                :is               = "getComponent(getField(getNode(row, column)))"/>
+              <template v-else>
+                <tabs
+                  v-if   = "'group' === getNodeType(getNode(row, column))"
+                  class  = "sub-group" style = "width: 100% !important"
+                  :group = "true"
+                  :tabs  = "[getNode(row, column)]"
+                  v-bind = "$props"/>
+                <template v-else>
+                  <div
+                    v-if        = "showRelationByField"
+                    v-disabled  = "isRelationDisabled(getNode(row, column)) || loadingRelation(getNode(row, column)).loading"
+                    @click.stop = "handleRelation({ relation: getNode(row, column), feature:feature, layerId: layerid })"
+                    :style      = "{cursor: showRelationByField && 'pointer'}"
+                  >
+                    <bar-loader :loading = "loadingRelation(getNode(row, column)).loading"/>
+                    <div style = "display: flex; align-items: center">
+                      <div class = "query_relation_field">
+                        <i :class = "g3wtemplate.font[context === 'query' ? 'relation' : 'pencil']"></i>
+                      </div>
+                      <span class = "query_relation_field_message g3w-long-text">
+                        <span style = "text-transform: uppercase">{{ getRelationName(getNode(row, column).name) }}</span>
+                      </span>
+                    </div>
+                  </div>
+                </template>
+              </template>
+            </template>
+          </template>
+        </div>
+      </div>`,
+    props: [
+      'contenttype', 'node', 'fields', 'showTitle', 'addToValidate',
+      'removeToValidate', 'changeInput', 'layerid', 'feature',
+      'showRelationByField', 'handleRelation'
+    ],
+    components: {
+      G3wInput,
+      simple_field: Text,
+      text_field:   Text,
+      link_field:   Link,
+      image_field:  Image,
+      geo_field:    Geo,
+      photo_field:  Image,
+      media_field:  Media,
+      vue_field:    VueField
+    },
+    data() {
+      return {
+        context:          this.contenttype,
+        editing_required: false
+      }
+    },
+    computed: {
+      filterNodes() {
+        const filterNodes = this.node?.nodes?.filter(node => {
+          if ('group' === this.getNodeType(node) ) { return true }
+          else if (!node.nodes && node.name && 'group' != this.getNodeType(node)) {
+            node.relation = true;
+            return true;
+          } else {
+            return !!this.fields.find(f => node.field_name === (f.name || node.relation));
+          }
+        });
+        return filterNodes || [];
+      },
+      nodesLength() {
+        return this.filterNodes.length;
+      },
+      rows() {
+        let rowCount = 1;
+        if (0 === this.nodesLength ) {
+          rowCount = 0;
+        } else if (this.columnNumber <= this.nodesLength) {
+          rowCount = Math.floor(this.nodesLength / this.columnNumber) + (this.nodesLength % this.columnNumber);
+        }
+        return rowCount;
+      },
+      columnNumber() {
+        const columnCount = parseInt(this.node.columncount) ? parseInt(this.node.columncount): 1;
+        return columnCount > this.nodesLength ? this.nodesLength: columnCount;
+      },
+      showGroupTile() {
+        return this.showTitle && this.node.showlabel && this.node.groupbox;
+      }
+    },
+    methods: {
+      loadingRelation(relation) {
+        return (ApplicationState.project.getLayerById(this.layerid)?.getRelationById(relation.name) || { state: { loading: false } }).state;
+      },
+      isRelationDisabled(relation) {
+        return undefined === this.getRelationName(relation.name) ||
+          ('editing' === this.contenttype && this.isRelationChildLayerNotEditable(relation));
+      },
+      getRelationName(relationId) {
+        return (ApplicationState.project.getRelationById(relationId) || {}).name;
+      },
+      isRelationChildLayerNotEditable(relation) {
+        const projectRelation = ApplicationState.project.getRelationById(relation.name);
+        const relationLayer   = ApplicationState.project.getLayerById(projectRelation.referencingLayer);
+        return !(relationLayer && relationLayer.isEditable());
+      },
+      getNodes(row) {
+        const startIndex = (row - 1) * this.columnNumber;
+        return this.filterNodes.slice(startIndex, this.columnNumber + startIndex);
+      },
+      getNode(row, column) {
+        return this.getNodes(row)[column - 1];
+      },
+      getField(node) {
+        if (node.relation) { return node }
+        const field = this.fields.find(f => node.field_name === f.name);
+        field.showlabel = node.showlabel;
+        return field;
+      },
+      getNodeType(node) {
+        const type = (node.groupbox || node.nodes) ? 'group' : node.relation ? 'relation' : 'field';
+        if ('field' === type && [undefined, ''].includes(node.alias)) {
+          node.alias = node.field_name;
+        }
+        return type;
+      },
+      getComponent(field) {
+        if (field.relation) { return }
+        else if (field.query) { return field.input.type }
+        else { return 'g3w-input' }
+      }
+    }
+  };
 
   /**
    * Convert feature to form Data for expression/expression_eval request
@@ -327,4 +491,12 @@
   .tabs-wrapper.collapsed > .formquerytabs + .tab-content {
     display: none;
   }
+</style>
+
+<style>
+  .tabs-wrapper .tab-node { min-width: 0; overflow: hidden; }
+  .tabs-wrapper .tab-node.odd { background-color: hsl(from var(--skin-color) h s l / 0.1); }
+  .tabs-wrapper .tab-node > .title { font-weight: bold; width: 100%; color: #ffffff; padding: 3px; margin-top: 5px; margin-bottom: 5px; border-radius: 2px; }
+  .tabs-wrapper .tab-node > .node-row { margin-bottom: 0; column-gap: 2px; margin-top: 0; display: grid; grid-auto-columns: minmax(0, 1fr); grid-auto-flow: column; }
+  .tabs-wrapper .tab-node .row.mobile { margin-bottom: 0 !important; }
 </style>

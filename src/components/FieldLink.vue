@@ -4,19 +4,19 @@
 -->
 
 <template>
-  <field :state = "state">
-    <button
-      slot        = "field"
-      class       = "btn skin-button field_link"
-      @click.stop = "openLink(value)"
-      :title      = "value"
-    >{{ $t('Open') }}</button>
-  </field>
+  <div class = "field g3w-field">
+    <div v-if = "state.showlabel" class = "field_label">{{ state.label }}</div>
+    <div class = "field_value">
+      <button
+        class       = "btn skin-button field_link"
+        @click.stop = "openLink(value)"
+        :title      = "value"
+      >{{ $t('Open') }}</button>
+    </div>
+  </div>
 </template>
 
 <script>
-import Field from 'components/Field.vue';
-
 export default {
 
   /** @since 3.8.6 */
@@ -33,9 +33,6 @@ export default {
     return {
       value: null,
     }
-  },
-  components: {
-    Field
   },
   methods: {
     openLink(link_url) {

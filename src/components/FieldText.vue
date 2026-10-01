@@ -2,12 +2,15 @@
 <!-- gui/fields/text.vue@v3.4 -->
 
 <template>
-  <field :state = "state"/>
+  <div class = "field g3w-field">
+    <div v-if = "state.showlabel" class = "field_label">{{ state.label }}</div>
+    <div class = "field_value">
+      <span style = "word-wrap: break-word;" v-html = "state.value"></span>
+    </div>
+  </div>
 </template>
 
 <script>
-import Field from 'components/Field.vue';
-
 export default {
 
   /** @since 3.8.6 */
@@ -18,10 +21,6 @@ export default {
       required: true, 
       type:     Object 
     }
-  },
-  
-  components: {
-    Field
   },
 
 };

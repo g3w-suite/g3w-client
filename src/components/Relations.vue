@@ -197,7 +197,7 @@
   import ApplicationState                  from 'g3w-state';
   import Component                         from 'g3w-component';
   import Field                             from 'components/FieldG3W.vue';
-  import { FieldsService }                 from 'components/g3w-fields';
+  import { toRawType }                     from 'utils/toRawType';
   import GUI                               from 'g3w-app';
   import { debounce }                      from 'utils/debounce';
   import { getCatalogLayerById }           from 'utils/getCatalogLayerById';
@@ -373,6 +373,35 @@
     },
 
     methods: {
+      getFieldType(field) {
+        let type = field.type;
+        if ('vue' !== type) {
+          const fieldValue = field.value;
+          const value = fieldValue && 'Object' === toRawType(fieldValue) && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
+          if (!value) {
+            type = 'simple';
+          } else if (value && 'object' === typeof value) {
+            if (value.coordinates) {
+              type = 'geo';
+            } else if (value.vue) {
+              type = 'vue';
+            }
+          } else if (value && Array.isArray(value)) {
+            if (value.length && value[0].photo) {
+              type = 'photo';
+            } else {
+              type = 'simple'
+            }
+          } else if (value.toString().toLowerCase().match(/^(https?:\/\/[^\s]+)\.(png|jpg|jpeg|gif)$/g)) {
+            type = 'photo';
+          } else if (value.toString().match(/^(https?:\/\/[^\s]+)/g)) {
+            type = 'link';
+          } else {
+            type = 'simple';
+          }
+        }
+        return `${type}_field`;
+      },
 
       /**
        * @since 4.2.0
@@ -533,7 +562,7 @@
                   value: feature.attributes[c.name],
                   query: true,
                   input: {
-                    type: `${FieldsService.getType(c)}`
+                    type: this.getFieldType(c)
                   }
                 })),
                 form_structure:    this.form_structure,

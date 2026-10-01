@@ -4,19 +4,20 @@
 -->
 
 <template>
-  <field :state = "state">
-    <div slot = "field">
-      <component
-        :feature = "feature"
-        :value   = "state.value"
-        :is      = "state.vueoptions.component"/>
+  <div class = "field g3w-field">
+    <div v-if = "state.showlabel" class = "field_label">{{ state.label }}</div>
+    <div class = "field_value">
+      <div>
+        <component
+          :feature = "feature"
+          :value   = "state.value"
+          :is      = "state.vueoptions.component"/>
+      </div>
     </div>
-  </field>
+  </div>
 </template>
 
 <script>
-import Field from 'components/Field.vue';
-
 export default {
   name: "vuefield",
   props: {
@@ -32,9 +33,6 @@ export default {
         }
       }
     }
-  },
-  components: {
-    Field
   }
 }
 </script>
