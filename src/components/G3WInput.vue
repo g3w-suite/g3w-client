@@ -660,11 +660,15 @@
          * @returns {boolean} Whether the currently stored option is checked.
          */
         get() {
-          if ([null, undefined].includes(this.state.value)) { return false; }
+          if ([null, undefined].includes(this.state.value)) {
+            return false;
+          }
           let option = this.state.input.options.values.find(option => this.state.value == option.value);
           if (!option) {
             option = this.state.input.options.values.find(option => false === option.checked);
-            if (option) { this.state.value = option.value; }
+            if (option) {
+              this.state.value = option.value;
+            }
           }
           return !!(option || {}).checked;
         },
@@ -673,7 +677,9 @@
          */
         set(checked) {
           const option = this.state.input.options.values.find(option => checked === option.checked);
-          if (option) { this.state.value = option.value; }
+          if (option) {
+            this.state.value = option.value;
+          }
         }
       },
       /**
@@ -750,7 +756,9 @@
        */
       async notvalid(notvalid) {
         // Native controls render their own message; custom selects need their trigger styled directly.
-        if (this.isNativeInput && notvalid) { this.setErrorMessage(); }
+        if (this.isNativeInput && notvalid) {
+          this.setErrorMessage();
+        }
         if (['unique_input', 'select_input', 'select_autocomplete_input'].includes(this.type)) {
           await this.$nextTick();
           this.$refs.select?.trigger?.classList.toggle('input-error-validation', notvalid);
@@ -770,7 +778,9 @@
        * @param {boolean} ready Whether relation filters can be rendered.
        */
       isFilterFieldsReady(ready) {
-        if (ready) { this.$nextTick(() => this.syncRelationSelects()); }
+        if (ready) {
+          this.$nextTick(() => this.syncRelationSelects());
+        }
       },
       /**
        * Reflect external value changes in media, Quill and date-picker widgets.
@@ -787,8 +797,11 @@
         }
         // Avoid echoing Quill's own edit back into its DOM; external edits still refresh it.
         if ('texthtml_input' === this.type && this.quill && !this.edit_state.edit) {
-          if (this.edit_state.show_html) { this.quill.container.firstChild.innerText = this.state.value; }
-          else { this.quill.container.firstChild.innerHTML = this.state.value; }
+          if (this.edit_state.show_html) {
+            this.quill.container.firstChild.innerText = this.state.value;
+          } else {
+            this.quill.container.firstChild.innerHTML = this.state.value;
+          }
         }
         // Convert only when the stored value differs from the currently displayed date.
         if ('datetimepicker_input' === this.type && this.datetimefieldformat && value !== $(`#${this.idinputdatetimepiker}`).val()) {
@@ -807,7 +820,9 @@
        * Keep the selected option aligned when its available values change.
        */
       async 'state.input.options.values'(values = []) {
-        if (!['select_input', 'select_autocomplete_input'].includes(this.type) || this.autocomplete) { return; }
+        if (!['select_input', 'select_autocomplete_input'].includes(this.type) || this.autocomplete) {
+          return;
+        }
         await this.$nextTick();
         const empty = 0 === values.length;
         let value;
@@ -821,9 +836,13 @@
           value = (values.find(option => option.value == this.state.value) || { value: null }).value;
         }
         const changed = value != this.state.value;
-        if (undefined !== value) { this.state.value = value; }
+        if (undefined !== value) {
+          this.state.value = value;
+        }
         this.setValue();
-        if (changed) { this.change(); }
+        if (changed) {
+          this.change();
+        }
       }
     },
     methods: {
@@ -892,18 +911,25 @@
        */
       setDefaultValue(value) {
         // Defaults must not overwrite a value already supplied by the form.
-        if (![null, undefined].includes(value)) { return; }
+        if (![null, undefined].includes(value)) {
+          return;
+        }
         const state = this.validationState;
         const { options } = state.input;
         let defaultValue = options.default;
         // Legacy schemas may store options as an array rather than the current object shape.
         if (Array.isArray(options)) {
-          if (options[0].default) { defaultValue = options[0].default; }
-          else if (options.values?.length) { defaultValue = options.values[0]?.value || options.values[0]; }
+          if (options[0].default) {
+            defaultValue = options[0].default;
+          } else if (options.values?.length) {
+            defaultValue = options.values[0]?.value || options.values[0];
+          }
         }
         const hasDefault = state.get_default_value && ![null, undefined].includes(defaultValue);
         // Default expressions are evaluated by the server and must not be replaced locally.
-        if (hasDefault && undefined === options.default_expression) { state.value = defaultValue; }
+        if (hasDefault && undefined === options.default_expression) {
+          state.value = defaultValue;
+        }
         state.value_from_default_value = hasDefault;
       },
       /**
@@ -951,12 +977,16 @@
        * Return the active validator, also exposed as legacy service._validator.
        * @returns {Object} Validator exposing validate(value).
        */
-      getValidator() { return this.validator; },
+      getValidator() {
+        return this.validator;
+      },
       /**
        * Replace the default validator with a control-specific rule.
        * @param {Object} validator Object exposing validate(value).
        */
-      setValidator(validator) { this.validator = validator; },
+      setValidator(validator) {
+        this.validator = validator;
+      },
       /**
        * Select translated validation feedback without recomputing field validity.
        * Precedence: server errors, cross-field constraints, unique exclusions,
@@ -966,7 +996,10 @@
         const state = this.validationState;
         const validate = state.validate;
         // Server-provided errors take precedence over all generated messages.
-        if (validate.error) { validate.message = _(validate.error); return; }
+        if (validate.error) {
+          validate.message = _(validate.error);
+          return;
+        }
         const type = _(state.type);
         if (validate.mutually && !validate.mutually_valid) {
           validate.message = `${_('Field mutually exclusive with ')} ( ${validate.mutually.join(',')} )`;
@@ -1033,7 +1066,9 @@
        */
       resize() {
         const picker = $(`#${this.iddatetimepicker}`);
-        if (picker && picker.data('DateTimePicker')) { picker.data('DateTimePicker').hide(); }
+        if (picker && picker.data('DateTimePicker')) {
+          picker.data('DateTimePicker').hide();
+        }
         if (!ApplicationState.ismobile) {
           this.$el?.querySelectorAll?.('x-select').forEach(select => select.close());
         }
@@ -1075,7 +1110,9 @@
        * @fires changeinput
        */
       change() {
-        if (!this.service) { return; }
+        if (!this.service) {
+          return;
+        }
         this.setEmpty();
         this.validate();
         this.setUpdate();
@@ -1092,7 +1129,9 @@
        * @fires changeinput
        */
       forwardChangeInput(state) {
-        if (this.changeInput !== this.$listeners.changeinput) { this.changeInput(state); }
+        if (this.changeInput !== this.$listeners.changeinput) {
+          this.changeInput(state);
+        }
         this.$emit('changeinput', state);
       },
       /**
@@ -1101,7 +1140,9 @@
        * @fires addinput
        */
       forwardAddInput(state) {
-        if (this.addToValidate !== this.$listeners.addinput) { this.addToValidate(state); }
+        if (this.addToValidate !== this.$listeners.addinput) {
+          this.addToValidate(state);
+        }
         this.$emit('addinput', state);
       },
       /**
@@ -1110,7 +1151,9 @@
        * @fires removeinput
        */
       forwardRemoveInput(state) {
-        if (this.removeToValidate !== this.$listeners.removeinput) { this.removeToValidate(state); }
+        if (this.removeToValidate !== this.$listeners.removeinput) {
+          this.removeToValidate(state);
+        }
         this.$emit('removeinput', state);
       },
       /**
@@ -1175,14 +1218,18 @@
        * @returns {boolean} False until the widget is initialized; true after synchronization.
        */
       syncXSelect(select, value, multiple = false) {
-        if (!select?.container) { return false; }
+        if (!select?.container) {
+          return false;
+        }
         const options = Array.from(select.container.querySelectorAll('x-option'));
         const values = multiple ? `${value || ''}`.split(',').filter(Boolean) : [`${value ?? ''}`];
         select.selected_options = [];
         options.forEach(option => option.removeAttribute('selected'));
         values.forEach(value => {
           const option = options.find(option => option.value === value);
-          if (option) { select.select(option, { autoclose: false, emit: false }); }
+          if (option) {
+            select.select(option, { autoclose: false, emit: false });
+          }
         });
         if (multiple) {
           select.select(null, { autoclose: false, emit: false });
@@ -1198,7 +1245,9 @@
       syncRelationSelects() {
         this.$el?.querySelectorAll?.('x-select[data-filter-id]').forEach(select => {
           const filter = this.filterFields.find(filter => `${filter.id}` === select.dataset.filterId);
-          if (filter) { this.syncXSelect(select, filter.value); }
+          if (filter) {
+            this.syncXSelect(select, filter.value);
+          }
         });
       },
       /**
@@ -1248,12 +1297,16 @@
         clearTimeout(this.autocompleteSearchTimer);
         const request = this.autocompleteSearchId = (this.autocompleteSearchId || 0) + 1;
         const query = value.trim();
-        if (!this.autocomplete || this.state.input.options.filter_expression || !query) { return; }
+        if (!this.autocomplete || this.state.input.options.filter_expression || !query) {
+          return;
+        }
         this.autocompleteSearchTimer = setTimeout(async () => {
           try {
             const options = this.state.input.options;
             const results = await this.getData({ key: options.value, value: options.key, search: query });
-            if (request !== this.autocompleteSearchId) { return; }
+            if (request !== this.autocompleteSearchId) {
+              return;
+            }
             const selected = new Set((this.multiple ? this.getMultiValues() : [this.state.value]).map(value => `${value}`));
             const retained = options.values.filter(option => selected.has(`${option.value}`));
             const values = [...retained, ...results.map(({ text, id }) => ({ key: text, value: id }))];
@@ -1306,7 +1359,9 @@
         value = this.state.input.options.value,
         search,
       } = {}) {
-        if (!this.selectLayer) { this.selectLayer = getCatalogLayerById(layer_id); }
+        if (!this.selectLayer) {
+          this.selectLayer = getCatalogLayerById(layer_id);
+        }
         // Selected IDs use exact field filtering; typed terms use the suggestion endpoint.
         const filter = Array.isArray(search)
           ? search.map(item => [].concat(item).map(itemValue => `${key}|eq|${encodeURIComponent(itemValue)}`).join('|null,')).join('|OR,') || ''
@@ -1357,18 +1412,24 @@
           if (value != this.state.value) {
             // Autocomplete accepts values returned by the picked layer; fixed lists require a match.
             if (this.autocomplete) {
-              if (!this.multiple) { this.state.input.options.values.splice(0); }
+              if (!this.multiple) {
+                this.state.input.options.values.splice(0);
+              }
               this.state.input.options.values.push({
                 key: values[this.state.input.options.value],
                 value: values[this.state.input.options.key],
               });
             }
-            if (!this.autocomplete && !this.state.input.options.values.find(item => item.value == value)) { value = null; }
+            if (!this.autocomplete && !this.state.input.options.values.find(item => item.value == value)) {
+              value = null;
+            }
             await this.changeSelect(value);
             this.setValue();
           }
           // Successful matches close the transient feedback automatically.
-          if (value) { GUI.showUserMessage({ type: 'success', autoclose: true }); }
+          if (value) {
+            GUI.showUserMessage({ type: 'success', autoclose: true });
+          }
           // A missing key or unavailable fixed option needs an explicit warning.
           if (null === value) {
             GUI.showUserMessage({ type: 'warning', message: 'Feature selected is not valid', autoclose: false });
@@ -1419,7 +1480,9 @@
             body,
           })).json();
           // Only successful uploads replace the stored media value.
-          if (response?.result) { this.state.value = response.data; }
+          if (response?.result) {
+            this.state.value = response.data;
+          }
           // Application-level upload failures return a message without throwing.
           if (false === response?.result) {
             GUI.showUserMessage({ type: 'alert', message: response.error || this.$t('server_error') });
@@ -1437,7 +1500,9 @@
         this.edit_state.show_html = !this.edit_state.show_html;
         const editor = this.quill.container.firstChild;
         // Source mode displays markup literally; rich-text mode parses it back into the editor.
-        if (this.edit_state.show_html) { editor.innerText = editor.innerHTML; }
+        if (this.edit_state.show_html) {
+          editor.innerText = editor.innerHTML;
+        }
         else { editor.innerHTML = editor.innerText; }
         this.$el.querySelectorAll('.ql-formats > *').forEach(child => {
           child.classList.toggle(child.classList.contains('ql-html') ? 'skin-color' : 'g3w-disabled');
@@ -1465,8 +1530,11 @@
        */
       toggleGetCoordinate() {
         this.coordinatebutton.active = !this.coordinatebutton.active;
-        if (this.coordinatebutton.active) { this.startToGetCoordinates(); }
-        else { this.stopToGetCoordinates(); }
+        if (this.coordinatebutton.active) {
+          this.startToGetCoordinates();
+        } else {
+          this.stopToGetCoordinates();
+        }
       },
       /**
        * Disable conflicting map controls and listen for map clicks until stopped.
@@ -1497,7 +1565,9 @@
        * Remove the map click and map-control listeners used for coordinate capture.
        */
       stopToGetCoordinates() {
-        if (this.eventMapKey) { ol.Observable.unByKey(this.eventMapKey); }
+        if (this.eventMapKey) {
+          ol.Observable.unByKey(this.eventMapKey);
+        }
         GUI.off('mapcontrol:toggled', this.mapControlToggleEventHandler);
         this.eventMapKey = null;
       },
@@ -1570,7 +1640,9 @@
        * @param {KeyboardEvent} event Document keyup event.
        */
       escKeyUpHandler(event) {
-        if ('Escape' === event.key) { this.unpickFeature(); }
+        if ('Escape' === event.key) {
+          this.unpickFeature();
+        }
       },
       /**
        * Resolve configured feature attributes and release the map interaction.
@@ -1640,7 +1712,9 @@
        * Both picking aliases share these resources, so teardown must run only once.
        */
       clearPick() {
-        if (this.isPicked()) { this.unpickFeature(); }
+        if (this.isPicked()) {
+          this.unpickFeature();
+        }
         this.interaction = this.field = null;
       },
     },
@@ -1674,7 +1748,9 @@
     async created() {
       this.state.input.options = this.state.input.options || {};
       // Coordinate controls consume a dedicated object even when no prior value exists.
-      if ('lonlat_input' === this.type) { this.state.values = this.state.values || { lon: 0, lat: 0 }; }
+      if ('lonlat_input' === this.type) {
+        this.state.values = this.state.values || { lon: 0, lat: 0 };
+      }
       // Plugin-backed inputs provide their own service and lifecycle.
       if (this.isNativeInput) {
         this.service = this.createServiceWrapper({
@@ -1737,16 +1813,26 @@
           }
         });
         // Required fields need an initial validation before the first user edit.
-        if (this.state.editable && this.state.validate.required) { this.validate(); }
+        if (this.state.editable && this.state.validate.required) {
+          this.validate();
+        }
         this.forwardAddInput(this.state);
-        if (this.state.value_from_default_value) { this.forwardChangeInput(this.state); }
+        if (this.state.value_from_default_value) {
+          this.forwardChangeInput(this.state);
+        }
         // Seed transient UI state from persisted values for controls that own external editors.
-        if ('media_input' === this.type) { this.setMedia(); }
+        if ('media_input' === this.type) {
+          this.setMedia();
+        }
         if ('texthtml_input' === this.type) {
-          if (!this.state.edit_states) { this.state.edit_states = []; }
+          if (!this.state.edit_states) {
+            this.state.edit_states = [];
+          }
           this.state.edit_states.push(this.edit_state);
         }
-        if ('picklayer_input' === this.type) { this.initializePickService(); }
+        if ('picklayer_input' === this.type) {
+          this.initializePickService();
+        }
       }
       // Select options and relation filters must load before created() resolves.
       if (['select_input', 'select_autocomplete_input'].includes(this.type)) {
@@ -2015,7 +2101,9 @@
         Object.entries(toolbarIcons).forEach(([selector, [label, title]]) => {
           const button = this.$el.querySelector(selector);
           button.innerHTML = label;
-          if ('.ql-html' === selector) { button.style.width = 'unset'; }
+          if ('.ql-html' === selector) {
+            button.style.width = 'unset';
+          }
           button.title = title;
         });
         this.quillHandler = () => this.handleQuillChange();
@@ -2029,10 +2117,14 @@
      */
     beforeDestroy() {
       // Stop map listeners before releasing shared widget and global resources.
-      if ('lonlat_input' === this.type) { this.stopToGetCoordinates(); }
+      if ('lonlat_input' === this.type) {
+        this.stopToGetCoordinates();
+      }
       if (this.pickservice) {
         this.clearPick();
-        if (this.pickLayerInputService === this.pickservice) { this.pickLayerInputService = null; }
+        if (this.pickLayerInputService === this.pickservice) {
+          this.pickLayerInputService = null;
+        }
         this.pickservice = null;
       }
       // Date and select widgets each own a resize registration.
@@ -2066,7 +2158,9 @@
      * Notify the parent form after a built-in field has been removed.
      */
     destroyed() {
-      if (this.isNativeInput) { this.forwardRemoveInput(this.state); }
+      if (this.isNativeInput) {
+        this.forwardRemoveInput(this.state);
+      }
     }
   };
 </script>
