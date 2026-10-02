@@ -32,19 +32,16 @@
     "@mapbox/shp-write": "^0.4.3",
     "@ungap/with-resolvers": "^0.1.0",
     "invokers-polyfill": "^0.5.5",
-    "jquery": "^2.2.1",
     "jsts": "^2.11.3",
     "jszip": "^3.10.1",
     "lodash.clonedeep": "^4.5.0",
-    "moment": "^2.19.1",
     "ol": "^10.8.0",
     "proj4": "^2.19.6",
     "quill": "^2.0.3",
-    "select2": "^4.0.4",
     "shpjs": "^6.1.0",
+    "temporal-polyfill": "^1.0.5",
     "util-deprecate": "^1.0.2",
-    "vue": "2.7.16",
-    "vue-color": "^2.8.1"
+    "vue": "2.7.16"
   },
   "devDependencies": {
     "esbuild": "^0.24.0",

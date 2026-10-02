@@ -40,10 +40,7 @@ g3w.app.once('app-ready', () => {
 });
 
 // dark mode
-g3w.app.isReady().then(() => {
-  document.querySelector('nav').style.setProperty('--skin-color', '#212c31');
-});
-document.body.style.setProperty('--bgcolor', '#212c31');
+localStorage.setItem('map:accessibility:high_contrast', 'true');
 
 // custom header links
 g3w.app.once('initconfig', () => {

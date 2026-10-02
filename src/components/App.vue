@@ -135,6 +135,15 @@
                 <b>{{ $t('Embed map') }}</b><i class = "fa fa-share-alt" aria-hidden = "true"></i>
               </a>
 
+              <!-- MAP SETTINGS -->
+              <a
+                href         = "#"
+                @click.prevent = "showAccessibility"
+                class        = "nav-map-settings btn btn-default btn-flat skin-color"
+              >
+                <b>{{ $t('Accessibility') }}</b><i class = "fas fa-universal-access" aria-hidden = "true"></i>
+              </a>
+
               <!-- CHANGE MAP -->
               <a
                 v-if   = "has_related_maps"
@@ -816,6 +825,7 @@
     <modal-addlayer />
     <modal-changemap />
     <modal-metadata />
+    <modal-accessibility />
 
   </div>
 </template>
@@ -835,6 +845,7 @@ import ModalLogin              from 'components/ModalLogin.vue';
 import ModalAddlayer           from 'components/ModalAddLayer.vue';
 import ModalChangemap          from 'components/ModalChangeMap.vue';
 import ModalMetadata           from 'components/ModalMetadata.vue';
+import ModalAccessibility      from 'components/ModalAccessibility.vue';
 import CatalogTree             from 'components/CatalogTree.vue';
 import { gettext as _ }        from 'g3w-i18n';
 
@@ -875,6 +886,7 @@ export default {
     ModalAddlayer,
     ModalChangemap,
     ModalMetadata,
+    ModalAccessibility,
     CatalogTree,
   },
 
@@ -1077,6 +1089,10 @@ export default {
      */
     openChangeMapMenu() {
       $('#modal-changemap').modal('show');
+    },
+
+    showAccessibility() {
+      $('#modal-accessibility').modal('show');
     },
 
     isNotLastCrumb(index) {

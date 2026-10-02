@@ -5,17 +5,6 @@
 
 import GUI from 'g3w-app';
 
-// show select2 dropdowns as "popover" (ie. always on top over other DOM elements) 
-$(document).on('select2:open', function(e) {
-  const dropdown = document.querySelector('.select2-container--open .select2-dropdown');
-  dropdown.popover = true;
-  dropdown.parentElement.style.anchorName = '--select2-dropdown-open';
-  dropdown.style.margin = dropdown.style.inset = 'unset';
-  dropdown.style.top = 'anchor(--select2-dropdown-open bottom)';
-  dropdown.style.left = 'anchor(--select2-dropdown-open left)';
-  dropdown.showPopover();
-});
-
 export default {
   inserted(el, binding, vnode) {
     const {
@@ -64,7 +53,9 @@ export default {
             } : null;
           },
         })
-        .on('select2:select select2:unselect', e => {
+        // namespaced to avoid duplicated listeners when re-created on "i18n-ready"
+        .off('.vselect2')
+        .on('select2:select.vselect2 select2:unselect.vselect2', e => {
           if (!binding.value) {
             return;
           }
@@ -108,13 +99,13 @@ export default {
     // listen `select2_value` attribute changes to reflect select2 current value
     if (binding.value && undefined !== select2_value) {
       $(el).val(select2_value).trigger('change');
-      vnode.g3w_observer = new MutationObserver(mutations => {
+      el.__vselect2_observer = new MutationObserver(mutations => {
         const target = (mutations.find(m => "select2_value" === m.attributeName) || {}).target
         if (target) {
           $(el).val(target.getAttribute("select2_value")).trigger('change');
         }
       });
-      vnode.g3w_observer.observe(el, {attributes: true});
+      el.__vselect2_observer.observe(el, {attributes: true});
     }
 
     GUI.on('i18n-ready', () => {
@@ -125,10 +116,8 @@ export default {
       createSelect2();
     });
   },
-  unbind: (el, vnode) => {
-    if (vnode.g3w_observer) {
-      vnode.g3w_observer.disconnect();
-    }
+  unbind(el) {
+    el.__vselect2_observer?.disconnect();
     $(el).select2('destroy');
   }
 };
