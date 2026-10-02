@@ -28,8 +28,9 @@
     </div>
 
     <div v-if = "'child' !== state.type">
-      <!-- Native controls share labels, validation feedback and help text. -->
-      <div v-if = "isNativeInput" class = "form-group">
+
+      <!-- Native controls share labels and loading state; controls own their form groups. -->
+      <template v-if = "isNativeInput">
         <!-- lonlat_input renders separate longitude and latitude labels below. -->
         <template v-if = "'lonlat_input' !== type && (undefined === state.showlabel || state.showlabel)">
           <label
@@ -62,9 +63,11 @@
           <div class = "bar-loader" style = "border: 0"></div>
         </div>
 
-        <!-- Text and string schemas share the same single-line editor. -->
+      </template>
+
+      <!-- Text and string schemas share the same single-line editor. -->
+      <div v-if = "['text_input', 'string_input'].includes(type)" class = "form-group">
         <input
-          v-if         = "['text_input', 'string_input'].includes(type)"
           :placeholder = "state.default"
           @keyup       = "mobileChange($event)"
           :tabIndex    = "tabIndex"
@@ -75,10 +78,11 @@
           :class       = "{'input-error-validation' : notvalid}"
           :id          = "state.name"
         >
+      </div>
 
-        <!-- Textareas notify on both keystrokes and committed browser changes. -->
+      <!-- Textareas notify on both keystrokes and committed browser changes. -->
+      <div v-if = "'textarea_input' === type" class = "form-group">
         <textarea
-          v-if           = "'textarea_input' === type"
           @keydown.stop = ""
           :placeholder  = "state.default"
           @input        = "change()"
@@ -90,10 +94,11 @@
           :class        = "{'input-error-validation' : notvalid}"
           v-model       = "state.value"
         ></textarea>
+      </div>
 
-        <!-- Numeric aliases use a number control; the schema supplies its step. -->
+      <!-- Numeric aliases use a number control; the schema supplies its step. -->
+      <div v-if = "['integer_input', 'bigint_input', 'float_input'].includes(type)" class = "form-group">
         <input
-          v-if          = "['integer_input', 'bigint_input', 'float_input'].includes(type)"
           @change      = "change()"
           @input       = "change()"
           class        = "form-control"
@@ -106,10 +111,11 @@
           :step        = "state.step || 1"
           :placeholder = "state.default"
         >
+      </div>
 
-        <!-- Color values use the browser-native color picker. -->
+      <!-- Color values use the browser-native color picker. -->
+      <div v-if = "'color_input' === type" class = "form-group">
         <input
-          v-if          = "'color_input' === type"
           :placeholder = "state.default"
           type         = "color"
           @change      = "change()"
@@ -122,281 +128,292 @@
           :class       = "{'input-error-validation' : notvalid}"
           :id          = "state.name"
         >
+      </div>
 
-        <!-- Checkbox booleans are mapped to the configured stored option value. -->
-        <div v-if = "'check_input' === type" v-disabled = "!editable" style = "height: 20px; margin-top: 8px">
+      <!-- Checkbox booleans are mapped to the configured stored option value. -->
+      <div v-if = "'check_input' === type" class = "form-group" v-disabled = "!editable" style = "height: 20px; margin-top: 8px">
+        <input
+          @change   = "change()"
+          :tabIndex = "tabIndex"
+          :class    = "{'input-error-validation' : notvalid}"
+          v-model   = "checkboxValue"
+          type      = "checkbox"
+          :id       = "checkboxId"
+        />
+        <label :for = "checkboxId">{{ checkboxLabel }}</label>
+      </div>
+
+      <!-- Each radio option shares one group name and writes its configured value. -->
+      <div v-if = "'radio_input' === type" class = "form-group">
+        <span v-for = "(option, index) in state.input.options.values" :key = "option.key || option.value">
           <input
-            @change   = "change()"
+            :id       = "radioIds[index]"
+            :name     = "radioName"
+            :value    = "option.value"
             :tabIndex = "tabIndex"
+            v-disabled= "!editable"
             :class    = "{'input-error-validation' : notvalid}"
-            v-model   = "checkboxValue"
-            type      = "checkbox"
-            :id       = "checkboxId"
+            v-model   = "radioValue"
+            type      = "radio"
           />
-          <label :for = "checkboxId">{{ checkboxLabel }}</label>
-        </div>
+          <label :for = "radioIds[index]" style = "padding: 5px">{{ option.key || option.value }}</label>
+        </span>
+      </div>
 
-        <!-- Each radio option shares one group name and writes its configured value. -->
-        <div v-if = "'radio_input' === type">
-          <span v-for = "(option, index) in state.input.options.values" :key = "option.key || option.value">
+      <!-- Numeric ranges share validation but keep their type-specific bounds and step. -->
+      <div v-if = "'range_input' === type" class = "form-group">
+        <input
+          @keydown.69.prevent = ""
+          @keydown.13.stop    = ""
+          @change             = "checkRangeValue"
+          @blur               = "checkRangeValue"
+          style               = "width:100%; padding-right: 5px;"
+          class               = "form-control"
+          :tabIndex           = "tabIndex"
+          v-disabled          = "!editable"
+          :class              = "{'input-error-validation' : notvalid}"
+          v-model             = "state.value"
+          type                = "number"
+          :step               = "rangeStep"
+          :min                = "rangeMin"
+          :max                = "rangeMax"
+        >
+      </div>
+
+      <div v-if = "'slider_input' === type" class = "form-group">
+        <!-- The current value is shown separately because range inputs do not display it. -->
+        <span style = "font-weight: bold">{{ state.value }}</span>
+        <input
+          @change     = "change()"
+          style       = "width:100%; padding-right: 5px;"
+          :tabIndex   = "tabIndex"
+          v-disabled  = "!editable"
+          :class      = "{'input-error-validation' : notvalid}"
+          v-model     = "state.value"
+          :min        = "state.input.options.min"
+          :max        = "state.input.options.max"
+          type        = "range"
+          :step       = "state.input.options.step"
+        >
+      </div>
+
+      <!-- Uploaded media is previewed by g3w-field and can be cleared independently. -->
+      <div v-if = "'media_input' === type" class = "form-group" v-disabled = "!editable">
+        <div
+          class           = "g3w_input_button skin-border-color"
+          @click          = "onClick"
+          style           = "border-style: solid; border-width: 2px; width:100%; cursor: pointer; text-align: center;"
+          v-t-tooltip:top = "accept"
+        >
+          <i class = "fas fa-file-upload fa-2x skin-color" style = "padding: 5px;">
             <input
-              :id       = "radioIds[index]"
-              :name     = "radioName"
-              :value    = "option.value"
+              :id       = "mediaid"
+              style     = "display:none"
+              :name     = "state.name"
               :tabIndex = "tabIndex"
-              v-disabled= "!editable"
+              :data-url = "state.input.options.uploadurl"
               :class    = "{'input-error-validation' : notvalid}"
-              v-model   = "radioValue"
-              type      = "radio"
-            />
-            <label :for = "radioIds[index]" style = "padding: 5px">{{ option.key || option.value }}</label>
-          </span>
+              type      = "file"
+              :accept   = "accept"
+              @change   = "onChangeFile"
+            >
+          </i>
         </div>
-
-        <!-- Numeric ranges share validation but keep their type-specific bounds and step. -->
-        <template v-if = "'range_input' === type">
-          <input
-            @keydown.69.prevent = ""
-            @keydown.13.stop    = ""
-            @change             = "checkRangeValue"
-            @blur               = "checkRangeValue"
-            style               = "width:100%; padding-right: 5px;"
-            class               = "form-control"
-            :tabIndex           = "tabIndex"
-            v-disabled          = "!editable"
-            :class              = "{'input-error-validation' : notvalid}"
-            v-model             = "state.value"
-            type                = "number"
-            :step               = "rangeStep"
-            :min                = "rangeMin"
-            :max                = "rangeMax"
-          >
-        </template>
-
-        <div v-if = "'slider_input' === type">
-          <!-- The current value is shown separately because range inputs do not display it. -->
-          <span style = "font-weight: bold">{{ state.value }}</span>
-          <input
-            @change     = "change()"
-            style       = "width:100%; padding-right: 5px;"
-            :tabIndex   = "tabIndex"
-            v-disabled  = "!editable"
-            :class      = "{'input-error-validation' : notvalid}"
-            v-model     = "state.value"
-            :min        = "state.input.options.min"
-            :max        = "state.input.options.max"
-            type        = "range"
-            :step       = "state.input.options.step"
-          >
-        </div>
-
-        <!-- Uploaded media is previewed by g3w-field and can be cleared independently. -->
-        <div v-if = "'media_input' === type" v-disabled = "!editable">
-          <div
-            class           = "g3w_input_button skin-border-color"
-            @click          = "onClick"
-            style           = "border-style: solid; border-width: 2px; width:100%; cursor: pointer; text-align: center;"
-            v-t-tooltip:top = "accept"
-          >
-            <i class = "fas fa-file-upload fa-2x skin-color" style = "padding: 5px;">
-              <input
-                :id       = "mediaid"
-                style     = "display:none"
-                :name     = "state.name"
-                :tabIndex = "tabIndex"
-                :data-url = "state.input.options.uploadurl"
-                :class    = "{'input-error-validation' : notvalid}"
-                type      = "file"
-                :accept   = "accept"
-                @change   = "onChangeFile"
-              >
-            </i>
+        <div v-if = "loading" class = "bar-loader" style = "border: 0"></div>
+        <g3w-field field-type = "media" :state = "mediaData">
+          <div class = "clearmedia" @click.stop = "clearMedia">
+            <i class = "far fa-trash-alt g3w-icon"></i>
           </div>
-          <div v-if = "loading" class = "bar-loader" style = "border: 0"></div>
-          <g3w-field field-type = "media" :state = "mediaData">
-            <div class = "clearmedia" @click.stop = "clearMedia">
-              <i class = "far fa-trash-alt g3w-icon"></i>
-            </div>
-          </g3w-field>
-        </div>
+        </g3w-field>
+      </div>
 
-        <!-- Unique values can add tags only when the schema allows editing. -->
-        <div v-if = "'unique_input' === type" v-disabled = "!editable">
+      <!-- Unique values can add tags only when the schema allows editing. -->
+      <div v-if = "'unique_input' === type" class = "form-group" v-disabled = "!editable">
+        <x-select
+          ref               = "select"
+          :value            = "getValue(state.value)"
+          :tabIndex         = "tabIndex"
+          searchable
+          :createTag        = "state.input.options.editable && ''"
+          @change           = "onUniqueSelect"
+        >
+          <x-option value = "null"></x-option>
+          <x-option v-for = "value in state.input.options.values" :key = "value" :value = "getValue(value)">
+            {{ getValue(value) }}
+          </x-option>
+          <x-option v-if = "null !== state.value && !state.input.options.values.some(value => getValue(value) === getValue(state.value))" :value = "getValue(state.value)">
+            {{ getValue(state.value) }}
+          </x-option>
+        </x-select>
+      </div>
+
+      <!-- Fixed choices, autocomplete, map picking and relation filters. -->
+      <div v-if = "['select_input', 'select_autocomplete_input'].includes(type)" class = "form-group">
+        <!-- The map-pick affordance is available only for eligible autocomplete layers. -->
+        <span
+          v-if            = "showPickLayer"
+          v-t-tooltip:top = "'Get value from map layer'"
+          v-disabled      = "disabled"
+          @click.stop     = "pickLayerValue"
+          class           = "g3w-input-pick-layer skin-color"
+        ><i class = "fas fa-crosshairs"></i></span>
+        <!-- Relation filters remain hidden until their initial option lists are ready. -->
+        <div
+          v-if  = "filterFields.length && isFilterFieldsReady"
+          class = "g3w-relation-reference-fields-content"
+        >
+          <template v-for = "(filter, index) in filterFields">
+            <x-select
+              :data-filter-id = "filter.id"
+              :value          = "filter.value"
+              :disabled       = "filter.disabled"
+              searchable
+              @change         = "onRelationFilterChange(filter, $event)"
+            >
+              <x-option v-for = "option in filter.values" :key = "option.value" :value = "getValue(option.value)">{{ option.key }}</x-option>
+            </x-select>
+          </template>
+          <span class = "divider"></span>
+        </div>
+        <!-- Disabled state includes loading and errors. -->
+        <div v-disabled = "disabled" :tabIndex = "tabIndex">
           <x-select
             ref               = "select"
-            :value            = "getValue(state.value)"
-            :tabIndex         = "tabIndex"
-            searchable
-            :createTag        = "state.input.options.editable && ''"
-            @change           = "onUniqueSelect"
+            :value            = "getSelectValue()"
+            :multiple         = "multiple"
+            :searchable       = "true"
+            :disabled         = "disabled"
+            @change           = "onSelectChange"
+            @search-input     = "searchAutocomplete"
           >
-            <x-option value = "null"></x-option>
-            <x-option v-for = "value in state.input.options.values" :key = "value" :value = "getValue(value)">
-              {{ getValue(value) }}
-            </x-option>
-            <x-option v-if = "null !== state.value && !state.input.options.values.some(value => getValue(value) === getValue(state.value))" :value = "getValue(state.value)">
-              {{ getValue(state.value) }}
+            <x-option v-if = "showNullOption" value = "null"></x-option>
+            <x-option v-for = "({key, value}) in state.input.options.values" :key = "value" :value = "getValue(value)">
+              {{ key }}
             </x-option>
           </x-select>
         </div>
+        <!-- Surface remote option-load failures without replacing the select control. -->
+        <p v-if = "'error' === loadingState" class = "error-input-message" v-t = "'server_error'"></p>
+      </div>
 
-        <!-- Fixed choices, autocomplete, map picking and relation filters. -->
-        <div v-if = "['select_input', 'select_autocomplete_input'].includes(type)">
-          <!-- The map-pick affordance is available only for eligible autocomplete layers. -->
-          <span
-            v-if            = "showPickLayer"
-            v-t-tooltip:top = "'Get value from map layer'"
-            v-disabled      = "disabled"
-            @click.stop     = "pickLayerValue"
-            class           = "g3w-input-pick-layer skin-color"
-          ><i class = "fas fa-crosshairs"></i></span>
-          <!-- Relation filters remain hidden until their initial option lists are ready. -->
-          <div
-            v-if  = "filterFields.length && isFilterFieldsReady"
-            class = "g3w-relation-reference-fields-content"
-          >
-            <template v-for = "(filter, index) in filterFields">
-              <x-select
-                :data-filter-id = "filter.id"
-                :value          = "filter.value"
-                :disabled       = "filter.disabled"
-                searchable
-                @change         = "onRelationFilterChange(filter, $event)"
-              >
-                <x-option v-for = "option in filter.values" :key = "option.value" :value = "getValue(option.value)">{{ option.key }}</x-option>
-              </x-select>
-            </template>
-            <span class = "divider"></span>
-          </div>
-          <!-- Disabled state includes loading and errors. -->
-          <div v-disabled = "disabled" :tabIndex = "tabIndex">
-            <x-select
-              ref               = "select"
-              :value            = "getSelectValue()"
-              :multiple         = "multiple"
-              :searchable       = "true"
-              :disabled         = "disabled"
-              @change           = "onSelectChange"
-              @search-input     = "searchAutocomplete"
-            >
-              <x-option v-if = "showNullOption" value = "null"></x-option>
-              <x-option v-for = "({key, value}) in state.input.options.values" :key = "value" :value = "getValue(value)">
-                {{ key }}
-              </x-option>
-            </x-select>
-          </div>
-          <!-- Surface remote option-load failures without replacing the select control. -->
-          <p v-if = "'error' === loadingState" class = "error-input-message" v-t = "'server_error'"></p>
-        </div>
-
-        <!-- The date-picker input is initialized from QGIS formats in mounted(). -->
-        <div v-if = "'datetimepicker_input' === type" ref = "datetimepicker_body">
-          <div class = "input-group date" :id = "iddatetimepicker" v-disabled = "!editable">
-            <input
-              type      = "text"
-              :id       = "idinputdatetimepiker"
-              :tabIndex = "tabIndex"
-              :readonly = "!editable || isMobile()"
-              :class    = "{'input-error-validation' : notvalid}"
-              class     = "form-control"
-            />
-            <span class = "input-group-addon skin-color" style = "border: 1px solid #ccc; cursor:pointer">
-              <span v-if = "!state.input.options.formats[0].date" class = "far fa-clock"></span>
-              <span v-if = "state.input.options.formats[0].date" class = "fas fa-calendar-alt"></span>
-            </span>
-          </div>
-        </div>
-
-        <!-- Map-backed controls pick either feature attributes or map coordinates. -->
-        <!-- This read-only text field is populated only by a map feature/coordinate pick. -->
-        <div v-if = "'picklayer_input' === type">
-          <span
-            style  = "left: 0; top: 7px; position: absolute"
-            class  = "fas fa-crosshairs skin-color"
-          ></span>
+      <!-- The date-picker input is initialized from QGIS formats in mounted(). -->
+      <div v-if = "'datetimepicker_input' === type" class = "form-group" ref = "datetimepicker_body">
+        <div class = "input-group date" :id = "iddatetimepicker" v-disabled = "!editable">
           <input
-            @input     = "change()"
-            @click     = "pickLayer"
-            @blur      = "unpick"
-            style      = "width: 100%"
-            :style     = "{cursor: editable && 'pointer'}"
-            class      = "form-control"
-            readonly   = "readonly"
-            :tabIndex  = "tabIndex"
-            v-disabled = "!editable"
-            :class     = "{'input-error-validation' : notvalid}"
-            v-model    = "state.value"
-          >
+            type      = "text"
+            :id       = "idinputdatetimepiker"
+            :tabIndex = "tabIndex"
+            :readonly = "!editable || isMobile()"
+            :class    = "{'input-error-validation' : notvalid}"
+            class     = "form-control"
+          />
+          <span class = "input-group-addon skin-color" style = "border: 1px solid #ccc; cursor:pointer">
+            <span v-if = "!state.input.options.formats[0].date" class = "far fa-clock"></span>
+            <span v-if = "state.input.options.formats[0].date" class = "fas fa-calendar-alt"></span>
+          </span>
         </div>
+      </div>
 
-        <!-- Longitude and latitude are separate editable values with one map-pick action. -->
-        <div v-if = "'lonlat_input' === type" style = "position: relative">
-          <div style = "display: flex; justify-content: flex-end; height: 35px; margin-right: 12px; margin-bottom: 5px">
-            <button
-              @click.prevent.stop = "toggleGetCoordinate"
-              :class              = "{'g3w-input-coordinate-button-active': coordinatebutton.active}"
-              data-placement      = "left"
-              v-t-tooltip         = "'Click on map to get coordinates'"
-              class               = "action skin-color skin-border-color fas fa-crosshairs"
-              style               = "border: 0; border-radius: 5px; font-weight: bold; font-size: 20px; cursor: pointer"
-            ></button>
-          </div>
-          <!-- Keep coordinate labels and constraints independent for accessibility. -->
-          <div v-if = "state.visible" class = "form-group">
-            <template v-if = "undefined === state.showlabel || state.showlabel">
-              <label :for = "lonId" class = "col-sm-4 control-label" style = "text-align:left !important; padding-top:0 !important; margin-bottom:3px">
-                {{ state.labels.lon }} <span v-if = "state.validate && state.validate.required">*</span>
-              </label>
-            </template>
-            <div v-if = "state.relationField" style = "color: var(--skin-warning); padding: 3px 0 3px 15px">
-              <i aria-hidden = "true" class = "fas fa-exclamation-circle"></i><span v-t = "'Relation key field'"></span>
-            </div>
-            <input :id = "lonId" @change = "changeLonLat" :class = "{'input-error-validation' : notvalid}" class = "form-control" style = "width:100%; margin-bottom: 5px;" :tabIndex = "tabIndex" v-disabled = "!editable" v-model = "state.values.lon" type = "number" min = "-180" max = "180" placeholder = "Lon">
-          </div>
-          <!-- Latitude mirrors longitude but uses its own identifier and bounds. -->
-          <div v-if = "state.visible" class = "form-group">
-            <template v-if = "undefined === state.showlabel || state.showlabel">
-              <label :for = "latId" class = "col-sm-4 control-label" style = "text-align:left !important; padding-top:0 !important; margin-bottom:3px">
-                {{ state.labels.lat }} <span v-if = "state.validate && state.validate.required">*</span>
-              </label>
-            </template>
-            <div v-if = "state.relationField" style = "color: var(--skin-warning); padding: 3px 0 3px 15px">
-              <i aria-hidden = "true" class = "fas fa-exclamation-circle"></i><span v-t = "'Relation key field'"></span>
-            </div>
-            <input :id = "latId" @change = "changeLonLat" class = "form-control" style = "width:100%; margin-bottom: 5px;" :tabIndex = "tabIndex" v-disabled = "!editable" v-model = "state.values.lat" type = "number" :class = "{'input-error-validation' : notvalid}" min = "-90" max = "90" placeholder = "Lon">
-          </div>
-        </div>
-
-        <!-- Quill is mounted on this element and synchronized with state.value. -->
-        <div
-          v-if      = "'texthtml_input' === type"
-          ref        = "quill_editor"
-          class      = "form-control g3w-input-quill"
-          @keydown.stop = ""
-          :class     = "{'g3w-input-quill-invalid': !state.validate.valid}"
+      <!-- Map-backed controls pick either feature attributes or map coordinates. -->
+      <!-- This read-only text field is populated only by a map feature/coordinate pick. -->
+      <div v-if = "'picklayer_input' === type" class = "form-group">
+        <span
+          style  = "left: 0; top: 7px; position: absolute"
+          class  = "fas fa-crosshairs skin-color"
+        ></span>
+        <input
+          @input     = "change()"
+          @click     = "pickLayer"
+          @blur      = "unpick"
+          style      = "width: 100%"
+          :style     = "{cursor: editable && 'pointer'}"
+          class      = "form-control"
+          readonly   = "readonly"
+          :tabIndex  = "tabIndex"
           v-disabled = "!editable"
-        ></div>
+          :class     = "{'input-error-validation' : notvalid}"
+          v-model    = "state.value"
+        >
+      </div>
 
-        <!-- Validation takes precedence over informational helper text. -->
-        <p
-          v-if   = "notvalid"
-          class  = "g3w-long-text error-input-message"
-          style  = "margin: 0"
-          v-html = "state.validate.message"
-        ></p>
-        <p v-if = "!notvalid && state.info" style = "margin: 0" v-html = "state.info"></p>
-        <!-- Help content is expanded only when the field state marks it visible. -->
+      <!-- Longitude and latitude are separate editable values with one map-pick action. -->
+      <div v-if = "'lonlat_input' === type" class = "form-group" style = "position: relative">
+        <div style = "display: flex; justify-content: flex-end; height: 35px; margin-right: 12px; margin-bottom: 5px">
+          <button
+            @click.prevent.stop = "toggleGetCoordinate"
+            :class              = "{'g3w-input-coordinate-button-active': coordinatebutton.active}"
+            data-placement      = "left"
+            v-t-tooltip         = "'Click on map to get coordinates'"
+            class               = "action skin-color skin-border-color fas fa-crosshairs"
+            style               = "border: 0; border-radius: 5px; font-weight: bold; font-size: 20px; cursor: pointer"
+          ></button>
+        </div>
+        <!-- Keep coordinate labels and constraints independent for accessibility. -->
+        <div v-if = "state.visible" class = "form-group">
+          <template v-if = "undefined === state.showlabel || state.showlabel">
+            <label :for = "lonId" class = "col-sm-4 control-label" style = "text-align:left !important; padding-top:0 !important; margin-bottom:3px">
+              {{ state.labels.lon }} <span v-if = "state.validate && state.validate.required">*</span>
+            </label>
+          </template>
+          <div v-if = "state.relationField" style = "color: var(--skin-warning); padding: 3px 0 3px 15px">
+            <i aria-hidden = "true" class = "fas fa-exclamation-circle"></i><span v-t = "'Relation key field'"></span>
+          </div>
+          <input :id = "lonId" @change = "changeLonLat" :class = "{'input-error-validation' : notvalid}" class = "form-control" style = "width:100%; margin-bottom: 5px;" :tabIndex = "tabIndex" v-disabled = "!editable" v-model = "state.values.lon" type = "number" min = "-180" max = "180" placeholder = "Lon">
+        </div>
+        <!-- Latitude mirrors longitude but uses its own identifier and bounds. -->
+        <div v-if = "state.visible" class = "form-group">
+          <template v-if = "undefined === state.showlabel || state.showlabel">
+            <label :for = "latId" class = "col-sm-4 control-label" style = "text-align:left !important; padding-top:0 !important; margin-bottom:3px">
+              {{ state.labels.lat }} <span v-if = "state.validate && state.validate.required">*</span>
+            </label>
+          </template>
+          <div v-if = "state.relationField" style = "color: var(--skin-warning); padding: 3px 0 3px 15px">
+            <i aria-hidden = "true" class = "fas fa-exclamation-circle"></i><span v-t = "'Relation key field'"></span>
+          </div>
+          <input :id = "latId" @change = "changeLonLat" class = "form-control" style = "width:100%; margin-bottom: 5px;" :tabIndex = "tabIndex" v-disabled = "!editable" v-model = "state.values.lat" type = "number" :class = "{'input-error-validation' : notvalid}" min = "-90" max = "90" placeholder = "Lon">
+        </div>
+      </div>
+
+      <!-- Quill is mounted on this element and synchronized with state.value. -->
+      <div v-if = "'texthtml_input' === type" class = "form-group">
         <div
-          v-if   = "state.help && state.help.visible"
-          v-html = "state.help.message"
-          class  = "g3w_input_help skin-background-color"
-          style  = "background-color: hsl(from var(--skin-color) h s calc(l + 48)) !important;"
+          ref           = "quill_editor"
+          class         = "form-control g3w-input-quill"
+          @keydown.stop = ""
+          :class        = "{'g3w-input-quill-invalid': !state.validate.valid}"
+          v-disabled    = "!editable"
         ></div>
       </div>
 
+      <!-- VALIDATION text. -->
+      <p
+        v-if   = "notvalid"
+        class  = "g3w-long-text error-input-message"
+        style  = "margin: 0"
+        v-html = "state.validate.message"
+      ></p>
+
+      <!-- HELP text. -->
+      <p v-if = "!notvalid && state.info" style = "margin: 0" v-html = "state.info"></p>
+      
+      <!-- Help text. -->
+      <div
+        v-if   = "state.help && state.help.visible"
+        v-html = "state.help.message"
+        class  = "g3w_input_help skin-background-color"
+        style  = "background-color: hsl(from var(--skin-color) h s calc(l + 48)) !important;"
+      ></div>
+
       <!-- Unknown input types are resolved as registered plugin components. -->
       <component
-        v-if = "!isNativeInput"
+        v-if = "![
+          'text_input', 'string_input', 'textarea_input',
+          'integer_input', 'bigint_input', 'float_input',
+          'color_input', 'check_input', 'radio_input',
+          'range_input', 'slider_input', 'media_input', 'unique_input',
+          'texthtml_input', 'datetimepicker_input', 'picklayer_input', 'lonlat_input',
+          'select_input', 'select_autocomplete_input'
+        ].includes(this.type)"
         @changeinput      = "forwardChangeInput"
         :changeInput      = "changeInput"
         @addinput         = "forwardAddInput"
@@ -424,20 +441,8 @@
   import { throttle }                                from 'utils/throttle';
   import { debounce }                                from 'utils/debounce';
   import { convertQGISDateTimeFormatToMoment }        from 'utils/convertQGISDateTimeFormatToMoment';
-  import PickFeatureInteraction                      from 'interactions/pick-feature';
   import PickCoordinatesInteraction                  from 'interactions/pick-coordinates';
   import { getCatalogLayerById }                     from 'utils/getCatalogLayerById';
-
-  /**
-   * Encode one or more values in the filter syntax used by getFilterData().
-   * @param {Object} options Field name, values, comparison operator and join operator.
-   * @returns {string} Encoded field expressions joined with the requested logic operator.
-   */
-  function createSingleFieldParameter({ field, value, operator = 'eq', logicop = 'OR' }) {
-    return [].concat(value)
-      .map(item => `${field}|${operator.toLowerCase()}|${encodeURIComponent(item)}`)
-      .join(`|${logicop},`);
-  }
 
   /**
    * Render a built-in form control or delegate an unrecognized type to a plugin.
@@ -544,20 +549,6 @@
         return `${this.state.input?.type ?? this.state.type}_input`;
       },
       /**
-       * Identify types implemented by this component rather than plugin components.
-       * @returns {boolean} Whether the resolved type uses the native form shell.
-       */
-      isNativeInput() {
-        return [
-          'text_input', 'string_input', 'textarea_input',
-          'integer_input', 'bigint_input', 'float_input',
-          'color_input', 'check_input', 'radio_input',
-          'range_input', 'slider_input', 'media_input', 'unique_input',
-          'texthtml_input', 'datetimepicker_input', 'picklayer_input', 'lonlat_input',
-          'select_input', 'select_autocomplete_input'
-        ].includes(this.type);
-      },
-      /**
        * Whether this select uses remote autocomplete rather than a fixed list.
        * @returns {boolean}
        */
@@ -597,10 +588,7 @@
        * @returns {number}
        */
       tabIndex() {
-        if (this.editable) {
-          return 0;
-        }
-        return -1;
+        return this.editable ? 0 : -1;
       },
       /**
        * Whether current field validation has failed.
@@ -614,17 +602,14 @@
        * @returns {boolean|string|null|undefined} Trimmed help text or a falsy value.
        */
       showhelpicon() {
-        return this.state.help && this.state.help.message.trim();
+        return this.state?.help?.message?.trim?.();
       },
       /**
        * Current asynchronous loading state for the field's input options.
        * @returns {string|null}
        */
       loadingState() {
-        if (this.state.input.options.loading) {
-          return this.state.input.options.loading.state;
-        }
-        return null;
+        return this.state.input?.options?.loading?.state ?? null;
       },
       /**
        * Minimum allowed value, from the range value tuple or slider options.
@@ -746,6 +731,11 @@
         allowmulti:            false,
         unwatch:               null,
         filterFieldsUnwatches: null,
+        validationOptions:     null,
+        ispicked:              false,
+        fields:                null,
+        layerId:               null,
+        interaction:           null,
         accept:                (this.state.input?.options?.allowed_types || []).map(type => {
           if (type.startsWith('.')) {
             return type;
@@ -764,7 +754,14 @@
        */
       async notvalid(notvalid) {
         // Native controls render their own message; custom selects need their trigger styled directly.
-        if (this.isNativeInput && notvalid) {
+        if (notvalid && [
+          'text_input', 'string_input', 'textarea_input',
+          'integer_input', 'bigint_input', 'float_input',
+          'color_input', 'check_input', 'radio_input',
+          'range_input', 'slider_input', 'media_input', 'unique_input',
+          'texthtml_input', 'datetimepicker_input', 'picklayer_input', 'lonlat_input',
+          'select_input', 'select_autocomplete_input'
+        ].includes(this.type)) {
           this.setErrorMessage();
         }
         if (['unique_input', 'select_input', 'select_autocomplete_input'].includes(this.type)) {
@@ -795,7 +792,14 @@
        */
       async 'state.value'(value) {
         // Expression-backed defaults can update state without a DOM input event.
-        if (this.isNativeInput && undefined !== this.state.input.options.default_expression) {
+        if ([
+          'text_input', 'string_input', 'textarea_input',
+          'integer_input', 'bigint_input', 'float_input',
+          'color_input', 'check_input', 'radio_input',
+          'range_input', 'slider_input', 'media_input', 'unique_input',
+          'texthtml_input', 'datetimepicker_input', 'picklayer_input', 'lonlat_input',
+          'select_input', 'select_autocomplete_input'
+        ].includes(this.type) && undefined !== this.state.input.options.default_expression) {
           setTimeout(() => this.change());
         }
         // The media preview is separate from the stored media object.
@@ -866,7 +870,6 @@
        */
       validateValue(value) {
         const state = this.state;
-        const options = this.validationOptions;
         if ('lonlat_input' === this.type) {
           const values = state.values;
           values.lon = Math.max(-180, Math.min(180, values.lon));
@@ -889,13 +892,13 @@
           case 'integer':
             return !Number.isNaN(1 * value) && Math.abs(1 * value) <= 2147483647;
           case 'checkbox':
-            return (options.values || []).includes(value);
+            return (this.validationOptions.values || []).includes(value);
           case 'datetimepicker':
-            return moment(value, options.fielddatetimeformat, true).isValid();
+            return moment(value, this.validationOptions.fielddatetimeformat, true).isValid();
           case 'char':
             return value && 1 === `${value}`.length;
           case 'range':
-            return 1 * value >= options.min && 1 * value <= options.max;
+            return 1 * value >= this.validationOptions.min && 1 * value <= this.validationOptions.max;
           default:
             return true;
         }
@@ -1521,25 +1524,6 @@
         setTimeout(() => !this.isPicked() && this.unpickFeature(), 200);
       },
       /**
-       * Initialize map picking for this component.
-       * Vector/map picking uses a feature interaction; WMS uses picked coordinates
-       * to query the configured layer after the interaction fires.
-       * @param {Object} [options={}] Pick type, layer id and returned attribute names.
-       */
-      initializePick(options = {}) {
-        this.pick_type = options.pick_type || 'wms';
-        this.ispicked = false;
-        this.fields = options.fields || [options.value];
-        this.layerId = options.layer_id;
-        if ('map' === this.pick_type) {
-          this.interaction = new PickFeatureInteraction({ layers: [GUI.getLayerById(this.layerId)] });
-        }
-        if ('map' !== this.pick_type) {
-          this.interaction = new PickCoordinatesInteraction();
-        }
-        this.interaction.set('id', 'picklayer');
-      },
-      /**
        * Report whether the map interaction is active (separate from select UI flag picked).
        * @returns {boolean}
        */
@@ -1589,16 +1573,15 @@
           this.interaction.once('picked', async event => {
             try {
               let feature = event.feature;
-              // WMS picks provide coordinates; vector/map picks already include the feature.
-              const layer = 'wms' === this.pick_type && GUI.getProjectLayer(this.layerId);
+              const layer = GUI.getProjectLayer(this.layerId);
               if (layer) {
                 const response = await layer.query({
                   feature_count: 1,
-                  coordinates: event.coordinate,
+                  coordinates:           event.coordinate,
                   query_point_tolerance: QUERY_POINT_TOLERANCE,
-                  mapProjection: GUI.getMap().getView().getProjection(),
-                  size: GUI.getMap().getSize(),
-                  resolution: GUI.getMap().getView().getResolution(),
+                  mapProjection:         GUI.getMap().getView().getProjection(),
+                  size:                  GUI.getMap().getSize(),
+                  resolution:            GUI.getMap().getView().getResolution(),
                 });
                 feature = response?.data?.at?.(0)?.features?.at(0) ?? null;
               }
@@ -1622,289 +1605,336 @@
       },
     },
     /**
-     * Keep validation configuration and OpenLayers interactions non-reactive.
-     * pick_type, fields and layerId configure the interaction; ispicked tracks activity.
-     * These properties stay outside data() to avoid observing third-party objects;
-     * the field schema and UI flags in data() retain their normal Vue reactivity.
-     */
-    beforeCreate() {
-      Object.assign(this, {
-        validationOptions: null,
-        pick_type: null,
-        ispicked: false,
-        fields: null,
-        layerId: null,
-        interaction: null,
-      });
-    },
-    /**
      * Initialize schema defaults and behavior needed before the first render.
      * Vue does not wait for this async hook before mounting; select DOM setup
      * and relation-filter readiness are handled separately.
      */
     async created() {
+      // Built-in controls share this component's defaults, validation and lifecycle; plugins own their own behavior.
+      const is_legacy = [
+        'text_input', 'string_input', 'textarea_input',
+        'integer_input', 'bigint_input', 'float_input',
+        'color_input', 'check_input', 'radio_input',
+        'range_input', 'slider_input', 'media_input', 'unique_input',
+        'texthtml_input', 'datetimepicker_input', 'picklayer_input', 'lonlat_input',
+        'select_input', 'select_autocomplete_input'
+      ].includes(this.type);
+
+      const is_select = ['select_input', 'select_autocomplete_input'].includes(this.type);
+
       this.state.input.options = this.state.input.options || {};
+      this.validationOptions   = this.state.input.options || {};
+
       // Coordinate controls consume a dedicated object even when no prior value exists.
+      this.state.values = 'lonlat_input' === this.type ? (this.state.values || { lon: 0, lat: 0 }) : this.state.values;
+
+      // Keep an existing form value; otherwise prefer the schema default, then the legacy first-option fallback.
+      const hasNoValue = [null, undefined].includes(this.state.value);
+
+      // Legacy schemas may store options as an array rather than the current object shape.
+      const hasFirstDefault = is_legacy && hasNoValue && Array.isArray(this.state.input.options) && !!this.state.input.options[0].default;
+
+      let defaultValue;
+
+      if (hasNoValue) {
+        defaultValue = this.state.input.options.default;
+      }
+
+      if (hasFirstDefault) {
+        defaultValue = this.state.input.options[0].default;
+      }
+
+      if (is_legacy && hasNoValue && !hasFirstDefault && hasNoValue && Array.isArray(this.state.input.options) && !!this.state.input.options.values?.length) {
+        defaultValue =  this.state.input.options.values[0]?.value || this.state.input.options.values[0];
+      }
+
+      const hasDefault = is_legacy && hasNoValue && this.state.get_default_value && ![null, undefined].includes(defaultValue);
+
+      // Default expressions are evaluated by the server and must not be replaced locally.
+      if (hasDefault && undefined === this.state.input.options.default_expression) {
+        this.state.value = defaultValue;
+      }
+
+      if (is_legacy && hasNoValue) {
+        this.state.value_from_default_value = hasDefault;
+      }
+
+      if (is_legacy) {
+        this.state.validate.empty = null === this.state.value || '' === `${this.state.value}`.trim();
+      }
+
+      // Coordinate fields keep separate lon/lat state and validate geographic bounds.
       if ('lonlat_input' === this.type) {
         this.state.values = this.state.values || { lon: 0, lat: 0 };
+        this.setValue();
       }
-      // Plugin-backed inputs provide their own service and lifecycle.
-      if (this.isNativeInput) {
-        const state = this.state;
-        this.validationOptions = state.input.options || {};
-        // Defaults must not overwrite a value already supplied by the form.
-        const hasNoValue = [null, undefined].includes(state.value);
-        const { options } = state.input;
-        let defaultValue;
-        if (hasNoValue) {
-          defaultValue = options.default;
-        }
-        // Legacy schemas may store options as an array rather than the current object shape.
-        const hasFirstDefault = hasNoValue && Array.isArray(options) && !!options[0].default;
-        const hasValues = hasNoValue && Array.isArray(options) && !!options.values?.length;
-        if (hasFirstDefault) {
-          defaultValue = options[0].default;
-        }
-        if (hasNoValue && !hasFirstDefault && hasValues) {
-          defaultValue = options.values[0]?.value || options.values[0];
-        }
-        const hasDefault = hasNoValue && state.get_default_value && ![null, undefined].includes(defaultValue);
-        // Default expressions are evaluated by the server and must not be replaced locally.
-        if (hasDefault && undefined === options.default_expression) {
-          state.value = defaultValue;
-        }
-        if (hasNoValue) {
-          state.value_from_default_value = hasDefault;
-        }
-        state.validate.empty = null === state.value || '' === `${state.value}`.trim();
-        // Coordinate fields keep separate lon/lat state and validate geographic bounds.
-        if ('lonlat_input' === this.type) {
-          this.state.values = this.state.values || { lon: 0, lat: 0 };
-          this.setValue();
-        }
-        // Range widgets read bounds from the first value tuple.
-        if ('range_input' === this.type) {
-          const { min, max } = this.state.input.options.values[0];
-          this.state.info = `[MIN: ${min} - MAX: ${max}]`;
-        }
-        // Slider widgets read bounds directly from input options.
-        if ('slider_input' === this.type) {
-          const { min, max } = this.state.input.options;
-          this.state.info = `[MIN: ${min} - MAX: ${max}]`;
-        }
+
+      // Range widgets read bounds from the first value tuple.
+      if ('range_input' === this.type) {
+        this.state.info = `[MIN: ${this.state.input.options.values[0].min} - MAX: ${this.state.input.options.values[0].max}]`;
+      }
+
+      // Slider widgets read bounds directly from input options.
+      if ('slider_input' === this.type) {
+        this.state.info = `[MIN: ${this.state.input.options.min} - MAX: ${this.state.input.options.max}]`;
+      }
+
+      if (is_legacy) {
         this.setErrorMessage();
-        // The date-picker's resize listener belongs to the global GUI emitter.
-        if ('datetimepicker_input' === this.type) {
-          const resizeWrapper = this.delayType && { throttle, debounce }[this.delayType] || throttle;
-          this.delayResize = null;
-          if (this.resize) {
-            this.delayResize = resizeWrapper(this.resize.bind(this), this.delayTime);
-          }
-          GUI.on('resize', this.delayResize);
-        }
-        // Re-render only visible fields after refreshing their translated error message.
+      }
+
+      // The date-picker's resize listener belongs to the global GUI emitter.
+      if ('datetimepicker_input' === this.type) {
+        this.resize = throttle(this.resize.bind(this));
+        GUI.on('resize', this.resize);
+      }
+
+      // Re-render only visible fields after refreshing their translated error message.
+      if (is_legacy) {
         this.$watch(() => ApplicationState.language, async () => {
-          if (!this.state.visible) {
-            return;
+          if (this.state.visible) {
+            this.state.visible = false;
+            this.setErrorMessage();
+            await this.$nextTick();
+            this.state.visible = true;
           }
-          this.state.visible = false;
-          this.setErrorMessage();
-          await this.$nextTick();
-          this.state.visible = true;
         });
-        // Required fields need an initial validation before the first user edit.
-        if (this.state.editable && this.state.validate.required) {
-          this.validate();
-        }
+      }
+
+      // Required fields need an initial validation before the first user edit.
+      if (is_legacy && this.state.editable && this.state.validate.required) {
+        this.validate();
+      }
+
+      if (is_legacy) {
         this.forwardAddInput(this.state);
-        if (this.state.value_from_default_value) {
-          this.forwardChangeInput(this.state);
+      }
+
+      if (is_legacy && this.state.value_from_default_value) {
+        this.forwardChangeInput(this.state);
+      }
+
+      // Seed transient UI state from persisted values for controls that own external editors.
+      if ('media_input' === this.type) {
+        this.setMedia();
+      }
+
+      if ('texthtml_input' === this.type) {
+        this.state.edit_states = this.state.edit_states || [];
+        this.state.edit_states.push(this.edit_state);
+      }
+
+      if (is_select) {
+        this.allowmulti = !!this.state.input.options.allowmulti;
+      }
+
+      if (is_select) {
+        this.resize = throttle(this.resize.bind(this));
+        GUI.on('resize', this.resize);
+      }
+
+      try {
+        // Only layer-backed autocomplete can offer map picking; table layers cannot be picked on the map.
+        if ('select_autocomplete' === this.state.input.type && this.state.input.options.layer_id) {
+          const dependencyLayer = getCatalogLayerById(this.state.input.options.layer_id);
+          this.showPickLayer = dependencyLayer && 'table' !== dependencyLayer.getType() && !(this.autocomplete && this.state.input.options.filter_expression);
         }
-        // Seed transient UI state from persisted values for controls that own external editors.
-        if ('media_input' === this.type) {
-          this.setMedia();
-        }
-        if ('texthtml_input' === this.type) {
-          this.state.edit_states = this.state.edit_states || [];
-          this.state.edit_states.push(this.edit_state);
+        // Reuse this interaction for select picking; teardown happens once.
+        if (this.showPickLayer) {
+          this.fields = [this.state.input.options.value, this.state.input.options.key];
+          this.layerId = this.state.input.options.layer_id;
         }
         if ('picklayer_input' === this.type) {
-          this.initializePick();
+          this.fields = [undefined];
+          this.layerId = undefined;
         }
+        if (this.showPickLayer || 'picklayer_input' === this.type) {
+          this.ispicked = false;
+          this.interaction = new PickCoordinatesInteraction();
+          this.interaction.set('id', 'picklayer');
+        }
+      } catch (e) {
+        console.warn(e);
       }
-      // Select options and relation filters must load before created() resolves.
-      if (['select_input', 'select_autocomplete_input'].includes(this.type)) {
-        const options = this.state.input.options;
-        this.allowmulti = !!options.allowmulti;
-        const resizeWrapper = this.delayType && { throttle, debounce }[this.delayType] || throttle;
-        this.delayResize = null;
-        if (this.resize) {
-          this.delayResize = resizeWrapper(this.resize.bind(this), this.delayTime);
-        }
-        GUI.on('resize', this.delayResize);
 
-        // Only layer-backed autocomplete can offer map picking; table layers cannot be picked on the map.
-        if ('select_autocomplete' === this.state.input.type && options.layer_id) {
-          try {
-            const dependencyLayer = getCatalogLayerById(options.layer_id);
-            this.showPickLayer = dependencyLayer && 'table' !== dependencyLayer.getType() &&
-              !(this.autocomplete && options.filter_expression);
-            // Reuse this interaction for select picking; teardown happens once.
-            if (this.showPickLayer) {
-              this.initializePick({ ...options, fields: [options.value, options.key], pick_type: 'wms' });
-            }
-          } catch (error) {
-            console.warn(error);
-          }
-        }
-        {
-          const {
-            relation_id,
-            filter_fields = [],
-            relation_reference = false,
-            chain_filters = false,
-          } = this.state.input.options;
-          // Relation lookups need both an enabled relation and at least one configured filter field.
-          if (relation_reference && Array.isArray(filter_fields) && filter_fields.length) {
-            this.setLoading(true);
-            this.isFilterFieldsReady = false;
-            const {
-              referencedLayer,
-              referencingLayer,
-              fieldRef: { referencingField, referencedField },
-            } = ApplicationState.project.getRelationById(relation_id);
-            const layer = getCatalogLayerById(referencingLayer);
-            const relationLayer = getCatalogLayerById(referencedLayer);
-            const relationLayerFields = relationLayer.getFields();
-            const getFilterLabel = field => `[${relationLayerFields.find(item => item.name === field).label}]`;
-            const hasSavedValue = null !== this.state.value;
+      // Relation controls need both an enabled relation and at least one configured filter field.
+      const hasRelationFilters = is_select && this.state.input.options.relation_reference && Array.isArray(this.state.input.options.filter_fields) && this.state.input.options.filter_fields.length;
 
-            // Restore filter selections from the saved referenced feature when the field already has a value.
-            if (hasSavedValue) {
-              try {
-                const { data = [] } = await relationLayer.getFilterData({
+      if (hasRelationFilters) {
+        this.setLoading(true);
+        this.isFilterFieldsReady = false;
+      }
+
+      const {
+        referencedLayer,
+        referencingLayer,
+        fieldRef: { referencingField, referencedField },
+      }                         = hasRelationFilters && ApplicationState.project.getRelationById(this.state.input.options.relation_id) || { fieldRef: {} };
+      const layer               = hasRelationFilters && getCatalogLayerById(referencingLayer);
+      const relationLayer       = hasRelationFilters && getCatalogLayerById(referencedLayer);
+      const relationLayerFields = hasRelationFilters && relationLayer.getFields();
+      const getFilterLabel      = hasRelationFilters && (field => `[${relationLayerFields.find(item => item.name === field).label}]`);
+      const hasSavedValue       = hasRelationFilters && null !== this.state.value;
+
+      // Restore selected relation filters and available choices when editing an existing value.
+      try {
+        if (hasRelationFilters && hasSavedValue) {
+          const { data = [] } = await relationLayer.getFilterData({
+            formatter: 0,
+            field: [].concat(this.state.value)
+              .map(value => `${referencedField[0]}|eq|${encodeURIComponent(value)}`)
+              .join('|OR,'),
+          });
+          this.state.input.options.values = ((await layer.getFilterData({
+            fformatter: referencingField[0],
+            order:      referencingField[0],
+            ffield: this.state.input.options.filter_fields.map((field, index) => {
+              let value = data[0].features[0].get(field);
+              if (undefined === value) {
+                value = `null`;
+              }
+              this.filterFields.push({
+                id: field,
+                values: [{ key: getFilterLabel(field), value: `null` }],
+                value,
+                disabled: this.state.input.options.chain_filters && index > 0 && `null` === this.filterFields[index - 1]?.value,
+              });
+              return [].concat(value)
+                .map(item => `${field}|eq|${encodeURIComponent(item)}`)
+                .join('|OR,');
+            }).join('|AND,'),
+          })).data || []).map(([value, key]) => ({ key, value }));
+        }
+
+        // Chained filters fetch each later field's choices using the selections before it.
+        if (hasRelationFilters && hasSavedValue && this.state.input.options.chain_filters) {
+          (await relationLayer
+            .getFilterData({
+              unique: this.state.input.options.filter_fields[0],
+              ordering: this.state.input.options.filter_fields[0],
+              formatter: 0
+            })
+          ).forEach(value => this.filterFields[0].values.push({ key: value, value }));
+        }
+
+        if (hasRelationFilters && hasSavedValue && this.state.input.options.chain_filters) {
+          (await Promise.allSettled(
+            this.state.input.options.filter_fields
+              .slice(1)
+              .map((field, index) => relationLayer.getFilterData({
+                  unique:   this.state.input.options.filter_fields[index + 1],
+                  ordering: this.state.input.options.filter_fields[index + 1],
                   formatter: 0,
-                  field: createSingleFieldParameter({ field: referencedField[0], value: this.state.value }),
-                });
-                const feature = data[0].features[0];
-                this.state.input.options.values = ((await layer.getFilterData({
-                  fformatter: referencingField[0],
-                  order: referencingField[0],
-                  ffield: filter_fields.map((field, index) => {
-                    let value = feature.get(field);
-                    if (undefined === value) {
-                      value = `null`;
-                    }
-                    this.filterFields.push({
-                      id: field,
-                      values: [{ key: getFilterLabel(field), value: `null` }],
-                      value,
-                      disabled: chain_filters && index > 0 && `null` === this.filterFields[index - 1]?.value,
-                    });
-                    return createSingleFieldParameter({ field, value });
-                  }).join('|AND,'),
-                })).data || []).map(([value, key]) => ({ key, value }));
+                  field: this.filterFields
+                    .slice(0, index + 1)
+                    .filter(item => 'null' !== item.value)
+                    .map(item => [].concat(item.value)
+                      .map(value => `${item.id}|eq|${encodeURIComponent(value)}`)
+                      .join('|OR,'))
+                    .join('|AND,'),
+                })
+              )
+            )
+          ).forEach(({ status, value }, index) => {
+            if ('fulfilled' === status) {
+              value.forEach(item => this.filterFields[index + 1].values.push({ key: item, value: item }));
+            }
+          });
+        }
 
-                // Chained filters query each next field using the preceding selections.
-                if (chain_filters) {
-                  (await relationLayer.getFilterData({ unique: filter_fields[0], ordering: filter_fields[0], formatter: 0 }))
-                    .forEach(value => this.filterFields[0].values.push({ key: value, value }));
-                  (await Promise.allSettled(filter_fields.slice(1).map((field, index) => relationLayer.getFilterData({
-                    unique: filter_fields[index + 1],
-                    ordering: filter_fields[index + 1],
-                    formatter: 0,
-                    field: this.filterFields.slice(0, index + 1)
-                      .filter(item => 'null' !== item.value)
-                      .map(item => createSingleFieldParameter({ field: item.id, value: item.value }))
-                      .join('|AND,'),
-                  })))).forEach(({ status, value }, index) => {
-                    if ('fulfilled' !== status) {
-                      return;
-                    }
-                    value.forEach(item => this.filterFields[index + 1].values.push({ key: item, value: item }));
-                  });
-                // Independent filters can load their distinct values concurrently.
-                }
-                if (!chain_filters) {
-                  (await Promise.allSettled(filter_fields.map(field => relationLayer.getFilterData({
-                    unique: field, ordering: field, formatter: 0,
-                  })))).forEach(({ status, value }, index) => {
-                    if ('fulfilled' !== status) {
-                      return;
-                    }
-                    value.forEach(item => this.filterFields[index].values.push({ key: item, value: item }));
-                  });
-                }
+        // Without chaining, each filter's choices are independent and can load concurrently.
+        if (hasRelationFilters && hasSavedValue && !this.state.input.options.chain_filters) {
+          (
+            await Promise.allSettled(
+            this.state.input.options.filter_fields
+              .map(field => relationLayer.getFilterData({ unique: field, ordering: field, formatter: 0 }))
+            )
+          ).forEach(({ status, value }, index) => {
+            if ('fulfilled' === status) {
+              value.forEach(item => this.filterFields[index].values.push({ key: item, value: item }));
+            }
+          });
+        }
+      } catch (e) {
+        console.warn(e);
+      }
+
+      // A new relation value starts with null selections; chained fields after the first stay disabled.
+      if (hasRelationFilters && !hasSavedValue) {
+        (await Promise.allSettled(
+          this.state.input.options.filter_fields.map((field, index) => {
+            this.filterFields.push({
+              id: field,
+              values: [{ key: getFilterLabel(field), value: `null` }],
+              value: `null`,
+              disabled: this.state.input.options.chain_filters && index > 0,
+            });
+            return relationLayer.getFilterData({ unique: field, formatter: 0, ordering: field });
+          })
+        )).forEach(({ status, value }, index) => {
+          if ('fulfilled' === status) {
+            value.forEach(item => this.filterFields[index].values.push({ key: item, value: item }));
+          }
+        });
+      }
+
+      // Watch filter changes only after every configured filter has been initialized.
+      if (hasRelationFilters) {
+        this.filterFieldsUnwatches = this.filterFields.map((filter, index) => this.$watch(
+          () => filter.value,
+          async value => {
+            this.setLoading(true);
+            // Reset downstream values before requesting options for the changed parent filter.
+            // Chained mode invalidates downstream selections and reloads the next field's choices.
+            if (this.state.input.options.chain_filters) {
+              for (let i = index + 1; i < this.filterFields.length; i++) {
+                this.filterFields[i].value = `null`;
+                this.filterFields[i].values = [this.filterFields[i].values[0]];
+                this.filterFields[i].disabled = `null` === value;
+              }
+              try {
+                const filterString = this.filterFields.slice(0, index + 1)
+                  .filter(item => `null` !== item.value)
+                  .map(item => [].concat(item.value)
+                    .map(value => `${item.id}|eq|${encodeURIComponent(value)}`)
+                    .join('|OR,'))
+                  .join('|AND,');
+                const { data = [] } = await relationLayer.getFilterData({ field: filterString });
+                // A missing feature response leaves downstream option lists at their null choice.
+                (data[0]?.features || []).forEach(feature => {
+                  if (index >= this.filterFields.length - 1) {
+                    return;
+                  }
+                  const nextValue = feature.get(this.filterFields[index + 1].id);
+                  this.filterFields[index + 1].values.push({ key: nextValue, value: nextValue });
+                });
               } catch (error) {
                 console.warn(error);
               }
-            // With no saved value, initialize each filter to its null option.
             }
-            if (!hasSavedValue) {
-              (await Promise.allSettled(filter_fields.map((field, index) => {
-                this.filterFields.push({
-                  id: field,
-                  values: [{ key: getFilterLabel(field), value: `null` }],
-                  value: `null`,
-                  disabled: chain_filters && index > 0,
-                });
-                return relationLayer.getFilterData({ unique: field, formatter: 0, ordering: field });
-              }))).forEach(({ status, value }, index) => {
-                if ('fulfilled' !== status) {
-                  return;
-                }
-                value.forEach(item => this.filterFields[index].values.push({ key: item, value: item }));
-              });
-            }
-
-            this.filterFieldsUnwatches = this.filterFields.map((filter, index) => this.$watch(
-              () => filter.value,
-              async value => {
-                this.setLoading(true);
-                // Reset downstream values before requesting options for the changed parent filter.
-                if (chain_filters) {
-                  for (let i = index + 1; i < this.filterFields.length; i++) {
-                    this.filterFields[i].value = `null`;
-                    this.filterFields[i].values = [this.filterFields[i].values[0]];
-                    this.filterFields[i].disabled = `null` === value;
-                  }
-                  try {
-                    const filterString = this.filterFields.slice(0, index + 1)
-                      .filter(item => `null` !== item.value)
-                      .map(item => createSingleFieldParameter({ field: item.id, value: item.value }))
-                      .join('|AND,');
-                    const { data = [] } = await relationLayer.getFilterData({ field: filterString });
-                    // A missing feature response leaves downstream option lists at their null choice.
-                    (data[0]?.features || []).forEach(feature => {
-                      if (index >= this.filterFields.length - 1) {
-                        return;
-                      }
-                      const nextValue = feature.get(this.filterFields[index + 1].id);
-                      this.filterFields[index + 1].values.push({ key: nextValue, value: nextValue });
-                    });
-                  } catch (error) {
-                    console.warn(error);
-                  }
-                }
-                this.state.input.options.values.splice(0);
-                await this.$nextTick();
-                this.state.input.options.values = ((await layer.getFilterData({
-                  fformatter: referencingField[0],
-                  ordering: referencingField[0],
-                  ffield: this.filterFields
-                    .filter(item => `null` !== item.value)
-                    .map(item => createSingleFieldParameter({ field: item.id, value: item.value }))
-                    .join('|AND,'),
-                })).data || []).map(([value, key]) => ({ key, value }));
-                this.state.value = this.state.input.options.values?.[0]?.value ?? null;
-                await this.changeSelect(this.state.value);
-                this.setLoading(false);
-              }
-            ));
+            this.state.input.options.values.splice(0);
+            await this.$nextTick();
+            this.state.input.options.values = ((await layer.getFilterData({
+              fformatter: referencingField[0],
+              ordering:   referencingField[0],
+              ffield: this.filterFields
+                .filter(item => `null` !== item.value)
+                .map(item => [].concat(item.value)
+                  .map(value => `${item.id}|eq|${encodeURIComponent(value)}`)
+                  .join('|OR,'))
+                .join('|AND,'),
+            })).data || []).map(([value, key]) => ({ key, value }));
+            this.state.value = this.state.input.options.values?.[0]?.value ?? null;
+            await this.changeSelect(this.state.value);
             this.setLoading(false);
-            this.isFilterFieldsReady = true;
           }
-        }
+        ));
+      }
+
+      // Reveal the filters only after initial option loading and watcher setup are complete.
+      if (hasRelationFilters) {
+        this.setLoading(false);
+        this.isFilterFieldsReady = true;
       }
     },
     /**
@@ -1913,30 +1943,36 @@
      * and storage formats; rich-text fields attach Quill and toolbar handlers.
      */
     async mounted() {
-      // Remote autocomplete may need to preload labels for existing values.
-      if (['select_input', 'select_autocomplete_input'].includes(this.type)) {
+      const is_select   = ['select_input', 'select_autocomplete_input'].includes(this.type);
+      const is_datetime ='datetimepicker_input' === this.type;
+
+      if (is_select) {
         await this.$nextTick();
         this.resize?.();
-        const preloadAutocomplete = this.autocomplete && this.state.value;
-        if (preloadAutocomplete) {
-          this.state.input.options.values.splice(0);
-        }
-        const options = this.state.input.options;
-        let search = this.state.value;
-        if (preloadAutocomplete && this.multiple) {
-          search = this.getMultiValues();
-        }
-        if (preloadAutocomplete) {
-          const values = await this.getData({
-            key: options.key,
-            value: options.value,
-            search,
-          });
-          values.forEach(({ $value, text }) => options.values.push({ key: $value, value: text }));
-          options.values.sort((first, second) => {
+      }
+
+      // Remote autocomplete may need to preload labels for existing values.
+      const preloadAutocomplete = is_select && this.autocomplete && this.state.value;
+      if (preloadAutocomplete) {
+        this.state.input.options.values.splice(0);
+      }
+
+      let search = is_select && this.state.value;
+
+      if (is_select && preloadAutocomplete && this.multiple) {
+        search = this.getMultiValues();
+      }
+
+      if (is_select && preloadAutocomplete) {
+        (await this.getData({
+          key:   this.state.input.options.key,
+          value: this.state.input.options.value,
+          search,
+        })).forEach(({ $value, text }) => this.state.input.options.values.push({ key: $value, value: text }));
+          this.state.input.options.values.sort((first, second) => {
             let firstValue = first.key;
             let secondValue = second.key;
-            if (options.orderbyvalue) {
+            if (this.state.input.options.orderbyvalue) {
               firstValue = first.value;
               secondValue = second.value;
             }
@@ -1948,25 +1984,28 @@
             }
             return 0;
           });
-        }
+      }
+
+      if (is_select) {
         await this.$nextTick();
         this.setValue();
-        return;
       }
+
+      const [{ minDate, maxDate, fieldformat, enabledDates, disabledDates, displayformat, useCurrent }] = this.state.input.options.formats || [];
+
       // The date-picker stores field-format values but displays localized dates.
-      if ('datetimepicker_input' === this.type) {
-        const [{ minDate, maxDate, fieldformat, enabledDates, disabledDates, displayformat, useCurrent }] = this.state.input.options.formats || [];
+      if (is_datetime) {
         await this.$nextTick();
         this.resize?.();
-        this.datetimedisplayformat = convertQGISDateTimeFormatToMoment(displayformat);
-        this.datetimefieldformat = convertQGISDateTimeFormatToMoment(fieldformat);
-        this.validationOptions = { fielddatetimeformat: this.datetimefieldformat };
-        let defaultDate = null;
-        if (moment(this.state.value, this.datetimefieldformat, true).isValid()) {
-          defaultDate = moment(this.state.value, this.datetimefieldformat).toDate();
-        }
+      }
+
+      this.datetimedisplayformat = is_datetime ? convertQGISDateTimeFormatToMoment(displayformat) : this.datetimedisplayformat;
+      this.datetimefieldformat   = is_datetime ? convertQGISDateTimeFormatToMoment(fieldformat) : this.datetimefieldformat;
+      this.validationOptions     = is_datetime ? { fielddatetimeformat: this.datetimefieldformat } : this.validationOptions;
+
+      if (is_datetime) {
         $(`#${this.iddatetimepicker}`).datetimepicker({
-          defaultDate,
+          defaultDate: is_datetime && moment(this.state.value, this.datetimefieldformat, true).isValid() ? moment(this.state.value, this.datetimefieldformat).toDate() : null,
           format: this.datetimedisplayformat,
           ignoreReadonly: true,
           locale: window.initConfig.user.i18n || 'en',
@@ -1977,25 +2016,20 @@
           maxDate,
         });
         $(`#${this.iddatetimepicker}`).on('dp.change', () => {
-          const newDate = $(`#${this.idinputdatetimepiker}`).val();
-          if ('' === newDate.trim()) {
-            this.state.value = null;
-          }
-          if ('' !== newDate.trim()) {
-            this.state.value = moment(newDate, this.datetimedisplayformat).format(this.datetimefieldformat);
-          }
+          const newDate    = $(`#${this.idinputdatetimepiker}`).val();
+          this.state.value = '' !== newDate.trim() ? moment(newDate, this.datetimedisplayformat).format(this.datetimefieldformat) : null;
           this.change();
         });
         $(`#${this.iddatetimepicker}`).on('dp.show', () => this.$emit('datetimepickershow'));
         $(`#${this.iddatetimepicker}`).on('dp.hide', () => this.$emit('datetimepickershow'));
-        return;
       }
+
       // The unique selector permits tagging and converts numeric values on selection.
       if ('unique_input' === this.type) {
         await this.$nextTick();
         this.setValue();
-        return;
       }
+
       // Quill edits rich text as HTML unless the source-view toggle is active.
       if ('texthtml_input' === this.type) {
         await this.$nextTick();
@@ -2043,40 +2077,29 @@
         });
         this.quill.clipboard.dangerouslyPasteHTML(0, this.state.value);
         this.table = this.quill.getModule('table');
-        this.$el.querySelector('.ql-formats button[aria-label="align: "]').ariaLabel = 'align: left';
-        this.$el.querySelector('.ql-formats .ql-color.ql-picker').title = 'color: text';
-        this.$el.querySelector('.ql-formats .ql-color.ql-picker').dataset.placement = 'top';
-        this.$el.querySelector('.ql-formats .ql-background.ql-picker').title = 'color: background';
+        this.$el.querySelector('.ql-formats button[aria-label="align: "]').ariaLabel     = 'align: left';
+        this.$el.querySelector('.ql-formats .ql-color.ql-picker').title                  = 'color: text';
+        this.$el.querySelector('.ql-formats .ql-color.ql-picker').dataset.placement      = 'top';
+        this.$el.querySelector('.ql-formats .ql-background.ql-picker').title             = 'color: background';
         this.$el.querySelector('.ql-formats .ql-background.ql-picker').dataset.placement = 'top';
-        this.$el.querySelectorAll('.ql-formats button').forEach(button => {
-          button.title = button.ariaLabel;
-          button.dataset.placement = 'top';
-        });
-        const toolbarIcons = {
-          '.ql-html': ['html', 'HTML source'],
-          '.ql-column-left': ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="m14 1 1 1v12l-1 1H2l-1-1V2l1-1zM2 0 0 2v12l2 2h12l2-2V2l-2-2z"/><path d="M10 12V4H9L5 8z"/></svg>', 'Add column left'],
-          '.ql-column-right': ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="m14 1 1 1v12l-1 1H2l-1-1V2l1-1zM2 0 0 2v12l2 2h12l2-2V2l-2-2z"/><path d="M6 12V4l5 4z"/></svg>', 'Add column right'],
+        this.$el.querySelectorAll('.ql-formats button').forEach(btn => { btn.title = btn.ariaLabel; btn.dataset.placement = 'top'; });
+        Object.entries({
+          '.ql-html':          ['html', 'HTML source'],
+          '.ql-column-left':   ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="m14 1 1 1v12l-1 1H2l-1-1V2l1-1zM2 0 0 2v12l2 2h12l2-2V2l-2-2z"/><path d="M10 12V4H9L5 8z"/></svg>', 'Add column left'],
+          '.ql-column-right':  ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="m14 1 1 1v12l-1 1H2l-1-1V2l1-1zM2 0 0 2v12l2 2h12l2-2V2l-2-2z"/><path d="M6 12V4l5 4z"/></svg>', 'Add column right'],
           '.ql-column-remove': ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/><path d="M4.6 4.6a.5.5 0 0 1 .8 0L8 7.3l2.6-2.7a.5.5 0 0 1 .8.8L8.7 8l2.7 2.6a.5.5 0 0 1-.8.8L8 8.7l-2.6 2.7a.5.5 0 0 1-.8-.8L7.3 8 4.6 5.4a.5.5 0 0 1 0-.8"/></svg>', 'Remove column'],
-          '.ql-row-above': ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="m14 1 1 1v12l-1 1H2l-1-1V2l1-1zM2 0 0 2v12l2 2h12l2-2V2l-2-2z"/><path d="M4 11h8v-1L8 6z"/></svg>', 'Add row above'],
-          '.ql-row-below': ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="M4 7V6h8v1l-4 4z"/><path d="m0 2 2-2h12l2 2v12l-2 2H2l-2-2zm15 0-1-1H2L1 2v12l1 1h12l1-1z"/></svg>', 'Add row below'],
-          '.ql-row-remove': ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/><path d="m4 8 .5-.5h7a.5.5 0 0 1 0 1h-7z"/></svg>', 'Remove row'],
-        };
-        Object.entries(toolbarIcons).forEach(([selector, [label, title]]) => {
-          const button = this.$el.querySelector(selector);
-          button.innerHTML = label;
-          if ('.ql-html' === selector) {
-            button.style.width = 'unset';
-          }
-          button.title = title;
+          '.ql-row-above':     ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="m14 1 1 1v12l-1 1H2l-1-1V2l1-1zM2 0 0 2v12l2 2h12l2-2V2l-2-2z"/><path d="M4 11h8v-1L8 6z"/></svg>', 'Add row above'],
+          '.ql-row-below':     ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="M4 7V6h8v1l-4 4z"/><path d="m0 2 2-2h12l2 2v12l-2 2H2l-2-2zm15 0-1-1H2L1 2v12l1 1h12l1-1z"/></svg>', 'Add row below'],
+          '.ql-row-remove':    ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/><path d="m4 8 .5-.5h7a.5.5 0 0 1 0 1h-7z"/></svg>', 'Remove row'],
+        }).forEach(([selector, [label, title]]) => {
+          const btn = this.$el.querySelector(selector);
+          btn.innerHTML = label;
+          btn.style.width = '.ql-html' === selector ? 'unset' : btn.style.width;
+          btn.title = title;
         });
         this.quillHandler = () => {
-          const editor = this.quill.container.firstChild;
-          if (this.edit_state.show_html) {
-            this.state.value = editor.innerText;
-          }
-          if (!this.edit_state.show_html) {
-            this.state.value = editor.innerHTML;
-          }
+          const editor         = this.quill.container.firstChild;
+          this.state.value     = this.edit_state.show_html ? editor.innerText : editor.innerHTML;
           this.edit_state.edit = true;
           this.change();
           setTimeout(() => { this.edit_state.edit = false; });
@@ -2099,16 +2122,12 @@
       this.interaction = null;
       // Date and select widgets each own a resize registration.
       if ('datetimepicker_input' === this.type) {
-        GUI.off('resize', this.delayResize);
-        this.delayResize = null;
-        this.delayTime = null;
+        GUI.off('resize', this.resize);
       }
       if (['select_input', 'select_autocomplete_input'].includes(this.type)) {
         clearTimeout(this.autocompleteSearchTimer);
         this.autocompleteSearchId = (this.autocompleteSearchId || 0) + 1;
-        GUI.off('resize', this.delayResize);
-        this.delayResize = null;
-        this.delayTime = null;
+        GUI.off('resize', this.resize);
         this.filterFieldsUnwatches?.forEach(unwatch => unwatch());
         this.filterFieldsUnwatches = null;
       }
@@ -2124,7 +2143,14 @@
      * Notify the parent form after a built-in field has been removed.
      */
     destroyed() {
-      if (this.isNativeInput) {
+      if ([
+          'text_input', 'string_input', 'textarea_input',
+          'integer_input', 'bigint_input', 'float_input',
+          'color_input', 'check_input', 'radio_input',
+          'range_input', 'slider_input', 'media_input', 'unique_input',
+          'texthtml_input', 'datetimepicker_input', 'picklayer_input', 'lonlat_input',
+          'select_input', 'select_autocomplete_input'
+        ].includes(this.type)) {
         this.forwardRemoveInput(this.state);
       }
     }

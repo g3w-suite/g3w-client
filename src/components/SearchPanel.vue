@@ -592,8 +592,7 @@
     },
 
     async created() {
-      const delayWrapper = this.delayType && { throttle, debounce }[this.delayType] || throttle;
-      this.delayResize   = this.resize ? delayWrapper(this.resize.bind(this), this.delayTime) : null;
+      this.delayResize   = this.resize ? throttle(this.resize.bind(this), this.delayTime) : null;
       GUI.on('resize', this.delayResize);
 
       //Listen change filtertoken on layer
