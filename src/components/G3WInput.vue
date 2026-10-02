@@ -1590,14 +1590,7 @@
      */
     async created() {
       // Built-in controls share this component's defaults, validation and lifecycle; plugins own their own behavior.
-      const is_legacy = [
-        'text_input', 'string_input', 'textarea_input',
-        'integer_input', 'bigint_input', 'float_input',
-        'color_input', 'check_input', 'radio_input',
-        'range_input', 'slider_input', 'media_input', 'unique_input',
-        'texthtml_input', 'datetimepicker_input', 'picklayer_input', 'lonlat_input',
-        'select_input', 'select_autocomplete_input'
-      ].includes(this.type);
+      const is_parent = 'child' !== this.state.type;
 
       const is_select = ['select_input', 'select_autocomplete_input'].includes(this.type);
 
@@ -1611,7 +1604,7 @@
       const hasNoValue = [null, undefined].includes(this.state.value);
 
       // Legacy schemas may store options as an array rather than the current object shape.
-      const hasFirstDefault = is_legacy && hasNoValue && Array.isArray(this.state.input.options) && !!this.state.input.options[0].default;
+      const hasFirstDefault = is_parent && hasNoValue && Array.isArray(this.state.input.options) && !!this.state.input.options[0].default;
 
       let defaultValue;
 
@@ -1623,22 +1616,22 @@
         defaultValue = this.state.input.options[0].default;
       }
 
-      if (is_legacy && hasNoValue && !hasFirstDefault && hasNoValue && Array.isArray(this.state.input.options) && !!this.state.input.options.values?.length) {
+      if (is_parent && hasNoValue && !hasFirstDefault && hasNoValue && Array.isArray(this.state.input.options) && !!this.state.input.options.values?.length) {
         defaultValue =  this.state.input.options.values[0]?.value || this.state.input.options.values[0];
       }
 
-      const hasDefault = is_legacy && hasNoValue && this.state.get_default_value && ![null, undefined].includes(defaultValue);
+      const hasDefault = is_parent && hasNoValue && this.state.get_default_value && ![null, undefined].includes(defaultValue);
 
       // Default expressions are evaluated by the server and must not be replaced locally.
       if (hasDefault && undefined === this.state.input.options.default_expression) {
         this.state.value = defaultValue;
       }
 
-      if (is_legacy && hasNoValue) {
+      if (is_parent && hasNoValue) {
         this.state.value_from_default_value = hasDefault;
       }
 
-      if (is_legacy) {
+      if (is_parent) {
         this.state.validate.empty = null === this.state.value || '' === `${this.state.value}`.trim();
       }
 
@@ -1658,7 +1651,7 @@
         this.state.info = `[MIN: ${this.state.input.options.min} - MAX: ${this.state.input.options.max}]`;
       }
 
-      if (is_legacy) {
+      if (is_parent) {
         this.setErrorMessage();
       }
 
@@ -1669,7 +1662,7 @@
       }
 
       // Re-render only visible fields after refreshing their translated error message.
-      if (is_legacy) {
+      if (is_parent) {
         this.$watch(() => ApplicationState.language, async () => {
           if (this.state.visible) {
             this.state.visible = false;
@@ -1681,15 +1674,15 @@
       }
 
       // Required fields need an initial validation before the first user edit.
-      if (is_legacy && this.state.editable && this.state.validate.required) {
+      if (is_parent && this.state.editable && this.state.validate.required) {
         this.validate();
       }
 
-      if (is_legacy) {
+      if (is_parent) {
         this.forwardAddInput(this.state);
       }
 
-      if (is_legacy && this.state.value_from_default_value) {
+      if (is_parent && this.state.value_from_default_value) {
         this.forwardChangeInput(this.state);
       }
 
