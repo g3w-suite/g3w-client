@@ -1689,7 +1689,21 @@
             } else if (this.state.validate.unique && this.state.validate.exclude_values?.size) {
               this.state.validate.valid = !this.state.validate.exclude_values.has(`${this.state.value}`);
             } else {
-              this.state.validate.valid = this._validator.validate(this.state.value);
+              const temp_id = this.state.input.options.relation_reference && this.state?.value?.startsWith?.('_new_');
+              this.state.validate.valid = temp_id || this._validator.validate(this.state.value);
+            }
+            if (!this.state.validate.valid) {
+              console.log('[G3WInput] invalid field', {
+                name: this.state.name,
+                label: this.state.label,
+                type: this.state.type,
+                inputType: this.state.input.type,
+                value: this.state.value,
+                required: this.state.validate.required,
+                message: this.state.validate.message,
+                relationReference: this.state.input.options.relation_reference,
+                relationId: this.state.input.options.relation_id,
+              });
             }
             return this.state.validate.valid;
           },
