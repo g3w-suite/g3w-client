@@ -7,7 +7,27 @@
   <!-- Hide invisible fields; child fields recurse through g3w-input instead of rendering a control. -->
   <div v-if = "state.visible">
 
-    <div v-if = "state.type !== 'child'">
+    <!-- Child groups preserve their field tree and forward the same validation events. -->
+    <div
+      v-if = "'child' === state.type"
+      style = "border-top: 2px solid"
+      class = "skin-border-color field-child"
+    >
+      <h4 style = "font-weight: bold">{{ state.label}}</h4>
+      <div> {{ state.description }} </div>
+      <g3w-input
+        v-for             = "field in state.fields" :key = "field.name"
+        :state            = "field"
+        @changeinput      = "forwardChangeInput"
+        :changeInput      = "changeInput"
+        @addinput         = "forwardAddInput"
+        :addToValidate    = "addToValidate"
+        @removeinput      = "forwardRemoveInput"
+        :removeToValidate = "removeToValidate"
+      ></g3w-input>
+    </div>
+
+    <div v-else>
       <!-- Native controls share labels, validation feedback and help text. -->
       <div v-if = "isNativeInput" class = "form-group">
         <!-- lonlat_input renders separate longitude and latitude labels below. -->
@@ -388,26 +408,6 @@
       <!-- Legacy standalone adapters can suppress the divider; form fields keep it by default. -->
       <span v-if = "showDivider" class = "divider"></span>
     </div>
-
-    <!-- Child groups preserve their field tree and forward the same validation events. -->
-    <div
-      v-else
-      style = "border-top: 2px solid"
-      class = "skin-border-color field-child"
-    >
-      <h4 style = "font-weight: bold">{{ state.label}}</h4>
-      <div> {{ state.description }} </div>
-      <g3w-input
-        v-for             = "field in state.fields" :key = "field.name"
-        :state            = "field"
-        @changeinput      = "forwardChangeInput"
-        :changeInput      = "changeInput"
-        @addinput         = "forwardAddInput"
-        :addToValidate    = "addToValidate"
-        @removeinput      = "forwardRemoveInput"
-        :removeToValidate = "removeToValidate"
-      ></g3w-input>
-    </div>
   </div>
 </template>
 
@@ -444,15 +444,33 @@
    * resolved from `state.input.type` (with numeric field-type compatibility).
    * Native controls own the shared form shell, while custom components own theirs.
    *
+   * The parent supplies a mutable field schema: `state.value` and `state._value`
+   * hold current/original values, `state.validate` holds validation metadata,
+   * and `state.input.options` supplies control-specific configuration.
+   * Built-in controls update this shared object rather than replacing the prop.
+   *
+   * Legacy API: `service` forwards validation to component methods and properties.
+   * Its `state`, `validatorOptions` and `_validator` aliases remain writable;
+   * `service.setValue()` maps to setDefaultValue(), not widget setValue().
+   * `pickservice` forwards map picking; `pickLayerInputService` shares that wrapper
+   * for eligible selects. Its `unpick()` maps to immediate unpickFeature(), not
+   * the delayed blur handler unpick(). Both legacy initialize() methods return
+   * their wrapper. Internal callers use the component methods directly.
+   *
+   * Lifecycle: created() registers built-in fields and starts option loading;
+   * mounted() attaches DOM-dependent widgets. beforeDestroy() releases listeners
+   * and interactions; destroyed() unregisters built-in fields from the form.
+   *
    * @prop {Object} state Field value, validation metadata and input options.
    * @prop {string|null} inputType Optional explicit type used by legacy adapters.
    * @prop {boolean} showDivider Whether to render the trailing divider.
    * @prop {Function} addToValidate Callback used by the containing form.
    * @prop {Function} changeInput Callback used when the field value changes.
    * @prop {Function} removeToValidate Callback used when the field is destroyed.
-    * @fires addinput Registers this field with its containing form.
-    * @fires changeinput Reports an updated value and validation state.
-    * @fires removeinput Unregisters this field from its containing form.
+   * @fires addinput Registers this field with its containing form.
+   * @fires changeinput Reports an updated value and validation state.
+   * @fires removeinput Unregisters this field from its containing form.
+   * @fires datetimepickershow Legacy event emitted on both date-picker open and close.
    */
   export default {
     name: "g3w-input",
@@ -547,7 +565,7 @@
         return 'select_autocomplete' === this.state.input.type && this.state.input.options.usecompleter;
       },
       /**
-      * Whether this select uses the multiple-value encoding.
+       * Whether this select uses the multiple-value encoding.
        * @returns {boolean}
        */
       multiple() {
@@ -590,7 +608,7 @@
       },
       /**
        * Whether the label should show the expandable help control.
-       * @returns {boolean|string}
+       * @returns {boolean|string|null|undefined} Trimmed help text or a falsy value.
        */
       showhelpicon() {
         return this.state.help && this.state.help.message.trim();
@@ -633,7 +651,8 @@
       },
       /**
        * Map the checkbox's boolean state to the matching configured option value.
-       * The getter also selects the unchecked option when the stored value is absent.
+       * Nullish values remain unchecked; an unmatched non-null value falls back
+       * to the configured unchecked option and updates the stored field value.
        */
       checkboxValue: {
         /**
@@ -726,21 +745,29 @@
     watch: {
       /**
        * Refresh validation styling for controls whose UI is outside Vue's DOM.
+       * @param {boolean} notvalid Whether current field validation has failed.
        */
       async notvalid(notvalid) {
         // Native controls render their own message; custom selects need their trigger styled directly.
-        if (this.isNativeInput && notvalid) { this.service.setErrorMessage(); }
+        if (this.isNativeInput && notvalid) { this.setErrorMessage(); }
         if (['unique_input', 'select_input', 'select_autocomplete_input'].includes(this.type)) {
           await this.$nextTick();
           this.$refs.select?.trigger?.classList.toggle('input-error-validation', notvalid);
         }
       },
+      /**
+       * Resynchronize relation-filter widgets after selections or options change.
+       */
       filterFields: {
         deep: true,
         handler() {
           this.$nextTick(() => this.syncRelationSelects());
         }
       },
+      /**
+       * Synchronize newly rendered filters once their initial option lists are ready.
+       * @param {boolean} ready Whether relation filters can be rendered.
+       */
       isFilterFieldsReady(ready) {
         if (ready) { this.$nextTick(() => this.syncRelationSelects()); }
       },
@@ -799,6 +826,186 @@
       }
     },
     methods: {
+      /**
+       * Expose legacy names while keeping methods and writable state on the component.
+       * Accessors resolve the current property on every read, so reassigned validators
+       * and methods stay visible through both interfaces. Vue binds component methods.
+       * @param {Object<string, string>} bindings Legacy name to component property mapping.
+       * @param {Object} [wrapper={}] Existing wrapper to extend for specialized controls.
+       * @returns {Object} The same wrapper, with enumerable read/write aliases.
+       */
+      createServiceWrapper(bindings, wrapper = {}) {
+        return Object.defineProperties(wrapper, Object.fromEntries(Object.entries(bindings).map(([name, property]) => [name, {
+          configurable: true,
+          enumerable: true,
+          get: () => this[property],
+          set: value => { this[property] = value; },
+        }])));
+      },
+      /**
+       * Initialize validation without changing the component's field-state prop.
+       * validationState retains the legacy service.state reference, including when
+       * external code replaces it independently of the rendered state prop.
+       * @param {Object} config Field state and optional validator options.
+       * @param {Object} config.state Field schema used by the validation methods.
+       * @param {Object} [config.validatorOptions] Defaults to the field's input options.
+       * @returns {Object} Existing validation wrapper for legacy initialize() chaining.
+       */
+      initializeValidation({ state, validatorOptions } = {}) {
+        this.validationState = state;
+        this.validatorOptions = validatorOptions || state.input.options || {};
+        this.setDefaultValue(state.value);
+        this.setEmpty();
+        /**
+         * Dispatch validation by QGIS field type; unknown types are accepted.
+         * The field type comes from initialization; validator options remain replaceable.
+         * @param {*} value Value to validate.
+         * @returns {*} Usually a boolean; the legacy char rule may return a falsy value unchanged.
+         */
+        this.validator = {
+          validate: value => ({
+            // Check that the coerced numeric representation can be parsed.
+            float: value => !Number.isNaN(parseFloat(1 * value)),
+            // Require an integer within JavaScript's safe numeric range.
+            bigint: value => Number.isSafeInteger(1 * value) && Math.abs(1 * value) <= Number.MAX_SAFE_INTEGER,
+            // Preserve the legacy magnitude check; it does not reject fractions.
+            integer: value => !Number.isNaN(1 * value) && Math.abs(1 * value) <= 2147483647,
+            // Match one of the configured stored checkbox values.
+            checkbox: (value, options) => (options.values || []).includes(value),
+            // Parse date/time values strictly using the configured storage format.
+            datetimepicker: (value, options) => moment(value, options.fielddatetimeformat, true).isValid(),
+            // Accept a non-empty value whose string representation has one character.
+            char: value => value && 1 === `${value}`.length,
+            // Include both configured range endpoints.
+            range: (value, options) => 1 * value >= options.min && 1 * value <= options.max,
+            // Accept values without an additional type-specific rule.
+            default: () => true,
+          }[state.type] || (() => true))(value, this.validatorOptions)
+        };
+        this.setErrorMessage();
+        return this.service;
+      },
+      /**
+       * Apply schema defaults; setValue() remains the widget synchronization hook.
+       * @param {*} value Current value inspected before defaulting.
+       */
+      setDefaultValue(value) {
+        // Defaults must not overwrite a value already supplied by the form.
+        if (![null, undefined].includes(value)) { return; }
+        const state = this.validationState;
+        const { options } = state.input;
+        let defaultValue = options.default;
+        // Legacy schemas may store options as an array rather than the current object shape.
+        if (Array.isArray(options)) {
+          if (options[0].default) { defaultValue = options[0].default; }
+          else if (options.values?.length) { defaultValue = options.values[0]?.value || options.values[0]; }
+        }
+        const hasDefault = state.get_default_value && ![null, undefined].includes(defaultValue);
+        // Default expressions are evaluated by the server and must not be replaced locally.
+        if (hasDefault && undefined === options.default_expression) { state.value = defaultValue; }
+        state.value_from_default_value = hasDefault;
+      },
+      /**
+       * Recalculate whether the validation value is null or blank after trimming.
+       * Call before validate(); this updates metadata without normalizing the value.
+       */
+      setEmpty() {
+        const state = this.validationState;
+        state.validate.empty = null === state.value || '' === `${state.value}`.trim();
+      },
+      /**
+       * Validate emptiness, uniqueness and the active field-type rule in that order.
+       * Temporary relation-reference IDs bypass the field-type rule, not uniqueness.
+       * @returns {*} Legacy validator result, also written to state.validate.valid.
+       */
+      validate() {
+        const state = this.validationState;
+        // Required empty values fail before uniqueness or type-specific validation.
+        if (state.validate.empty) {
+          state.value = null;
+          state.validate.valid = !state.validate.required;
+        // Exclusions compare string forms so numeric and string IDs are treated consistently.
+        } else if (state.validate.unique && state.validate.exclude_values?.size) {
+          state.validate.valid = !state.validate.exclude_values.has(`${state.value}`);
+        } else {
+          const temp_id = state.input.options.relation_reference && state?.value?.startsWith?.('_new_');
+          state.validate.valid = temp_id || this.validator.validate(state.value);
+        }
+        if (!state.validate.valid) {
+          console.log('[G3WInput] invalid field', {
+            name: state.name,
+            label: state.label,
+            type: state.type,
+            inputType: state.input.type,
+            value: state.value,
+            required: state.validate.required,
+            message: state.validate.message,
+            relationReference: state.input.options.relation_reference,
+            relationId: state.input.options.relation_id,
+          });
+        }
+        return state.validate.valid;
+      },
+      /**
+       * Return the active validator, also exposed as legacy service._validator.
+       * @returns {Object} Validator exposing validate(value).
+       */
+      getValidator() { return this.validator; },
+      /**
+       * Replace the default validator with a control-specific rule.
+       * @param {Object} validator Object exposing validate(value).
+       */
+      setValidator(validator) { this.validator = validator; },
+      /**
+       * Select translated validation feedback without recomputing field validity.
+       * Precedence: server errors, cross-field constraints, unique exclusions,
+       * then required/type feedback (which may use state.info).
+       */
+      setErrorMessage() {
+        const state = this.validationState;
+        const validate = state.validate;
+        // Server-provided errors take precedence over all generated messages.
+        if (validate.error) { validate.message = _(validate.error); return; }
+        const type = _(`sdk.form.inputs.${state.type}`);
+        if (validate.mutually && !validate.mutually_valid) {
+          validate.message = `${_('sdk.form.inputs.input_validation_mutually_exclusive')} ( ${validate.mutually.join(',')} )`;
+        } else if (validate.max_field) {
+          validate.message = `${_('sdk.form.inputs.input_validation_max_field')} (${validate.max_field})`;
+        } else if (validate.min_field) {
+          validate.message = `${_('sdk.form.inputs.input_validation_min_field')} (${validate.min_field})`;
+        } else if (('unique' === state.input.type || validate.unique) && validate.exclude_values?.size) {
+          validate.message = _('sdk.form.inputs.input_validation_exclude_values');
+        } else if (validate.required) {
+          validate.message = state.info || `${_('sdk.form.inputs.input_validation_error')} ( ${type} )`;
+        } else {
+          validate.message = state.info || `${_('sdk.form.inputs.input_validation_error_type')} ( ${type} )`;
+        }
+      },
+      /**
+       * Compare current and original values and update the dirty flag.
+       * Media compares URLs; date/time compares uppercase strings. Other fields
+       * retain loose equality so equivalent numeric/string values are not dirty.
+       */
+      setUpdate() {
+        const state = this.validationState;
+        const { value, _value } = state;
+        if ('media' === state.input.type) {
+          const currentValue = 'Object' === toRawType(value) ? value.value : value;
+          const originalValue = 'Object' === toRawType(_value) ? _value.value : _value;
+          state.update = currentValue != originalValue;
+        } else if ('datetimepicker' === state.input.type) {
+          state.update = (null !== value ? value.toUpperCase() : value) != (_value ? _value.toUpperCase() : _value);
+        } else {
+          state.update = value != _value;
+        }
+      },
+      /**
+       * Share the coordinate button's reactive state with a legacy consumer.
+       * @param {Object} button Object containing the active boolean flag.
+       */
+      setCoordinateButtonReactiveObject(button) {
+        this.coordinatebutton = button;
+      },
       /**
        * Set the options loader state used by the shared progress indicator.
        * @param {boolean} bool True while values are being loaded.
@@ -868,9 +1075,9 @@
        */
       change() {
         if (!this.service) { return; }
-        this.service.setEmpty();
-        this.service.validate();
-        this.service.setUpdate();
+        this.setEmpty();
+        this.validate();
+        this.setUpdate();
         this.forwardChangeInput(this.state);
       },
       /**
@@ -918,7 +1125,7 @@
         this.state.validate.valid = !this.state.validate.required;
         // Required empty ranges are already invalid; otherwise validate the configured bounds.
         if (!empty) {
-          this.state.validate.valid = this.service.getValidator().validate(this.state.value);
+          this.state.validate.valid = this.getValidator().validate(this.state.value);
         }
         this.change();
       },
@@ -931,8 +1138,8 @@
         return null === value ? 'null' : value;
       },
       /**
-      * Convert the select empty-option sentinel back to null and validate it.
-      * @param {*} value Value received from the select.
+       * Convert the select empty-option sentinel back to null and validate it.
+       * @param {*} value Value received from the select.
        * @returns {Promise<void>} Resolves after Vue applies the updated selection.
        */
       async changeSelect(value) {
@@ -949,6 +1156,7 @@
       },
       /**
        * Synchronize the stored coordinate pair or current select value to its widget.
+       * This is not the default-value setter exposed as legacy service.setValue().
        */
       setValue() {
         if ('lonlat_input' === this.type) {
@@ -961,8 +1169,9 @@
       /**
        * Synchronize an existing x-select through its public selection methods.
        * @param {HTMLElement} select x-select element.
-       * @param {string} value Serialized value to select.
+       * @param {*} value Single stored value or comma-separated multiple values.
        * @param {boolean} multiple Whether values are comma-separated.
+       * @returns {boolean} False until the widget is initialized; true after synchronization.
        */
       syncXSelect(select, value, multiple = false) {
         if (!select?.container) { return false; }
@@ -993,7 +1202,7 @@
       },
       /**
        * Return the selected value in x-select's single- or multiple-value format.
-       * @returns {string}
+       * @returns {*} Single stored value (null becomes "null") or comma-separated values.
        */
       getSelectValue() {
         return this.multiple ? this.getMultiValues().join(',') : this.getValue(this.state.value);
@@ -1031,6 +1240,7 @@
       },
       /**
        * Load remote autocomplete options while retaining the current selection.
+       * Debounce for 250 ms and ignore responses superseded by a newer search.
        * @param {CustomEvent} event Search emitted by x-select.
        */
       searchAutocomplete({ detail: { value = '' } = {} }) {
@@ -1087,7 +1297,7 @@
       /**
        * Query a catalog layer for autocomplete suggestions or selected values.
        * @param {Object} options Layer id, key/value fields and search term(s).
-      * @returns {Promise<Array<Object>>} Search result records.
+       * @returns {Promise<Array<Object>>} Records containing text, id and $value.
        */
       getData({
         layer_id = this.state.input.options.layer_id,
@@ -1112,7 +1322,8 @@
       },
       /**
        * Decode the brace-delimited multi-select value and discard stale choices.
-       * @returns {Array<string>} Currently selected values available in the list.
+       * Remote autocomplete retains IDs whose labels have not been loaded yet.
+       * @returns {Array<string>} Unique selected values, filtered for fixed option lists.
        */
       getMultiValues() {
         return [undefined, null, ''].includes(this.state.value)
@@ -1129,12 +1340,12 @@
         try {
           // Clicking again cancels the active interaction instead of starting another one.
           if (this.picked) {
-            this.pickLayerInputService.unpick();
+            this.unpickFeature();
             this.picked = false;
             return;
           }
           this.picked = true;
-          const values = await this.pickLayerInputService.pick();
+          const values = await this.pickFeature();
           let value = values[this.state.input.options.key];
           // Do not append a feature value already present in the multi-select.
           if (this.multiple) {
@@ -1257,7 +1468,7 @@
         else { this.stopToGetCoordinates(); }
       },
       /**
-       * Disable conflicting map controls and listen for one map click.
+       * Disable conflicting map controls and listen for map clicks until stopped.
        * The picked coordinate is transformed to the field's target CRS.
        */
       startToGetCoordinates() {
@@ -1293,126 +1504,146 @@
        * Begin feature/coordinate picking for the read-only pick-layer input.
        */
       pickLayer() {
-        this.pickservice.pick()
+        this.pickFeature()
           .then(value => { this.state.value = value; })
           .catch(() => {});
       },
       /**
        * Defer teardown until the click that launched picking has completed.
+       * This blur handler is separate from legacy pickservice.unpick(), which
+       * forwards to immediate unpickFeature().
        */
       unpick() {
-        setTimeout(() => !this.pickservice.isPicked() && this.pickservice.unpick(), 200);
+        setTimeout(() => !this.isPicked() && this.unpickFeature(), 200);
       },
       /**
-       * Create a service that manages map picking and returns configured attributes.
+       * Create the legacy picking wrapper and initialize component-owned interaction state.
        * @param {Object} [options=this.state.input.options] Pick type, layer and fields.
-       * @returns {Object} Initialized pick-service instance stored on this component.
+       * @returns {void} The wrapper is stored on this.pickservice.
        */
       initializePickService(options = this.state.input.options) {
-        this.pickservice = Object.create({
-          /**
-           * Initialize the interaction and the attributes returned by a pick.
-           * @param {Object} options Pick type, layer id and attribute names.
-           * @returns {Object} The initialized service.
-           */
-          initialize(options = {}) {
-            this.pick_type = options.pick_type || 'wms';
-            this.ispicked = false;
-            this.fields = options.fields || [options.value];
-            this.layerId = options.layer_id;
-            this.interaction = 'map' === this.pick_type
-              ? new PickFeatureInteraction({ layers: [GUI.getLayerById(this.layerId)] })
-              : new PickCoordinatesInteraction();
-            this.interaction.set('id', 'picklayer');
-            this.escKeyUpHandler = this.escKeyUpHandler.bind(this);
-            return this;
-          },
-          /**
-           * Report whether this service currently owns an active map interaction.
-           * @returns {boolean}
-           */
-          isPicked() {
-            return this.ispicked;
-          },
-          /**
-           * Cancel active picking when the user presses Escape.
-           * @param {KeyboardEvent} event Document keyup event.
-           */
-          escKeyUpHandler(event) {
-            if ('Escape' === event.key) { this.unpick(); }
-          },
-          /**
-           * Add the map interaction and settle with selected feature attributes.
-           * Rejects when no feature is returned or the WMS query fails.
-           * @returns {Promise<Object>}
-           */
-          pick() {
-            return new Promise((resolve, reject) => {
-              document.addEventListener('keyup', this.escKeyUpHandler);
-              const values = {};
-              this.ispicked = true;
-              /**
-               * Resolve with configured attributes and always tear down the interaction.
-               * @param {Object|null} feature Picked feature or null on a miss.
-               */
-              const afterPick = feature => {
-                if (feature) {
-                  const attributes = feature.getProperties();
-                  this.fields.filter(field => field).forEach(field => { values[field] = attributes[field]; });
-                  resolve(values);
-                } else {
-                  // Treat a map miss like a rejected pick so callers share one error path.
-                  reject();
-                }
-                this.ispicked = false;
-                this.unpick();
-              };
-              GUI.setModal(false);
-              GUI.addInteraction(this.interaction);
-              this.interaction.once('picked', async event => {
-                try {
-                  let feature = event.feature;
-                  // WMS picks provide coordinates; vector/map picks already include the feature.
-                  const layer = 'wms' === this.pick_type && GUI.getProjectLayer(this.layerId);
-                  if (layer) {
-                    const response = await layer.query({
-                      feature_count: 1,
-                      coordinates: event.coordinate,
-                      query_point_tolerance: QUERY_POINT_TOLERANCE,
-                      mapProjection: GUI.getMap().getView().getProjection(),
-                      size: GUI.getMap().getSize(),
-                      resolution: GUI.getMap().getView().getResolution(),
-                    });
-                    feature = response?.data?.at?.(0)?.features?.at(0) ?? null;
-                  }
-                  afterPick(feature);
-                } catch (error) {
-                  console.warn(error);
-                  afterPick(null);
-                }
-              });
-            });
-          },
-          /**
-           * Remove the interaction, restore the modal and unregister Escape handling.
-           */
-          unpick() {
-            GUI.removeInteraction(this.interaction);
-            GUI.setModal(true);
-            document.removeEventListener('keyup', this.escKeyUpHandler);
-            this.ispicked = false;
-          },
-          /**
-           * Release the interaction and cancel an in-progress pick if necessary.
-           */
-          clear() {
-            if (this.isPicked()) { this.unpick(); }
-            this.interaction = this.field = null;
-          },
-        }).initialize(options);
+        this.pickservice = this.createServiceWrapper({
+          pick_type: 'pick_type',
+          ispicked: 'ispicked',
+          fields: 'fields',
+          layerId: 'layerId',
+          interaction: 'interaction',
+          field: 'field',
+          initialize: 'initializePick',
+          isPicked: 'isPicked',
+          escKeyUpHandler: 'escKeyUpHandler',
+          pick: 'pickFeature',
+          unpick: 'unpickFeature',
+          clear: 'clearPick',
+        });
+        this.initializePick(options);
       },
       /**
-      * Configure autocomplete data access and optional map picking.
+       * Initialize map picking; the legacy initialize() returns its wrapper.
+       * Vector/map picking uses a feature interaction; WMS uses picked coordinates
+       * to query the configured layer after the interaction fires.
+       * @param {Object} [options={}] Pick type, layer id and returned attribute names.
+       * @returns {Object} Existing picking wrapper for legacy initialize() chaining.
+       */
+      initializePick(options = {}) {
+        this.pick_type = options.pick_type || 'wms';
+        this.ispicked = false;
+        this.fields = options.fields || [options.value];
+        this.layerId = options.layer_id;
+        this.interaction = 'map' === this.pick_type
+          ? new PickFeatureInteraction({ layers: [GUI.getLayerById(this.layerId)] })
+          : new PickCoordinatesInteraction();
+        this.interaction.set('id', 'picklayer');
+        return this.pickservice;
+      },
+      /**
+       * Report whether the map interaction is active (separate from select UI flag picked).
+       * @returns {boolean}
+       */
+      isPicked() {
+        return this.ispicked;
+      },
+      /**
+       * Cancel active picking when the user presses Escape.
+       * Vue supplies the bound handler shared with add/removeEventListener().
+       * @param {KeyboardEvent} event Document keyup event.
+       */
+      escKeyUpHandler(event) {
+        if ('Escape' === event.key) { this.unpickFeature(); }
+      },
+      /**
+       * Resolve configured feature attributes and release the map interaction.
+       * Reject on a map miss or WMS query failure. Explicit cancellation removes
+       * the interaction but does not settle this promise, matching the legacy flow.
+       * @returns {Promise<Object>} Selected values keyed by configured attribute name.
+       */
+      pickFeature() {
+        return new Promise((resolve, reject) => {
+          document.addEventListener('keyup', this.escKeyUpHandler);
+          const values = {};
+          this.ispicked = true;
+          /**
+           * Settle the pick result and tear down the interaction on success or failure.
+           * @param {Object|null} feature Picked feature or null on a miss.
+           */
+          const afterPick = feature => {
+            if (feature) {
+              const attributes = feature.getProperties();
+              this.fields.filter(field => field).forEach(field => { values[field] = attributes[field]; });
+              resolve(values);
+            } else {
+              // Treat a map miss like a rejected pick so callers share one error path.
+              reject();
+            }
+            this.ispicked = false;
+            this.unpickFeature();
+          };
+          GUI.setModal(false);
+          GUI.addInteraction(this.interaction);
+          this.interaction.once('picked', async event => {
+            try {
+              let feature = event.feature;
+              // WMS picks provide coordinates; vector/map picks already include the feature.
+              const layer = 'wms' === this.pick_type && GUI.getProjectLayer(this.layerId);
+              if (layer) {
+                const response = await layer.query({
+                  feature_count: 1,
+                  coordinates: event.coordinate,
+                  query_point_tolerance: QUERY_POINT_TOLERANCE,
+                  mapProjection: GUI.getMap().getView().getProjection(),
+                  size: GUI.getMap().getSize(),
+                  resolution: GUI.getMap().getView().getResolution(),
+                });
+                feature = response?.data?.at?.(0)?.features?.at(0) ?? null;
+              }
+              afterPick(feature);
+            } catch (error) {
+              console.warn(error);
+              afterPick(null);
+            }
+          });
+        });
+      },
+      /**
+       * Remove the interaction, restore the modal and unregister Escape handling.
+       * Does not settle a pending pickFeature() promise or reset the select UI flag.
+       */
+      unpickFeature() {
+        GUI.removeInteraction(this.interaction);
+        GUI.setModal(true);
+        document.removeEventListener('keyup', this.escKeyUpHandler);
+        this.ispicked = false;
+      },
+      /**
+       * Release the interaction and cancel an in-progress pick if necessary.
+       * Both picking aliases share these resources, so teardown must run only once.
+       */
+      clearPick() {
+        if (this.isPicked()) { this.unpickFeature(); }
+        this.interaction = this.field = null;
+      },
+      /**
+       * Configure autocomplete data access and optional map picking.
        * @returns {Promise<void>} Resolves after relation filters are initialized.
        */
       async initializeSelect() {
@@ -1421,8 +1652,7 @@
         const resizeWrapper = this.delayType && { throttle, debounce }[this.delayType] || throttle;
         this.delayResize = this.resize ? resizeWrapper(this.resize.bind(this), this.delayTime) : null;
         GUI.on('resize', this.delayResize);
-        this.service.getData = params => this.getData(params);
-        this.service.getKeyByValue = params => this.getKeyByValue(params);
+        this.createServiceWrapper({ getData: 'getData', getKeyByValue: 'getKeyByValue' }, this.service);
 
         // Only layer-backed autocomplete can offer map picking; table layers cannot be picked on the map.
         if ('select_autocomplete' === this.state.input.type && options.layer_id) {
@@ -1590,174 +1820,30 @@
       /**
        * Create shared validation state and register input-specific behavior.
        * Adds specialized validators and form lifecycle callbacks as needed.
+       * The base wrapper is extended with coordinate controls or select data access
+       * only for their respective input types; plugins keep their own lifecycle.
        */
       initializeNativeInput() {
         this.state.input.options = this.state.input.options || {};
-        this.service = Object.create({
-          /**
-           * Attach field state and build its default type-specific validator.
-           * @param {Object} config Field state and optional validator options.
-           * @returns {Object} Initialized validation service.
-           */
-          initialize({ state, validatorOptions } = {}) {
-            this.state = state;
-            this.validatorOptions = validatorOptions || state.input.options || {};
-            this.setValue(state.value);
-            this.setEmpty();
-            /**
-             * Dispatch validation by QGIS field type; unknown types are accepted.
-             * @param {*} value Value to validate.
-             * @returns {boolean} Whether the value satisfies its field type.
-             */
-            this._validator = {
-              validate: value => ({
-                /**
-                 * Check that a decimal representation can be parsed.
-                 */
-                float: value => !Number.isNaN(parseFloat(1 * value)),
-                /**
-                 * Check that a bigint is safe and within JavaScript's range.
-                 */
-                bigint: value => Number.isSafeInteger(1 * value) && Math.abs(1 * value) <= Number.MAX_SAFE_INTEGER,
-                /**
-                 * Check that an integer fits the supported 32-bit field range.
-                 */
-                integer: value => !Number.isNaN(1 * value) && Math.abs(1 * value) <= 2147483647,
-                /**
-                 * Check that a checkbox value matches one of its configured options.
-                 */
-                checkbox: (value, options) => (options.values || []).includes(value),
-                /**
-                 * Check a date/time string against the strict field format.
-                 */
-                datetimepicker: (value, options) => moment(value, options.fielddatetimeformat, true).isValid(),
-                /**
-                 * Check that a character field contains exactly one character.
-                 */
-                char: value => value && 1 === `${value}`.length,
-                /**
-                 * Check that a range value is within the supplied bounds.
-                 */
-                range: (value, options) => 1 * value >= options.min && 1 * value <= options.max,
-                /**
-                 * Accept values without an additional type-specific rule.
-                 */
-                default: () => true,
-              }[state.type] || (() => true))(value, this.validatorOptions)
-            };
-            this.setErrorMessage();
-            return this;
-          },
-          /**
-           * Apply the field default only when the current value is nullish.
-           * @param {*} value Current value inspected before defaulting.
-           */
-          setValue(value) {
-            // Defaults must not overwrite a value already supplied by the form.
-            if (![null, undefined].includes(value)) { return; }
-            const { options } = this.state.input;
-            let defaultValue = options.default;
-            // Legacy schemas may store options as an array rather than the current object shape.
-            if (Array.isArray(options)) {
-              if (options[0].default) { defaultValue = options[0].default; }
-              else if (options.values?.length) { defaultValue = options.values[0]?.value || options.values[0]; }
-            }
-            const hasDefault = this.state.get_default_value && ![null, undefined].includes(defaultValue);
-            // Default expressions are evaluated by the server and must not be replaced locally.
-            if (hasDefault && undefined === options.default_expression) { this.state.value = defaultValue; }
-            this.state.value_from_default_value = hasDefault;
-          },
-          /**
-           * Recalculate whether the current value is null or blank after trimming.
-           */
-          setEmpty() {
-            this.state.validate.empty = null === this.state.value || '' === `${this.state.value}`.trim();
-          },
-          /**
-           * Apply required/unique rules before the active type-specific validator.
-           * @returns {boolean} Current field validity.
-           */
-          validate() {
-            // Required empty values fail before uniqueness or type-specific validation.
-            if (this.state.validate.empty) {
-              this.state.value = null;
-              this.state.validate.valid = !this.state.validate.required;
-            // Exclusions compare string forms so numeric and string IDs are treated consistently.
-            } else if (this.state.validate.unique && this.state.validate.exclude_values?.size) {
-              this.state.validate.valid = !this.state.validate.exclude_values.has(`${this.state.value}`);
-            } else {
-              const temp_id = this.state.input.options.relation_reference && this.state?.value?.startsWith?.('_new_');
-              this.state.validate.valid = temp_id || this._validator.validate(this.state.value);
-            }
-            if (!this.state.validate.valid) {
-              console.log('[G3WInput] invalid field', {
-                name: this.state.name,
-                label: this.state.label,
-                type: this.state.type,
-                inputType: this.state.input.type,
-                value: this.state.value,
-                required: this.state.validate.required,
-                message: this.state.validate.message,
-                relationReference: this.state.input.options.relation_reference,
-                relationId: this.state.input.options.relation_id,
-              });
-            }
-            return this.state.validate.valid;
-          },
-          /**
-           * Return the active validator for specialized controls.
-           */
-          getValidator() { return this._validator; },
-          /**
-           * Replace the default validator with a control-specific rule.
-           */
-          setValidator(validator) { this._validator = validator; },
-          /**
-           * Select the translated validation message using rule precedence.
-           */
-          setErrorMessage() {
-            const validate = this.state.validate;
-            // Server-provided errors take precedence over all generated messages.
-            if (validate.error) { validate.message = _(validate.error); return; }
-            const type = _(`sdk.form.inputs.${this.state.type}`);
-            // Cross-field constraints precede uniqueness and generic required/type messages.
-            if (validate.mutually && !validate.mutually_valid) {
-              validate.message = `${_('sdk.form.inputs.input_validation_mutually_exclusive')} ( ${validate.mutually.join(',')} )`;
-            } else if (validate.max_field) {
-              validate.message = `${_('sdk.form.inputs.input_validation_max_field')} (${validate.max_field})`;
-            } else if (validate.min_field) {
-              validate.message = `${_('sdk.form.inputs.input_validation_min_field')} (${validate.min_field})`;
-            // Unique exclusions have a dedicated message before generic validation feedback.
-            } else if (('unique' === this.state.input.type || validate.unique) && validate.exclude_values?.size) {
-              validate.message = _('sdk.form.inputs.input_validation_exclude_values');
-            } else if (validate.required) {
-              validate.message = this.state.info || `${_('sdk.form.inputs.input_validation_error')} ( ${type} )`;
-            } else {
-              validate.message = this.state.info || `${_('sdk.form.inputs.input_validation_error_type')} ( ${type} )`;
-            }
-          },
-          /**
-           * Compare current and original values and update the dirty flag.
-           */
-          setUpdate() {
-            const { value, _value } = this.state;
-            // Media compares its URL and date-time compares normalized strings; other values use strict field semantics.
-            if ('media' === this.state.input.type) {
-              const currentValue = 'Object' === toRawType(value) ? value.value : value;
-              const originalValue = 'Object' === toRawType(_value) ? _value.value : _value;
-              this.state.update = currentValue != originalValue;
-            } else if ('datetimepicker' === this.state.input.type) {
-              this.state.update = (null !== value ? value.toUpperCase() : value) != (_value ? _value.toUpperCase() : _value);
-            } else {
-              this.state.update = value != _value;
-            }
-          }
-        }).initialize({ state: this.state });
+        this.service = this.createServiceWrapper({
+          state: 'validationState',
+          validatorOptions: 'validatorOptions',
+          _validator: 'validator',
+          initialize: 'initializeValidation',
+          setValue: 'setDefaultValue',
+          setEmpty: 'setEmpty',
+          validate: 'validate',
+          getValidator: 'getValidator',
+          setValidator: 'setValidator',
+          setErrorMessage: 'setErrorMessage',
+          setUpdate: 'setUpdate',
+        });
+        this.initializeValidation({ state: this.state });
         // Coordinate fields keep separate lon/lat state and validate geographic bounds.
         if ('lonlat_input' === this.type) {
           this.state.values = this.state.values || { lon: 0, lat: 0 };
           this.setValue();
-          this.service.setValidator({
+          this.setValidator({
             validate: () => {
               const values = this.state.values;
               values.lon = Math.max(-180, Math.min(180, values.lon));
@@ -1765,20 +1851,22 @@
               return !Number.isNaN(1 * values.lon);
             }
           });
-          this.service.toggleGetCoordinate = () => this.toggleGetCoordinate();
-          this.service.setCoordinateButtonReactiveObject = button => { this.coordinatebutton = button; };
-          this.service.clear = () => this.stopToGetCoordinates();
+          this.createServiceWrapper({
+            toggleGetCoordinate: 'toggleGetCoordinate',
+            setCoordinateButtonReactiveObject: 'setCoordinateButtonReactiveObject',
+            clear: 'stopToGetCoordinates',
+          }, this.service);
         }
         // Range widgets read bounds from the first value tuple.
         if ('range_input' === this.type) {
           const { min, max } = this.state.input.options.values[0];
-          this.service.setValidator({ validate: value => 1 * value >= 1 * min && 1 * value <= 1 * max });
+          this.setValidator({ validate: value => 1 * value >= 1 * min && 1 * value <= 1 * max });
           this.state.info = `[MIN: ${min} - MAX: ${max}]`;
         }
         // Slider widgets read bounds directly from input options.
         if ('slider_input' === this.type) {
           const { min, max } = this.state.input.options;
-          this.service.setValidator({ validate: value => 1 * value >= 1 * min && 1 * value <= 1 * max });
+          this.setValidator({ validate: value => 1 * value >= 1 * min && 1 * value <= 1 * max });
           this.state.info = `[MIN: ${min} - MAX: ${max}]`;
         }
         // The date-picker's resize listener belongs to the global GUI emitter.
@@ -1791,13 +1879,13 @@
         this.$watch(() => ApplicationState.language, async () => {
           if (this.state.visible) {
             this.state.visible = false;
-            this.service.setErrorMessage();
+            this.setErrorMessage();
             await this.$nextTick();
             this.state.visible = true;
           }
         });
         // Required fields need an initial validation before the first user edit.
-        if (this.state.editable && this.state.validate.required) { this.service.validate(); }
+        if (this.state.editable && this.state.validate.required) { this.validate(); }
         this.forwardAddInput(this.state);
         if (this.state.value_from_default_value) { this.forwardChangeInput(this.state); }
         // Seed transient UI state from persisted values for controls that own external editors.
@@ -1810,7 +1898,31 @@
       }
     },
     /**
+     * Keep service internals non-reactive, especially OpenLayers interactions.
+     * validationState initially references the field prop, but legacy service.state
+     * may replace that reference independently. validatorOptions and validator back
+     * the corresponding writable aliases. pick_type, fields and layerId configure
+     * the interaction; ispicked tracks its activity, while field is a legacy slot.
+     * These properties stay outside data() to avoid observing third-party objects;
+     * the field schema and UI flags in data() retain their normal Vue reactivity.
+     */
+    beforeCreate() {
+      Object.assign(this, {
+        validationState: null,
+        validatorOptions: null,
+        validator: null,
+        pick_type: null,
+        ispicked: false,
+        fields: null,
+        layerId: null,
+        interaction: null,
+        field: null,
+      });
+    },
+    /**
      * Initialize schema defaults and the services needed before the first render.
+     * Vue does not wait for this async hook before mounting; select DOM setup
+     * and relation-filter readiness are handled separately.
      */
     async created() {
       this.state.input.options = this.state.input.options || {};
@@ -1823,6 +1935,8 @@
     },
     /**
      * Attach external widgets after their DOM nodes have been rendered.
+     * Selects preload labels and synchronize selection; date/time sets display
+     * and storage formats; rich-text fields attach Quill and toolbar handlers.
      */
     async mounted() {
       // Remote autocomplete may need to preload labels for existing values.
@@ -1844,7 +1958,7 @@
         this.resize?.();
         this.datetimedisplayformat = convertQGISDateTimeFormatToMoment(displayformat);
         this.datetimefieldformat = convertQGISDateTimeFormatToMoment(fieldformat);
-        this.service.validatorOptions = { fielddatetimeformat: this.datetimefieldformat };
+        this.validatorOptions = { fielddatetimeformat: this.datetimefieldformat };
         $(`#${this.iddatetimepicker}`).datetimepicker({
           defaultDate: moment(this.state.value, this.datetimefieldformat, true).isValid()
             ? moment(this.state.value, this.datetimefieldformat).toDate()
@@ -1870,70 +1984,73 @@
         return;
       }
       // Quill edits rich text as HTML unless the source-view toggle is active.
-      if ('texthtml_input' !== this.type) { return; }
-      await this.$nextTick();
-      this.quill = new Quill(this.$refs.quill_editor, {
-        theme: 'snow',
-        modules: {
-          clipboard: { matchVisual: false },
-          table: true,
-          toolbar: {
-            container: [
-              [{ header: [1, 2, 3, 4, 5, 6, false] }],
-              [{ align: '' }, { align: 'center' }, { align: 'right' }, { align: 'justify' }],
-              [{ color: [] }, { background: [] }],
-              ['bold', 'italic', 'underline', { list: 'ordered' }, { list: 'bullet' }, 'link', 'clean', 'html'],
-              ['table', 'column-left', 'column-right', 'column-remove', 'row-above', 'row-below', 'row-remove'],
-            ],
-            handlers: {
-              html: () => this.toggleHtmlSource(),
-              'column-left': () => this.table.insertColumnLeft(),
-              'column-right': () => this.table.insertColumnRight(),
-              'column-remove': () => this.table.deleteColumn(),
-              'row-above': () => this.table.insertRowAbove(),
-              'row-below': () => this.table.insertRowBelow(),
-              'row-remove': () => this.table.deleteRow(),
+      if ('texthtml_input' === this.type) {
+        await this.$nextTick();
+        this.quill = new Quill(this.$refs.quill_editor, {
+          theme: 'snow',
+          modules: {
+            clipboard: { matchVisual: false },
+            table: true,
+            toolbar: {
+              container: [
+                [{ header: [1, 2, 3, 4, 5, 6, false] }],
+                [{ align: '' }, { align: 'center' }, { align: 'right' }, { align: 'justify' }],
+                [{ color: [] }, { background: [] }],
+                ['bold', 'italic', 'underline', { list: 'ordered' }, { list: 'bullet' }, 'link', 'clean', 'html'],
+                ['table', 'column-left', 'column-right', 'column-remove', 'row-above', 'row-below', 'row-remove'],
+              ],
+              handlers: {
+                html: () => this.toggleHtmlSource(),
+                'column-left': () => this.table.insertColumnLeft(),
+                'column-right': () => this.table.insertColumnRight(),
+                'column-remove': () => this.table.deleteColumn(),
+                'row-above': () => this.table.insertRowAbove(),
+                'row-below': () => this.table.insertRowBelow(),
+                'row-remove': () => this.table.deleteRow(),
+              },
             },
           },
-        },
-      });
-      this.quill.clipboard.dangerouslyPasteHTML(0, this.state.value);
-      this.table = this.quill.getModule('table');
-      this.$el.querySelector('.ql-formats button[aria-label="align: "]').ariaLabel = 'align: left';
-      this.$el.querySelector('.ql-formats .ql-color.ql-picker').title = 'color: text';
-      this.$el.querySelector('.ql-formats .ql-color.ql-picker').dataset.placement = 'top';
-      this.$el.querySelector('.ql-formats .ql-background.ql-picker').title = 'color: background';
-      this.$el.querySelector('.ql-formats .ql-background.ql-picker').dataset.placement = 'top';
-      this.$el.querySelectorAll('.ql-formats button').forEach(button => {
-        button.title = button.ariaLabel;
-        button.dataset.placement = 'top';
-      });
-      const toolbarIcons = {
-        '.ql-html': ['html', 'HTML source'],
-        '.ql-column-left': ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="m14 1 1 1v12l-1 1H2l-1-1V2l1-1zM2 0 0 2v12l2 2h12l2-2V2l-2-2z"/><path d="M10 12V4H9L5 8z"/></svg>', 'Add column left'],
-        '.ql-column-right': ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="m14 1 1 1v12l-1 1H2l-1-1V2l1-1zM2 0 0 2v12l2 2h12l2-2V2l-2-2z"/><path d="M6 12V4l5 4z"/></svg>', 'Add column right'],
-        '.ql-column-remove': ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/><path d="M4.6 4.6a.5.5 0 0 1 .8 0L8 7.3l2.6-2.7a.5.5 0 0 1 .8.8L8.7 8l2.7 2.6a.5.5 0 0 1-.8.8L8 8.7l-2.6 2.7a.5.5 0 0 1-.8-.8L7.3 8 4.6 5.4a.5.5 0 0 1 0-.8"/></svg>', 'Remove column'],
-        '.ql-row-above': ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="m14 1 1 1v12l-1 1H2l-1-1V2l1-1zM2 0 0 2v12l2 2h12l2-2V2l-2-2z"/><path d="M4 11h8v-1L8 6z"/></svg>', 'Add row above'],
-        '.ql-row-below': ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="M4 7V6h8v1l-4 4z"/><path d="m0 2 2-2h12l2 2v12l-2 2H2l-2-2zm15 0-1-1H2L1 2v12l1 1h12l1-1z"/></svg>', 'Add row below'],
-        '.ql-row-remove': ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/><path d="m4 8 .5-.5h7a.5.5 0 0 1 0 1h-7z"/></svg>', 'Remove row'],
-      };
-      Object.entries(toolbarIcons).forEach(([selector, [label, title]]) => {
-        const button = this.$el.querySelector(selector);
-        button.innerHTML = label;
-        if ('.ql-html' === selector) { button.style.width = 'unset'; }
-        button.title = title;
-      });
-      this.quillHandler = () => this.handleQuillChange();
-      this.quill.on('text-change', this.quillHandler);
+        });
+        this.quill.clipboard.dangerouslyPasteHTML(0, this.state.value);
+        this.table = this.quill.getModule('table');
+        this.$el.querySelector('.ql-formats button[aria-label="align: "]').ariaLabel = 'align: left';
+        this.$el.querySelector('.ql-formats .ql-color.ql-picker').title = 'color: text';
+        this.$el.querySelector('.ql-formats .ql-color.ql-picker').dataset.placement = 'top';
+        this.$el.querySelector('.ql-formats .ql-background.ql-picker').title = 'color: background';
+        this.$el.querySelector('.ql-formats .ql-background.ql-picker').dataset.placement = 'top';
+        this.$el.querySelectorAll('.ql-formats button').forEach(button => {
+          button.title = button.ariaLabel;
+          button.dataset.placement = 'top';
+        });
+        const toolbarIcons = {
+          '.ql-html': ['html', 'HTML source'],
+          '.ql-column-left': ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="m14 1 1 1v12l-1 1H2l-1-1V2l1-1zM2 0 0 2v12l2 2h12l2-2V2l-2-2z"/><path d="M10 12V4H9L5 8z"/></svg>', 'Add column left'],
+          '.ql-column-right': ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="m14 1 1 1v12l-1 1H2l-1-1V2l1-1zM2 0 0 2v12l2 2h12l2-2V2l-2-2z"/><path d="M6 12V4l5 4z"/></svg>', 'Add column right'],
+          '.ql-column-remove': ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/><path d="M4.6 4.6a.5.5 0 0 1 .8 0L8 7.3l2.6-2.7a.5.5 0 0 1 .8.8L8.7 8l2.7 2.6a.5.5 0 0 1-.8.8L8 8.7l-2.6 2.7a.5.5 0 0 1-.8-.8L7.3 8 4.6 5.4a.5.5 0 0 1 0-.8"/></svg>', 'Remove column'],
+          '.ql-row-above': ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="m14 1 1 1v12l-1 1H2l-1-1V2l1-1zM2 0 0 2v12l2 2h12l2-2V2l-2-2z"/><path d="M4 11h8v-1L8 6z"/></svg>', 'Add row above'],
+          '.ql-row-below': ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="M4 7V6h8v1l-4 4z"/><path d="m0 2 2-2h12l2 2v12l-2 2H2l-2-2zm15 0-1-1H2L1 2v12l1 1h12l1-1z"/></svg>', 'Add row below'],
+          '.ql-row-remove': ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/><path d="m4 8 .5-.5h7a.5.5 0 0 1 0 1h-7z"/></svg>', 'Remove row'],
+        };
+        Object.entries(toolbarIcons).forEach(([selector, [label, title]]) => {
+          const button = this.$el.querySelector(selector);
+          button.innerHTML = label;
+          if ('.ql-html' === selector) { button.style.width = 'unset'; }
+          button.title = title;
+        });
+        this.quillHandler = () => this.handleQuillChange();
+        this.quill.on('text-change', this.quillHandler);
+      }
     },
     /**
-     * Remove map listeners, global resize hooks and third-party widget handlers.
+     * Remove map listeners, global resize hooks, relation watchers and Quill handlers.
+     * Invalidate autocomplete responses and clear the shared picking wrapper once;
+     * a distinct externally supplied pickLayerInputService retains its own cleanup.
      */
     beforeDestroy() {
       // Stop map listeners before releasing shared widget and global resources.
       if ('lonlat_input' === this.type) { this.stopToGetCoordinates(); }
       if (this.pickservice) {
-        this.pickservice.clear();
+        this.clearPick();
         if (this.pickLayerInputService === this.pickservice) { this.pickLayerInputService = null; }
         this.pickservice = null;
       }
