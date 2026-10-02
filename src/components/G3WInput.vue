@@ -953,12 +953,7 @@
        * @param {boolean} bool True while values are being loaded.
        */
       setLoading(bool) {
-        if (bool) {
-          this.state.input.options.loading.state = 'loading';
-        }
-        if (!bool) {
-          this.state.input.options.loading.state = 'ready';
-        }
+        this.state.input.options.loading.state = bool ? 'loading' : 'ready';
       },
       /**
        * Toggle the visibility of the field's help message.
@@ -1022,10 +1017,6 @@
         }
         this.forwardChangeInput(this.state);
       },
-      /**
-       * Legacy visibility hook retained for input-component compatibility.
-       */
-      isVisible() {},
       /**
        * Forward the changed field through its callback and Vue event interfaces.
        * Avoid invoking the same handler twice when both interfaces share it.
