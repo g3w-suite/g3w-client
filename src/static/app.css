@@ -207,13 +207,17 @@ button.close                { padding: 0; cursor: pointer; background: transpare
 .spinner-wrapper .spinner.blue        { border: 8px solid #fff; border-top-color: transparent; }
 .spinner-wrapper.blue                 { background-color: var(--skin-primary); color: white;}
 
-.bar-loader                           { height: 4px; width: 100%; position: relative; overflow: hidden; background-color: #ddd; }
-.bar-loader:before                    { background-color: hsl(from var(--skin-color) h s calc(l - 20)); display: block; position: absolute; content: ''; left: -200px; width: 200px; height: 4px; animation: loading 1s linear infinite; }
+.bar-loader                           { height: 6px; width: 100%; position: relative; overflow: hidden; background-color: #ddd; }
+.bar-loader:before                    { content: ''; position: absolute; inset: 0 auto 0 0; width: 35%; background-color: var(--skin-color); animation: loading 1.25s ease-in-out infinite; }
 
 /* Animation */
 @keyframes fade      { 0% { opacity: 0; } 100% { opacity: 1; } }
 @keyframes circle    { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
-@keyframes loading   { from { left: -200px; width: 30%; } 50% { width: 30%; } 70% { width: 70%; } 80% { left: 50%; } 95% { left: 120%; } to { left: 100%; } }
+@keyframes loading   { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .bar-loader:before { animation: none; width: 100%; }
+}
 
 /**************************************************************************************
  * 2. Core
@@ -1201,6 +1205,7 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 .tree-item.disabled > span                          { opacity: .7; font-style: italic; }
 .tree-item > i                                      { margin-top: 5px; }
 .tree-item .fa-table                                { margin-left: 28px; }
+.tree-item.external .fa-table                       { margin-left: 0; }
 .tree-item .tree-toggler[hidden]:first-child + input[type="checkbox"] { margin-left: 28px; }
 .bold                                               { font-weight: bold; color: #fff; }
 .tree-root                                          { padding-left: 0; padding: 13px 3px; }

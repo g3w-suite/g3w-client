@@ -151,6 +151,10 @@ export default {
   'Delimiter': 'Select delimiter',
   'X field': 'Select X field',
   'Y field': 'Select Y field',
+  'Fields found:': 'Löydetyt kentät:',
+  'No features found': 'Kohteita ei löytynyt',
+  'No geometry found: the layer will be added as an alphanumeric table': 'Geometriaa ei löytynyt: taso lisätään ominaisuustaulukkona',
+  'features without geometry': 'kohdetta ilman geometriaa',
   'Layer Color': 'Valitse tason väri',
   'Add your file here': 'Vedä ja pudota taso tähän',
   screenshot_error: `
