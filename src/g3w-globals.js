@@ -457,7 +457,7 @@ globalThis.g3wsdk = {
                   style = "caret-color: transparent; margin-bottom: 5px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center"
                 >
                   <span>*</span>
-                  <span v-t="'sdk.form.footer.required_fields'"></span>
+                  <span v-t="'Required fields'"></span>
                 </div>
               </div>
             </form>

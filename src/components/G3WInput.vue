@@ -245,7 +245,7 @@
           <!-- The map-pick affordance is available only for eligible autocomplete layers. -->
           <span
             v-if            = "showPickLayer"
-            v-t-tooltip:top = "'sdk.form.inputs.tooltips.picklayer'"
+            v-t-tooltip:top = "'Get value from map layer'"
             v-disabled      = "disabled"
             @click.stop     = "pickLayerValue"
             class           = "g3w-input-pick-layer skin-color"
@@ -335,7 +335,7 @@
               @click.prevent.stop = "toggleGetCoordinate"
               :style              = "{border: coordinatebutton.active ? '2px solid' : 0}"
               data-placement      = "left"
-              v-t-tooltip         = "'sdk.form.inputs.tooltips.lonlat'"
+              v-t-tooltip         = "'Click on map to get coordinates'"
               class               = "action skin-color skin-border-color fas fa-crosshairs"
               style               = "border-radius: 5px; font-weight: bold; font-size: 20px; cursor: pointer"
             ></button>
@@ -457,9 +457,10 @@
    * the delayed blur handler unpick(). Both legacy initialize() methods return
    * their wrapper. Internal callers use the component methods directly.
    *
-   * Lifecycle: created() registers built-in fields and starts option loading;
-   * mounted() attaches DOM-dependent widgets. beforeDestroy() releases listeners
-   * and interactions; destroyed() unregisters built-in fields from the form.
+    * Lifecycle: created() registers built-in fields and initializes native/select
+    * behavior, including relation options; mounted() attaches DOM-dependent widgets.
+    * beforeDestroy() releases listeners and interactions; destroyed() unregisters
+    * built-in fields from the form.
    *
    * @prop {Object} state Field value, validation metadata and input options.
    * @prop {string|null} inputType Optional explicit type used by legacy adapters.
@@ -966,19 +967,19 @@
         const validate = state.validate;
         // Server-provided errors take precedence over all generated messages.
         if (validate.error) { validate.message = _(validate.error); return; }
-        const type = _(`sdk.form.inputs.${state.type}`);
+        const type = _(state.type);
         if (validate.mutually && !validate.mutually_valid) {
-          validate.message = `${_('sdk.form.inputs.input_validation_mutually_exclusive')} ( ${validate.mutually.join(',')} )`;
+          validate.message = `${_('Field mutually exclusive with ')} ( ${validate.mutually.join(',')} )`;
         } else if (validate.max_field) {
-          validate.message = `${_('sdk.form.inputs.input_validation_max_field')} (${validate.max_field})`;
+          validate.message = `${_('Value has to be less/equal to field value ')} (${validate.max_field})`;
         } else if (validate.min_field) {
-          validate.message = `${_('sdk.form.inputs.input_validation_min_field')} (${validate.min_field})`;
+          validate.message = `${_('Value has to be more/equal to field value  ')} (${validate.min_field})`;
         } else if (('unique' === state.input.type || validate.unique) && validate.exclude_values?.size) {
-          validate.message = _('sdk.form.inputs.input_validation_exclude_values');
+          validate.message = _('Value has to be unique');
         } else if (validate.required) {
-          validate.message = state.info || `${_('sdk.form.inputs.input_validation_error')} ( ${type} )`;
+          validate.message = state.info || `${_('Mandatory Field or wrong data type')} ( ${type} )`;
         } else {
-          validate.message = state.info || `${_('sdk.form.inputs.input_validation_error_type')} ( ${type} )`;
+          validate.message = state.info || `${_('Wrong data type')} ( ${type} )`;
         }
       },
       /**
@@ -1370,12 +1371,12 @@
           if (value) { GUI.showUserMessage({ type: 'success', autoclose: true }); }
           // A missing key or unavailable fixed option needs an explicit warning.
           if (null === value) {
-            GUI.showUserMessage({ type: 'warning', message: 'sdk.form.inputs.messages.warning.picklayer', autoclose: false });
+            GUI.showUserMessage({ type: 'warning', message: 'Feature selected is not valid', autoclose: false });
           }
           this.picked = false;
         } catch (error) {
           console.warn(error);
-          GUI.showUserMessage({ type: 'warning', message: 'sdk.form.inputs.messages.errors.picklayer', autoclose: true });
+          GUI.showUserMessage({ type: 'warning', message: 'No feature selected. Check if layer is on editing or visible at current scale', autoclose: true });
           this.picked = false;
         }
       },
@@ -1642,189 +1643,40 @@
         if (this.isPicked()) { this.unpickFeature(); }
         this.interaction = this.field = null;
       },
-      /**
-       * Configure autocomplete data access and optional map picking.
-       * @returns {Promise<void>} Resolves after relation filters are initialized.
-       */
-      async initializeSelect() {
-        const options = this.state.input.options;
-        this.allowmulti = !!options.allowmulti;
-        const resizeWrapper = this.delayType && { throttle, debounce }[this.delayType] || throttle;
-        this.delayResize = this.resize ? resizeWrapper(this.resize.bind(this), this.delayTime) : null;
-        GUI.on('resize', this.delayResize);
-        this.createServiceWrapper({ getData: 'getData', getKeyByValue: 'getKeyByValue' }, this.service);
-
-        // Only layer-backed autocomplete can offer map picking; table layers cannot be picked on the map.
-        if ('select_autocomplete' === this.state.input.type && options.layer_id) {
-          try {
-            const dependencyLayer = getCatalogLayerById(options.layer_id);
-            this.showPickLayer = dependencyLayer && 'table' !== dependencyLayer.getType() &&
-              !(this.autocomplete && options.filter_expression);
-            // Keep the pick service shared with the select so teardown happens once.
-            if (this.showPickLayer) {
-              this.initializePickService({ ...options, fields: [options.value, options.key], pick_type: 'wms' });
-              this.pickLayerInputService = this.pickservice;
-            }
-          } catch (error) {
-            console.warn(error);
-          }
-        }
-        await this.initializeRelationFilters();
-      },
-      /**
-       * Load relation-reference choices and cascade dependent filter fields.
-       * Existing values initialize the filters; changes refresh downstream options
-       * and the available referencing-layer values.
-       * @returns {Promise<void>}
-       */
-      async initializeRelationFilters() {
-        const {
-          relation_id,
-          filter_fields = [],
-          relation_reference = false,
-          chain_filters = false,
-        } = this.state.input.options;
-        // Relation lookups need both an enabled relation and at least one configured filter field.
-        if (!relation_reference || !Array.isArray(filter_fields) || !filter_fields.length) { return; }
-
-        this.setLoading(true);
-        this.isFilterFieldsReady = false;
-        const {
-          referencedLayer,
-          referencingLayer,
-          fieldRef: { referencingField, referencedField },
-        } = ApplicationState.project.getRelationById(relation_id);
-        const layer = getCatalogLayerById(referencingLayer);
-        const relationLayer = getCatalogLayerById(referencedLayer);
-        const relationLayerFields = relationLayer.getFields();
-        const getFilterLabel = field => `[${relationLayerFields.find(item => item.name === field).label}]`;
-
-        // Restore filter selections from the saved referenced feature when the field already has a value.
-        if (null !== this.state.value) {
-          try {
-            const { data = [] } = await relationLayer.getFilterData({
-              formatter: 0,
-              field: createSingleFieldParameter({ field: referencedField[0], value: this.state.value }),
-            });
-            const feature = data[0].features[0];
-            this.state.input.options.values = ((await layer.getFilterData({
-              fformatter: referencingField[0],
-              order: referencingField[0],
-              ffield: filter_fields.map((field, index) => {
-                const value = undefined === feature.get(field) ? `null` : feature.get(field);
-                this.filterFields.push({
-                  id: field,
-                  values: [{ key: getFilterLabel(field), value: `null` }],
-                  value,
-                  disabled: chain_filters && index > 0 && `null` === this.filterFields[index - 1]?.value,
-                });
-                return createSingleFieldParameter({ field, value });
-              }).join('|AND,'),
-            })).data || []).map(([value, key]) => ({ key, value }));
-
-            // Chained filters query each next field using the preceding selections.
-            if (chain_filters) {
-              (await relationLayer.getFilterData({ unique: filter_fields[0], ordering: filter_fields[0], formatter: 0 }))
-                .forEach(value => this.filterFields[0].values.push({ key: value, value }));
-              (await Promise.allSettled(filter_fields.slice(1).map((field, index) => relationLayer.getFilterData({
-                unique: filter_fields[index + 1],
-                ordering: filter_fields[index + 1],
-                formatter: 0,
-                field: this.filterFields.slice(0, index + 1)
-                  .filter(item => 'null' !== item.value)
-                  .map(item => createSingleFieldParameter({ field: item.id, value: item.value }))
-                  .join('|AND,'),
-              })))).forEach(({ status, value }, index) => {
-                if ('fulfilled' === status) {
-                  value.forEach(item => this.filterFields[index + 1].values.push({ key: item, value: item }));
-                }
-              });
-            // Independent filters can load their distinct values concurrently.
-            } else {
-              (await Promise.allSettled(filter_fields.map(field => relationLayer.getFilterData({
-                unique: field, ordering: field, formatter: 0,
-              })))).forEach(({ status, value }, index) => {
-                if ('fulfilled' === status) {
-                  value.forEach(item => this.filterFields[index].values.push({ key: item, value: item }));
-                }
-              });
-            }
-          } catch (error) {
-            console.warn(error);
-          }
-        // With no saved value, initialize each filter to its null option.
-        } else {
-          (await Promise.allSettled(filter_fields.map((field, index) => {
-            this.filterFields.push({
-              id: field,
-              values: [{ key: getFilterLabel(field), value: `null` }],
-              value: `null`,
-              disabled: chain_filters && index > 0,
-            });
-            return relationLayer.getFilterData({ unique: field, formatter: 0, ordering: field });
-          }))).forEach(({ status, value }, index) => {
-            if ('fulfilled' === status) {
-              value.forEach(item => this.filterFields[index].values.push({ key: item, value: item }));
-            }
-          });
-        }
-
-        this.filterFieldsUnwatches = this.filterFields.map((filter, index) => this.$watch(
-          () => filter.value,
-          async value => {
-            this.setLoading(true);
-            // Reset downstream values before requesting options for the changed parent filter.
-            if (chain_filters) {
-              for (let i = index + 1; i < this.filterFields.length; i++) {
-                this.filterFields[i].value = `null`;
-                this.filterFields[i].values = [this.filterFields[i].values[0]];
-                this.filterFields[i].disabled = `null` === value;
-              }
-              try {
-                const filterString = this.filterFields.slice(0, index + 1)
-                  .filter(item => `null` !== item.value)
-                  .map(item => createSingleFieldParameter({ field: item.id, value: item.value }))
-                  .join('|AND,');
-                const { data = [] } = await relationLayer.getFilterData({ field: filterString });
-                // A missing feature response leaves downstream option lists at their null choice.
-                if (data[0]?.features) {
-                  data[0].features.forEach(feature => {
-                    if (index < this.filterFields.length - 1) {
-                      const nextValue = feature.get(this.filterFields[index + 1].id);
-                      this.filterFields[index + 1].values.push({ key: nextValue, value: nextValue });
-                    }
-                  });
-                }
-              } catch (error) {
-                console.warn(error);
-              }
-            }
-            this.state.input.options.values.splice(0);
-            await this.$nextTick();
-            this.state.input.options.values = ((await layer.getFilterData({
-              fformatter: referencingField[0],
-              ordering: referencingField[0],
-              ffield: this.filterFields
-                .filter(item => `null` !== item.value)
-                .map(item => createSingleFieldParameter({ field: item.id, value: item.value }))
-                .join('|AND,'),
-            })).data || []).map(([value, key]) => ({ key, value }));
-            this.state.value = this.state.input.options.values?.[0]?.value ?? null;
-            await this.changeSelect(this.state.value);
-            this.setLoading(false);
-          }
-        ));
-        this.setLoading(false);
-        this.isFilterFieldsReady = true;
-      },
-      /**
-       * Create shared validation state and register input-specific behavior.
-       * Adds specialized validators and form lifecycle callbacks as needed.
-       * The base wrapper is extended with coordinate controls or select data access
-       * only for their respective input types; plugins keep their own lifecycle.
-       */
-      initializeNativeInput() {
-        this.state.input.options = this.state.input.options || {};
+    },
+    /**
+     * Keep service internals non-reactive, especially OpenLayers interactions.
+     * validationState initially references the field prop, but legacy service.state
+     * may replace that reference independently. validatorOptions and validator back
+     * the corresponding writable aliases. pick_type, fields and layerId configure
+     * the interaction; ispicked tracks its activity, while field is a legacy slot.
+     * These properties stay outside data() to avoid observing third-party objects;
+     * the field schema and UI flags in data() retain their normal Vue reactivity.
+     */
+    beforeCreate() {
+      Object.assign(this, {
+        validationState: null,
+        validatorOptions: null,
+        validator: null,
+        pick_type: null,
+        ispicked: false,
+        fields: null,
+        layerId: null,
+        interaction: null,
+        field: null,
+      });
+    },
+    /**
+     * Initialize schema defaults and the services needed before the first render.
+     * Vue does not wait for this async hook before mounting; select DOM setup
+     * and relation-filter readiness are handled separately.
+     */
+    async created() {
+      this.state.input.options = this.state.input.options || {};
+      // Coordinate controls consume a dedicated object even when no prior value exists.
+      if ('lonlat_input' === this.type) { this.state.values = this.state.values || { lon: 0, lat: 0 }; }
+      // Plugin-backed inputs provide their own service and lifecycle.
+      if (this.isNativeInput) {
         this.service = this.createServiceWrapper({
           state: 'validationState',
           validatorOptions: 'validatorOptions',
@@ -1896,42 +1748,171 @@
         }
         if ('picklayer_input' === this.type) { this.initializePickService(); }
       }
-    },
-    /**
-     * Keep service internals non-reactive, especially OpenLayers interactions.
-     * validationState initially references the field prop, but legacy service.state
-     * may replace that reference independently. validatorOptions and validator back
-     * the corresponding writable aliases. pick_type, fields and layerId configure
-     * the interaction; ispicked tracks its activity, while field is a legacy slot.
-     * These properties stay outside data() to avoid observing third-party objects;
-     * the field schema and UI flags in data() retain their normal Vue reactivity.
-     */
-    beforeCreate() {
-      Object.assign(this, {
-        validationState: null,
-        validatorOptions: null,
-        validator: null,
-        pick_type: null,
-        ispicked: false,
-        fields: null,
-        layerId: null,
-        interaction: null,
-        field: null,
-      });
-    },
-    /**
-     * Initialize schema defaults and the services needed before the first render.
-     * Vue does not wait for this async hook before mounting; select DOM setup
-     * and relation-filter readiness are handled separately.
-     */
-    async created() {
-      this.state.input.options = this.state.input.options || {};
-      // Coordinate controls consume a dedicated object even when no prior value exists.
-      if ('lonlat_input' === this.type) { this.state.values = this.state.values || { lon: 0, lat: 0 }; }
-      // Plugin-backed inputs provide their own service and lifecycle.
-      if (this.isNativeInput) { this.initializeNativeInput(); }
-      // Select initialization is asynchronous because relation filters may load remotely.
-      if (['select_input', 'select_autocomplete_input'].includes(this.type)) { await this.initializeSelect(); }
+      // Select options and relation filters must load before created() resolves.
+      if (['select_input', 'select_autocomplete_input'].includes(this.type)) {
+        const options = this.state.input.options;
+        this.allowmulti = !!options.allowmulti;
+        const resizeWrapper = this.delayType && { throttle, debounce }[this.delayType] || throttle;
+        this.delayResize = this.resize ? resizeWrapper(this.resize.bind(this), this.delayTime) : null;
+        GUI.on('resize', this.delayResize);
+        this.createServiceWrapper({ getData: 'getData', getKeyByValue: 'getKeyByValue' }, this.service);
+
+        // Only layer-backed autocomplete can offer map picking; table layers cannot be picked on the map.
+        if ('select_autocomplete' === this.state.input.type && options.layer_id) {
+          try {
+            const dependencyLayer = getCatalogLayerById(options.layer_id);
+            this.showPickLayer = dependencyLayer && 'table' !== dependencyLayer.getType() &&
+              !(this.autocomplete && options.filter_expression);
+            // Keep the pick service shared with the select so teardown happens once.
+            if (this.showPickLayer) {
+              this.initializePickService({ ...options, fields: [options.value, options.key], pick_type: 'wms' });
+              this.pickLayerInputService = this.pickservice;
+            }
+          } catch (error) {
+            console.warn(error);
+          }
+        }
+        {
+          const {
+            relation_id,
+            filter_fields = [],
+            relation_reference = false,
+            chain_filters = false,
+          } = this.state.input.options;
+          // Relation lookups need both an enabled relation and at least one configured filter field.
+          if (relation_reference && Array.isArray(filter_fields) && filter_fields.length) {
+            this.setLoading(true);
+            this.isFilterFieldsReady = false;
+            const {
+              referencedLayer,
+              referencingLayer,
+              fieldRef: { referencingField, referencedField },
+            } = ApplicationState.project.getRelationById(relation_id);
+            const layer = getCatalogLayerById(referencingLayer);
+            const relationLayer = getCatalogLayerById(referencedLayer);
+            const relationLayerFields = relationLayer.getFields();
+            const getFilterLabel = field => `[${relationLayerFields.find(item => item.name === field).label}]`;
+
+            // Restore filter selections from the saved referenced feature when the field already has a value.
+            if (null !== this.state.value) {
+              try {
+                const { data = [] } = await relationLayer.getFilterData({
+                  formatter: 0,
+                  field: createSingleFieldParameter({ field: referencedField[0], value: this.state.value }),
+                });
+                const feature = data[0].features[0];
+                this.state.input.options.values = ((await layer.getFilterData({
+                  fformatter: referencingField[0],
+                  order: referencingField[0],
+                  ffield: filter_fields.map((field, index) => {
+                    const value = undefined === feature.get(field) ? `null` : feature.get(field);
+                    this.filterFields.push({
+                      id: field,
+                      values: [{ key: getFilterLabel(field), value: `null` }],
+                      value,
+                      disabled: chain_filters && index > 0 && `null` === this.filterFields[index - 1]?.value,
+                    });
+                    return createSingleFieldParameter({ field, value });
+                  }).join('|AND,'),
+                })).data || []).map(([value, key]) => ({ key, value }));
+
+                // Chained filters query each next field using the preceding selections.
+                if (chain_filters) {
+                  (await relationLayer.getFilterData({ unique: filter_fields[0], ordering: filter_fields[0], formatter: 0 }))
+                    .forEach(value => this.filterFields[0].values.push({ key: value, value }));
+                  (await Promise.allSettled(filter_fields.slice(1).map((field, index) => relationLayer.getFilterData({
+                    unique: filter_fields[index + 1],
+                    ordering: filter_fields[index + 1],
+                    formatter: 0,
+                    field: this.filterFields.slice(0, index + 1)
+                      .filter(item => 'null' !== item.value)
+                      .map(item => createSingleFieldParameter({ field: item.id, value: item.value }))
+                      .join('|AND,'),
+                  })))).forEach(({ status, value }, index) => {
+                    if ('fulfilled' === status) {
+                      value.forEach(item => this.filterFields[index + 1].values.push({ key: item, value: item }));
+                    }
+                  });
+                // Independent filters can load their distinct values concurrently.
+                } else {
+                  (await Promise.allSettled(filter_fields.map(field => relationLayer.getFilterData({
+                    unique: field, ordering: field, formatter: 0,
+                  })))).forEach(({ status, value }, index) => {
+                    if ('fulfilled' === status) {
+                      value.forEach(item => this.filterFields[index].values.push({ key: item, value: item }));
+                    }
+                  });
+                }
+              } catch (error) {
+                console.warn(error);
+              }
+            // With no saved value, initialize each filter to its null option.
+            } else {
+              (await Promise.allSettled(filter_fields.map((field, index) => {
+                this.filterFields.push({
+                  id: field,
+                  values: [{ key: getFilterLabel(field), value: `null` }],
+                  value: `null`,
+                  disabled: chain_filters && index > 0,
+                });
+                return relationLayer.getFilterData({ unique: field, formatter: 0, ordering: field });
+              }))).forEach(({ status, value }, index) => {
+                if ('fulfilled' === status) {
+                  value.forEach(item => this.filterFields[index].values.push({ key: item, value: item }));
+                }
+              });
+            }
+
+            this.filterFieldsUnwatches = this.filterFields.map((filter, index) => this.$watch(
+              () => filter.value,
+              async value => {
+                this.setLoading(true);
+                // Reset downstream values before requesting options for the changed parent filter.
+                if (chain_filters) {
+                  for (let i = index + 1; i < this.filterFields.length; i++) {
+                    this.filterFields[i].value = `null`;
+                    this.filterFields[i].values = [this.filterFields[i].values[0]];
+                    this.filterFields[i].disabled = `null` === value;
+                  }
+                  try {
+                    const filterString = this.filterFields.slice(0, index + 1)
+                      .filter(item => `null` !== item.value)
+                      .map(item => createSingleFieldParameter({ field: item.id, value: item.value }))
+                      .join('|AND,');
+                    const { data = [] } = await relationLayer.getFilterData({ field: filterString });
+                    // A missing feature response leaves downstream option lists at their null choice.
+                    if (data[0]?.features) {
+                      data[0].features.forEach(feature => {
+                        if (index < this.filterFields.length - 1) {
+                          const nextValue = feature.get(this.filterFields[index + 1].id);
+                          this.filterFields[index + 1].values.push({ key: nextValue, value: nextValue });
+                        }
+                      });
+                    }
+                  } catch (error) {
+                    console.warn(error);
+                  }
+                }
+                this.state.input.options.values.splice(0);
+                await this.$nextTick();
+                this.state.input.options.values = ((await layer.getFilterData({
+                  fformatter: referencingField[0],
+                  ordering: referencingField[0],
+                  ffield: this.filterFields
+                    .filter(item => `null` !== item.value)
+                    .map(item => createSingleFieldParameter({ field: item.id, value: item.value }))
+                    .join('|AND,'),
+                })).data || []).map(([value, key]) => ({ key, value }));
+                this.state.value = this.state.input.options.values?.[0]?.value ?? null;
+                await this.changeSelect(this.state.value);
+                this.setLoading(false);
+              }
+            ));
+            this.setLoading(false);
+            this.isFilterFieldsReady = true;
+          }
+        }
+      }
     },
     /**
      * Attach external widgets after their DOM nodes have been rendered.
