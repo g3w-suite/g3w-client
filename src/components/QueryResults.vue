@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file Display query results grouped by layer.
   @since v3.7
 -->
 
@@ -25,7 +25,7 @@
         <li
           v-for = "layer in state.queried_layers.filter(l => this.showLayer(l))"
         >
-          <bar-loader :loading = "layer.loading"/>
+          <div v-if = "layer.loading" class = "bar-loader" style = "border: 0"></div>
           <div class = "box box-primary">
             <div
               class           = "box-header with-border"
@@ -408,8 +408,9 @@
                         aria-hidden = "true"
                       ></i>
 
-                      <g3w-image
+                      <g3w-field
                         v-else-if = "isPhoto(getLayerField({layer, feature, fieldName: attribute.name})) || isImage(getLayerField({layer, feature, fieldName: attribute.name}))"
+                        field-type = "image"
                         :state    = "getLayerField({layer, feature, fieldName: attribute.name})"
                       />
 
@@ -440,7 +441,7 @@
                     >
                       <!-- LAYER WITH A FORM STRUCTURE -->
                       <!-- @since v3.10.0  Reference to content of feature html response -->
-                      <tabs
+                      <g3w-tabs
                         v-if     = "hasFormStructure(layer)"
                         :fields  = "getQueryFields(layer, feature)"
                         :layerid = "layer.id"
@@ -464,11 +465,11 @@
                             <td class = "attr-label">{{ attribute.label }}</td>
                             <!-- ORIGINAL SOURCE: src/components/QueryResultsTableAttributeFieldValue.vue@v4.0.0 -->
                             <td class = "attr-value" :attribute = "attribute.name">
-                              <g3w-vue   v-if      = "isVue(getLayerField({    layer, feature, fieldName: attribute.name}))" :feature = "feature" :state = "getLayerField({ layer, feature, fieldName: attribute.name })" />
+                              <g3w-field v-if      = "isVue(getLayerField({    layer, feature, fieldName: attribute.name}))" field-type = "vue" :feature = "feature" :state = "getLayerField({ layer, feature, fieldName: attribute.name })" />
                               <span      v-else-if = "isSimple(getLayerField({ layer, feature, fieldName: attribute.name}))" v-html = "getLayerField({ layer, feature, fieldName: attribute.name }).value"></span>
-                              <g3w-image v-else-if = "isPhoto(getLayerField({  layer, feature, fieldName: attribute.name}))" :state = "getLayerField({ layer, feature, fieldName: attribute.name })" />
-                              <g3w-image v-else-if = "isImage(getLayerField({  layer, feature, fieldName: attribute.name}))" :state = "getLayerField({ layer, feature, fieldName: attribute.name })" />
-                              <g3w-link  v-else-if = "isLink(getLayerField({   layer, feature, fieldName: attribute.name}))" :state = "{ value: getLayerField({ layer, feature, fieldName: attribute.name }).value }" />
+                              <g3w-field v-else-if = "isPhoto(getLayerField({  layer, feature, fieldName: attribute.name}))" field-type = "image" :state = "getLayerField({ layer, feature, fieldName: attribute.name })" />
+                              <g3w-field v-else-if = "isImage(getLayerField({  layer, feature, fieldName: attribute.name}))" field-type = "image" :state = "getLayerField({ layer, feature, fieldName: attribute.name })" />
+                              <g3w-field v-else-if = "isLink(getLayerField({   layer, feature, fieldName: attribute.name}))" field-type = "link" :state = "{ value: getLayerField({ layer, feature, fieldName: attribute.name }).value }" />
                             </td>
                           </tr>
                         </template>
@@ -532,11 +533,9 @@
 
 <script>
   import ApplicationState         from 'g3w-state';
-  import { fieldsMixin }          from 'mixins';
-  import Link                     from 'components/FieldLink.vue';
-  import VueField                 from 'components/FieldVue.vue';
-  import Image                    from 'components/FieldImage.vue'
   import { toRawType }            from 'utils/toRawType';
+  import G3WField                 from 'components/G3WField.vue';
+  import G3WTabs                  from 'components/G3WTabs.vue';
   import { throttle }             from 'utils/throttle';
   import { getCatalogLayerById }  from 'utils/getCatalogLayerById';
   import { downloadFeatures }     from 'utils/downloadFeatures';
@@ -569,12 +568,9 @@
       }
     },
 
-    mixins: [fieldsMixin],
-
     components: {
-      'g3w-link':  Link,
-      'g3w-vue':   VueField,
-      'g3w-image': Image,
+      'g3w-field': G3WField,
+      'g3w-tabs':  G3WTabs,
     },
 
     computed: {
@@ -648,6 +644,60 @@
     },
 
     methods: {
+      getFieldType(field) {
+        let type = field.type;
+        if ('vue' !== type) {
+          const fieldValue = field.value;
+          const value = fieldValue && 'Object' === toRawType(fieldValue) && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
+          if (!value) {
+            type = 'simple';
+          } else if (value && 'object' === typeof value) {
+            if (value.coordinates) {
+              type = 'geo';
+            } else if (value.vue) {
+              type = 'vue';
+            }
+          } else if (value && Array.isArray(value)) {
+            if (value.length && value[0].photo) {
+              type = 'photo';
+            } else {
+              type = 'simple';
+            }
+          } else if (value.toString().toLowerCase().match(/^(https?:\/\/[^\s]+)\.(png|jpg|jpeg|gif)$/g)) {
+            type = 'photo';
+          } else if (value.toString().match(/^(https?:\/\/[^\s]+)/g)) {
+            type = 'link';
+          } else {
+            type = 'simple';
+          }
+        }
+        return `${type}_field`;
+      },
+
+      isSimple(field) {
+        return 'simple_field' === this.getFieldType(field);
+      },
+
+      isLink(field) {
+        return 'link_field' === this.getFieldType(field);
+      },
+
+      isImage(field) {
+        return 'image_field' === this.getFieldType(field);
+      },
+
+      isPhoto(field) {
+        return 'photo_field' === this.getFieldType(field);
+      },
+
+      isVue(field) {
+        return 'vue_field' === this.getFieldType(field);
+      },
+
+      sanitizeFieldValue(value) {
+        return (Array.isArray(value) && !value.length) ? '' : value;
+      },
+
       filterLayerResult(e) {
         console.log(e.target.value)
         if (e.target.value) {
@@ -1290,8 +1340,5 @@
   font-weight: bold;
   font-size: 0.8em;
 }
-.action-button.disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
+
 </style>

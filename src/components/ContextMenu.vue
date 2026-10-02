@@ -1,5 +1,5 @@
 <!--
-  @file ORIGINAL SOURCE: src/components/CatalogContextMenu.vue@v4.0.0
+  @file Render contextual actions for catalog items.
   @since v4.1.0
 -->
 
@@ -563,13 +563,6 @@
           })
         }
         this.closeMenu();
-      },
-
-      /**
-       * @since 4.1.0
-       */
-      editableGeometryLayers() {
-        return Object.values(GUI.getPlugin('editing')?.getEditableLayers() || {}).filter(l => l.isGeoLayer());
       },
       
       /**

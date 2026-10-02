@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file Display and interact with layer attribute tables.
   @since v3.7
 -->
 
@@ -92,18 +92,19 @@
               >
                 <input type = "checkbox" :checked = "feature.selected" />
               </label>
-              <i v-for=" action in getFeatureActions(feature)" :key = "action.id"
+              <i v-for = "action in getFeatureActions(feature)" :key = "action.id"
                 @click.stop    = "runAction(action, feature)"
                 :title         = "action.hint"
                 data-placement = "top"
                 class          = "action-button skin-color"
-                :class         = "action.class"
+                :class         = "[action.class, { 'disabled': !!(action.state || {}).disabled }]"
                 :style         = "action.style"
               ></i>
             </div>
           </td>
           <td v-for = "header in state.headers">
-            <field
+            <g3w-field
+              :field-type = "getFieldType({ value: Array.isArray(feature.attributes[header.name]) ? feature.attributes[header.name].join(',') : feature.attributes[header.name] })"
               :feature = "feature"
               :state   = "({ 
                 label: undefined,
@@ -190,7 +191,8 @@
 import { PAGELENGTHS }         from 'g3w-constants';
 import Component               from 'g3w-component';
 import ApplicationState        from 'g3w-state';
-import Field                   from 'components/FieldG3W.vue';
+import G3WField                from 'components/G3WField.vue';
+import { toRawType }           from 'utils/toRawType';
 import GUI                     from 'g3w-app';
 import { debounce }            from 'utils/debounce';
 import { getCatalogLayerById } from 'utils/getCatalogLayerById';
@@ -201,7 +203,7 @@ export default {
   name: "G3WTable",
 
   components: {
-    Field
+    'g3w-field': G3WField,
   },
 
   data() {
@@ -271,9 +273,38 @@ export default {
   },
 
   methods: {
+    getFieldType(field) {
+      let type = field.type;
+      if ('vue' !== type) {
+        const fieldValue = field.value;
+        const value = fieldValue && 'Object' === toRawType(fieldValue) && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
+        if (!value) {
+          type = 'simple';
+        } else if (value && 'object' === typeof value) {
+          if (value.coordinates) {
+            type = 'geo';
+          } else if (value.vue) {
+            type = 'vue';
+          }
+        } else if (value && Array.isArray(value)) {
+          if (value.length && value[0].photo) {
+            type = 'photo';
+          } else {
+            type = 'simple'
+          }
+        } else if (value.toString().toLowerCase().match(/^(https?:\/\/[^\s]+)\.(png|jpg|jpeg|gif)$/g)) {
+          type = 'photo';
+        } else if (value.toString().match(/^(https?:\/\/[^\s]+)/g)) {
+          type = 'link';
+        } else {
+          type = 'simple';
+        }
+      }
+      return `${type}_field`;
+    },
     
     /**
-     * @since 4.3.0 
+     * @since 4.2.0 
      * @param action 
      * @param feature 
      */
@@ -282,7 +313,7 @@ export default {
     },
     
     /**
-     * @since 4.3.0
+     * @since 4.2.0
      * @param action run Cbk action
      * @param feature 
      * @param action
@@ -290,14 +321,7 @@ export default {
     runAction(action, feature) {
       action?.cbk?.(this.layer.state, feature, action);
     },
-    /**
-     * @param feature
-     * 
-     * @since 3.10.0
-     */
-    editFeature(feature) {
-      GUI.editFeature({ layer: this.layer.state, feature });
-    },
+   
 
     /**
      * @param feature
@@ -775,4 +799,5 @@ export default {
   th.desc::after {
     content: "▾";
   }
+
 </style>

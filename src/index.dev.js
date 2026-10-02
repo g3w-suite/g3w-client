@@ -636,7 +636,6 @@ g3w.app.once('after:setupControls', () => {
                   }
                   await waitFor(() => GUI.getPlugin('editing')?.isReady?.());
                   const layers = (message.data?.response?.data?.layers || []);
-                  console.log(layers)
                   layers
                     .filter(l  => GUI.getPlugin('editing')?.getLayerById(l.id))
                     .forEach(l => layerId.appendChild(Object.assign(document.createElement('option'), { value: l.id, text: l.id })));

@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file Root application shell and primary navigation.
   @since v3.7
 -->
 
@@ -235,7 +235,8 @@
           <button
             type           = "button"
             @click         = "ApplicationState.sidebar.btn_close && closeAllPanels()"
-            v-t-tooltip    = "ApplicationState.sidebar.tooltip_close || 'close'"
+            :title         = "ApplicationState.sidebar.tooltip_close || 'close'"
+            :data-i18n-title = "ApplicationState.sidebar.tooltip_close || 'close'"
             data-placement = "right"
             class          = "btn btn-outline"
           >
@@ -561,7 +562,7 @@
     </aside>
 
     <!-- MAIN (content) -->
-    <bar-loader style = "position: absolute; z-index: 1;" :loading = "state.content.loading && 0 === state.contentsdata.length"/>
+    <div v-if = "state.content.loading && 0 === state.contentsdata.length" class = "bar-loader" style = "border: 0; position: absolute; z-index: 1;"></div>
     
     <!-- ORIGINAL SOURCE: src/components/Map.vue -->
     <div
@@ -585,13 +586,13 @@
         </div>
         <!-- DOWNLOAD -->
         <div :class = "{ 'skin-color': true, 'g3w-hide': !ApplicationState.download }">
-          <bar-loader :loading = "true" aria-label="downloading" />
+          <div class = "bar-loader" style = "border: 0" aria-label="downloading"></div>
           <i style = "padding:3px" class = "fas fa-download" aria-hidden = "true"></i>
           <b style = "font-size: 0.35em">download</b>
         </div>
         <!-- PLUGINS -->
         <div :class = "{ 'g3w-hide': 0 === ApplicationState.plugins.length }" style = "color: #994b10">
-          <bar-loader :loading = "true" aria-label="loading plugins" />
+          <div class = "bar-loader" style = "border: 0" aria-label="loading plugins"></div>
           <i class = "fas fa-cogs" aria-hidden = "true"></i>
           <b style = "font-size: 0.4em">plugins</b>
         </div>
@@ -784,7 +785,7 @@
           ></button>
         </div>
       </div>
-      <bar-loader :loading = "state.content.loading"/>
+      <div v-if = "state.content.loading" class = "bar-loader" style = "border: 0"></div>
     </div>
 
     <!-- BACKOMP: for v4.1.x -->

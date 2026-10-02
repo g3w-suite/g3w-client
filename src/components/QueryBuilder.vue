@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file Build and test layer filter expressions.
   @since v3.7
 -->
 
@@ -33,7 +33,7 @@
     <!-- SEARCH EXPRESSION -->
     <textarea id = "query_builder_expression_content" v-model = "filter"></textarea>
 
-    <bar-loader :loading = "loading.test"/>
+    <div v-if = "loading.test" class = "bar-loader" style = "border: 0"></div>
 
     <b
       class   = "skin-color"
@@ -90,7 +90,7 @@
       >{{ operator }}</button>
     </div>
 
-    <bar-loader :loading = "loading.values" />
+    <div v-if = "loading.values" class = "bar-loader" style = "border: 0"></div>
 
     <!-- SEARCH VALUES -->
     <select v-if = "!manual" ref = "search_values" size = "4" class = "mb-5">

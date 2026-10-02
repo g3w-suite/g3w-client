@@ -24,7 +24,7 @@ import GUI                from 'g3w-app';
 
 // components
 import App                from 'components/App.vue';
-import Tabs               from 'components/GlobalTabs.vue';
+import G3WTabs            from 'components/G3WTabs.vue';
 
 // directives
 import vDisabled          from 'directives/v-disabled';
@@ -55,7 +55,7 @@ Object
     Component,
     GUI,
     App,
-    Tabs,
+    G3WTabs,
     Layer
   })
   .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
@@ -116,7 +116,7 @@ Vue.component('datetime', {
         <div class = 'input-group date' ref = "iddatetimepicker">
           <input :id = "id" ref = "idinputdatetimepiker" type = 'text' @change = "changeInput" class = "form-control" />
           <span class = "input-group-addon" style="cursor:pointer;">
-            <span class  = "datetimeinput" :class = "g3wtemplate.getFontClass('time' === type ? 'time': 'calendar')"></span>
+            <span :class = "['datetimeinput', 'time' === type ? 'far fa-clock' : 'fas fa-calendar-alt']"></span>
           </span>
         </div>
       </div>
@@ -223,7 +223,7 @@ Vue.component('range', {
 /**
  * @deprecated global `<tabs>` component
  */
-Vue.component(Tabs.name, Tabs);
+Vue.component('tabs', G3WTabs);
 
 /**
  * Install global directives

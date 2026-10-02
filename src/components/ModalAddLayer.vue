@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file Add WMS, TMS, and local file layers.
   @since 3.11.0
 -->
 

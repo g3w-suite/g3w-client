@@ -36,16 +36,12 @@ import { getListableProjects }                     from 'utils/getListableProjec
 /**
  * Single File Components
  */
-import G3WInput                                    from 'components/InputG3W.vue';
-import G3wFormInputs                               from 'components/InputG3WFormInputs.vue';
+import G3WInput                                    from 'components/G3WInput.vue';
 
 /**
  * CORE modules
  */
 import GUI                                         from 'g3w-app';
-
-//MIXINS
-import Mixins                                      from 'mixins';
 
 import { createMeasureTooltip }                    from 'utils/createMeasureTooltip';
 import { get_formatted_area }                      from 'utils/createMeasureTooltip';
@@ -70,7 +66,6 @@ import { toRawType }                               from 'utils/toRawType';
 import { throttle }                                from 'utils/throttle';
 import { debounce }                                from 'utils/debounce';
 import { XHR }                                     from 'utils/XHR';
-import { createFilterFormInputs }                  from 'utils/createFilterFormInputs';
 import { getCatalogLayerById }                     from 'utils/getCatalogLayerById';
 import { getCatalogLayers }                        from 'utils/getCatalogLayers';
 import { cloneDeep }                               from 'utils/cloneDeep';
@@ -83,28 +78,9 @@ import { gettext as _ }                            from 'g3w-i18n';
 import { Plugin, PluginService }                   from 'g3w-plugin';
 import MapControl                                  from 'g3w-control';
 import { SearchPanel }                             from 'components/g3w-search';
-import { FormComponent, FormService }              from 'components/g3w-form';
-
-//Inputs
-import InputCheckbox                               from 'components/InputCheckbox.vue';
-import InputColor                                  from 'components/InputColor.vue';
-import InputDateTimePicker                         from 'components/InputDateTimePicker.vue';
-import InputFloat                                  from 'components/InputFloat.vue';
-import InputInteger                                from 'components/InputInteger.vue';
-import InputLonLat                                 from 'components/InputLonLat.vue';
-import InputMedia                                  from 'components/InputMedia.vue';
-import InputPickLayer                              from 'components/InputPickLayer.vue';
-import InputRadio                                  from 'components/InputRadio.vue';
-import InputSelect                                 from 'components/InputSelect.vue';
-import InputRange                                  from 'components/InputRange.vue';
-import InputSliderRange                            from 'components/InputSliderRange.vue';
-import InputText                                   from 'components/InputText.vue';
-import InputTextArea                               from 'components/InputTextArea.vue';
-import InputTextHtml                               from 'components/InputTextHtml.vue';
-import InputUnique                                 from 'components/InputUnique.vue';
 
 //Fields
-import Fields, { FieldsService }                   from 'components/g3w-fields';
+import G3WField                                    from 'components/G3WField.vue';
 
 import 'components/x-select';
 
@@ -204,7 +180,6 @@ globalThis.g3wsdk = {
       throttle,
       debounce,
       toRawType,
-      createFilterFormInputs,
       noop,
       waitFor,
       cloneDeep
@@ -342,42 +317,477 @@ globalThis.g3wsdk = {
   gui: {
     GUI,
     Panel,
-    /** used by the following plugins: "br-service" */
-    FieldsService,
+    /** @deprecated used by the following plugins: "br-service" */
+    FieldsService: {
+      getType(field) {
+        let type = field.type;
+        if ('vue' !== type) {
+          const fieldValue = field.value;
+          const value = fieldValue && 'Object' === toRawType(fieldValue) && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
+          if (!value) {
+            type = 'simple';
+          } else if (value && 'object' === typeof value) {
+            if (value.coordinates) {
+              type = 'geo';
+            } else if (value.vue) {
+              type = 'vue';
+            }
+          } else if (value && Array.isArray(value)) {
+            if (value.length && value[0].photo) {
+              type = 'photo';
+            } else {
+              type = 'simple'
+            }
+          } else if (value.toString().toLowerCase().match(/^(https?:\/\/[^\s]+)\.(png|jpg|jpeg|gif)$/g)) {
+            type = 'photo';
+          } else if (value.toString().match(/^(https?:\/\/[^\s]+)/g)) {
+            type = 'link';
+          } else {
+            type = 'simple';
+          }
+        }
+        return `${type}_field`;
+      },
+      isSimple(field)    { return 'simple_field' === this.getType(field); },
+      isLink(field)      { return 'link_field' === this.getType(field); },
+      isImage(field)     { return 'image_field' === this.getType(field); },
+      isPhoto(field)     { return 'photo_field' === this.getType(field); },
+      isVue(field)       { return 'vue_field' === this.getType(field); },
+      add({type, field}) { g3wsdk.gui.vue.Fields[type] = field; },
+      remove(type)       { delete g3wsdk.gui.vue.Fields[type]; },
+    },
     vue: {
       Component,
       Panel,
       SearchPanel,
-      FormComponent,
-      Inputs: {
-        G3wFormInputs,
-        G3WInput,
-        InputsComponents: {
-          'text_input':                Vue.extend(InputText),
-          'texthtml_input':            Vue.extend(InputTextHtml),
-          'textarea_input':            Vue.extend(InputTextArea),
-          'integer_input':             Vue.extend(InputInteger),
-          'string_input':              Vue.extend(InputText), //temporary
-          'float_input':               Vue.extend(InputFloat),
-          'radio_input':               Vue.extend(InputRadio),
-          'check_input':               Vue.extend(InputCheckbox),
-          'range_input':               Vue.extend(InputRange),
-          'datetimepicker_input':      Vue.extend(InputDateTimePicker),
-          'unique_input':              Vue.extend(InputUnique),
-          'select_input':              Vue.extend(InputSelect),
-          'media_input':               Vue.extend(InputMedia),
-          'select_autocomplete_input': Vue.extend(InputSelect),
-          'picklayer_input':           Vue.extend(InputPickLayer),
-          'color_input':               Vue.extend(InputColor),
-          'slider_input':              Vue.extend(InputSliderRange),
-          'lonlat_input':              Vue.extend(InputLonLat),
+      Fields: {
+        simple_field: {
+          name: 'field-text',
+          extends: G3WField,
+          props: { fieldType: { type: String, default: 'text' } }
+        },
+        text_field: {
+          name: 'field-text',
+          extends: G3WField,
+          props: { fieldType: { type: String, default: 'text' } }
+        },
+        link_field: {
+          name: 'field-link',
+          extends: G3WField,
+          props: { fieldType: { type: String, default: 'link' } }
+        },
+        image_field: {
+          name: 'field-image',
+          extends: G3WField,
+          props: { fieldType: { type: String, default: 'image' } }
+        },
+        geo_field: {
+          name: 'g3w-geospatial',
+          extends: G3WField,
+          props: { fieldType: { type: String, default: 'geo' } }
+        },
+        photo_field: {
+          name: 'field-image',
+          extends: G3WField,
+          props: { fieldType: { type: String, default: 'image' } }
+        },
+        media_field: {
+          name: 'g3w-media',
+          extends: G3WField,
+          props: { fieldType: { type: String, default: 'media' } }
+        },
+        vue_field: {
+          name: 'vuefield',
+          extends: G3WField,
+          props: { fieldType: { type: String, default: 'vue' } }
         }
       },
-      Fields,
-      Mixins,
-      services: {
-        FormService
-      }
+      Inputs: {
+        G3WInput,
+        InputsComponents: {
+          'text_input':                { name: 'input-text',            extends: G3WInput, props: { inputType: { type: String, default: 'text_input' },                showDivider: { type: Boolean, default: false } } },
+          'texthtml_input':            { name: 'input-html',            extends: G3WInput, props: { inputType: { type: String, default: 'texthtml_input' },            showDivider: { type: Boolean, default: false } } },
+          'textarea_input':            { name: 'input-textarea',        extends: G3WInput, props: { inputType: { type: String, default: 'textarea_input' },            showDivider: { type: Boolean, default: false } } },
+          'integer_input':             { name: 'input-integer',         extends: G3WInput, props: { inputType: { type: String, default: 'integer_input' },             showDivider: { type: Boolean, default: false } } },
+          'bigint_input':              { name: 'input-integer',         extends: G3WInput, props: { inputType: { type: String, default: 'bigint_input' },              showDivider: { type: Boolean, default: false } } },
+          'string_input':              { name: 'input-text',            extends: G3WInput, props: { inputType: { type: String, default: 'string_input' },              showDivider: { type: Boolean, default: false } } },
+          'float_input':               { name: 'input-float',           extends: G3WInput, props: { inputType: { type: String, default: 'float_input' },               showDivider: { type: Boolean, default: false } } },
+          'radio_input':               { name: 'input-radio',           extends: G3WInput, props: { inputType: { type: String, default: 'radio_input' },               showDivider: { type: Boolean, default: false } } },
+          'check_input':               { name: 'input-checkbox',        extends: G3WInput, props: { inputType: { type: String, default: 'check_input' },               showDivider: { type: Boolean, default: false } } },
+          'range_input':               { name: 'input-range',           extends: G3WInput, props: { inputType: { type: String, default: 'range_input' },               showDivider: { type: Boolean, default: false } } },
+          'datetimepicker_input':      { name: 'input-datetime-picker', extends: G3WInput, props: { inputType: { type: String, default: 'datetimepicker_input' },      showDivider: { type: Boolean, default: false } } },
+          'unique_input':              { name: 'input-unique',          extends: G3WInput, props: { inputType: { type: String, default: 'unique_input' },              showDivider: { type: Boolean, default: false } } },
+          'select_input':              { name: 'input-select',          extends: G3WInput, props: { inputType: { type: String, default: 'select_input' },              showDivider: { type: Boolean, default: false } } },
+          'media_input':               { name: 'input-media',           extends: G3WInput, props: { inputType: { type: String, default: 'media_input' },               showDivider: { type: Boolean, default: false } } },
+          'select_autocomplete_input': { name: 'input-select',          extends: G3WInput, props: { inputType: { type: String, default: 'select_autocomplete_input' }, showDivider: { type: Boolean, default: false } } },
+          'picklayer_input':           { name: 'input-picklayer',       extends: G3WInput, props: { inputType: { type: String, default: 'picklayer_input' },           showDivider: { type: Boolean, default: false } } },
+          'color_input':               { name: 'input-color',           extends: G3WInput, props: { inputType: { type: String, default: 'color_input' },               showDivider: { type: Boolean, default: false } } },
+          'slider_input':              { name: 'input-slider-range',    extends: G3WInput, props: { inputType: { type: String, default: 'slider_input' },              showDivider: { type: Boolean, default: false } } },
+          'lonlat_input':              { name: 'input-lonlat',          extends: G3WInput, props: { inputType: { type: String, default: 'lonlat_input' },              showDivider: { type: Boolean, default: false } } },
+        },
+        /** @deprecated used by the following plugins: "billboards" */
+        G3wFormInputs: {
+          name: 'g3w-form-inputs',
+          components: { 'g3w-input': G3WInput },
+          props: {
+            state:                       { type: Object, default: () => ({ fields: [] }), },
+            addToValidate:               { type: Function },
+            changeInput:                 { type: Function },
+            removeToValidate:            { type: Function },
+            show_required_field_message: { type: Boolean, default: false },
+          },
+          template: /* html */ `
+            <form class="form-horizontal g3w-form">
+              <div class="box-primary">
+                <div class="box-body" style="padding: 5px">
+                  <g3w-input
+                    v-for             = "field in state.fields"
+                    :key              = "field.name"
+                    :state            = "field"
+                    :removeToValidate = "removeToValidate"
+                    :addToValidate    = "addToValidate"
+                    :changeInput      = "changeInput"
+                    @addToValidate    = "addToValidate"
+                    @changeInput      = "changeInput"
+                  />
+                </div>
+                <div
+                  v-if  = "show_required_field_message"
+                  id    = "g3w-for-inputs-required-inputs-message"
+                  style = "caret-color: transparent; margin-bottom: 5px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center"
+                >
+                  <span>*</span>
+                  <span v-t="'Required fields'"></span>
+                </div>
+              </div>
+            </form>
+          `,
+        },
+      },
+      Mixins: {
+        /** @deprecated since 4.2.0. */
+        fieldsMixin: {
+          methods: {
+            getFieldType(field) {
+              return g3wsdk.gui.FieldsService.getType(field);
+            },
+            isSimple(field) {
+              return g3wsdk.gui.FieldsService.isSimple(field);
+            },
+            isLink(field) {
+              return g3wsdk.gui.FieldsService.isLink(field);
+            },
+            isImage(field) {
+              return g3wsdk.gui.FieldsService.isImage(field);
+            },
+            isPhoto(field) {
+              return g3wsdk.gui.FieldsService.isPhoto(field);
+            },
+            isVue(field) {
+              return g3wsdk.gui.FieldsService.isVue(field);
+            },
+            sanitizeFieldValue(value) {
+              return (Array.isArray(value) && !value.length) ? '' : value;
+            }
+          }
+        },
+        /** @deprecated since 4.2.0. */
+        mediaMixin: {
+          computed: {
+            filename() {
+              return this.value ? this.value.split('/').pop() : this.value;
+            }
+          },
+          methods: {
+            isMedia(value) {
+              if (value && 'object' === typeof value && Object === value.constructor) {
+                return !!value.mime_type;
+              }
+              return false;
+            },
+            getMediaType(mime_type) {
+              const media = {
+                type:    null,
+                options: {}
+              };
+
+              switch(mime_type) {
+                case 'image/gif':
+                case 'image/png':
+                case 'image/jpeg':
+                case 'image/bmp':
+                  media.type = 'image';
+                  break;
+                case 'application/pdf':
+                  media.type = 'pdf';
+                  break;
+                case 'video/mp4':
+                case 'video/ogg':
+                case 'video/x-ms-wmv':
+                case 'video/x-msvideo':
+                case 'video/quicktime':
+                  media.type           = 'video';
+                  media.options.format = mime_type;
+                  break;
+                case 'application/gzip':
+                case 'application/zip':
+                  media.type = 'zip';
+                  break;
+                case 'application/msword':
+                case 'application/vnd.oasis.opendocument.text':
+                  media.type = 'text';
+                  break;
+                case 'application/vnd.ms-office':
+                case 'application/vnd.oasis.opendocument.spreadsheet':
+                  media.type = 'excel';
+                  break;
+                case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+                case 'application/vnd.ms-powerpoint':
+                case 'application/vnd.oasis.opendocument.presentation':
+                  media.type = 'ppt';
+                  break;
+                default:
+                  media.type = 'unknow';
+              }
+              return media;
+            }
+          }
+        },
+        /** @deprecated since 4.2.0. */
+        geoMixin: {
+          methods: {
+            showLayer() {
+              this.visible = !this.visible;
+              this.layer.setVisible(this.visible);
+            }
+          },
+          created() {
+            const data          = this.data;
+            const mapProjection = GUI.getProjection().getCode();
+            let style;
+            switch (data.type) {
+              case 'Point':
+              case 'MultiPoint':
+                style = [new ol.style.Style({
+                  image: new ol.style.Circle({
+                    radius: 6,
+                    fill:   new ol.style.Fill({ color: [255,255,255,1.0] }),
+                    stroke: new ol.style.Stroke({ color: [0,0,0,1.0], width: 2, })
+                  })
+                }),
+                  new ol.style.Style({
+                    image: new ol.style.Circle({
+                      radius: 2,
+                      fill:   new ol.style.Fill({ color: [255,255,255,1.0] }),
+                      stroke: new ol.style.Stroke({ color: [0,0,0,1.0], width: 2, })
+                    })
+                  })];
+                break;
+              case 'Line':
+              case 'MultiLineString':
+              case 'Polygon':
+              case 'MultiPolygon':
+                style = new ol.style.Style({
+                  fill:   new ol.style.Fill({ color: 'rgba(255, 255, 255, 0.3)', }),
+                  stroke: new ol.style.Stroke({ color: [0,0,0,1.0], width: 2, })
+                });
+                break;
+            }
+            this.layer = new ol.layer.Vector({
+              source: new ol.source.Vector({
+                features: new ol.format.GeoJSON().readFeatures(data, { featureProjection: mapProjection })
+              }),
+              visible: !!this.visible,
+              style:   style
+            });
+            GUI.getMap().addLayer(this.layer);
+          },
+          beforeDestroy() {
+            GUI.getMap().removeLayer(this.layer);
+          }
+        },
+        /** @deprecated since 4.2.0. */
+        resizeMixin: {
+          created() {
+            const delayWrapper = this.delayType && { throttle, debounce }[this.delayType] || throttle;
+            this.delayResize   = this.resize ? delayWrapper(this.resize.bind(this), this.delayTime): null;
+            GUI.on('resize', this.delayResize);
+          },
+          async mounted() {
+            await this.$nextTick();
+            this.resize?.();
+          },
+          beforeDestroy() {
+            GUI.off('resize', this.delayResize);
+            this.delayResize = null;
+            this.delayTime   = null;
+          }
+        },
+        /** @deprecated since 4.2.0. */
+        selectMixin: {
+          methods: {
+            getLanguage() {
+              return window.initConfig.user.i18n || "en";
+            },
+            async changeSelect(value) {
+              this.state.value = 'null' === value ? null : value;
+              await this.$nextTick();
+              this.change();
+            },
+            getValue(value) {
+              return null === value ? 'null' : value;
+            },
+            resetValues() {
+              this.state.input.options.values.splice(0);
+            }
+          },
+          computed: {
+            autocomplete() {
+              return 'select_autocomplete' === this.state.input.type && this.state.input.options.usecompleter;
+            },
+          },
+          watch: {
+            async notvalid(value) {
+              await this.$nextTick();
+              if (this.select2) {
+                this.select2.data('select2').$container[value ? "addClass" : "removeClass"]("input-error-validation")
+              }
+            }
+          }
+        },
+        /** @deprecated since 4.2.0. */
+        select2Mixin: {
+          methods: {
+            setValue() {
+              this.select2.val(`${this.state.value}`).trigger('change');
+            },
+            resize() {
+              if (this.select2 && !ApplicationState.ismobile) {
+                this.select2.select2('close');
+              }
+            }
+          },
+          beforeDestroy() {
+            if (this.select2) {
+              this.select2.select2('destroy');
+              this.select2.off();
+              this.select2 = null;
+            }
+          }
+        },
+        /** @deprecated since 4.2.0. */
+        formInputsMixins: {
+          data() {
+            return {
+              valid: false
+            }
+          },
+          methods: {
+            addToValidate(input) {
+              this.tovalidate.push(input);
+            },
+            changeInput(input) {
+              this.isValid(input)
+            },
+            isValid(input) {
+              if (input) {
+                if (input.validate.mutually) {
+                  if (!input.validate.required) {
+                    if (!input.validate.empty) {
+                      input.validate._valid         = input.validate.valid;
+                      input.validate.mutually_valid = input.validate.mutually.reduce((previous, inputname) => {
+                        return previous && this.tovalidate[inputname].validate.empty;
+                      }, true);
+                      input.validate.valid = input.validate.mutually_valid && input.validate.valid;
+                    } else {
+                      input.value                   = null;
+                      input.validate.mutually_valid = true;
+                      input.validate.valid          = true;
+                      input.validate._valid         = true;
+                      let countNoTEmptyInputName = [];
+                      for (let i = input.validate.mutually.length; i--;) {
+                        const name = input.validate.mutually[i];
+                        if (!this.tovalidate[name].validate.empty) {
+                          countNoTEmptyInputName.push(name);
+                        }
+                      }
+                      if (countNoTEmptyInputName.length < 2) {
+                        countNoTEmptyInputName.forEach(name => {
+                          this.tovalidate[name].validate.mutually_valid = true;
+                          this.tovalidate[name].validate.valid          = true;
+                          setTimeout(() => {
+                            this.tovalidate[name].validate.valid = this.tovalidate[name].validate._valid;
+                            this.state.valid = this.state.valid && this.tovalidate[name].validate.valid;
+                          })
+                        })
+                      }
+                    }
+                  }
+                } else if (!input.validate.empty && (input.validate.min_field || input.validate.max_field)) {
+                  const input_name = input.validate.min_field || input.validate.max_field;
+                  input.validate.valid = input.validate.min_field
+                    ? this.tovalidate[input.validate.min_field].validate.empty || 1*input.value > 1*this.tovalidate[input.validate.min_field].value
+                    : this.tovalidate[input.validate.max_field].validate.empty || 1*input.value < 1*this.tovalidate[input.validate.max_field].value;
+                  if (input.validate.valid) {
+                    this.tovalidate[input_name].validate.valid = true
+                  }
+                }
+              }
+              this.valid = Object.values(this.tovalidate).reduce((bool, input) => {
+                return bool && input.validate.valid;
+              }, true);
+            }
+          },
+          created() {
+            this.tovalidate = [];
+          },
+          destroyed() {
+            this.tovalidate = null;
+          }
+        },
+        /** @deprecated since 4.2.0. */
+        baseInputMixin: {
+          computed: {
+            tabIndex() {
+              return this.editable ? 0 : -1;
+            },
+            notvalid() {
+              return false === this.state.validate.valid;
+            },
+            editable() {
+              return this.state.editable;
+            },
+            showhelpicon() {
+              return this.state.help && this.state.help.message.trim();
+            },
+            disabled() {
+              return !this.editable || ['loading', 'error'].includes(this.loadingState);
+            },
+            loadingState() {
+              return this.state.input.options.loading ? this.state.input.options.loading.state : null;
+            }
+          },
+          methods: {
+            setLoading(bool) {
+              this.state.input.options.loading.state = bool ? 'loading' : 'ready';
+            },
+            showHideHelp() {
+              this.state.help.visible = !this.state.help.visible
+            },
+            mobileChange(event) {
+              this.state.value = event.target.value;
+              this.change();
+            },
+            change() {
+              this.service.setEmpty();
+              this.service.validate();
+              this.service.setUpdate();
+              this.$emit('changeinput', this.state);
+            },
+            isVisible() {}
+          }
+        }
+      },
     }
   },
 
@@ -421,6 +831,8 @@ ${Object.entries(window.initConfig.plugins).map((p) => (`    - ${p[0]}: __${p[1]
   // G3W-CLIENT version
   version: APP_VERSION
 };
+
+g3wsdk.gui.vue.Mixins.select2Mixin.mixins = [g3wsdk.gui.vue.Mixins.resizeMixin];
 
 // BACKCOMP v3.x
 g3wsdk.core.geometry                             = { Geom: g3wsdk.core.geoutils, Geometry: g3wsdk.core.geoutils.Geometry };

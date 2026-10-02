@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file Display the user authentication dialog.
   @since 3.11.0
 -->
 

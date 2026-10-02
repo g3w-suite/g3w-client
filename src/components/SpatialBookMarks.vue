@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file List and navigate to spatial bookmarks.
   @since v3.8
 -->
 

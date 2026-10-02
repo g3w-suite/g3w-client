@@ -414,8 +414,6 @@ export class Plugin extends Emitter {
  * - "ws-trento",
  * - "br-service",
  * - "cdu",
- * - "iternet",
- * - "geonotes",
  * - "billboards",
  * - "politowps",
  * - "law",

@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file Select and open another map project.
   @since 3.11.0
 -->
 
