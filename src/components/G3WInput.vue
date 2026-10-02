@@ -199,7 +199,9 @@
           class           = "g3w_input_button skin-border-color"
           @click          = "onClick"
           style           = "border-style: solid; border-width: 2px; width:100%; cursor: pointer; text-align: center;"
-          v-t-tooltip:top = "accept"
+          data-placement  = "top"
+          :title          = "accept"
+          :data-i18n-title = "accept"
         >
           <i class = "fas fa-file-upload fa-2x skin-color" style = "padding: 5px;">
             <input
@@ -248,7 +250,8 @@
         <!-- The map-pick affordance is available only for eligible autocomplete layers. -->
         <span
           v-if            = "showPickLayer"
-          v-t-tooltip:top = "'Get value from map layer'"
+          data-placement  = "top"
+          title           = "Get value from map layer"
           v-disabled      = "disabled"
           @click.stop     = "pickLayerValue"
           class           = "g3w-input-pick-layer skin-color"
@@ -339,7 +342,7 @@
             @click.prevent.stop = "toggleGetCoordinate"
             :class              = "{'g3w-input-coordinate-button-active': coordinatebutton.active}"
             data-placement      = "left"
-            v-t-tooltip         = "'Click on map to get coordinates'"
+            title               = "Click on map to get coordinates"
             class               = "action skin-color skin-border-color fas fa-crosshairs"
             style               = "border: 0; border-radius: 5px; font-weight: bold; font-size: 20px; cursor: pointer"
           ></button>
@@ -416,7 +419,6 @@
   import { toRawType }                               from 'utils/toRawType';
   import Quill                                       from 'quill';
   import { throttle }                                from 'utils/throttle';
-  import { debounce }                                from 'utils/debounce';
   import { convertQGISDateTimeFormatToMoment }        from 'utils/convertQGISDateTimeFormatToMoment';
   import PickCoordinatesInteraction                  from 'interactions/pick-coordinates';
   import { getCatalogLayerById }                     from 'utils/getCatalogLayerById';
