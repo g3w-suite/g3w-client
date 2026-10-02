@@ -460,8 +460,8 @@
    *
     * Lifecycle: created() registers built-in fields and initializes native/select
     * behavior, including relation options; mounted() attaches DOM-dependent widgets.
-    * beforeDestroy() releases listeners and interactions; destroyed() unregisters
-    * built-in fields from the form.
+    * beforeDestroy() releases listeners and interactions; tabs unregister fields
+    * when they become hidden.
    *
    * @prop {Object} state Field value, validation metadata and input options.
    * @prop {string|null} inputType Optional explicit type used by legacy adapters.
@@ -505,7 +505,7 @@
         default: () => {}
       },
       /**
-       * @type {Function} Remove this field from the parent form when it is destroyed.
+        * @type {Function} Remove this field from the parent form when its tab is hidden.
        */
       removeToValidate:{
         type: Function,
@@ -2138,21 +2138,6 @@
       }
       this.edit_state.edit = false;
       this.edit_state.show_html = false;
-    },
-    /**
-     * Notify the parent form after a built-in field has been removed.
-     */
-    destroyed() {
-      if ([
-          'text_input', 'string_input', 'textarea_input',
-          'integer_input', 'bigint_input', 'float_input',
-          'color_input', 'check_input', 'radio_input',
-          'range_input', 'slider_input', 'media_input', 'unique_input',
-          'texthtml_input', 'datetimepicker_input', 'picklayer_input', 'lonlat_input',
-          'select_input', 'select_autocomplete_input'
-        ].includes(this.type)) {
-        this.forwardRemoveInput(this.state);
-      }
     }
   };
 </script>

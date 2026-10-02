@@ -269,6 +269,20 @@
           }),
         });
         if (response.result) {
+          // in case the tab was previously visible but is now not visible, remove its inputs from validation
+          if (tab.visible && !response.value) {
+            const removeInputs = nodes => nodes.forEach(node => {
+              if (node.nodes) {
+                removeInputs(node.nodes);
+              } else {
+                const field = this.fields.find(field => node.field_name === field.name);
+                if (field && !field.query) {
+                  this.removeToValidate(field);
+                }
+              }
+            });
+            removeInputs(tab.nodes || []);
+          }
           tab.visible = response.value;
         } else {
           throw JSON.stringify(response.error);
