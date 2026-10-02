@@ -301,7 +301,7 @@
               class     = "form-control"
             />
             <span class = "input-group-addon skin-color" style = "border: 1px solid #ccc; cursor:pointer">
-              <span :class = "[timeOnly() ? 'far fa-clock' : 'fas fa-calendar-alt']"></span>
+              <span :class = "[!state.input.options.formats[0].date ? 'far fa-clock' : 'fas fa-calendar-alt']"></span>
             </span>
           </div>
         </div>
@@ -449,13 +449,8 @@
    * and `state.input.options` supplies control-specific configuration.
    * Built-in controls update this shared object rather than replacing the prop.
    *
-   * Legacy API: `service` forwards validation to component methods and properties.
-   * Its `state`, `validatorOptions` and `_validator` aliases remain writable;
-   * `service.setValue()` maps to setDefaultValue(), not widget setValue().
-   * `pickservice` forwards map picking; `pickLayerInputService` shares that wrapper
-   * for eligible selects. Its `unpick()` maps to immediate unpickFeature(), not
-   * the delayed blur handler unpick(). Both legacy initialize() methods return
-   * their wrapper. Internal callers use the component methods directly.
+    * Validation and map picking are owned directly by this component; no service
+    * wrapper is required between its lifecycle hooks and methods.
    *
     * Lifecycle: created() registers built-in fields and initializes native/select
     * behavior, including relation options; mounted() attaches DOM-dependent widgets.
@@ -722,28 +717,26 @@
      */
     data() {
       return {
-        checkboxId: getUniqueDomId(),
-        radioName: `name_${getUniqueDomId()}`,
-        radioIds: Array.from({ length: (this.state.input?.options?.values || []).length }, () => getUniqueDomId()),
-        mediaData: { value: null, mime_type: null },
-        mediaid: `media_${getUniqueDomId()}`,
-        iddatetimepicker: `datetimepicker_${getUniqueDomId()}`,
-        idinputdatetimepiker: `inputdatetimepicker_${getUniqueDomId()}`,
-        lonId: getUniqueDomId(),
-        latId: getUniqueDomId(),
-        coordinatebutton: { active: false },
-        loading: false,
-        edit_state: { edit: false, show_html: false },
-        showPickLayer: false,
-        picked: false,
-        filterFields: [],
-        isFilterFieldsReady: false,
-        allowmulti: false,
-        unwatch: null,
+        checkboxId:            getUniqueDomId(),
+        radioName:             `name_${getUniqueDomId()}`,
+        radioIds:              Array.from({ length: (this.state.input?.options?.values || []).length }, () => getUniqueDomId()),
+        mediaData:             { value: null, mime_type: null },
+        mediaid:               `media_${getUniqueDomId()}`,
+        iddatetimepicker:      `datetimepicker_${getUniqueDomId()}`,
+        idinputdatetimepiker:  `inputdatetimepicker_${getUniqueDomId()}`,
+        lonId:                 getUniqueDomId(),
+        latId:                 getUniqueDomId(),
+        coordinatebutton:      { active: false },
+        loading:               false,
+        edit_state:            { edit: false, show_html: false },
+        showPickLayer:         false,
+        picked:                false,
+        filterFields:          [],
+        isFilterFieldsReady:   false,
+        allowmulti:            false,
+        unwatch:               null,
         filterFieldsUnwatches: null,
-        accept: (this.state.input?.options?.allowed_types || [])
-          .map(type => `${type.startsWith('.') ? type : `.${type}`}`)
-          .join(','),
+        accept:                (this.state.input?.options?.allowed_types || []).map(type => `${type.startsWith('.') ? type : `.${type}`}`).join(','),
       };
     },
     /**
@@ -847,106 +840,53 @@
     },
     methods: {
       /**
-       * Expose legacy names while keeping methods and writable state on the component.
-       * Accessors resolve the current property on every read, so reassigned validators
-       * and methods stay visible through both interfaces. Vue binds component methods.
-       * @param {Object<string, string>} bindings Legacy name to component property mapping.
-       * @param {Object} [wrapper={}] Existing wrapper to extend for specialized controls.
-       * @returns {Object} The same wrapper, with enumerable read/write aliases.
+       * Validate a value using the rule for this field and input control.
+       * @param {*} value Value to validate.
+       * @returns {*} Usually boolean; the char rule preserves its legacy falsy result.
        */
-      createServiceWrapper(bindings, wrapper = {}) {
-        return Object.defineProperties(wrapper, Object.fromEntries(Object.entries(bindings).map(([name, property]) => [name, {
-          configurable: true,
-          enumerable: true,
-          get: () => this[property],
-          set: value => { this[property] = value; },
-        }])));
-      },
-      /**
-       * Initialize validation without changing the component's field-state prop.
-       * validationState retains the legacy service.state reference, including when
-       * external code replaces it independently of the rendered state prop.
-       * @param {Object} config Field state and optional validator options.
-       * @param {Object} config.state Field schema used by the validation methods.
-       * @param {Object} [config.validatorOptions] Defaults to the field's input options.
-       * @returns {Object} Existing validation wrapper for legacy initialize() chaining.
-       */
-      initializeValidation({ state, validatorOptions } = {}) {
-        this.validationState = state;
-        this.validatorOptions = validatorOptions || state.input.options || {};
-        this.setDefaultValue(state.value);
-        this.setEmpty();
-        /**
-         * Dispatch validation by QGIS field type; unknown types are accepted.
-         * The field type comes from initialization; validator options remain replaceable.
-         * @param {*} value Value to validate.
-         * @returns {*} Usually a boolean; the legacy char rule may return a falsy value unchanged.
-         */
-        this.validator = {
-          validate: value => ({
-            // Check that the coerced numeric representation can be parsed.
-            float: value => !Number.isNaN(parseFloat(1 * value)),
-            // Require an integer within JavaScript's safe numeric range.
-            bigint: value => Number.isSafeInteger(1 * value) && Math.abs(1 * value) <= Number.MAX_SAFE_INTEGER,
-            // Preserve the legacy magnitude check; it does not reject fractions.
-            integer: value => !Number.isNaN(1 * value) && Math.abs(1 * value) <= 2147483647,
-            // Match one of the configured stored checkbox values.
-            checkbox: (value, options) => (options.values || []).includes(value),
-            // Parse date/time values strictly using the configured storage format.
-            datetimepicker: (value, options) => moment(value, options.fielddatetimeformat, true).isValid(),
-            // Accept a non-empty value whose string representation has one character.
-            char: value => value && 1 === `${value}`.length,
-            // Include both configured range endpoints.
-            range: (value, options) => 1 * value >= options.min && 1 * value <= options.max,
-            // Accept values without an additional type-specific rule.
-            default: () => true,
-          }[state.type] || (() => true))(value, this.validatorOptions)
-        };
-        this.setErrorMessage();
-        return this.service;
-      },
-      /**
-       * Apply schema defaults; setValue() remains the widget synchronization hook.
-       * @param {*} value Current value inspected before defaulting.
-       */
-      setDefaultValue(value) {
-        // Defaults must not overwrite a value already supplied by the form.
-        if (![null, undefined].includes(value)) {
-          return;
+      validateValue(value) {
+        const state = this.state;
+        const options = this.validationOptions;
+        if ('lonlat_input' === this.type) {
+          const values = state.values;
+          values.lon = Math.max(-180, Math.min(180, values.lon));
+          values.lat = Math.max(-90, Math.min(90, values.lat));
+          return !Number.isNaN(1 * values.lon);
         }
-        const state = this.validationState;
-        const { options } = state.input;
-        let defaultValue = options.default;
-        // Legacy schemas may store options as an array rather than the current object shape.
-        if (Array.isArray(options)) {
-          if (options[0].default) {
-            defaultValue = options[0].default;
-          } else if (options.values?.length) {
-            defaultValue = options.values[0]?.value || options.values[0];
-          }
+        if ('range_input' === this.type) {
+          const { min, max } = state.input.options.values[0];
+          return 1 * value >= 1 * min && 1 * value <= 1 * max;
         }
-        const hasDefault = state.get_default_value && ![null, undefined].includes(defaultValue);
-        // Default expressions are evaluated by the server and must not be replaced locally.
-        if (hasDefault && undefined === options.default_expression) {
-          state.value = defaultValue;
+        if ('slider_input' === this.type) {
+          const { min, max } = state.input.options;
+          return 1 * value >= 1 * min && 1 * value <= 1 * max;
         }
-        state.value_from_default_value = hasDefault;
-      },
-      /**
-       * Recalculate whether the validation value is null or blank after trimming.
-       * Call before validate(); this updates metadata without normalizing the value.
-       */
-      setEmpty() {
-        const state = this.validationState;
-        state.validate.empty = null === state.value || '' === `${state.value}`.trim();
+        switch (state.type) {
+          case 'float':
+            return !Number.isNaN(parseFloat(1 * value));
+          case 'bigint':
+            return Number.isSafeInteger(1 * value) && Math.abs(1 * value) <= Number.MAX_SAFE_INTEGER;
+          case 'integer':
+            return !Number.isNaN(1 * value) && Math.abs(1 * value) <= 2147483647;
+          case 'checkbox':
+            return (options.values || []).includes(value);
+          case 'datetimepicker':
+            return moment(value, options.fielddatetimeformat, true).isValid();
+          case 'char':
+            return value && 1 === `${value}`.length;
+          case 'range':
+            return 1 * value >= options.min && 1 * value <= options.max;
+          default:
+            return true;
+        }
       },
       /**
        * Validate emptiness, uniqueness and the active field-type rule in that order.
        * Temporary relation-reference IDs bypass the field-type rule, not uniqueness.
-       * @returns {*} Legacy validator result, also written to state.validate.valid.
+      * @returns {*} Validation result, also written to state.validate.valid.
        */
       validate() {
-        const state = this.validationState;
+        const state = this.state;
         // Required empty values fail before uniqueness or type-specific validation.
         if (state.validate.empty) {
           state.value = null;
@@ -956,7 +896,7 @@
           state.validate.valid = !state.validate.exclude_values.has(`${state.value}`);
         } else {
           const temp_id = state.input.options.relation_reference && state?.value?.startsWith?.('_new_');
-          state.validate.valid = temp_id || this.validator.validate(state.value);
+          state.validate.valid = temp_id || this.validateValue(state.value);
         }
         if (!state.validate.valid) {
           console.log('[G3WInput] invalid field', {
@@ -974,26 +914,12 @@
         return state.validate.valid;
       },
       /**
-       * Return the active validator, also exposed as legacy service._validator.
-       * @returns {Object} Validator exposing validate(value).
-       */
-      getValidator() {
-        return this.validator;
-      },
-      /**
-       * Replace the default validator with a control-specific rule.
-       * @param {Object} validator Object exposing validate(value).
-       */
-      setValidator(validator) {
-        this.validator = validator;
-      },
-      /**
        * Select translated validation feedback without recomputing field validity.
        * Precedence: server errors, cross-field constraints, unique exclusions,
        * then required/type feedback (which may use state.info).
        */
       setErrorMessage() {
-        const state = this.validationState;
+        const state = this.state;
         const validate = state.validate;
         // Server-provided errors take precedence over all generated messages.
         if (validate.error) {
@@ -1013,24 +939,6 @@
           validate.message = state.info || `${_('Mandatory Field or wrong data type')} ( ${type} )`;
         } else {
           validate.message = state.info || `${_('Wrong data type')} ( ${type} )`;
-        }
-      },
-      /**
-       * Compare current and original values and update the dirty flag.
-       * Media compares URLs; date/time compares uppercase strings. Other fields
-       * retain loose equality so equivalent numeric/string values are not dirty.
-       */
-      setUpdate() {
-        const state = this.validationState;
-        const { value, _value } = state;
-        if ('media' === state.input.type) {
-          const currentValue = 'Object' === toRawType(value) ? value.value : value;
-          const originalValue = 'Object' === toRawType(_value) ? _value.value : _value;
-          state.update = currentValue != originalValue;
-        } else if ('datetimepicker' === state.input.type) {
-          state.update = (null !== value ? value.toUpperCase() : value) != (_value ? _value.toUpperCase() : _value);
-        } else {
-          state.update = value != _value;
         }
       },
       /**
@@ -1074,48 +982,23 @@
         }
       },
       /**
-       * Determine whether the configured date format contains only a time.
-       * @returns {boolean}
-       */
-      timeOnly() {
-        return !this.state.input.options.formats[0].date;
-      },
-      /**
-       * Convert the displayed date into the field's configured storage format.
-       */
-      onDatePickerChange() {
-        const newDate = $(`#${this.idinputdatetimepiker}`).val();
-        // Store an empty display as null; populated dates use the field's storage format.
-        this.state.value = '' === newDate.trim()
-          ? null
-          : moment(newDate, this.datetimedisplayformat).format(this.datetimefieldformat);
-        this.change();
-      },
-      /**
-       * Notify consumers that the date-picker popup has opened.
-       * @fires datetimepickershow
-       */
-      onDatePickerShow() {
-        this.$emit('datetimepickershow');
-      },
-      /**
-       * Notify consumers that the date-picker popup has closed.
-       * @fires datetimepickershow Legacy event name emitted by existing consumers.
-       */
-      onDatePickerHide() {
-        this.$emit('datetimepickershow');
-      },
-      /**
        * Recalculate emptiness, validity and dirty state, then notify the form.
        * @fires changeinput
        */
       change() {
-        if (!this.service) {
-          return;
-        }
-        this.setEmpty();
+        const state = this.state;
+        state.validate.empty = null === state.value || '' === `${state.value}`.trim();
         this.validate();
-        this.setUpdate();
+        const { value, _value } = state;
+        if ('media' === state.input.type) {
+          const currentValue = 'Object' === toRawType(value) ? value.value : value;
+          const originalValue = 'Object' === toRawType(_value) ? _value.value : _value;
+          state.update = currentValue != originalValue;
+        } else if ('datetimepicker' === state.input.type) {
+          state.update = (null !== value ? value.toUpperCase() : value) != (_value ? _value.toUpperCase() : _value);
+        } else {
+          state.update = value != _value;
+        }
         this.forwardChangeInput(this.state);
       },
       /**
@@ -1157,7 +1040,7 @@
         this.$emit('removeinput', state);
       },
       /**
-       * Restore an optional range default and run its bounds validator.
+       * Restore an optional range default and check its bounds.
        * Required empty fields remain invalid.
        */
       checkRangeValue() {
@@ -1169,7 +1052,7 @@
         this.state.validate.valid = !this.state.validate.required;
         // Required empty ranges are already invalid; otherwise validate the configured bounds.
         if (!empty) {
-          this.state.validate.valid = this.getValidator().validate(this.state.value);
+          this.state.validate.valid = this.validateValue(this.state.value);
         }
         this.change();
       },
@@ -1200,7 +1083,6 @@
       },
       /**
        * Synchronize the stored coordinate pair or current select value to its widget.
-       * This is not the default-value setter exposed as legacy service.setValue().
        */
       setValue() {
         if ('lonlat_input' === this.type) {
@@ -1317,36 +1199,6 @@
             console.warn(error);
           }
         }, 250);
-      },
-      /**
-       * Append one option to the field's reactive option list.
-       * @param {Object} value Option to add.
-       */
-      addValue(value) {
-        this.state.input.options.values.push(value);
-      },
-      /**
-       * Sort choices by their configured key or value field.
-       */
-      sortValues() {
-        const { orderbyvalue } = this.state.input.options;
-        this.state.input.options.values.sort((a, b) => {
-          const first = a[orderbyvalue ? 'value' : 'key'];
-          const second = b[orderbyvalue ? 'value' : 'key'];
-          return first < second ? -1 : first > second ? 1 : 0;
-        });
-      },
-      /**
-       * Fetch display labels for existing stored values and sort the results.
-       * @param {Object} options Search values used to retrieve their labels.
-       * @returns {Promise<Array<Object>>} Updated option list.
-       */
-      async getKeyByValue({ search } = {}) {
-        const { value, key } = this.state.input.options;
-        const values = await this.getData({ key, value, search });
-        values.forEach(({ $value, text }) => this.addValue({ key: $value, value: text }));
-        this.sortValues();
-        return this.state.input.options.values;
       },
       /**
        * Query a catalog layer for autocomplete suggestions or selected values.
@@ -1494,31 +1346,6 @@
         this.loading = false;
       },
       /**
-       * Switch the Quill editor between rendered content and HTML source text.
-       */
-      toggleHtmlSource() {
-        this.edit_state.show_html = !this.edit_state.show_html;
-        const editor = this.quill.container.firstChild;
-        // Source mode displays markup literally; rich-text mode parses it back into the editor.
-        if (this.edit_state.show_html) {
-          editor.innerText = editor.innerHTML;
-        }
-        else { editor.innerHTML = editor.innerText; }
-        this.$el.querySelectorAll('.ql-formats > *').forEach(child => {
-          child.classList.toggle(child.classList.contains('ql-html') ? 'skin-color' : 'g3w-disabled');
-        });
-      },
-      /**
-       * Copy Quill's current contents into field state and emit the normal change.
-       */
-      handleQuillChange() {
-        const editor = this.quill.container.firstChild;
-        this.state.value = this.edit_state.show_html ? editor.innerText : editor.innerHTML;
-        this.edit_state.edit = true;
-        this.change();
-        setTimeout(() => { this.edit_state.edit = false; });
-      },
-      /**
        * Validate edited longitude/latitude values and refresh the map-coordinate value.
        */
       changeLonLat() {
@@ -1531,35 +1358,28 @@
       toggleGetCoordinate() {
         this.coordinatebutton.active = !this.coordinatebutton.active;
         if (this.coordinatebutton.active) {
-          this.startToGetCoordinates();
+          GUI.deactiveMapControls();
+          this.mapEpsg = GUI.getCrs();
+          this.outputEpsg = this.state.epsg || this.mapEpsg;
+          this.map = GUI.getMap();
+          this.mapControlToggleEventHandler = event => {
+            if (event.target.isToggled() && event.target.isClickMap() && this.coordinatebutton.active) {
+              this.toggleGetCoordinate();
+            }
+          };
+          GUI.on('mapcontrol:toggled', this.mapControlToggleEventHandler);
+          this.eventMapKey = this.map.on('click', event => {
+            event.originalEvent.stopPropagation();
+            event.preventDefault();
+            const coordinate = this.mapEpsg !== this.outputEpsg
+              ? ol.proj.transform(event.coordinate, this.mapEpsg, this.outputEpsg)
+              : event.coordinate;
+            this.state.value = [coordinate];
+            [this.state.values.lon, this.state.values.lat] = coordinate;
+          });
         } else {
           this.stopToGetCoordinates();
         }
-      },
-      /**
-       * Disable conflicting map controls and listen for map clicks until stopped.
-       * The picked coordinate is transformed to the field's target CRS.
-       */
-      startToGetCoordinates() {
-        GUI.deactiveMapControls();
-        this.mapEpsg = GUI.getCrs();
-        this.outputEpsg = this.state.epsg || this.mapEpsg;
-        this.map = GUI.getMap();
-        this.mapControlToggleEventHandler = event => {
-          if (event.target.isToggled() && event.target.isClickMap() && this.coordinatebutton.active) {
-            this.toggleGetCoordinate();
-          }
-        };
-        GUI.on('mapcontrol:toggled', this.mapControlToggleEventHandler);
-        this.eventMapKey = this.map.on('click', event => {
-          event.originalEvent.stopPropagation();
-          event.preventDefault();
-          const coordinate = this.mapEpsg !== this.outputEpsg
-            ? ol.proj.transform(event.coordinate, this.mapEpsg, this.outputEpsg)
-            : event.coordinate;
-          this.state.value = [coordinate];
-          [this.state.values.lon, this.state.values.lat] = coordinate;
-        });
       },
       /**
        * Remove the map click and map-control listeners used for coordinate capture.
@@ -1581,40 +1401,15 @@
       },
       /**
        * Defer teardown until the click that launched picking has completed.
-       * This blur handler is separate from legacy pickservice.unpick(), which
-       * forwards to immediate unpickFeature().
        */
       unpick() {
         setTimeout(() => !this.isPicked() && this.unpickFeature(), 200);
       },
       /**
-       * Create the legacy picking wrapper and initialize component-owned interaction state.
-       * @param {Object} [options=this.state.input.options] Pick type, layer and fields.
-       * @returns {void} The wrapper is stored on this.pickservice.
-       */
-      initializePickService(options = this.state.input.options) {
-        this.pickservice = this.createServiceWrapper({
-          pick_type: 'pick_type',
-          ispicked: 'ispicked',
-          fields: 'fields',
-          layerId: 'layerId',
-          interaction: 'interaction',
-          field: 'field',
-          initialize: 'initializePick',
-          isPicked: 'isPicked',
-          escKeyUpHandler: 'escKeyUpHandler',
-          pick: 'pickFeature',
-          unpick: 'unpickFeature',
-          clear: 'clearPick',
-        });
-        this.initializePick(options);
-      },
-      /**
-       * Initialize map picking; the legacy initialize() returns its wrapper.
+       * Initialize map picking for this component.
        * Vector/map picking uses a feature interaction; WMS uses picked coordinates
        * to query the configured layer after the interaction fires.
        * @param {Object} [options={}] Pick type, layer id and returned attribute names.
-       * @returns {Object} Existing picking wrapper for legacy initialize() chaining.
        */
       initializePick(options = {}) {
         this.pick_type = options.pick_type || 'wms';
@@ -1625,7 +1420,6 @@
           ? new PickFeatureInteraction({ layers: [GUI.getLayerById(this.layerId)] })
           : new PickCoordinatesInteraction();
         this.interaction.set('id', 'picklayer');
-        return this.pickservice;
       },
       /**
        * Report whether the map interaction is active (separate from select UI flag picked).
@@ -1707,41 +1501,25 @@
         document.removeEventListener('keyup', this.escKeyUpHandler);
         this.ispicked = false;
       },
-      /**
-       * Release the interaction and cancel an in-progress pick if necessary.
-       * Both picking aliases share these resources, so teardown must run only once.
-       */
-      clearPick() {
-        if (this.isPicked()) {
-          this.unpickFeature();
-        }
-        this.interaction = this.field = null;
-      },
     },
     /**
-     * Keep service internals non-reactive, especially OpenLayers interactions.
-     * validationState initially references the field prop, but legacy service.state
-     * may replace that reference independently. validatorOptions and validator back
-     * the corresponding writable aliases. pick_type, fields and layerId configure
-     * the interaction; ispicked tracks its activity, while field is a legacy slot.
+     * Keep validation configuration and OpenLayers interactions non-reactive.
+     * pick_type, fields and layerId configure the interaction; ispicked tracks activity.
      * These properties stay outside data() to avoid observing third-party objects;
      * the field schema and UI flags in data() retain their normal Vue reactivity.
      */
     beforeCreate() {
       Object.assign(this, {
-        validationState: null,
-        validatorOptions: null,
-        validator: null,
+        validationOptions: null,
         pick_type: null,
         ispicked: false,
         fields: null,
         layerId: null,
         interaction: null,
-        field: null,
       });
     },
     /**
-     * Initialize schema defaults and the services needed before the first render.
+     * Initialize schema defaults and behavior needed before the first render.
      * Vue does not wait for this async hook before mounting; select DOM setup
      * and relation-filter readiness are handled separately.
      */
@@ -1753,48 +1531,42 @@
       }
       // Plugin-backed inputs provide their own service and lifecycle.
       if (this.isNativeInput) {
-        this.service = this.createServiceWrapper({
-          state: 'validationState',
-          validatorOptions: 'validatorOptions',
-          _validator: 'validator',
-          initialize: 'initializeValidation',
-          setValue: 'setDefaultValue',
-          setEmpty: 'setEmpty',
-          validate: 'validate',
-          getValidator: 'getValidator',
-          setValidator: 'setValidator',
-          setErrorMessage: 'setErrorMessage',
-          setUpdate: 'setUpdate',
-        });
-        this.initializeValidation({ state: this.state });
+        const state = this.state;
+        this.validationOptions = state.input.options || {};
+        // Defaults must not overwrite a value already supplied by the form.
+        if ([null, undefined].includes(state.value)) {
+          const { options } = state.input;
+          let defaultValue = options.default;
+          // Legacy schemas may store options as an array rather than the current object shape.
+          if (Array.isArray(options)) {
+            if (options[0].default) {
+              defaultValue = options[0].default;
+            } else if (options.values?.length) {
+              defaultValue = options.values[0]?.value || options.values[0];
+            }
+          }
+          const hasDefault = state.get_default_value && ![null, undefined].includes(defaultValue);
+          // Default expressions are evaluated by the server and must not be replaced locally.
+          if (hasDefault && undefined === options.default_expression) {
+            state.value = defaultValue;
+          }
+          state.value_from_default_value = hasDefault;
+        }
+        state.validate.empty = null === state.value || '' === `${state.value}`.trim();
+        this.setErrorMessage();
         // Coordinate fields keep separate lon/lat state and validate geographic bounds.
         if ('lonlat_input' === this.type) {
           this.state.values = this.state.values || { lon: 0, lat: 0 };
           this.setValue();
-          this.setValidator({
-            validate: () => {
-              const values = this.state.values;
-              values.lon = Math.max(-180, Math.min(180, values.lon));
-              values.lat = Math.max(-90, Math.min(90, values.lat));
-              return !Number.isNaN(1 * values.lon);
-            }
-          });
-          this.createServiceWrapper({
-            toggleGetCoordinate: 'toggleGetCoordinate',
-            setCoordinateButtonReactiveObject: 'setCoordinateButtonReactiveObject',
-            clear: 'stopToGetCoordinates',
-          }, this.service);
         }
         // Range widgets read bounds from the first value tuple.
         if ('range_input' === this.type) {
           const { min, max } = this.state.input.options.values[0];
-          this.setValidator({ validate: value => 1 * value >= 1 * min && 1 * value <= 1 * max });
           this.state.info = `[MIN: ${min} - MAX: ${max}]`;
         }
         // Slider widgets read bounds directly from input options.
         if ('slider_input' === this.type) {
           const { min, max } = this.state.input.options;
-          this.setValidator({ validate: value => 1 * value >= 1 * min && 1 * value <= 1 * max });
           this.state.info = `[MIN: ${min} - MAX: ${max}]`;
         }
         // The date-picker's resize listener belongs to the global GUI emitter.
@@ -1825,13 +1597,11 @@
           this.setMedia();
         }
         if ('texthtml_input' === this.type) {
-          if (!this.state.edit_states) {
-            this.state.edit_states = [];
-          }
+          this.state.edit_states = this.state.edit_states || [];
           this.state.edit_states.push(this.edit_state);
         }
         if ('picklayer_input' === this.type) {
-          this.initializePickService();
+          this.initializePick();
         }
       }
       // Select options and relation filters must load before created() resolves.
@@ -1841,7 +1611,6 @@
         const resizeWrapper = this.delayType && { throttle, debounce }[this.delayType] || throttle;
         this.delayResize = this.resize ? resizeWrapper(this.resize.bind(this), this.delayTime) : null;
         GUI.on('resize', this.delayResize);
-        this.createServiceWrapper({ getData: 'getData', getKeyByValue: 'getKeyByValue' }, this.service);
 
         // Only layer-backed autocomplete can offer map picking; table layers cannot be picked on the map.
         if ('select_autocomplete' === this.state.input.type && options.layer_id) {
@@ -1849,10 +1618,9 @@
             const dependencyLayer = getCatalogLayerById(options.layer_id);
             this.showPickLayer = dependencyLayer && 'table' !== dependencyLayer.getType() &&
               !(this.autocomplete && options.filter_expression);
-            // Keep the pick service shared with the select so teardown happens once.
+            // Reuse this interaction for select picking; teardown happens once.
             if (this.showPickLayer) {
-              this.initializePickService({ ...options, fields: [options.value, options.key], pick_type: 'wms' });
-              this.pickLayerInputService = this.pickservice;
+              this.initializePick({ ...options, fields: [options.value, options.key], pick_type: 'wms' });
             }
           } catch (error) {
             console.warn(error);
@@ -2012,7 +1780,18 @@
         this.resize?.();
         if (this.autocomplete && this.state.value) {
           this.state.input.options.values.splice(0);
-          await this.getKeyByValue({ search: this.multiple ? this.getMultiValues() : this.state.value });
+          const options = this.state.input.options;
+          const values = await this.getData({
+            key: options.key,
+            value: options.value,
+            search: this.multiple ? this.getMultiValues() : this.state.value,
+          });
+          values.forEach(({ $value, text }) => options.values.push({ key: $value, value: text }));
+          options.values.sort((first, second) => {
+            const firstValue = first[options.orderbyvalue ? 'value' : 'key'];
+            const secondValue = second[options.orderbyvalue ? 'value' : 'key'];
+            return firstValue < secondValue ? -1 : firstValue > secondValue ? 1 : 0;
+          });
         }
         await this.$nextTick();
         this.setValue();
@@ -2025,7 +1804,7 @@
         this.resize?.();
         this.datetimedisplayformat = convertQGISDateTimeFormatToMoment(displayformat);
         this.datetimefieldformat = convertQGISDateTimeFormatToMoment(fieldformat);
-        this.validatorOptions = { fielddatetimeformat: this.datetimefieldformat };
+        this.validationOptions = { fielddatetimeformat: this.datetimefieldformat };
         $(`#${this.iddatetimepicker}`).datetimepicker({
           defaultDate: moment(this.state.value, this.datetimefieldformat, true).isValid()
             ? moment(this.state.value, this.datetimefieldformat).toDate()
@@ -2039,9 +1818,15 @@
           minDate,
           maxDate,
         });
-        $(`#${this.iddatetimepicker}`).on('dp.change', this.onDatePickerChange);
-        $(`#${this.iddatetimepicker}`).on('dp.show', this.onDatePickerShow);
-        $(`#${this.iddatetimepicker}`).on('dp.hide', this.onDatePickerHide);
+        $(`#${this.iddatetimepicker}`).on('dp.change', () => {
+          const newDate = $(`#${this.idinputdatetimepiker}`).val();
+          this.state.value = '' === newDate.trim()
+            ? null
+            : moment(newDate, this.datetimedisplayformat).format(this.datetimefieldformat);
+          this.change();
+        });
+        $(`#${this.iddatetimepicker}`).on('dp.show', () => this.$emit('datetimepickershow'));
+        $(`#${this.iddatetimepicker}`).on('dp.hide', () => this.$emit('datetimepickershow'));
         return;
       }
       // The unique selector permits tagging and converts numeric values on selection.
@@ -2067,7 +1852,18 @@
                 ['table', 'column-left', 'column-right', 'column-remove', 'row-above', 'row-below', 'row-remove'],
               ],
               handlers: {
-                html: () => this.toggleHtmlSource(),
+                html: () => {
+                  this.edit_state.show_html = !this.edit_state.show_html;
+                  const editor = this.quill.container.firstChild;
+                  if (this.edit_state.show_html) {
+                    editor.innerText = editor.innerHTML;
+                  } else {
+                    editor.innerHTML = editor.innerText;
+                  }
+                  this.$el.querySelectorAll('.ql-formats > *').forEach(child => {
+                    child.classList.toggle(child.classList.contains('ql-html') ? 'skin-color' : 'g3w-disabled');
+                  });
+                },
                 'column-left': () => this.table.insertColumnLeft(),
                 'column-right': () => this.table.insertColumnRight(),
                 'column-remove': () => this.table.deleteColumn(),
@@ -2106,26 +1902,30 @@
           }
           button.title = title;
         });
-        this.quillHandler = () => this.handleQuillChange();
+        this.quillHandler = () => {
+          const editor = this.quill.container.firstChild;
+          this.state.value = this.edit_state.show_html ? editor.innerText : editor.innerHTML;
+          this.edit_state.edit = true;
+          this.change();
+          setTimeout(() => { this.edit_state.edit = false; });
+        };
         this.quill.on('text-change', this.quillHandler);
       }
     },
     /**
      * Remove map listeners, global resize hooks, relation watchers and Quill handlers.
-     * Invalidate autocomplete responses and clear the shared picking wrapper once;
-     * a distinct externally supplied pickLayerInputService retains its own cleanup.
+      * Invalidate autocomplete responses and release the picking interaction.
      */
     beforeDestroy() {
       // Stop map listeners before releasing shared widget and global resources.
       if ('lonlat_input' === this.type) {
         this.stopToGetCoordinates();
       }
-      if (this.pickservice) {
-        this.clearPick();
-        if (this.pickLayerInputService === this.pickservice) {
-          this.pickLayerInputService = null;
+      if (this.interaction) {
+        if (this.isPicked()) {
+          this.unpickFeature();
         }
-        this.pickservice = null;
+        this.interaction = null;
       }
       // Date and select widgets each own a resize registration.
       if ('datetimepicker_input' === this.type) {
@@ -2141,10 +1941,6 @@
         this.delayTime = null;
         this.filterFieldsUnwatches?.forEach(unwatch => unwatch());
         this.filterFieldsUnwatches = null;
-        if (this.pickLayerInputService && this.pickLayerInputService !== this.pickservice) {
-          this.pickLayerInputService.clear();
-        }
-        this.pickLayerInputService = null;
       }
       if (this.quill) {
         this.quill.off('text-change', this.quillHandler);
