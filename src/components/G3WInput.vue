@@ -27,7 +27,7 @@
       ></g3w-input>
     </div>
 
-    <div v-else>
+    <div v-if = "'child' !== state.type">
       <!-- Native controls share labels, validation feedback and help text. -->
       <div v-if = "isNativeInput" class = "form-group">
         <!-- lonlat_input renders separate longitude and latitude labels below. -->
@@ -39,7 +39,7 @@
             style      = "text-align:left !important; padding-top:0 !important; margin-bottom:3px"
           >
             <!-- Localized labels use the translation directive; plain labels stay literal. -->
-            <span v-if = "state.i18nLabel" v-t = "state.label"></span><span v-else>{{ state.label }}</span>
+            <span v-if = "state.i18nLabel" v-t = "state.label"></span><span v-if = "!state.i18nLabel">{{ state.label }}</span>
             <!-- Required status and help are independent label adornments. -->
             <span v-if = "state.validate && state.validate.required">*</span>
             <i
@@ -66,7 +66,7 @@
         <input
           v-if         = "['text_input', 'string_input'].includes(type)"
           :placeholder = "state.default"
-          @keyup       = "isMobile() ? mobileChange($event) : change()"
+          @keyup       = "mobileChange($event)"
           :tabIndex    = "tabIndex"
           v-disabled   = "!editable"
           :field       = "state.name"
@@ -78,7 +78,7 @@
 
         <!-- Textareas notify on both keystrokes and committed browser changes. -->
         <textarea
-          v-else-if      = "'textarea_input' === type"
+          v-if           = "'textarea_input' === type"
           @keydown.stop = ""
           :placeholder  = "state.default"
           @input        = "change()"
@@ -93,7 +93,7 @@
 
         <!-- Numeric aliases use a number control; the schema supplies its step. -->
         <input
-          v-else-if     = "['integer_input', 'bigint_input', 'float_input'].includes(type)"
+          v-if          = "['integer_input', 'bigint_input', 'float_input'].includes(type)"
           @change      = "change()"
           @input       = "change()"
           class        = "form-control"
@@ -109,7 +109,7 @@
 
         <!-- Color values use the browser-native color picker. -->
         <input
-          v-else-if     = "'color_input' === type"
+          v-if          = "'color_input' === type"
           :placeholder = "state.default"
           type         = "color"
           @change      = "change()"
@@ -124,7 +124,7 @@
         >
 
         <!-- Checkbox booleans are mapped to the configured stored option value. -->
-        <div v-else-if = "'check_input' === type" v-disabled = "!editable" style = "height: 20px; margin-top: 8px">
+        <div v-if = "'check_input' === type" v-disabled = "!editable" style = "height: 20px; margin-top: 8px">
           <input
             @change   = "change()"
             :tabIndex = "tabIndex"
@@ -137,7 +137,7 @@
         </div>
 
         <!-- Each radio option shares one group name and writes its configured value. -->
-        <div v-else-if = "'radio_input' === type">
+        <div v-if = "'radio_input' === type">
           <span v-for = "(option, index) in state.input.options.values" :key = "option.key || option.value">
             <input
               :id       = "radioIds[index]"
@@ -154,7 +154,7 @@
         </div>
 
         <!-- Numeric ranges share validation but keep their type-specific bounds and step. -->
-        <template v-else-if = "'range_input' === type">
+        <template v-if = "'range_input' === type">
           <input
             @keydown.69.prevent = ""
             @keydown.13.stop    = ""
@@ -173,7 +173,7 @@
           >
         </template>
 
-        <div v-else-if = "'slider_input' === type">
+        <div v-if = "'slider_input' === type">
           <!-- The current value is shown separately because range inputs do not display it. -->
           <span style = "font-weight: bold">{{ state.value }}</span>
           <input
@@ -191,7 +191,7 @@
         </div>
 
         <!-- Uploaded media is previewed by g3w-field and can be cleared independently. -->
-        <div v-else-if = "'media_input' === type" v-disabled = "!editable">
+        <div v-if = "'media_input' === type" v-disabled = "!editable">
           <div
             class           = "g3w_input_button skin-border-color"
             @click          = "onClick"
@@ -221,13 +221,13 @@
         </div>
 
         <!-- Unique values can add tags only when the schema allows editing. -->
-        <div v-else-if = "'unique_input' === type" v-disabled = "!editable">
+        <div v-if = "'unique_input' === type" v-disabled = "!editable">
           <x-select
             ref               = "select"
             :value            = "getValue(state.value)"
             :tabIndex         = "tabIndex"
             searchable
-            :createTag        = "state.input.options.editable ? '' : null"
+            :createTag        = "state.input.options.editable && ''"
             @change           = "onUniqueSelect"
           >
             <x-option value = "null"></x-option>
@@ -241,7 +241,7 @@
         </div>
 
         <!-- Fixed choices, autocomplete, map picking and relation filters. -->
-        <div v-else-if = "['select_input', 'select_autocomplete_input'].includes(type)">
+        <div v-if = "['select_input', 'select_autocomplete_input'].includes(type)">
           <!-- The map-pick affordance is available only for eligible autocomplete layers. -->
           <span
             v-if            = "showPickLayer"
@@ -290,25 +290,26 @@
         </div>
 
         <!-- The date-picker input is initialized from QGIS formats in mounted(). -->
-        <div v-else-if = "'datetimepicker_input' === type" ref = "datetimepicker_body">
+        <div v-if = "'datetimepicker_input' === type" ref = "datetimepicker_body">
           <div class = "input-group date" :id = "iddatetimepicker" v-disabled = "!editable">
             <input
               type      = "text"
               :id       = "idinputdatetimepiker"
               :tabIndex = "tabIndex"
-              :readonly = "!editable || isMobile() ? 'readonly' : null"
+              :readonly = "!editable || isMobile()"
               :class    = "{'input-error-validation' : notvalid}"
               class     = "form-control"
             />
             <span class = "input-group-addon skin-color" style = "border: 1px solid #ccc; cursor:pointer">
-              <span :class = "[!state.input.options.formats[0].date ? 'far fa-clock' : 'fas fa-calendar-alt']"></span>
+              <span v-if = "!state.input.options.formats[0].date" class = "far fa-clock"></span>
+              <span v-if = "state.input.options.formats[0].date" class = "fas fa-calendar-alt"></span>
             </span>
           </div>
         </div>
 
         <!-- Map-backed controls pick either feature attributes or map coordinates. -->
         <!-- This read-only text field is populated only by a map feature/coordinate pick. -->
-        <div v-else-if = "'picklayer_input' === type">
+        <div v-if = "'picklayer_input' === type">
           <span
             style  = "left: 0; top: 7px; position: absolute"
             class  = "fas fa-crosshairs skin-color"
@@ -318,7 +319,7 @@
             @click     = "pickLayer"
             @blur      = "unpick"
             style      = "width: 100%"
-            :style     = "{cursor: editable ? 'pointer' : null}"
+            :style     = "{cursor: editable && 'pointer'}"
             class      = "form-control"
             readonly   = "readonly"
             :tabIndex  = "tabIndex"
@@ -329,15 +330,15 @@
         </div>
 
         <!-- Longitude and latitude are separate editable values with one map-pick action. -->
-        <div v-else-if = "'lonlat_input' === type" style = "position: relative">
+        <div v-if = "'lonlat_input' === type" style = "position: relative">
           <div style = "display: flex; justify-content: flex-end; height: 35px; margin-right: 12px; margin-bottom: 5px">
             <button
               @click.prevent.stop = "toggleGetCoordinate"
-              :style              = "{border: coordinatebutton.active ? '2px solid' : 0}"
+              :class              = "{'g3w-input-coordinate-button-active': coordinatebutton.active}"
               data-placement      = "left"
               v-t-tooltip         = "'Click on map to get coordinates'"
               class               = "action skin-color skin-border-color fas fa-crosshairs"
-              style               = "border-radius: 5px; font-weight: bold; font-size: 20px; cursor: pointer"
+              style               = "border: 0; border-radius: 5px; font-weight: bold; font-size: 20px; cursor: pointer"
             ></button>
           </div>
           <!-- Keep coordinate labels and constraints independent for accessibility. -->
@@ -368,11 +369,11 @@
 
         <!-- Quill is mounted on this element and synchronized with state.value. -->
         <div
-          v-else-if = "'texthtml_input' === type"
+          v-if      = "'texthtml_input' === type"
           ref        = "quill_editor"
-          class      = "form-control"
+          class      = "form-control g3w-input-quill"
           @keydown.stop = ""
-          :style     = "{ border: state.validate.valid ? '1px solid #ccc' : '1px solid reed' }"
+          :class     = "{'g3w-input-quill-invalid': !state.validate.valid}"
           v-disabled = "!editable"
         ></div>
 
@@ -383,7 +384,7 @@
           style  = "margin: 0"
           v-html = "state.validate.message"
         ></p>
-        <p v-else-if = "state.info" style = "margin: 0" v-html = "state.info"></p>
+        <p v-if = "!notvalid && state.info" style = "margin: 0" v-html = "state.info"></p>
         <!-- Help content is expanded only when the field state marks it visible. -->
         <div
           v-if   = "state.help && state.help.visible"
@@ -395,7 +396,7 @@
 
       <!-- Unknown input types are resolved as registered plugin components. -->
       <component
-        v-else
+        v-if = "!isNativeInput"
         @changeinput      = "forwardChangeInput"
         :changeInput      = "changeInput"
         @addinput         = "forwardAddInput"
@@ -526,8 +527,11 @@
        */
       type() {
         // Legacy adapters pin their renderer type regardless of the field schema.
+        if (this.inputType && this.inputType.endsWith('_input')) {
+          return this.inputType;
+        }
         if (this.inputType) {
-          return this.inputType.endsWith('_input') ? this.inputType : `${this.inputType}_input`;
+          return `${this.inputType}_input`;
         }
         // Older numeric fields may declare a text input while retaining a numeric field type.
         /**
@@ -593,7 +597,10 @@
        * @returns {number}
        */
       tabIndex() {
-        return this.editable ? 0 : -1;
+        if (this.editable) {
+          return 0;
+        }
+        return -1;
       },
       /**
        * Whether current field validation has failed.
@@ -614,36 +621,40 @@
        * @returns {string|null}
        */
       loadingState() {
-        return this.state.input.options.loading
-          ? this.state.input.options.loading.state
-          : null;
+        if (this.state.input.options.loading) {
+          return this.state.input.options.loading.state;
+        }
+        return null;
       },
       /**
        * Minimum allowed value, from the range value tuple or slider options.
        * @returns {number|string}
        */
       rangeMin() {
-        return 'range_input' === this.type
-          ? this.state.input.options.values[0].min
-          : this.state.input.options.min;
+        if ('range_input' === this.type) {
+          return this.state.input.options.values[0].min;
+        }
+        return this.state.input.options.min;
       },
       /**
        * Maximum allowed value, from the range tuple or slider options.
        * @returns {number|string}
        */
       rangeMax() {
-        return 'range_input' === this.type
-          ? this.state.input.options.values[0].max
-          : this.state.input.options.max;
+        if ('range_input' === this.type) {
+          return this.state.input.options.values[0].max;
+        }
+        return this.state.input.options.max;
       },
       /**
        * Step size, using the legacy capitalized range option when applicable.
        * @returns {number|string}
        */
       rangeStep() {
-        return 'range_input' === this.type
-          ? this.state.input.options.values[0].Step || 1
-          : this.state.input.options.step;
+        if ('range_input' === this.type) {
+          return this.state.input.options.values[0].Step || 1;
+        }
+        return this.state.input.options.step;
       },
       /**
        * Map the checkbox's boolean state to the matching configured option value.
@@ -658,12 +669,11 @@
           if ([null, undefined].includes(this.state.value)) {
             return false;
           }
-          let option = this.state.input.options.values.find(option => this.state.value == option.value);
-          if (!option) {
-            option = this.state.input.options.values.find(option => false === option.checked);
-            if (option) {
-              this.state.value = option.value;
-            }
+          const options = this.state.input.options.values;
+          const selected = options.find(option => this.state.value == option.value);
+          const option = selected || options.find(option => false === option.checked);
+          if (!selected && option) {
+            this.state.value = option.value;
           }
           return !!(option || {}).checked;
         },
@@ -736,7 +746,12 @@
         allowmulti:            false,
         unwatch:               null,
         filterFieldsUnwatches: null,
-        accept:                (this.state.input?.options?.allowed_types || []).map(type => `${type.startsWith('.') ? type : `.${type}`}`).join(','),
+        accept:                (this.state.input?.options?.allowed_types || []).map(type => {
+          if (type.startsWith('.')) {
+            return type;
+          }
+          return `.${type}`;
+        }).join(','),
       };
     },
     /**
@@ -789,18 +804,20 @@
           this.change();
         }
         // Avoid echoing Quill's own edit back into its DOM; external edits still refresh it.
-        if ('texthtml_input' === this.type && this.quill && !this.edit_state.edit) {
-          if (this.edit_state.show_html) {
-            this.quill.container.firstChild.innerText = this.state.value;
-          } else {
-            this.quill.container.firstChild.innerHTML = this.state.value;
-          }
+        const editor = 'texthtml_input' === this.type && this.quill && !this.edit_state.edit && this.quill.container.firstChild;
+        if (editor && this.edit_state.show_html) {
+          editor.innerText = this.state.value;
+        }
+        if (editor && !this.edit_state.show_html) {
+          editor.innerHTML = this.state.value;
         }
         // Convert only when the stored value differs from the currently displayed date.
-        if ('datetimepicker_input' === this.type && this.datetimefieldformat && value !== $(`#${this.idinputdatetimepiker}`).val()) {
-          const date = null !== value
-            ? moment(value, this.datetimefieldformat).format(this.datetimedisplayformat)
-            : value;
+        const updateDate = 'datetimepicker_input' === this.type && this.datetimefieldformat && value !== $(`#${this.idinputdatetimepiker}`).val();
+        let date = value;
+        if (updateDate && null !== value) {
+          date = moment(value, this.datetimefieldformat).format(this.datetimedisplayformat);
+        }
+        if (updateDate) {
           await this.$nextTick();
           $(`#${this.idinputdatetimepiker}`).val(date);
         }
@@ -820,12 +837,15 @@
         const empty = 0 === values.length;
         let value;
         // Empty option lists and cleared multi-selects reset to the null sentinel.
-        if (empty || (this.multiple && 0 === this.getMultiValues().length)) {
+        const resetValue = empty || (this.multiple && 0 === this.getMultiValues().length);
+        if (resetValue) {
           value = null;
-        } else if (this.multiple) {
+        }
+        if (!resetValue && this.multiple) {
           value = `{${this.getMultiValues().join()}}`;
+        }
         // A removed single-select option must not remain selected.
-        } else if (!this.multiple) {
+        if (!resetValue && !this.multiple) {
           value = (values.find(option => option.value == this.state.value) || { value: null }).value;
         }
         const changed = value != this.state.value;
@@ -888,16 +908,21 @@
       validate() {
         const state = this.state;
         // Required empty values fail before uniqueness or type-specific validation.
-        if (state.validate.empty) {
+        const isEmpty = state.validate.empty;
+        const checkUnique = state.validate.unique && state.validate.exclude_values?.size;
+        if (isEmpty) {
           state.value = null;
           state.validate.valid = !state.validate.required;
+        }
         // Exclusions compare string forms so numeric and string IDs are treated consistently.
-        } else if (state.validate.unique && state.validate.exclude_values?.size) {
+        if (!isEmpty && checkUnique) {
           state.validate.valid = !state.validate.exclude_values.has(`${state.value}`);
-        } else {
+        }
+        if (!isEmpty && !checkUnique) {
           const temp_id = state.input.options.relation_reference && state?.value?.startsWith?.('_new_');
           state.validate.valid = temp_id || this.validateValue(state.value);
         }
+        this.setErrorMessage();
         if (!state.validate.valid) {
           console.log('[G3WInput] invalid field', {
             name: state.name,
@@ -929,17 +954,25 @@
         const type = _(state.type);
         if (validate.mutually && !validate.mutually_valid) {
           validate.message = `${_('Field mutually exclusive with ')} ( ${validate.mutually.join(',')} )`;
-        } else if (validate.max_field) {
-          validate.message = `${_('Value has to be less/equal to field value ')} (${validate.max_field})`;
-        } else if (validate.min_field) {
-          validate.message = `${_('Value has to be more/equal to field value  ')} (${validate.min_field})`;
-        } else if (('unique' === state.input.type || validate.unique) && validate.exclude_values?.size) {
-          validate.message = _('Value has to be unique');
-        } else if (validate.required) {
-          validate.message = state.info || `${_('Mandatory Field or wrong data type')} ( ${type} )`;
-        } else {
-          validate.message = state.info || `${_('Wrong data type')} ( ${type} )`;
+          return;
         }
+        if (validate.max_field) {
+          validate.message = `${_('Value has to be less/equal to field value ')} (${validate.max_field})`;
+          return;
+        }
+        if (validate.min_field) {
+          validate.message = `${_('Value has to be more/equal to field value  ')} (${validate.min_field})`;
+          return;
+        }
+        if (('unique' === state.input.type || validate.unique) && validate.exclude_values?.size) {
+          validate.message = _('Value has to be unique');
+          return;
+        }
+        if (validate.required) {
+          validate.message = state.info || `${_('Mandatory Field or wrong data type')} ( ${type} )`;
+          return;
+        }
+        validate.message = state.info || `${_('Wrong data type')} ( ${type} )`;
       },
       /**
        * Share the coordinate button's reactive state with a legacy consumer.
@@ -953,7 +986,12 @@
        * @param {boolean} bool True while values are being loaded.
        */
       setLoading(bool) {
-        this.state.input.options.loading.state = bool ? 'loading' : 'ready';
+        if (bool) {
+          this.state.input.options.loading.state = 'loading';
+        }
+        if (!bool) {
+          this.state.input.options.loading.state = 'ready';
+        }
       },
       /**
        * Toggle the visibility of the field's help message.
@@ -990,13 +1028,29 @@
         state.validate.empty = null === state.value || '' === `${state.value}`.trim();
         this.validate();
         const { value, _value } = state;
-        if ('media' === state.input.type) {
-          const currentValue = 'Object' === toRawType(value) ? value.value : value;
-          const originalValue = 'Object' === toRawType(_value) ? _value.value : _value;
+        const isMedia = 'media' === state.input.type;
+        let currentValue = value;
+        let originalValue = _value;
+        if (isMedia && 'Object' === toRawType(value)) {
+          currentValue = value.value;
+        }
+        if (isMedia && 'Object' === toRawType(_value)) {
+          originalValue = _value.value;
+        }
+        if (isMedia) {
           state.update = currentValue != originalValue;
-        } else if ('datetimepicker' === state.input.type) {
-          state.update = (null !== value ? value.toUpperCase() : value) != (_value ? _value.toUpperCase() : _value);
-        } else {
+        }
+        const isDateTimePicker = 'datetimepicker' === state.input.type;
+        if (isDateTimePicker && null !== value) {
+          currentValue = value.toUpperCase();
+        }
+        if (isDateTimePicker && _value) {
+          originalValue = _value.toUpperCase();
+        }
+        if (isDateTimePicker) {
+          state.update = currentValue != originalValue;
+        }
+        if (!isMedia && !isDateTimePicker) {
           state.update = value != _value;
         }
         this.forwardChangeInput(this.state);
@@ -1062,7 +1116,10 @@
        * @returns {*} A DOM-safe option value.
        */
       getValue(value) {
-        return null === value ? 'null' : value;
+        if (null === value) {
+          return 'null';
+        }
+        return value;
       },
       /**
        * Convert the select empty-option sentinel back to null and validate it.
@@ -1071,7 +1128,12 @@
        */
       async changeSelect(value) {
         // The blank option uses the string sentinel "null".
-        this.state.value = 'null' === value ? null : value;
+        if ('null' === value) {
+          this.state.value = null;
+        }
+        if ('null' !== value) {
+          this.state.value = value;
+        }
         await this.$nextTick();
         this.change();
       },
@@ -1087,7 +1149,8 @@
       setValue() {
         if ('lonlat_input' === this.type) {
           this.state.value = [[1 * this.state.values.lon, 1 * this.state.values.lat]];
-        } else if (this.$refs.select) {
+        }
+        if ('lonlat_input' !== this.type && this.$refs.select) {
           this.syncXSelect(this.$refs.select, this.getSelectValue(), this.multiple);
         }
         this.syncRelationSelects();
@@ -1104,21 +1167,34 @@
           return false;
         }
         const options = Array.from(select.container.querySelectorAll('x-option'));
-        const values = multiple ? `${value || ''}`.split(',').filter(Boolean) : [`${value ?? ''}`];
+        let values;
+        if (multiple) {
+          values = `${value || ''}`.split(',').filter(Boolean);
+        }
+        if (!multiple) {
+          values = [`${value ?? ''}`];
+        }
         select.selected_options = [];
         options.forEach(option => option.removeAttribute('selected'));
         values.forEach(value => {
           const option = options.find(option => option.value === value);
-          if (option) {
-            select.select(option, { autoclose: false, emit: false });
+          if (!option) {
+            return;
           }
+          select.select(option, { autoclose: false, emit: false });
         });
         if (multiple) {
           select.select(null, { autoclose: false, emit: false });
-        } else if (!select.selected_options.length) {
+        }
+        if (!multiple && !select.selected_options.length) {
           select.content.textContent = `${g3w?.gettext?.('Select') || 'Select'}...`;
         }
-        select.setAttribute('value', multiple ? values.join(',') : values[0]);
+        if (multiple) {
+          select.setAttribute('value', values.join(','));
+        }
+        if (!multiple) {
+          select.setAttribute('value', values[0]);
+        }
         return true;
       },
       /**
@@ -1127,9 +1203,10 @@
       syncRelationSelects() {
         this.$el?.querySelectorAll?.('x-select[data-filter-id]').forEach(select => {
           const filter = this.filterFields.find(filter => `${filter.id}` === select.dataset.filterId);
-          if (filter) {
-            this.syncXSelect(select, filter.value);
+          if (!filter) {
+            return;
           }
+          this.syncXSelect(select, filter.value);
         });
       },
       /**
@@ -1137,7 +1214,10 @@
        * @returns {*} Single stored value (null becomes "null") or comma-separated values.
        */
       getSelectValue() {
-        return this.multiple ? this.getMultiValues().join(',') : this.getValue(this.state.value);
+        if (this.multiple) {
+          return this.getMultiValues().join(',');
+        }
+        return this.getValue(this.state.value);
       },
       /**
        * Store a selection made in the unique-value field.
@@ -1145,9 +1225,13 @@
        */
       async onUniqueSelect(event) {
         const selected = event.target.value;
-        const value = 'null' === selected
-          ? null
-          : ['integer', 'float', 'bigint'].includes(this.state.type) ? Number(selected) : selected;
+        let value = selected;
+        if ('null' === selected) {
+          value = null;
+        }
+        if ('null' !== selected && ['integer', 'float', 'bigint'].includes(this.state.type)) {
+          value = Number(selected);
+        }
         await this.changeSelect(value);
       },
       /**
@@ -1155,12 +1239,16 @@
        * @param {CustomEvent} event Change emitted by x-select.
        */
       onSelectChange(event) {
-        if (this.multiple) {
-          const values = event.target.selected_options.map(option => option.value).filter(value => 'null' !== value);
-          this.changeSelect(values.length ? `{${values.join()}}` : null);
-        } else {
+        if (!this.multiple) {
           this.changeSelect(event.target.value);
+          return;
         }
+        const values = event.target.selected_options.map(option => option.value).filter(value => 'null' !== value);
+        let value = null;
+        if (values.length) {
+          value = `{${values.join()}}`;
+        }
+        this.changeSelect(value);
       },
       /**
        * Store relation-filter changes after the control has been initialized.
@@ -1189,7 +1277,11 @@
             if (request !== this.autocompleteSearchId) {
               return;
             }
-            const selected = new Set((this.multiple ? this.getMultiValues() : [this.state.value]).map(value => `${value}`));
+            let selectedValues = [this.state.value];
+            if (this.multiple) {
+              selectedValues = this.getMultiValues();
+            }
+            const selected = new Set(selectedValues.map(value => `${value}`));
             const retained = options.values.filter(option => selected.has(`${option.value}`));
             const values = [...retained, ...results.map(({ text, id }) => ({ key: text, value: id }))];
             options.values = Array.from(new Map(values.map(option => [`${option.value}`, option])).values());
@@ -1215,14 +1307,24 @@
           this.selectLayer = getCatalogLayerById(layer_id);
         }
         // Selected IDs use exact field filtering; typed terms use the suggestion endpoint.
-        const filter = Array.isArray(search)
-          ? search.map(item => [].concat(item).map(itemValue => `${key}|eq|${encodeURIComponent(itemValue)}`).join('|null,')).join('|OR,') || ''
-          : `${key}|${search}`.trim();
-        return this.selectLayer.getDataTable({
-          // The layer API uses separate parameter names for these two query modes.
-          [Array.isArray(search) ? 'field' : 'suggest']: filter,
-          ordering: this.state.input.options.orderbyvalue ? value : key,
-        }).then(response => response.features.map(feature => ({
+        const hasSearchValues = Array.isArray(search);
+        let filter;
+        let filterName = 'suggest';
+        if (hasSearchValues) {
+          filter = search.map(item => [].concat(item).map(itemValue => `${key}|eq|${encodeURIComponent(itemValue)}`).join('|null,')).join('|OR,') || '';
+          filterName = 'field';
+        }
+        if (!hasSearchValues) {
+          filter = `${key}|${search}`.trim();
+        }
+        const query = { [filterName]: filter };
+        if (this.state.input.options.orderbyvalue) {
+          query.ordering = value;
+        }
+        if (!this.state.input.options.orderbyvalue) {
+          query.ordering = key;
+        }
+        return this.selectLayer.getDataTable(query).then(response => response.features.map(feature => ({
           text: feature.properties[key],
           id: feature.properties[value],
           $value: feature.properties[value],
@@ -1234,10 +1336,11 @@
        * @returns {Array<string>} Unique selected values, filtered for fixed option lists.
        */
       getMultiValues() {
-        return [undefined, null, ''].includes(this.state.value)
-          ? []
-          : Array.from(new Set(`${this.state.value}`.replace(/^{|}$/g, '').replace(/"/g, '').split(',')))
-            .filter(value => this.autocomplete || this.state.input.options.values.map(option => `${option.value}`).includes(`${value}`));
+        if ([undefined, null, ''].includes(this.state.value)) {
+          return [];
+        }
+        return Array.from(new Set(`${this.state.value}`.replace(/^{|}$/g, '').replace(/"/g, '').split(',')))
+          .filter(value => this.autocomplete || this.state.input.options.values.map(option => `${option.value}`).includes(`${value}`));
       },
       /**
        * Pick a feature, update the selected value and report the pick outcome.
@@ -1256,25 +1359,34 @@
           const values = await this.pickFeature();
           let value = values[this.state.input.options.key];
           // Do not append a feature value already present in the multi-select.
+          let multiValues = [];
           if (this.multiple) {
-            value = undefined === this.getMultiValues().find(item => value == item)
-              ? `{${[...this.getMultiValues(), value].join()}}`
-              : this.state.value;
+            multiValues = this.getMultiValues();
           }
-          if (value != this.state.value) {
-            // Autocomplete accepts values returned by the picked layer; fixed lists require a match.
-            if (this.autocomplete) {
-              if (!this.multiple) {
-                this.state.input.options.values.splice(0);
-              }
-              this.state.input.options.values.push({
-                key: values[this.state.input.options.value],
-                value: values[this.state.input.options.key],
-              });
-            }
-            if (!this.autocomplete && !this.state.input.options.values.find(item => item.value == value)) {
-              value = null;
-            }
+          const alreadySelected = this.multiple && undefined !== multiValues.find(item => value == item);
+          if (this.multiple && !alreadySelected) {
+            value = `{${[...multiValues, value].join()}}`;
+          }
+          if (alreadySelected) {
+            value = this.state.value;
+          }
+          const options = this.state.input.options;
+          const autocomplete = this.autocomplete;
+          const valueChanged = value != this.state.value;
+          // Autocomplete accepts values returned by the picked layer; fixed lists require a match.
+          if (valueChanged && autocomplete && !this.multiple) {
+            options.values.splice(0);
+          }
+          if (valueChanged && autocomplete) {
+            options.values.push({
+              key: values[options.value],
+              value: values[options.key],
+            });
+          }
+          if (valueChanged && !autocomplete && !options.values.find(item => item.value == value)) {
+            value = null;
+          }
+          if (valueChanged) {
             await this.changeSelect(value);
             this.setValue();
           }
@@ -1357,7 +1469,8 @@
        */
       toggleGetCoordinate() {
         this.coordinatebutton.active = !this.coordinatebutton.active;
-        if (this.coordinatebutton.active) {
+        const active = this.coordinatebutton.active;
+        if (active) {
           GUI.deactiveMapControls();
           this.mapEpsg = GUI.getCrs();
           this.outputEpsg = this.state.epsg || this.mapEpsg;
@@ -1371,13 +1484,15 @@
           this.eventMapKey = this.map.on('click', event => {
             event.originalEvent.stopPropagation();
             event.preventDefault();
-            const coordinate = this.mapEpsg !== this.outputEpsg
-              ? ol.proj.transform(event.coordinate, this.mapEpsg, this.outputEpsg)
-              : event.coordinate;
+            let coordinate = event.coordinate;
+            if (this.mapEpsg !== this.outputEpsg) {
+              coordinate = ol.proj.transform(event.coordinate, this.mapEpsg, this.outputEpsg);
+            }
             this.state.value = [coordinate];
             [this.state.values.lon, this.state.values.lat] = coordinate;
           });
-        } else {
+        }
+        if (!active) {
           this.stopToGetCoordinates();
         }
       },
@@ -1416,9 +1531,12 @@
         this.ispicked = false;
         this.fields = options.fields || [options.value];
         this.layerId = options.layer_id;
-        this.interaction = 'map' === this.pick_type
-          ? new PickFeatureInteraction({ layers: [GUI.getLayerById(this.layerId)] })
-          : new PickCoordinatesInteraction();
+        if ('map' === this.pick_type) {
+          this.interaction = new PickFeatureInteraction({ layers: [GUI.getLayerById(this.layerId)] });
+        }
+        if ('map' !== this.pick_type) {
+          this.interaction = new PickCoordinatesInteraction();
+        }
         this.interaction.set('id', 'picklayer');
       },
       /**
@@ -1458,7 +1576,8 @@
               const attributes = feature.getProperties();
               this.fields.filter(field => field).forEach(field => { values[field] = attributes[field]; });
               resolve(values);
-            } else {
+            }
+            if (!feature) {
               // Treat a map miss like a rejected pick so callers share one error path.
               reject();
             }
@@ -1534,26 +1653,30 @@
         const state = this.state;
         this.validationOptions = state.input.options || {};
         // Defaults must not overwrite a value already supplied by the form.
-        if ([null, undefined].includes(state.value)) {
-          const { options } = state.input;
-          let defaultValue = options.default;
-          // Legacy schemas may store options as an array rather than the current object shape.
-          if (Array.isArray(options)) {
-            if (options[0].default) {
-              defaultValue = options[0].default;
-            } else if (options.values?.length) {
-              defaultValue = options.values[0]?.value || options.values[0];
-            }
-          }
-          const hasDefault = state.get_default_value && ![null, undefined].includes(defaultValue);
-          // Default expressions are evaluated by the server and must not be replaced locally.
-          if (hasDefault && undefined === options.default_expression) {
-            state.value = defaultValue;
-          }
+        const hasNoValue = [null, undefined].includes(state.value);
+        const { options } = state.input;
+        let defaultValue;
+        if (hasNoValue) {
+          defaultValue = options.default;
+        }
+        // Legacy schemas may store options as an array rather than the current object shape.
+        const hasFirstDefault = hasNoValue && Array.isArray(options) && !!options[0].default;
+        const hasValues = hasNoValue && Array.isArray(options) && !!options.values?.length;
+        if (hasFirstDefault) {
+          defaultValue = options[0].default;
+        }
+        if (hasNoValue && !hasFirstDefault && hasValues) {
+          defaultValue = options.values[0]?.value || options.values[0];
+        }
+        const hasDefault = hasNoValue && state.get_default_value && ![null, undefined].includes(defaultValue);
+        // Default expressions are evaluated by the server and must not be replaced locally.
+        if (hasDefault && undefined === options.default_expression) {
+          state.value = defaultValue;
+        }
+        if (hasNoValue) {
           state.value_from_default_value = hasDefault;
         }
         state.validate.empty = null === state.value || '' === `${state.value}`.trim();
-        this.setErrorMessage();
         // Coordinate fields keep separate lon/lat state and validate geographic bounds.
         if ('lonlat_input' === this.type) {
           this.state.values = this.state.values || { lon: 0, lat: 0 };
@@ -1569,20 +1692,25 @@
           const { min, max } = this.state.input.options;
           this.state.info = `[MIN: ${min} - MAX: ${max}]`;
         }
+        this.setErrorMessage();
         // The date-picker's resize listener belongs to the global GUI emitter.
         if ('datetimepicker_input' === this.type) {
           const resizeWrapper = this.delayType && { throttle, debounce }[this.delayType] || throttle;
-          this.delayResize = this.resize ? resizeWrapper(this.resize.bind(this), this.delayTime) : null;
+          this.delayResize = null;
+          if (this.resize) {
+            this.delayResize = resizeWrapper(this.resize.bind(this), this.delayTime);
+          }
           GUI.on('resize', this.delayResize);
         }
         // Re-render only visible fields after refreshing their translated error message.
         this.$watch(() => ApplicationState.language, async () => {
-          if (this.state.visible) {
-            this.state.visible = false;
-            this.setErrorMessage();
-            await this.$nextTick();
-            this.state.visible = true;
+          if (!this.state.visible) {
+            return;
           }
+          this.state.visible = false;
+          this.setErrorMessage();
+          await this.$nextTick();
+          this.state.visible = true;
         });
         // Required fields need an initial validation before the first user edit.
         if (this.state.editable && this.state.validate.required) {
@@ -1609,7 +1737,10 @@
         const options = this.state.input.options;
         this.allowmulti = !!options.allowmulti;
         const resizeWrapper = this.delayType && { throttle, debounce }[this.delayType] || throttle;
-        this.delayResize = this.resize ? resizeWrapper(this.resize.bind(this), this.delayTime) : null;
+        this.delayResize = null;
+        if (this.resize) {
+          this.delayResize = resizeWrapper(this.resize.bind(this), this.delayTime);
+        }
         GUI.on('resize', this.delayResize);
 
         // Only layer-backed autocomplete can offer map picking; table layers cannot be picked on the map.
@@ -1646,9 +1777,10 @@
             const relationLayer = getCatalogLayerById(referencedLayer);
             const relationLayerFields = relationLayer.getFields();
             const getFilterLabel = field => `[${relationLayerFields.find(item => item.name === field).label}]`;
+            const hasSavedValue = null !== this.state.value;
 
             // Restore filter selections from the saved referenced feature when the field already has a value.
-            if (null !== this.state.value) {
+            if (hasSavedValue) {
               try {
                 const { data = [] } = await relationLayer.getFilterData({
                   formatter: 0,
@@ -1659,7 +1791,10 @@
                   fformatter: referencingField[0],
                   order: referencingField[0],
                   ffield: filter_fields.map((field, index) => {
-                    const value = undefined === feature.get(field) ? `null` : feature.get(field);
+                    let value = feature.get(field);
+                    if (undefined === value) {
+                      value = `null`;
+                    }
                     this.filterFields.push({
                       id: field,
                       values: [{ key: getFilterLabel(field), value: `null` }],
@@ -1683,25 +1818,29 @@
                       .map(item => createSingleFieldParameter({ field: item.id, value: item.value }))
                       .join('|AND,'),
                   })))).forEach(({ status, value }, index) => {
-                    if ('fulfilled' === status) {
-                      value.forEach(item => this.filterFields[index + 1].values.push({ key: item, value: item }));
+                    if ('fulfilled' !== status) {
+                      return;
                     }
+                    value.forEach(item => this.filterFields[index + 1].values.push({ key: item, value: item }));
                   });
                 // Independent filters can load their distinct values concurrently.
-                } else {
+                }
+                if (!chain_filters) {
                   (await Promise.allSettled(filter_fields.map(field => relationLayer.getFilterData({
                     unique: field, ordering: field, formatter: 0,
                   })))).forEach(({ status, value }, index) => {
-                    if ('fulfilled' === status) {
-                      value.forEach(item => this.filterFields[index].values.push({ key: item, value: item }));
+                    if ('fulfilled' !== status) {
+                      return;
                     }
+                    value.forEach(item => this.filterFields[index].values.push({ key: item, value: item }));
                   });
                 }
               } catch (error) {
                 console.warn(error);
               }
             // With no saved value, initialize each filter to its null option.
-            } else {
+            }
+            if (!hasSavedValue) {
               (await Promise.allSettled(filter_fields.map((field, index) => {
                 this.filterFields.push({
                   id: field,
@@ -1711,9 +1850,10 @@
                 });
                 return relationLayer.getFilterData({ unique: field, formatter: 0, ordering: field });
               }))).forEach(({ status, value }, index) => {
-                if ('fulfilled' === status) {
-                  value.forEach(item => this.filterFields[index].values.push({ key: item, value: item }));
+                if ('fulfilled' !== status) {
+                  return;
                 }
+                value.forEach(item => this.filterFields[index].values.push({ key: item, value: item }));
               });
             }
 
@@ -1735,14 +1875,13 @@
                       .join('|AND,');
                     const { data = [] } = await relationLayer.getFilterData({ field: filterString });
                     // A missing feature response leaves downstream option lists at their null choice.
-                    if (data[0]?.features) {
-                      data[0].features.forEach(feature => {
-                        if (index < this.filterFields.length - 1) {
-                          const nextValue = feature.get(this.filterFields[index + 1].id);
-                          this.filterFields[index + 1].values.push({ key: nextValue, value: nextValue });
-                        }
-                      });
-                    }
+                    (data[0]?.features || []).forEach(feature => {
+                      if (index >= this.filterFields.length - 1) {
+                        return;
+                      }
+                      const nextValue = feature.get(this.filterFields[index + 1].id);
+                      this.filterFields[index + 1].values.push({ key: nextValue, value: nextValue });
+                    });
                   } catch (error) {
                     console.warn(error);
                   }
@@ -1778,19 +1917,36 @@
       if (['select_input', 'select_autocomplete_input'].includes(this.type)) {
         await this.$nextTick();
         this.resize?.();
-        if (this.autocomplete && this.state.value) {
+        const preloadAutocomplete = this.autocomplete && this.state.value;
+        if (preloadAutocomplete) {
           this.state.input.options.values.splice(0);
-          const options = this.state.input.options;
+        }
+        const options = this.state.input.options;
+        let search = this.state.value;
+        if (preloadAutocomplete && this.multiple) {
+          search = this.getMultiValues();
+        }
+        if (preloadAutocomplete) {
           const values = await this.getData({
             key: options.key,
             value: options.value,
-            search: this.multiple ? this.getMultiValues() : this.state.value,
+            search,
           });
           values.forEach(({ $value, text }) => options.values.push({ key: $value, value: text }));
           options.values.sort((first, second) => {
-            const firstValue = first[options.orderbyvalue ? 'value' : 'key'];
-            const secondValue = second[options.orderbyvalue ? 'value' : 'key'];
-            return firstValue < secondValue ? -1 : firstValue > secondValue ? 1 : 0;
+            let firstValue = first.key;
+            let secondValue = second.key;
+            if (options.orderbyvalue) {
+              firstValue = first.value;
+              secondValue = second.value;
+            }
+            if (firstValue < secondValue) {
+              return -1;
+            }
+            if (firstValue > secondValue) {
+              return 1;
+            }
+            return 0;
           });
         }
         await this.$nextTick();
@@ -1805,10 +1961,12 @@
         this.datetimedisplayformat = convertQGISDateTimeFormatToMoment(displayformat);
         this.datetimefieldformat = convertQGISDateTimeFormatToMoment(fieldformat);
         this.validationOptions = { fielddatetimeformat: this.datetimefieldformat };
+        let defaultDate = null;
+        if (moment(this.state.value, this.datetimefieldformat, true).isValid()) {
+          defaultDate = moment(this.state.value, this.datetimefieldformat).toDate();
+        }
         $(`#${this.iddatetimepicker}`).datetimepicker({
-          defaultDate: moment(this.state.value, this.datetimefieldformat, true).isValid()
-            ? moment(this.state.value, this.datetimefieldformat).toDate()
-            : null,
+          defaultDate,
           format: this.datetimedisplayformat,
           ignoreReadonly: true,
           locale: window.initConfig.user.i18n || 'en',
@@ -1820,9 +1978,12 @@
         });
         $(`#${this.iddatetimepicker}`).on('dp.change', () => {
           const newDate = $(`#${this.idinputdatetimepiker}`).val();
-          this.state.value = '' === newDate.trim()
-            ? null
-            : moment(newDate, this.datetimedisplayformat).format(this.datetimefieldformat);
+          if ('' === newDate.trim()) {
+            this.state.value = null;
+          }
+          if ('' !== newDate.trim()) {
+            this.state.value = moment(newDate, this.datetimedisplayformat).format(this.datetimefieldformat);
+          }
           this.change();
         });
         $(`#${this.iddatetimepicker}`).on('dp.show', () => this.$emit('datetimepickershow'));
@@ -1857,11 +2018,17 @@
                   const editor = this.quill.container.firstChild;
                   if (this.edit_state.show_html) {
                     editor.innerText = editor.innerHTML;
-                  } else {
+                  }
+                  if (!this.edit_state.show_html) {
                     editor.innerHTML = editor.innerText;
                   }
                   this.$el.querySelectorAll('.ql-formats > *').forEach(child => {
-                    child.classList.toggle(child.classList.contains('ql-html') ? 'skin-color' : 'g3w-disabled');
+                    if (child.classList.contains('ql-html')) {
+                      child.classList.toggle('skin-color');
+                    }
+                    if (!child.classList.contains('ql-html')) {
+                      child.classList.toggle('g3w-disabled');
+                    }
                   });
                 },
                 'column-left': () => this.table.insertColumnLeft(),
@@ -1904,7 +2071,12 @@
         });
         this.quillHandler = () => {
           const editor = this.quill.container.firstChild;
-          this.state.value = this.edit_state.show_html ? editor.innerText : editor.innerHTML;
+          if (this.edit_state.show_html) {
+            this.state.value = editor.innerText;
+          }
+          if (!this.edit_state.show_html) {
+            this.state.value = editor.innerHTML;
+          }
           this.edit_state.edit = true;
           this.change();
           setTimeout(() => { this.edit_state.edit = false; });
@@ -1921,12 +2093,10 @@
       if ('lonlat_input' === this.type) {
         this.stopToGetCoordinates();
       }
-      if (this.interaction) {
-        if (this.isPicked()) {
-          this.unpickFeature();
-        }
-        this.interaction = null;
+      if (this.interaction && this.isPicked()) {
+        this.unpickFeature();
       }
+      this.interaction = null;
       // Date and select widgets each own a resize registration.
       if ('datetimepicker_input' === this.type) {
         GUI.off('resize', this.delayResize);
@@ -1967,5 +2137,14 @@
   position: relative;
   top: 2px;
   font-size: 1.2em;
+}
+.g3w-input-coordinate-button-active {
+  border: 2px solid !important;
+}
+.g3w-input-quill {
+  border: 1px solid #ccc;
+}
+.g3w-input-quill.g3w-input-quill-invalid {
+  border: 1px solid reed;
 }
 </style>
