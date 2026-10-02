@@ -46,7 +46,7 @@
   <div v-else-if = "'media' === type && value" class = "preview">
     <a :href = "value" target = "_blank">
       <div class = "previewtype" :class = "mediaType">
-        <i class = "fa-2x" :class = "g3wtemplate.font[mediaType]"></i>
+        <i :class = "['fa-2x', mediaIcon]"></i>
       </div>
     </a>
     <div class = "filename">{{ filename }}</div>
@@ -57,8 +57,7 @@
   <div v-else-if = "'geo' === type" class = "geo-content">
     <span
       @click.stop = "showLayer()"
-      class       = "show-hide-geo"
-      :class      = "[visible ? g3wtemplate.font['eye-close'] : g3wtemplate.font['eye']]">
+      :class      = "['show-hide-geo', visible ? 'far fa-eye-slash' : 'far fa-eye']">
     </span>
   </div>
 
@@ -139,6 +138,18 @@ export default {
     },
     mediaType() {
       return this.getMediaType(this.state.mime_type || this.state.value?.mime_type).type;
+    },
+    mediaIcon() {
+      return ({
+        image: 'far fa-image',
+        pdf: 'fas fa-file-pdf',
+        video: 'far fa-file-video',
+        zip: 'far fa-file-archive',
+        text: 'far fa-file-alt',
+        excel: 'far fa-file-excel',
+        ppt: 'far fa-file-powerpoint',
+        unknow: 'far fa-question-circle',
+      })[this.mediaType] || 'far fa-question-circle';
     },
     filename() {
       return this.value ? this.value.split('/').pop() : this.value;

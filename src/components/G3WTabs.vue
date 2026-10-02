@@ -86,7 +86,7 @@
                       <div v-if = "loadingRelation(column).loading" class = "bar-loader" style = "border: 0"></div>
                       <div style = "display: flex; align-items: center">
                         <div class = "query_relation_field">
-                          <i :class = "g3wtemplate.font[contenttype === 'query' ? 'relation' : 'pencil']"></i>
+                          <i :class = "'query' === contenttype ? 'fas fa-sitemap' : 'fas fa-pencil-alt'"></i>
                         </div>
                         <span class = "query_relation_field_message g3w-long-text">
                           <span style = "text-transform: uppercase">{{ getRelationName(column.name) }}</span>
@@ -145,7 +145,7 @@
               <div v-if = "loadingRelation(column).loading" class = "bar-loader" style = "border: 0"></div>
               <div style = "display: flex; align-items: center">
                 <div class = "query_relation_field">
-                  <i :class = "g3wtemplate.font[contenttype === 'query' ? 'relation' : 'pencil']"></i>
+                  <i :class = "'query' === contenttype ? 'fas fa-sitemap' : 'fas fa-pencil-alt'"></i>
                 </div>
                 <span class = "query_relation_field_message g3w-long-text">
                   <span style = "text-transform: uppercase">{{ getRelationName(column.name) }}</span>

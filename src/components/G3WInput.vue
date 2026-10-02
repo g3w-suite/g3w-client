@@ -24,8 +24,7 @@
             <span v-if = "state.validate && state.validate.required">*</span>
             <i
               v-if        = "showhelpicon"
-              :class      = "g3wtemplate.font['info']"
-              class       = "skin-color"
+              class       = "fas fa-info-circle skin-color"
               style       = "margin-left: 3px; cursor: pointer"
               @click.stop = "showHideHelp"
             ></i>
@@ -196,7 +195,7 @@
           <div v-if = "loading" class = "bar-loader" style = "border: 0"></div>
           <g3w-field field-type = "media" :state = "mediaData">
             <div class = "clearmedia" @click.stop = "clearMedia">
-              <i :class = "g3wtemplate.font['trash-o']" class = "g3w-icon"></i>
+              <i class = "far fa-trash-alt g3w-icon"></i>
             </div>
           </g3w-field>
         </div>
@@ -230,7 +229,7 @@
             v-disabled      = "disabled"
             @click.stop     = "pickLayerValue"
             class           = "g3w-input-pick-layer skin-color"
-          ><i :class = "g3wtemplate.font['crosshairs']"></i></span>
+          ><i class = "fas fa-crosshairs"></i></span>
           <!-- Relation filters remain hidden until their initial option lists are ready. -->
           <div
             v-if  = "filterFields.length && isFilterFieldsReady"
@@ -292,8 +291,7 @@
         <div v-else-if = "'picklayer_input' === type">
           <span
             style  = "left: 0; top: 7px; position: absolute"
-            :class = "g3wtemplate.font['crosshairs']"
-            class  = "skin-color"
+            class  = "fas fa-crosshairs skin-color"
           ></span>
           <input
             @input     = "change()"
@@ -318,9 +316,8 @@
               :style              = "{border: coordinatebutton.active ? '2px solid' : 0}"
               data-placement      = "left"
               v-t-tooltip         = "'sdk.form.inputs.tooltips.lonlat'"
-              class               = "action skin-color skin-border-color"
+              class               = "action skin-color skin-border-color fas fa-crosshairs"
               style               = "border-radius: 5px; font-weight: bold; font-size: 20px; cursor: pointer"
-              :class              = "g3wtemplate.font['crosshairs']"
             ></button>
           </div>
           <!-- Keep coordinate labels and constraints independent for accessibility. -->

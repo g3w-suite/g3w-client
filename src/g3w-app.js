@@ -974,12 +974,22 @@ export default new (class GUI extends Emitter {
     iconClass = null, //@since 3.11.0
   } = {}) {
 
+    const icon = iconClass
+      ? Vue.prototype.$fa(iconClass)
+      : ({
+        tool:    'fas fa-cog',
+        warning: 'fas fa-exclamation-circle',
+        alert:   'fas fa-exclamation-triangle',
+        info:    'fas fa-info-circle',
+        success: 'far fa-check-circle',
+      })[type] || Vue.prototype.$fa(type);
+
     const dialog = Object.assign(document.createElement('template'), {
         innerHTML: /* html */ `
           <dialog class="usermessage-${type}" popover="manual">
             <form tabindex="0">
               <header>
-                <i class = "${g3w.app.getFontClass(iconClass || type)}"></i>
+                <i class = "${icon}"></i>
                 <div>
                   <h4 style="font-weight: bold;">${title ? _(title): type.toUpperCase()}</h4>
                   ${ subtitle ? `<h5>${_(subtitle)}</h5>` : '' }
