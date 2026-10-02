@@ -1484,12 +1484,12 @@
               fformatter: referencingField[0],
               order: referencingField[0],
               ffield: filter_fields.map((field, index) => {
-                const value = undefined === feature.get(field) ? `${null}` : feature.get(field);
+                const value = undefined === feature.get(field) ? `null` : feature.get(field);
                 this.filterFields.push({
                   id: field,
-                  values: [{ key: getFilterLabel(field), value: `${null}` }],
+                  values: [{ key: getFilterLabel(field), value: `null` }],
                   value,
-                  disabled: chain_filters && index > 0 && `${null}` === this.filterFields[index - 1]?.value,
+                  disabled: chain_filters && index > 0 && `null` === this.filterFields[index - 1]?.value,
                 });
                 return createSingleFieldParameter({ field, value });
               }).join('|AND,'),
@@ -1530,8 +1530,8 @@
           (await Promise.allSettled(filter_fields.map((field, index) => {
             this.filterFields.push({
               id: field,
-              values: [{ key: getFilterLabel(field), value: `${null}` }],
-              value: `${null}`,
+              values: [{ key: getFilterLabel(field), value: `null` }],
+              value: `null`,
               disabled: chain_filters && index > 0,
             });
             return relationLayer.getFilterData({ unique: field, formatter: 0, ordering: field });
@@ -1549,13 +1549,13 @@
             // Reset downstream values before requesting options for the changed parent filter.
             if (chain_filters) {
               for (let i = index + 1; i < this.filterFields.length; i++) {
-                this.filterFields[i].value = `${null}`;
+                this.filterFields[i].value = `null`;
                 this.filterFields[i].values = [this.filterFields[i].values[0]];
-                this.filterFields[i].disabled = `${null}` === value;
+                this.filterFields[i].disabled = `null` === value;
               }
               try {
                 const filterString = this.filterFields.slice(0, index + 1)
-                  .filter(item => `${null}` !== item.value)
+                  .filter(item => `null` !== item.value)
                   .map(item => createSingleFieldParameter({ field: item.id, value: item.value }))
                   .join('|AND,');
                 const { data = [] } = await relationLayer.getFilterData({ field: filterString });
@@ -1578,7 +1578,7 @@
               fformatter: referencingField[0],
               ordering: referencingField[0],
               ffield: this.filterFields
-                .filter(item => `${null}` !== item.value)
+                .filter(item => `null` !== item.value)
                 .map(item => createSingleFieldParameter({ field: item.id, value: item.value }))
                 .join('|AND,'),
             })).data || []).map(([value, key]) => ({ key, value }));
