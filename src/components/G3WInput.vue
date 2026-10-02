@@ -29,41 +29,37 @@
 
     <div v-if = "'child' !== state.type">
 
-      <!-- Native controls share labels and loading state; controls own their form groups. -->
-      <template v-if = "isNativeInput">
-        <!-- lonlat_input renders separate longitude and latitude labels below. -->
-        <template v-if = "'lonlat_input' !== type && (undefined === state.showlabel || state.showlabel)">
-          <label
-            :for       = "state.name"
-            v-disabled = "!editable"
-            class      = "control-label"
-            style      = "text-align:left !important; padding-top:0 !important; margin-bottom:3px"
-          >
-            <!-- Localized labels use the translation directive; plain labels stay literal. -->
-            <span v-if = "state.i18nLabel" v-t = "state.label"></span><span v-if = "!state.i18nLabel">{{ state.label }}</span>
-            <!-- Required status and help are independent label adornments. -->
-            <span v-if = "state.validate && state.validate.required">*</span>
-            <i
-              v-if        = "showhelpicon"
-              class       = "fas fa-info-circle skin-color"
-              style       = "margin-left: 3px; cursor: pointer"
-              @click.stop = "showHideHelp"
-            ></i>
-          </label>
-        </template>
-
-        <!-- Coordinate inputs render relation status beside each coordinate instead. -->
-        <div v-if = "state.relationField && 'lonlat_input' !== type" style = "color: var(--skin-warning); padding: 3px 0 3px 15px">
-          <i aria-hidden = "true" class = "fas fa-exclamation-circle"></i>
-          <span v-t = "'Relation key field'"></span>
-        </div>
-
-        <!-- Show progress only while the input's remote options are loading. -->
-        <div v-if = "loadingState === 'loading'" style = "position:relative; width: 100%">
-          <div class = "bar-loader" style = "border: 0"></div>
-        </div>
-
+      <!-- lonlat_input renders separate longitude and latitude labels below. -->
+      <template v-if = "'lonlat_input' !== type && (undefined === state.showlabel || state.showlabel)">
+        <label
+          :for       = "state.name"
+          v-disabled = "!editable"
+          class      = "control-label"
+          style      = "text-align:left !important; padding-top:0 !important; margin-bottom:3px"
+        >
+          <!-- Localized labels use the translation directive; plain labels stay literal. -->
+          <span v-if = "state.i18nLabel" v-t = "state.label"></span><span v-if = "!state.i18nLabel">{{ state.label }}</span>
+          <!-- Required status and help are independent label adornments. -->
+          <span v-if = "state.validate && state.validate.required">*</span>
+          <i
+            v-if        = "showhelpicon"
+            class       = "fas fa-info-circle skin-color"
+            style       = "margin-left: 3px; cursor: pointer"
+            @click.stop = "showHideHelp"
+          ></i>
+        </label>
       </template>
+
+      <!-- Coordinate inputs render relation status beside each coordinate instead. -->
+      <div v-if = "state.relationField && 'lonlat_input' !== type" style = "color: var(--skin-warning); padding: 3px 0 3px 15px">
+        <i aria-hidden = "true" class = "fas fa-exclamation-circle"></i>
+        <span v-t = "'Relation key field'"></span>
+      </div>
+
+      <!-- Show progress only while the input's remote options are loading. -->
+      <div v-if = "loadingState === 'loading'" style = "position:relative; width: 100%">
+        <div class = "bar-loader" style = "border: 0"></div>
+      </div>
 
       <!-- Text and string schemas share the same single-line editor. -->
       <div v-if = "['text_input', 'string_input'].includes(type)" class = "form-group">
@@ -404,25 +400,6 @@
         style  = "background-color: hsl(from var(--skin-color) h s calc(l + 48)) !important;"
       ></div>
 
-      <!-- Unknown input types are resolved as registered plugin components. -->
-      <component
-        v-if = "![
-          'text_input', 'string_input', 'textarea_input',
-          'integer_input', 'bigint_input', 'float_input',
-          'color_input', 'check_input', 'radio_input',
-          'range_input', 'slider_input', 'media_input', 'unique_input',
-          'texthtml_input', 'datetimepicker_input', 'picklayer_input', 'lonlat_input',
-          'select_input', 'select_autocomplete_input'
-        ].includes(this.type)"
-        @changeinput      = "forwardChangeInput"
-        :changeInput      = "changeInput"
-        @addinput         = "forwardAddInput"
-        :addToValidate    = "addToValidate"
-        @removeinput      = "forwardRemoveInput"
-        :removeToValidate = "removeToValidate"
-        :state            = "state"
-        :is               = "type"
-      ></component>
       <!-- Legacy standalone adapters can suppress the divider; form fields keep it by default. -->
       <span v-if = "showDivider" class = "divider"></span>
     </div>
@@ -1991,29 +1968,27 @@
         this.setValue();
       }
 
-      const [{ minDate, maxDate, fieldformat, enabledDates, disabledDates, displayformat, useCurrent }] = this.state.input.options.formats || [];
-
       // The date-picker stores field-format values but displays localized dates.
       if (is_datetime) {
         await this.$nextTick();
         this.resize?.();
       }
 
-      this.datetimedisplayformat = is_datetime ? convertQGISDateTimeFormatToMoment(displayformat) : this.datetimedisplayformat;
-      this.datetimefieldformat   = is_datetime ? convertQGISDateTimeFormatToMoment(fieldformat) : this.datetimefieldformat;
+      this.datetimedisplayformat = is_datetime ? convertQGISDateTimeFormatToMoment(this.state?.input?.options?.formats?.[0]?.displayformat) : this.datetimedisplayformat;
+      this.datetimefieldformat   = is_datetime ? convertQGISDateTimeFormatToMoment(this.state?.input?.options?.formats?.[0]?.fieldformat) : this.datetimefieldformat;
       this.validationOptions     = is_datetime ? { fielddatetimeformat: this.datetimefieldformat } : this.validationOptions;
 
       if (is_datetime) {
         $(`#${this.iddatetimepicker}`).datetimepicker({
-          defaultDate: is_datetime && moment(this.state.value, this.datetimefieldformat, true).isValid() ? moment(this.state.value, this.datetimefieldformat).toDate() : null,
-          format: this.datetimedisplayformat,
+          defaultDate:    is_datetime && moment(this.state.value, this.datetimefieldformat, true).isValid() ? moment(this.state.value, this.datetimefieldformat).toDate() : null,
+          format:         this.datetimedisplayformat,
           ignoreReadonly: true,
-          locale: window.initConfig.user.i18n || 'en',
-          enabledDates,
-          disabledDates,
-          useCurrent,
-          minDate,
-          maxDate,
+          locale:         window.initConfig.user.i18n || 'en',
+          enabledDates:   this.state?.input?.options?.formats?.[0]?.enabledDates,
+          disabledDates:  this.state?.input?.options?.formats?.[0]?.disabledDates,
+          useCurrent:     this.state?.input?.options?.formats?.[0]?.useCurrent,
+          minDate:        this.state?.input?.options?.formats?.[0]?.minDate,
+          maxDate:        this.state?.input?.options?.formats?.[0]?.maxDate,
         });
         $(`#${this.iddatetimepicker}`).on('dp.change', () => {
           const newDate    = $(`#${this.idinputdatetimepiker}`).val();
