@@ -661,7 +661,7 @@
             if (value.length && value[0].photo) {
               type = 'photo';
             } else {
-              type = 'simple'
+              type = 'simple';
             }
           } else if (value.toString().toLowerCase().match(/^(https?:\/\/[^\s]+)\.(png|jpg|jpeg|gif)$/g)) {
             type = 'photo';
