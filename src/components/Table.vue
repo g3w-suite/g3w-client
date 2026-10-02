@@ -8,6 +8,7 @@
 
     <!-- TABLE METADATA -->
     <button
+      v-if           = "!external"
       ref            = "table_metadata"
       type           = "button"
       style          = "margin-right: 8px; font-size: 1.5rem;order:-1;"
@@ -56,7 +57,7 @@
         </tr>
         <tr>
           <th v-disabled       = "disableSelectAll">
-            <label @click.stop = "setSelection('all')">
+            <label v-if = "!external" @click.stop = "setSelection('all')">
               <input type = "checkbox" :checked = "all" />
             </label>
           </th>
@@ -87,7 +88,7 @@
           <td>
             <div style = "display: flex">
               <label
-                v-if   = "!layer.state.filter.active"
+                v-if   = "!external && !layer.state.filter.active"
                 @click = "select(feature)"
               >
                 <input type = "checkbox" :checked = "feature.selected" />
@@ -205,10 +206,12 @@ export default {
   },
 
   data() {
-    const layer    = getCatalogLayerById(this.$options.layerId);
+    // external layers (eg. csv) pass a client side layer adapter
+    const layer    = this.$options.layer || getCatalogLayerById(this.$options.layerId);
     const headers  = layer.getTableHeaders();
     return {
       layer,
+      external: !!this.$options.layer,
       state: {
         id:            layer.getId(),         // @since 4.1.0 aligned with query state layer
         selection:     layer.state.selection, // @since 4.1.0 aligned with query state layer
@@ -620,7 +623,7 @@ export default {
     this.reload();
 
     //set layer actions for the current layer
-    ApplicationState.layersactions[this.layer.getId()] = [
+    ApplicationState.layersactions[this.layer.getId()] = this.external ? [] : [
       {
         id :   "openform",
         cbk:   this.openForm.bind(this),
@@ -656,9 +659,9 @@ export default {
     });
 
     // move "table_metadata", "table_info" and "table_search" before header action tools
-    document.querySelector('#g3w-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', this.$refs['table_metadata']);
-    document.querySelector('#g3w-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', this.$refs['table_info']);
-    document.querySelector('#g3w-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', this.$refs['table_search']);
+    ['table_metadata', 'table_info', 'table_search'].filter(ref => this.$refs[ref]).forEach(ref => {
+      document.querySelector('#g3w-content .g3-content-header-action-tools').insertAdjacentElement('beforebegin', this.$refs[ref]);
+    });
   },
 
   async beforeDestroy() {
@@ -682,7 +685,7 @@ export default {
       });
     }
 
-    this.$refs['table_metadata'].remove();
+    this.$refs['table_metadata']?.remove();
     this.$refs['table_info'].remove();
     this.$refs['table_search'].remove();
 

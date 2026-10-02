@@ -61,7 +61,7 @@
 
     <!-- Layer Legend -->
     <li
-      v-if                = "['project', 'layer'].includes(context) && layerstree.geolayer"
+      v-if                = "['project', 'layer'].includes(context) && layerstree.geolayer && !layerstree.external"
       @click.prevent.stop = "showLegend"
     >
       <i class = "fas fa-list"></i> {{ $t('legend') }}
@@ -89,14 +89,14 @@
       <!-- Attribute Table -->
       <li
         v-if                = "canOpenAttributeTable(layer)"
-        @click.prevent.stop = "showAttributeTable(layer.id)"
+        @click.prevent.stop = "showAttributeTable(layer)"
       >
         <i aria-hidden = "true" class = "fas fa-list-alt"></i> {{ $t('Open Attribute Table') }}
       </li>
 
       <!-- Change z-index of ol layer. On top or button -->
       <li
-        v-if = "isExternalLayer(layer)"
+        v-if = "isExternalLayer(layer) && false !== layer.geolayer"
       >
         <i class = "fa fa-sort"></i>
         {{ $t('layer_position.message') }} ({{ $t('layer_position.' + layer.position) }})
@@ -313,6 +313,8 @@
 
   import ApplicationState        from 'g3w-state';
   import GUI                     from 'g3w-app';
+  import { GEOMETRY_FIELDS }     from 'g3w-constants';
+  import Table                   from 'components/Table.vue';
   import { getCatalogLayerById } from 'utils/getCatalogLayerById';
   import { downloadFeatures }    from 'utils/downloadFeatures';
   import { copyUrl }             from 'utils/copyUrl';
@@ -592,9 +594,76 @@
         return '';
       },
 
-      showAttributeTable(layerId) {
-        getCatalogLayerById(layerId).openAttributeTable();
+      showAttributeTable(layer) {
+        if (layer.projectLayer) {
+          getCatalogLayerById(layer.id).openAttributeTable();
+        } else {
+          this.openExternalAttributeTable(layer);
+        }
         this.closeMenu();
+      },
+
+      /**
+       * Open attribute table of an external vector layer (client side data)
+       *
+       * @since 4.1.0
+       */
+      openExternalAttributeTable(layer) {
+        const features = GUI.getLayerByName(layer.name).getSource().getFeatures();
+        const props    = f => Object.fromEntries(Object.entries(f.getProperties()).filter(([k]) => 'undefined' !== k && k !== f.getGeometryName() && !GEOMETRY_FIELDS.includes(k)));
+        const headers  = [...new Set(features.flatMap(f => Object.keys(props(f))))].map(name => ({ name, label: name }));
+        const text     = v => String(v ?? '').toLowerCase();
+        const geojson  = new ol.format.GeoJSON();
+        let pageLength;
+
+        new (Vue.extend(Table))({
+          layer: {
+            state: {
+              id:        layer.id,
+              geolayer:  false !== layer.geolayer,
+              filter:    { active: false, pagination: false, current: null },
+              selection: { active: false, fids: new Set() },
+            },
+            getId:                       () => layer.id,
+            getTitle:                    () => layer.title,
+            isGeoLayer:                  () => false,
+            getTableHeaders:             () => headers,
+            getRelations:                () => ({ getArray: () => [] }),
+            hasRelations:                () => false,
+            getAttributeTablePageLength: () => pageLength,
+            setAttributeTablePageLength: l => pageLength = l,
+            isSelected:                  () => false,
+            clearSelectionFids()         {},
+            toggleToken()                {},
+            on()                         {},
+            off()                        {},
+            async getDataTable({ field, search, ordering, page = 1, page_size } = {}) {
+              let rows = features.map(f => ({ id: f.getId(), properties: props(f), feature: f }));
+              if (search) {
+                rows = rows.filter(r => Object.values(r.properties).some(v => text(v).includes(text(search))));
+              }
+              // column filters: "name|ilike|value|AND,name2|ilike|value2"
+              (field ? field.split('|AND,') : []).forEach(cond => {
+                const [name, value] = cond.replace(/\|AND$/, '').split('|ilike|');
+                rows = rows.filter(r => text(r.properties[name]).includes(text(value)));
+              });
+              if (ordering) {
+                const desc = ordering.startsWith('-');
+                const name = desc ? ordering.slice(1) : ordering;
+                rows.sort((a, b) => String(a.properties[name] ?? '').localeCompare(String(b.properties[name] ?? ''), undefined, { numeric: true }) * (desc ? -1 : 1));
+              }
+              const start = (page - 1) * Number(page_size || rows.length);
+              return {
+                count:    rows.length,
+                features: (page_size ? rows.slice(start, start + Number(page_size)) : rows).map(({ id, properties, feature }) => ({
+                  id,
+                  properties,
+                  geometry: feature.getGeometry() && geojson.writeGeometryObject(feature.getGeometry()),
+                })),
+              };
+            },
+          },
+        });
       },
 
       async showMetadata(layerId){
@@ -722,7 +791,7 @@
        * @since 3.8.3
        */
       isExternalVectorLayer(layer) {
-        return !layer.projectLayer && 'vector' === layer._type;
+        return !layer.projectLayer && 'vector' === layer._type && false !== layer.geolayer;
       },
 
       /**
@@ -752,7 +821,7 @@
        * @since 3.8.3
        */
       canShowOpacityPicker(layer) {
-        return layer.geolayer && layer.visible;
+        return layer.geolayer && !layer.external && layer.visible;
       },
 
       /**

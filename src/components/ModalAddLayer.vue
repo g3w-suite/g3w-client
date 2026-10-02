@@ -22,7 +22,7 @@
       <hr>
 
       <!-- MODAL BODY -->
-      <div>
+      <fieldset :disabled = "loading" :aria-busy = "loading">
 
         <!-- LAYER TYPE -->
         <div class = "form-group">
@@ -38,7 +38,7 @@
         <hr>
 
         <!-- LOADING INDICATOR -->
-        <div v-show = "loading" class = "bar-loader"></div>
+        <div v-show = "loading && !adding" class = "bar-loader"></div>
 
         <div v-if = "'wms' === layer_type" class = "form-group">
           <!-- WMS URL -->
@@ -341,42 +341,68 @@
           </form>
 
           <!-- CSV FILE (parsing options) -->
-          <div v-if = "'csv' === file_type" class = "form-group" style = "padding: 15px; border: 1px solid grey; border-radius: 3px">
-            <div v-show = "csv_loading" class = "bar-loader"></div>
-
-            <label v-t = "'Delimiter'" for = "g3w-select-field-layer"></label>
+          <div v-if = "'csv' === file_type" class = "form-group csv-options">
+            <label for = "g3w-select-separator">{{ $t('Delimiter') }}</label>
             <select id = "g3w-select-separator" class = "form-control" v-model = "csv_separator" @change="parseFile">
               <option>,</option>
               <option>;</option>
             </select>
 
-            <template v-if = "fields.length > 1 && !csv_wkt">
-              <label v-t = "'X field'" for = "g3w-select-x-field"></label>
-              <select id = "g3w-select-x-field" class = "form-control" v-model = "csv_x" :disabled = "!(fields || []).length" @change = "parseFile">
-                <option v-for = "h in fields">{{ h }}</option>
-              </select>
+            <p v-if = "!loading && fields.length" class = "csv-message" role = "status">
+              <i aria-hidden = "true" class = "fas fa-table"></i>
+              {{ $t('Fields found:') }} <b>{{ fields.length }}</b>
+            </p>
 
-              <label v-t = "'Y field'" for = "g3w-select-y-field"></label>
-              <select id = "g3w-select-y-field" class = "form-control" v-model = "csv_y" :disabled = "!(fields || []).length" @change = "parseFile">
-                <option v-for = "h in fields">{{ h }}</option>
-              </select>
-            </template>
+            <div v-if = "fields.length > 1 && !csv_wkt" key = "csv-xy" class = "csv-geometry">
+              <div class = "csv-geometry-fields">
+                <div>
+                  <label for = "g3w-select-x-field">{{ $t('X field') }}</label>
+                  <select id = "g3w-select-x-field" class = "form-control" v-model = "csv_x" @change = "parseFile">
+                    <option :value = "null">---</option>
+                    <option v-for = "h in fields" :key = "h">{{ h }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label for = "g3w-select-y-field">{{ $t('Y field') }}</label>
+                  <select id = "g3w-select-y-field" class = "form-control" v-model = "csv_y" @change = "parseFile">
+                    <option :value = "null">---</option>
+                    <option v-for = "h in fields" :key = "h">{{ h }}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
 
-            <template v-if = "csv_wkt">
+            <div v-else-if = "csv_wkt" key = "csv-wkt" class = "csv-geometry">
               <label for = "g3w-select-wkt-field">WKT</label>
-              <select id = "g3w-select-y-field" class = "form-control" v-model = "csv_wkt">
-                <option v-for = "h in fields">{{ h }}</option>
+              <select id = "g3w-select-wkt-field" class = "form-control" v-model = "csv_wkt" @change = "parseFile">
+                <option :value = "null">---</option>
+                <option v-for = "h in fields" :key = "h">{{ h }}</option>
               </select>
-            </template>
+            </div>
 
-            <div v-if = "0 === fields.length" v-t = "'No valid fields'"></div>
+            <p v-else-if = "!loading && 0 === fields.length" key = "csv-empty" class = "csv-message warning">⚠️ {{ $t('No valid fields') }}</p>
 
-            <small v-if = "olLayer" style="color: red;display: inline-block;margin-top: 1em;"><span v-t = "'Features found:'"></span> {{ feature_count }}</small>
+            <p v-if = "feature_count && !loading" class = "csv-message">
+              <i aria-hidden = "true" :class = "has_geometry ? 'fas fa-map-marker-alt' : 'fas fa-table'"></i>
+              {{ $t('Features found:') }} <b>{{ feature_count }}</b>
+            </p>
 
+          </div>
+
+          <!-- GEOMETRY NOTICE (after upload) -->
+          <div
+            v-if   = "geometry_notice"
+            role   = "status"
+            class  = "geometry-notice"
+            :class = "geometry_notice.type"
+          >
+            <i aria-hidden = "true" :class = "'info' === geometry_notice.type ? 'fas fa-table' : 'fas fa-exclamation-triangle'"></i>
+            <span>{{ geometry_notice.text }}</span>
           </div>
 
           <!-- DOCS -->
           <a
+            v-if           = "has_geometry"
             :href          = "`https://epsg.io/${(layer_crs || '').toLowerCase().replace('epsg:', '')}`"
             target         = "_blank"
             style          = "float: right;"
@@ -387,7 +413,7 @@
           </a>
 
           <!-- LAYER PROJECTION -->
-          <fieldset class = "form-group" :disabled = "layer_data || ['kml','kmz'].includes(file_type)">
+          <fieldset v-if = "has_geometry" class = "form-group" :disabled = "layer_data || ['kml','kmz'].includes(file_type)">
             <label for = "projection-layer" v-t = "'Projection'"></label>
             <select class = "form-control" id = "projection-layer" v-model = "layer_crs">
               <option v-for = "crs in new Set([map_crs, 'EPSG:3003','EPSG:3004', 'EPSG:3045', 'EPSG:3857', 'EPSG:4326', 'EPSG:6708', 'EPSG:23032', 'EPSG:23033', 'EPSG:25833', 'EPSG:32632', 'EPSG:32633'])">{{ crs }}</option>
@@ -402,7 +428,7 @@
           </div>
 
           <!-- LAYER POSITION -->
-          <div v-if = "layer_data" class = "form-group">
+          <div v-if = "layer_data && has_geometry" class = "form-group">
             <label for = "position-layer" v-t = "'layer_position.message'"></label>
             <select class = "form-control" id = "position-layer" v-model = "position">
               <option :value = "'top'"    v-t = "'layer_position.top'"></option>
@@ -421,7 +447,7 @@
           </div>
 
           <!-- LAYER LABEL (visible field) -->
-          <div v-if = "(fields || []).length" class = "form-group">
+          <div v-if = "(fields || []).length && has_geometry" class = "form-group">
             <label v-t = "'label'" for = "g3w-select-field-layer"></label>
             <select id = "g3w-select-field-layer" class = "form-control" v-model = "field">
               <option :value = "null">---</option>
@@ -431,7 +457,7 @@
           </div>
 
           <!-- LAYER COLOR  -->
-          <div v-if = "layer_data">
+          <div v-if = "layer_data && has_geometry">
             <p v-t = "'Layer Color'" style = "font-weight: 700;"></p>
             <chrome-picker
               v-model = "layer_color"
@@ -442,10 +468,13 @@
 
         </div>
 
-      </div>
+      </fieldset>
 
       <!-- MODAL FOOTER -->
       <menu style="text-align: right; border-top: 1px solid #f4f4f4;">
+
+        <!-- LOADING INDICATOR (add layer) -->
+        <div v-show = "adding" class = "bar-loader" role = "progressbar" :aria-label = "$t('Loading ...')" style = "margin-bottom: 10px;"></div>
 
         <!-- ERROR NOTICE -->
         <div
@@ -469,7 +498,7 @@
           type        = "button"
           class       = "btn btn-success"
           @click.stop = "addLayer"
-          :disabled   = "!can_add_layer"
+          :disabled   = "!can_add_layer || loading"
           style       = "font-weight: bold; min-width: 70px; margin-bottom: 0; margin-left: 5px;"
         ></button>
 
@@ -524,7 +553,7 @@ function _CSVToArray(text, separator = ',') {
       data.push([]);
     }
     // captured value (quoted or unquoted).
-    data.at(-1).push(matches[2] ? matches[2].replace(new RegExp('""', 'g'), '"') : matches[3]);
+    data.at(-1).push(undefined !== matches[2] ? matches[2].replace(new RegExp('""', 'g'), '"') : (matches[3] ?? ''));
   }
 
   // parsed data
@@ -560,19 +589,20 @@ export default {
       wms_opacity:      1,
       url:              null,
       id:               null,
-      olLayer:          null,
+      feature_count:    0,
+      geom_count:       0, // number of parsed features with a geometry
       map_crs:          ApplicationState.project.getProjection().getCode(),
       layer_data:       null,
       position:         'top', // layer position on map
       persistent:       false,
       loading:          false, // loading reactive status
+      adding:           false, // adding layer to map
       fields:           [],
       field:            null,
       csv_x:            null,
       csv_y:            null,
       csv_wkt:          null, //@since 3.11.0
       csv_separator:    ',',
-      csv_loading:      false,
       name:             undefined,  // name of saved layer
       title:            null,       // title of layer
       layers:           [],         // Array of layers
@@ -603,11 +633,38 @@ export default {
       if ('tms' === this.layer_type) { 
         return this.tms_name && this.tms_url && !GUI.getLocalStorage('externallayers').data.find(layer => 'tms' === layer.type && this.tms_url === layer.url && this.pid === layer.pid);
       } 
-      return this.layer_data;
+      return this.layer_data && this.feature_count > 0;
     },
 
-    feature_count() {
-      return this.olLayer?.getSource().getFeatures().length || 0;
+    /**
+     * @since 4.2.0
+     */
+    has_geometry() {
+      if ('csv' !== this.file_type) {
+        return !this.layer_data || this.geom_count > 0;
+      }
+      return !!this.csv_wkt || !!(this.csv_x && this.csv_y);
+    },
+
+    /**
+     * Message shown after upload when geometries cannot be extracted
+     *
+      * @since 4.2.0
+     */
+    geometry_notice() {
+      if ('file' !== this.layer_type || !this.layer_data || this.loading) {
+        return null;
+      }
+      if (!this.feature_count) {
+        return { type: 'warning', text: this.$t('No features found') };
+      }
+      if (!this.geom_count) {
+        return { type: 'info', text: this.$t('No geometry found: the layer will be added as an alphanumeric table') };
+      }
+      if (this.geom_count < this.feature_count) {
+        return { type: 'warning', text: `${this.feature_count - this.geom_count} ${this.$t('features without geometry')}` };
+      }
+      return null;
     },
 
     wms_filtered_layers() {
@@ -722,7 +779,7 @@ export default {
       }
     },
 
-    async parseFile() {
+    async parseFile(e) {
       const input = this.$refs.input_file;
 
       // skip invalid formats
@@ -739,16 +796,23 @@ export default {
 
       try {
 
+        this.loading       = true;
         this.error_message = '';
         this.parse_errors  = [];
         this.layer_name    = input.files[0].name;
         this.file_type     = input.files[0].name.split('.').at(-1).toLowerCase();
         this.layer_data    = null;
+        this.ol_layer      = null;
+        this.feature_count = 0;
+        this.geom_count    = 0;
+
+        // let the browser paint the loading bar before heavy parsing
+        await new Promise(r => setTimeout(r));
 
         let features = [];
         let data;
 
-        (this.fields || []).splice(0); // reset fields
+        this.fields = [];
 
         // KMZ file
         if ('kmz' === this.file_type) {
@@ -769,27 +833,48 @@ export default {
           data = JSON.stringify(await shp(out)); // convert to wsg84 (geojson)
         }
 
-        // CSV file
+        // CSV file: use the header to suggest geometry fields; manual selections survive reparsing.
+        // @since 4.2.0
         if ('csv' === this.file_type) {
-          this.csv_loading = true;
-
           data         = _CSVToArray(await input.files[0].text(), this.csv_separator);
           const X      = ['x', 'lng', 'longitude', 'longitudine'];
           const Y      = ['y', 'lat', 'latitude', 'latitudine'];
-          this.fields  = data.shift();
-          const wkt    = this.fields.findIndex(f => 'wkt' === f.toLowerCase());
-          const x      = this.fields.findIndex(f => X.includes(f.toLowerCase()));
-          const y      = this.fields.findIndex(f => Y.includes(f.toLowerCase()));
-          this.csv_wkt = this.csv_wkt || this.fields[wkt];                               // auto suggest "wkt" field
-          this.csv_x   = this.csv_wkt || this.csv_x || this.fields[x] || this.fields[0]; // auto suggest "csv_x" field
-          this.csv_y   = this.csv_wkt || this.csv_y || this.fields[y] || this.fields[1]; // auto suggest "csv_y" field
+          // unnamed header columns get a positional name
+          this.fields  = data.shift().map((f, i) => `${f ?? ''}`.trim() || `field_${i + 1}`);
 
-          data.forEach((row, i) => {
+          if (e?.target === input || 'g3w-select-separator' === e?.target?.id) {
+            this.csv_wkt = this.fields.find(f => 'wkt' === f.toLowerCase()) ?? null;
+            this.csv_x   = this.csv_wkt ? null : (this.fields.find(f => X.includes(f.toLowerCase())) ?? null);
+            this.csv_y   = this.csv_wkt ? null : (this.fields.find(f => Y.includes(f.toLowerCase())) ?? null);
+          }
+
+          const wkt = this.fields.indexOf(this.csv_wkt);
+          const x   = this.fields.indexOf(this.csv_x);
+          const y   = this.fields.indexOf(this.csv_y);
+
+          for (let i = 0; i < data.length; i++) {
+            // yield to keep the loading bar animated on large files
+            if (i && 0 === i % 1000) {
+              await new Promise(r => setTimeout(r));
+            }
+            const row   = data[i];
+            // ignore values exceeding header columns
+            const props = row.reduce((props, value, i) => { if (i < this.fields.length) { props[this.fields[i]] = value; } return props; }, {});
+            // alphanumeric table (no geometry)
+            if (!this.has_geometry) {
+              if (row.some(v => v)) {
+                const feat = new ol.Feature(props);
+                feat.setId(i);
+                features.push(feat);
+              }
+              continue;
+            }
             const X = Number(row[x]);
             const Y = Number(row[y]);
             // check if coordinates are right
             if (!this.csv_wkt && (Number.isNaN(X) || Number.isNaN(Y))) {
-              return this.parse_errors.push({ row: i + 1, value: data[i] });
+              this.parse_errors.push({ row: i + 1, value: data[i] });
+              continue;
             }
             try {
               const feat = new ol.Feature({
@@ -797,16 +882,14 @@ export default {
                   dataProjection:    this.layer_crs,
                   featureProjection: GUI.getEpsg()
                 }),
-                ...(row.reduce((props, value, i) => { props[this.fields[i]] = value; return props; }, {}))
+                ...props
               });
               feat.setId(i);
               features.push(feat);
             } catch(e) {
               console.warn(e);
             }
-          });
-
-          this.csv_loading = false;
+          }
         }
 
         // other files
@@ -819,7 +902,8 @@ export default {
         // register EPSG
         await ApplicationState.projections.set(this.layer_crs);
 
-        this.layer_data = data;
+        // frozen → not deep observed by Vue (huge files)
+        this.layer_data = Object.freeze(data);
 
         // parse features
         if ('csv' !== this.file_type) {
@@ -835,35 +919,47 @@ export default {
             dataProjection:    this.layer_crs,
             featureProjection: GUI.getEpsg() || this.layer_crs,
           });
-        }
 
-        // @since 3.11.0 shp function create always features in 4326 coordinates
-        if ('zip' === this.file_type && this.layer_crs !== 'EPSG:4326') {
-          features.forEach(f => f.getGeometry().transform('EPSG:4326', this.layer_crs));
-        }
+          // @since 3.11.0 shp function create always features in 4326 coordinates
+          if ('zip' === this.file_type && this.layer_crs !== 'EPSG:4326') {
+            features.forEach(f => f.getGeometry().transform('EPSG:4326', this.layer_crs));
+          }
 
-        // ignore kml property [`<styleUrl>`](https://developers.google.com/kml/documentation/kmlreference)
-        if (['kml', 'kmz'].includes(this.file_type)) {
-          features.forEach(f => f.unset('styleUrl'));
+          // ignore kml property [`<styleUrl>`](https://developers.google.com/kml/documentation/kmlreference)
+          if (['kml', 'kmz'].includes(this.file_type)) {
+            features.forEach(f => f.unset('styleUrl'));
+          }
+
+          // Non-CSV field names come from the parsed features, not a header row.
+          if (features.length) {
+            this.fields = Object.keys(features[0].getProperties()).filter(prop => GEOMETRY_FIELDS.indexOf(prop) < 0);
+          }
         }
 
         if (features.length > 0) {
-          this.olLayer = new ol.layer.Vector({
+          // not declared in data() → non reactive (Vue would deep observe every feature)
+          this.ol_layer = new ol.layer.Vector({
             source: new ol.source.Vector({ features }),
             name:   this.layer_name,
             id:     getUniqueDomId(),
           });
-          this.fields = 'csv' === this.file_type ? this.fields : Object.keys(features[0].getProperties()).filter(prop => GEOMETRY_FIELDS.indexOf(prop) < 0);
+          this.feature_count = features.length;
+          this.geom_count    = features.filter(f => f.getGeometry()).length;
         }
 
       } catch(e) {
         console.warn(e);
         this.error_message = `${e}`;
+      } finally {
+        this.loading = false;
       }
     },
 
     async addLayer() {
       this.loading = true;
+      this.adding  = true;
+      // let the browser paint the loading state before adding the layer
+      await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve)));
       // check if External Local layers already added (by name)
       const data = GUI.getLocalStorage('externallayers');
       if ('wms' === this.layer_type) {
@@ -946,13 +1042,14 @@ export default {
 
       if ('file' === this.layer_type) {
         try {
-          await GUI.addExternalLayer(this.olLayer, {
+          await GUI.addExternalLayer(this.ol_layer, {
             crs:        this.layer_crs,
             position:   this.position,
-            color:      this.layer_color,
-            field:      this.field,
+            color:      this.has_geometry ? this.layer_color : undefined,
+            field:      this.has_geometry ? this.field : null,
             persistent: !!this.persistent,
             type:       this.file_type,
+            geolayer:   this.has_geometry,
           });
           this.close();
         } catch(e) {
@@ -961,6 +1058,7 @@ export default {
         }
       }
       this.loading = false;
+      this.adding  = false;
     },
 
     unloadFile() {
@@ -972,7 +1070,9 @@ export default {
       this.layer_crs               = GUI.getCrs();
       this.layer_color             = { hex: '#194d33', rgba: { r: 25, g: 77, b: 51, a: 1 }, a: 1 };
       this.layer_data              = null;
-      this.olLayer                 = null;
+      this.ol_layer                = null;
+      this.feature_count           = 0;
+      this.geom_count              = 0;
       this.fields                  = [];
       this.field                   = null;
       this.csv_x                   = null;
@@ -1295,5 +1395,55 @@ export default {
     font-size: 1.2em;
     font-weight: bold;
     margin-bottom: 10px;
+  }
+  .csv-options {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fafafa;
+  }
+  .csv-geometry {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e5e5e5;
+  }
+  .csv-geometry-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .csv-message {
+    margin: 15px 0 0;
+    padding: 8px 12px;
+    border-radius: 3px;
+    background-color: #fff;
+    border-left: 3px solid var(--skin-color);
+    color: #555;
+  }
+  .csv-message.warning {
+    border-left-color: var(--skin-warning);
+  }
+  .geometry-notice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 15px 0;
+    padding: 10px 12px;
+    border-radius: 4px;
+    border-left: 4px solid var(--skin-primary);
+    background-color: hsl(from var(--skin-primary) h s 95%);
+    color: #333;
+    animation: fade .3s ease-in;
+  }
+  .geometry-notice > i {
+    font-size: 1.3em;
+    color: var(--skin-primary);
+  }
+  .geometry-notice.warning {
+    border-left-color: var(--skin-warning);
+    background-color: hsl(from var(--skin-warning) h s 95%);
+  }
+  .geometry-notice.warning > i {
+    color: var(--skin-warning);
   }
 </style>
