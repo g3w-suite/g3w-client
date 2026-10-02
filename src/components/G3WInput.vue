@@ -732,14 +732,7 @@
        */
       async notvalid(notvalid) {
         // Native controls render their own message; custom selects need their trigger styled directly.
-        if (notvalid && [
-          'text_input', 'string_input', 'textarea_input',
-          'integer_input', 'bigint_input', 'float_input',
-          'color_input', 'check_input', 'radio_input',
-          'range_input', 'slider_input', 'media_input', 'unique_input',
-          'texthtml_input', 'datetimepicker_input', 'picklayer_input', 'lonlat_input',
-          'select_input', 'select_autocomplete_input'
-        ].includes(this.type)) {
+        if (notvalid && 'child' !== this.type) {
           this.setErrorMessage();
         }
         if (['unique_input', 'select_input', 'select_autocomplete_input'].includes(this.type)) {
@@ -770,14 +763,7 @@
        */
       async 'state.value'(value) {
         // Expression-backed defaults can update state without a DOM input event.
-        if ([
-          'text_input', 'string_input', 'textarea_input',
-          'integer_input', 'bigint_input', 'float_input',
-          'color_input', 'check_input', 'radio_input',
-          'range_input', 'slider_input', 'media_input', 'unique_input',
-          'texthtml_input', 'datetimepicker_input', 'picklayer_input', 'lonlat_input',
-          'select_input', 'select_autocomplete_input'
-        ].includes(this.type) && undefined !== this.state.input.options.default_expression) {
+        if ('child' !== this.type && undefined !== this.state.input.options.default_expression) {
           setTimeout(() => this.change());
         }
         // The media preview is separate from the stored media object.
