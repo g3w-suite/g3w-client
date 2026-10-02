@@ -539,7 +539,7 @@
        * @returns {boolean}
        */
       multiple() {
-        return this.allowmulti;
+        return ['select_input', 'select_autocomplete_input'].includes(this.type) && !!this.state.input.options.allowmulti;
       },
       /**
        * Whether a single-select control should expose its empty option.
@@ -707,7 +707,6 @@
         picked:                false,
         filterFields:          [],
         isFilterFieldsReady:   false,
-        allowmulti:            false,
         unwatch:               null,
         filterFieldsUnwatches: null,
         validationOptions:     null,
@@ -1591,7 +1590,6 @@
     async created() {
       // Built-in controls share this component's defaults, validation and lifecycle; plugins own their own behavior.
       const is_parent = 'child' !== this.state.type;
-
       const is_select = ['select_input', 'select_autocomplete_input'].includes(this.type);
 
       this.state.input.options = this.state.input.options || {};
@@ -1694,10 +1692,6 @@
       if ('texthtml_input' === this.type) {
         this.state.edit_states = this.state.edit_states || [];
         this.state.edit_states.push(this.edit_state);
-      }
-
-      if (is_select) {
-        this.allowmulti = !!this.state.input.options.allowmulti;
       }
 
       if (is_select) {
