@@ -36,7 +36,16 @@ import { getListableProjects }                     from 'utils/getListableProjec
 /**
  * Single File Components
  */
-import G3WInput                                    from 'components/G3WInput.vue';
+import G3WField                                    from 'components/G3WField.vue';
+
+/** BACKCOMP: `<g3w-input>` is now `<g3w-field field-type="input">` (shallow copy keeps `methods`, `props`, etc. reachable by plugins) */
+// Drop the Vue.extend cache (`_Ctor`), otherwise the alias could resolve to the plain G3WField constructor.
+const { _Ctor, ...G3WFieldOptions } = G3WField;
+const G3WInput = {
+  ...G3WFieldOptions,
+  name:  'g3w-input',
+  props: { ...G3WField.props, fieldType: { type: String, default: 'input' } },
+};
 
 /**
  * CORE modules
@@ -78,9 +87,6 @@ import { gettext as _ }                            from 'g3w-i18n';
 import { Plugin, PluginService }                   from 'g3w-plugin';
 import MapControl                                  from 'g3w-control';
 import { SearchPanel }                             from 'components/g3w-search';
-
-//Fields
-import G3WField                                    from 'components/G3WField.vue';
 
 import 'components/x-select';
 

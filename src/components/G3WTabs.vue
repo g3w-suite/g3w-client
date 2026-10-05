@@ -50,10 +50,10 @@
                 >
                   <template v-for = "column in row">
                     <g3w-field
-                      v-if              = "'field' === getNodeType(column) && getNodeField(column).query"
+                      v-if              = "'field' === getNodeType(column)"
                       style             = "padding: 5px 3px 5px 3px;"
                       :state            = "getNodeField(column)"
-                      :field-type       = "getNodeField(column).input.type"
+                      :field-type       = "getNodeField(column).query && getNodeField(column).input.type || 'input'"
                       @changeinput      = "changeInput"
                       @addinput         = "addToValidate"
                       @removeinput      = "removeToValidate"
@@ -61,17 +61,6 @@
                       :addToValidate    = "addToValidate"
                       :removeToValidate = "removeToValidate"
                       :feature          = "feature"
-                    />
-                    <g3w-input
-                      v-else-if         = "'field' === getNodeType(column)"
-                      style             = "padding: 5px 3px 5px 3px;"
-                      :state            = "getNodeField(column)"
-                      @changeinput      = "changeInput"
-                      @addinput         = "addToValidate"
-                      @removeinput      = "removeToValidate"
-                      :changeInput      = "changeInput"
-                      :addToValidate    = "addToValidate"
-                      :removeToValidate = "removeToValidate"
                     />
                     <g3w-tabs
                       v-else-if = "'group' === getNodeType(column)"
@@ -109,10 +98,10 @@
         >
           <template v-for = "column in row">
             <g3w-field
-              v-if              = "'field' === getNodeType(column) && getNodeField(column).query"
+              v-if              = "'field' === getNodeType(column)"
               style             = "padding: 5px 3px 5px 3px;"
               :state            = "getNodeField(column)"
-              :field-type       = "getNodeField(column).input.type"
+              :field-type       = "getNodeField(column).query && getNodeField(column).input.type || 'input'"
               @changeinput      = "changeInput"
               @addinput         = "addToValidate"
               @removeinput      = "removeToValidate"
@@ -120,17 +109,6 @@
               :addToValidate    = "addToValidate"
               :removeToValidate = "removeToValidate"
               :feature          = "feature"
-            />
-            <g3w-input
-              v-else-if         = "'field' === getNodeType(column)"
-              style             = "padding: 5px 3px 5px 3px;"
-              :state            = "getNodeField(column)"
-              @changeinput      = "changeInput"
-              @addinput         = "addToValidate"
-              @removeinput      = "removeToValidate"
-              :changeInput      = "changeInput"
-              :addToValidate    = "addToValidate"
-              :removeToValidate = "removeToValidate"
             />
             <g3w-tabs
               v-else-if = "'group' === getNodeType(column)"
@@ -164,7 +142,6 @@
 
   import ApplicationState         from 'g3w-state';
   import { G3W_FID }              from 'g3w-constants';
-  import G3WInput                 from 'components/G3WInput.vue';
   import G3WField                 from 'components/G3WField.vue';
   import GUI                      from 'g3w-app';
   import { getAlphanumericProps } from 'utils/getAlphanumericProps';
@@ -354,7 +331,6 @@
 
     },
     components: {
-      'g3w-input': G3WInput,
       'g3w-field': G3WField,
     },
     async created() {

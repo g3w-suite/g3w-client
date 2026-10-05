@@ -820,6 +820,8 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .queryresults-container .field_value .field_link                                              { border-radius: 5px; min-width: 50px; font-weight: bold; }
 .queryresults-container .field_value .field_link:hover                                        { color:#FFF; }
 .queryresults-container .attribute .field_value                                               { margin: auto !important; }
+.queryresults-container .attr-value > .g3w-field.field_text                                   { display: block; padding: 0; }
+.queryresults-container .attr-value > .g3w-field.field_text > .field_value                    { padding: 0 !important; margin: 0; text-align: inherit; }
 .queryresults-container .queryresults table thead tr th.centered                              { text-align: center; }
 .queryresults-container .queryresults table thead tr th.collapsed                             { width: 30px; max-width: 30px; }
 .queryresults-container .queryresults table tbody tr.g3w-feature-result-action-tools .g3w-download-formats-content        { display: flex; justify-content: flex-start; }
