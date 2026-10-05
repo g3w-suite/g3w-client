@@ -1555,20 +1555,33 @@
         if (!range) {
           return;
         }
-        if ('bold' === command) {
-          this.toggleEditorInlineFormat('strong');
+        const inlineTag = ({ bold: 'strong', italic: 'em', underline: 'u' })[command];
+        if (inlineTag && !range.collapsed) {
+          const wrapper = this.getEditorAncestor(range.startContainer, inlineTag);
+          const removeFormat = wrapper && wrapper.contains(range.endContainer) && range.toString() === wrapper.textContent;
+          if (removeFormat) {
+            const parent = wrapper.parentNode;
+            while (wrapper.firstChild) {
+              parent.insertBefore(wrapper.firstChild, wrapper);
+            }
+            wrapper.remove();
+          }
+          if (!removeFormat) {
+            const element = document.createElement(inlineTag);
+            element.append(range.extractContents());
+            range.insertNode(element);
+          }
         }
-        if ('italic' === command) {
-          this.toggleEditorInlineFormat('em');
-        }
-        if ('underline' === command) {
-          this.toggleEditorInlineFormat('u');
-        }
-        if ('foreColor' === command) {
-          this.wrapEditorSelection('span', { color: value });
-        }
-        if ('hiliteColor' === command) {
-          this.wrapEditorSelection('span', { backgroundColor: value });
+        const inlineStyles = ({ foreColor: { color: value }, hiliteColor: { backgroundColor: value } })[command];
+        if (inlineStyles && !range.collapsed) {
+          const wrapper = document.createElement('span');
+          Object.assign(wrapper.style, inlineStyles);
+          wrapper.append(range.extractContents());
+          range.insertNode(wrapper);
+          range.selectNodeContents(wrapper);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
         }
         if (['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'].includes(command)) {
           const align = { justifyLeft: 'left', justifyCenter: 'center', justifyRight: 'right', justifyFull: 'justify' }[command];
@@ -1602,11 +1615,50 @@
             }
           }
         }
-        if ('insertOrderedList' === command) {
-          this.toggleEditorList('ol');
-        }
-        if ('insertUnorderedList' === command) {
-          this.toggleEditorList('ul');
+        const listTag = ({ insertOrderedList: 'ol', insertUnorderedList: 'ul' })[command];
+        if (listTag) {
+          const listItem = this.getEditorAncestor(range.startContainer, 'li');
+          const currentList = listItem && listItem.parentElement;
+          const isSameList = listItem && currentList.tagName.toLowerCase() === listTag;
+          if (isSameList) {
+            Array.from(currentList.children).forEach(item => {
+              const paragraph = document.createElement('p');
+              paragraph.append(...item.childNodes);
+              currentList.parentNode.insertBefore(paragraph, currentList);
+            });
+            currentList.remove();
+          }
+          if (listItem && !isSameList) {
+            const replacement = document.createElement(listTag);
+            replacement.append(...currentList.childNodes);
+            currentList.replaceWith(replacement);
+          }
+          if (!listItem) {
+            const block = this.getEditorBlock(range.startContainer);
+            if (!block) {
+              const list = document.createElement(listTag);
+              const item = document.createElement('li');
+              item.append(range.extractContents());
+              if (!item.childNodes.length) {
+                item.append(document.createElement('br'));
+              }
+              list.append(item);
+              range.insertNode(list);
+              const caret = document.createRange();
+              caret.selectNodeContents(item);
+              caret.collapse(true);
+              const selection = window.getSelection();
+              selection.removeAllRanges();
+              selection.addRange(caret);
+            }
+            if (block) {
+              const list = document.createElement(listTag);
+              const item = document.createElement('li');
+              item.append(...block.childNodes);
+              list.append(item);
+              block.replaceWith(list);
+            }
+          }
         }
         this.onRichTextInput();
         this.updateEditorFormats();
@@ -1646,98 +1698,6 @@
        */
       getEditorBlock(node) {
         return this.getEditorAncestor(node, 'p, h1, h2, h3, h4, h5, h6, div, li, blockquote');
-      },
-      /**
-       * Wrap the selected contents with an element and optional inline styles.
-       * @param {string} tag Wrapper element name.
-       * @param {Object} styles Inline styles to apply.
-       */
-      wrapEditorSelection(tag, styles = {}) {
-        const range = this.restoreEditorSelection();
-        if (!range || range.collapsed) {
-          return;
-        }
-        const wrapper = document.createElement(tag);
-        Object.assign(wrapper.style, styles);
-        wrapper.append(range.extractContents());
-        range.insertNode(wrapper);
-        range.selectNodeContents(wrapper);
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
-      },
-      /**
-       * Toggle a semantic inline format on the selected text.
-       * @param {string} tag Inline formatting element.
-       */
-      toggleEditorInlineFormat(tag) {
-        const range = this.restoreEditorSelection();
-        if (!range || range.collapsed) {
-          return;
-        }
-        const wrapper = this.getEditorAncestor(range.startContainer, tag);
-        if (wrapper && wrapper.contains(range.endContainer) && range.toString() === wrapper.textContent) {
-          const parent = wrapper.parentNode;
-          while (wrapper.firstChild) {
-            parent.insertBefore(wrapper.firstChild, wrapper);
-          }
-          wrapper.remove();
-          return;
-        }
-        const element = document.createElement(tag);
-        element.append(range.extractContents());
-        range.insertNode(element);
-      },
-      /**
-       * Toggle the current block between a list and a paragraph.
-       * @param {string} tag List element name.
-       */
-      toggleEditorList(tag) {
-        const range = this.restoreEditorSelection();
-        const listItem = range && this.getEditorAncestor(range.startContainer, 'li');
-        if (listItem && listItem.parentElement.tagName.toLowerCase() === tag) {
-          const list = listItem.parentElement;
-          Array.from(list.children).forEach(item => {
-            const paragraph = document.createElement('p');
-            paragraph.append(...item.childNodes);
-            list.parentNode.insertBefore(paragraph, list);
-          });
-          list.remove();
-          return;
-        }
-        if (listItem) {
-          const currentList = listItem.parentElement;
-          const replacement = document.createElement(tag);
-          replacement.append(...currentList.childNodes);
-          currentList.replaceWith(replacement);
-          return;
-        }
-        const block = range && this.getEditorBlock(range.startContainer);
-        if (!block && range) {
-          const list = document.createElement(tag);
-          const item = document.createElement('li');
-          item.append(range.extractContents());
-          if (!item.childNodes.length) {
-            item.append(document.createElement('br'));
-          }
-          list.append(item);
-          range.insertNode(list);
-          const caret = document.createRange();
-          caret.selectNodeContents(item);
-          caret.collapse(true);
-          const selection = window.getSelection();
-          selection.removeAllRanges();
-          selection.addRange(caret);
-          return;
-        }
-        if (!block) {
-          return;
-        }
-        const list = document.createElement(tag);
-        const item = document.createElement('li');
-        item.append(...block.childNodes);
-        list.append(item);
-        block.replaceWith(list);
       },
       /**
        * Reflect the active Quill-style formats at the current selection.
