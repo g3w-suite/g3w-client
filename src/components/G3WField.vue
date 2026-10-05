@@ -1151,77 +1151,71 @@
       * @returns {*} Validation result, also written to state.validate.valid.
        */
       validate() {
-        const state = this.state;
         // Required empty values fail before uniqueness or type-specific validation.
-        const is_empty        = state.validate.empty;
-        const check_unique    = state.validate.unique && state.validate.exclude_values?.size;
-        const is_temp_id      = !is_empty && !check_unique && state.input.options.relation_reference && state?.value?.startsWith?.('_new_');
+        const is_empty        = this.state.validate.empty;
+        const check_unique    = this.state.validate.unique && this.state.validate.exclude_values?.size;
+        const is_temp_id      = !is_empty && !check_unique && this.state.input.options.relation_reference && this.state?.value?.startsWith?.('_new_');
         const should_validate = !is_empty && !check_unique && !is_temp_id;
         const is_input        = ['lonlat_input', 'range_input', 'slider_input'].includes(this.type);
         if (is_empty) {
-          state.value          = null;
-          state.validate.valid = !state.validate.required;
+          this.state.value          = null;
+          this.state.validate.valid = !this.state.validate.required;
         }
         // Exclusions compare string forms so numeric and string IDs are treated consistently.
         if (!is_empty && check_unique) {
-          state.validate.valid = !state.validate.exclude_values.has(`${state.value}`);
+          this.state.validate.valid = !this.state.validate.exclude_values.has(`${this.state.value}`);
         }
-        if (is_temp_id) {
-          state.validate.valid = true;
-        }
-        if (should_validate) {
-          state.validate.valid = true;
+        if (is_temp_id || should_validate) {
+          this.state.validate.valid = true;
         }
         if (should_validate && 'lonlat_input' === this.type) {
-          const values = state.values;
+          const values = this.state.values;
           values.lon = Math.max(-180, Math.min(180, values.lon));
           values.lat = Math.max(-90, Math.min(90, values.lat));
-          state.validate.valid = !Number.isNaN(1 * values.lon);
+          this.state.validate.valid = !Number.isNaN(1 * values.lon);
         }
         if (should_validate && 'range_input' === this.type) {
-          const { min, max } = state.input.options.values[0];
-          state.validate.valid = 1 * state.value >= 1 * min && 1 * state.value <= 1 * max;
+          this.state.validate.valid = 1 * this.state.value >= 1 * this.state.input.options.values[0].min && 1 * this.state.value <= 1 * this.state.input.options.values[0].max;
         }
         if (should_validate && 'slider_input' === this.type) {
-          const { min, max } = state.input.options;
-          state.validate.valid = 1 * state.value >= 1 * min && 1 * state.value <= 1 * max;
+          this.state.validate.valid = 1 * this.state.value >= 1 * this.state.input.options.min && 1 * this.state.value <= 1 * this.state.input.options.max;
         }
-        if (should_validate && !is_input && 'float' === state.type) {
-          state.validate.valid = !Number.isNaN(parseFloat(1 * state.value));
+        if (should_validate && !is_input && 'float' === this.state.type) {
+          this.state.validate.valid = !Number.isNaN(parseFloat(1 * this.state.value));
         }
-        if (should_validate && !is_input && 'bigint' === state.type) {
-          state.validate.valid = Number.isSafeInteger(1 * state.value) && Math.abs(1 * state.value) <= Number.MAX_SAFE_INTEGER;
+        if (should_validate && !is_input && 'bigint' === this.state.type) {
+          this.state.validate.valid = Number.isSafeInteger(1 * this.state.value) && Math.abs(1 * this.state.value) <= Number.MAX_SAFE_INTEGER;
         }
-        if (should_validate && !is_input && 'integer' === state.type) {
-          state.validate.valid = !Number.isNaN(1 * state.value) && Math.abs(1 * state.value) <= 2147483647;
+        if (should_validate && !is_input && 'integer' === this.state.type) {
+          this.state.validate.valid = !Number.isNaN(1 * this.state.value) && Math.abs(1 * this.state.value) <= 2147483647;
         }
-        if (should_validate && !is_input && 'checkbox' === state.type) {
-          state.validate.valid = (this.validationOptions.values || []).includes(state.value);
+        if (should_validate && !is_input && 'checkbox' === this.state.type) {
+          this.state.validate.valid = (this.validationOptions.values || []).includes(this.state.value);
         }
-        if (should_validate && !is_input && 'datetimepicker' === state.type) {
-          state.validate.valid = moment(state.value, this.validationOptions.fielddatetimeformat, true).isValid();
+        if (should_validate && !is_input && 'datetimepicker' === this.state.type) {
+          this.state.validate.valid = moment(this.state.value, this.validationOptions.fielddatetimeformat, true).isValid();
         }
-        if (should_validate && !is_input && 'char' === state.type) {
-          state.validate.valid = state.value && 1 === `${state.value}`.length;
+        if (should_validate && !is_input && 'char' === this.state.type) {
+          this.state.validate.valid = this.state.value && 1 === `${this.state.value}`.length;
         }
-        if (should_validate && !is_input && 'range' === state.type) {
-          state.validate.valid = 1 * state.value >= this.validationOptions.min && 1 * state.value <= this.validationOptions.max;
+        if (should_validate && !is_input && 'range' === this.state.type) {
+          this.state.validate.valid = 1 * this.state.value >= this.validationOptions.min && 1 * this.state.value <= this.validationOptions.max;
         }
         this.setErrorMessage();
-        if (!state.validate.valid) {
+        if (!this.state.validate.valid) {
           console.log('[G3WInput] invalid field', {
-            name: state.name,
-            label: state.label,
-            type: state.type,
-            inputType: state.input.type,
-            value: state.value,
-            required: state.validate.required,
-            message: state.validate.message,
-            relationReference: state.input.options.relation_reference,
-            relationId: state.input.options.relation_id,
+            name:              this.state.name,
+            label:             this.state.label,
+            type:              this.state.type,
+            inputType:         this.state.input.type,
+            value:             this.state.value,
+            required:          this.state.validate.required,
+            message:           this.state.validate.message,
+            relationReference: this.state.input.options.relation_reference,
+            relationId:        this.state.input.options.relation_id,
           });
         }
-        return state.validate.valid;
+        return this.state.validate.valid;
       },
       /**
        * Select translated validation feedback without recomputing field validity.
