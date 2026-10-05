@@ -1055,12 +1055,8 @@
     },
     methods: {
       /** Open the image collection in the application gallery. */
-      async showGallery(images, index) {
+      showGallery(images, index) {
         GUI.showGallery(images, index);
-      },
-      /** Return whether a value uses the media-field object format. */
-      isMedia(value) {
-        return !!(value && 'object' === typeof value && Object === value.constructor && value.mime_type);
       },
       /**
        * Validate emptiness, uniqueness and the active field-type rule in that order.
@@ -1140,35 +1136,32 @@
        * then required/type feedback (which may use state.info).
        */
       setErrorMessage() {
-        const state = this.state;
-        const validate = state.validate;
         // Server-provided errors take precedence over all generated messages.
-        if (validate.error) {
-          validate.message = _(validate.error);
+        if (this.state.validate.error) {
+          this.state.validate.message = _(this.state.validate.error);
           return;
         }
-        const type = _(state.type);
-        if (validate.mutually && !validate.mutually_valid) {
-          validate.message = `${_('Field mutually exclusive with ')} ( ${validate.mutually.join(',')} )`;
+        if (this.state.validate.mutually && !this.state.validate.mutually_valid) {
+          this.state.validate.message = `${_('Field mutually exclusive with ')} ( ${this.state.validate.mutually.join(',')} )`;
           return;
         }
-        if (validate.max_field) {
-          validate.message = `${_('Value has to be less/equal to field value ')} (${validate.max_field})`;
+        if (this.state.validate.max_field) {
+          this.state.validate.message = `${_('Value has to be less/equal to field value ')} (${this.state.validate.max_field})`;
           return;
         }
-        if (validate.min_field) {
-          validate.message = `${_('Value has to be more/equal to field value  ')} (${validate.min_field})`;
+        if (this.state.validate.min_field) {
+          this.state.validate.message = `${_('Value has to be more/equal to field value  ')} (${this.state.validate.min_field})`;
           return;
         }
-        if (('unique' === state.input.type || validate.unique) && validate.exclude_values?.size) {
-          validate.message = _('Value has to be unique');
+        if (('unique' === this.state.input.type || this.state.validate.unique) && this.state.validate.exclude_values?.size) {
+          this.state.validate.message = _('Value has to be unique');
           return;
         }
-        if (validate.required) {
-          validate.message = state.info || `${_('Mandatory Field or wrong data type')} ( ${type} )`;
+        if (this.state.validate.required) {
+          this.state.validate.message = this.state.info || `${_('Mandatory Field or wrong data type')} ( ${_(this.state.type)} )`;
           return;
         }
-        validate.message = state.info || `${_('Wrong data type')} ( ${type} )`;
+        this.state.validate.message = this.state.info || `${_('Wrong data type')} ( ${_(this.state.type)} )`;
       },
       /**
        * Share the coordinate button's reactive state with a legacy consumer.
