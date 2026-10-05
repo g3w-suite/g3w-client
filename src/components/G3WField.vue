@@ -931,6 +931,7 @@
         latId:                 getUniqueDomId(),
         coordinatebutton:      { active: false },
         loading:               false,
+        inputValueWatchReady:  false,
         edit_state:            { edit: false, show_html: false },
         editorColorPicker:     null,
         editorTextColor:       '#000000',
@@ -963,6 +964,37 @@
      * Keep validation and third-party widgets synchronized with field changes.
      */
     watch: {
+      inputValue() {
+        if (!this.inputValueWatchReady) {
+          return;
+        }
+        this.state.validate.empty = null === this.state.value || '' === `${this.state.value}`.trim();
+        this.validate();
+        let currentValue  = this.state.value;
+        let originalValue = this.state._value;
+        if ('media' === this.state.input.type && 'Object' === toRawType(this.state.value)) {
+          currentValue = this.state.value.value;
+        }
+        if ('media' === this.state.input.type && 'Object' === toRawType(this.state._value)) {
+          originalValue = this.state._value.value;
+        }
+        if ('media' === this.state.input.type) {
+          this.state.update = currentValue != originalValue;
+        }
+        if ('datetimepicker' === this.state.input.type && null !== this.state.value) {
+          currentValue = this.state.value.toUpperCase();
+        }
+        if ('datetimepicker' === this.state.input.type && this.state._value) {
+          originalValue = this.state._value.toUpperCase();
+        }
+        if ('datetimepicker' === this.state.input.type) {
+          this.state.update = currentValue != originalValue;
+        }
+        if ('media' !== this.state.input.type && 'datetimepicker' !== this.state.input.type) {
+          this.state.update = this.state.value != this.state._value;
+        }
+        this.forwardChangeInput(this.state);
+      },
       /**
        * Refresh validation styling for controls whose UI is outside Vue's DOM.
        * @param {boolean} notvalid Whether current field validation has failed.
@@ -1003,8 +1035,9 @@
           return;
         }
         // The media preview is separate from the stored media object.
-        if ('media_input' === this.type) {
-          this.setMedia();
+        if ('media_input' === this.type && this.state.value) {
+          this.mediaData.value     = this.state.value.value;
+          this.mediaData.mime_type = this.state.value.mime_type;
         }
         // Avoid echoing the editor's own edit back into its DOM; external edits still refresh it.
         const editor = 'texthtml_input' === this.type && this.$refs.rich_text_editor && !this.edit_state.edit && this.$refs.rich_text_editor;
@@ -1199,42 +1232,6 @@
         if (!ApplicationState.ismobile) {
           this.$el?.querySelectorAll?.('x-select').forEach(select => select.close());
         }
-      },
-      /**
-       * Recalculate emptiness, validity and dirty state, then notify the form.
-       * @fires changeinput
-       */
-      change() {
-        const state = this.state;
-        state.validate.empty = null === state.value || '' === `${state.value}`.trim();
-        this.validate();
-        const { value, _value } = state;
-        const isMedia = 'media' === state.input.type;
-        let currentValue = value;
-        let originalValue = _value;
-        if (isMedia && 'Object' === toRawType(value)) {
-          currentValue = value.value;
-        }
-        if (isMedia && 'Object' === toRawType(_value)) {
-          originalValue = _value.value;
-        }
-        if (isMedia) {
-          state.update = currentValue != originalValue;
-        }
-        const isDateTimePicker = 'datetimepicker' === state.input.type;
-        if (isDateTimePicker && null !== value) {
-          currentValue = value.toUpperCase();
-        }
-        if (isDateTimePicker && _value) {
-          originalValue = _value.toUpperCase();
-        }
-        if (isDateTimePicker) {
-          state.update = currentValue != originalValue;
-        }
-        if (!isMedia && !isDateTimePicker) {
-          state.update = value != _value;
-        }
-        this.forwardChangeInput(this.state);
       },
       /**
        * Forward the changed field through its callback and Vue event interfaces.
@@ -2284,15 +2281,6 @@
         }
       },
       /**
-       * Copy the stored media URL and MIME type into the preview state.
-       */
-      setMedia() {
-        if (this.state.value) {
-          this.mediaData.value = this.state.value.value;
-          this.mediaData.mime_type = this.state.value.mime_type;
-        }
-      },
-      /**
        * Upload the selected file and store the successful server response.
        * @param {Event} event Change event from the hidden file input.
        * @returns {Promise<void>}
@@ -2607,8 +2595,9 @@
       }
 
       // Seed transient UI state from persisted values for controls that own external editors.
-      if ('media_input' === this.type) {
-        this.setMedia();
+      if ('media_input' === this.type && this.state.value) {
+        this.mediaData.value     = this.state.value.value;
+        this.mediaData.mime_type = this.state.value.mime_type;
       }
 
       if ('texthtml_input' === this.type) {
@@ -2616,7 +2605,7 @@
         this.state.edit_states.push(this.edit_state);
       }
 
-      this.$watch('inputValue', this.change);
+      this.$nextTick(() => { this.inputValueWatchReady = true; });
 
       if (is_select) {
         this.resize = throttle(this.resize.bind(this));
