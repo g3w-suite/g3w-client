@@ -164,9 +164,9 @@
           :class              = "{'input-error-validation' : notvalid}"
           v-model             = "state.value"
           type                = "number"
-          :step               = "rangeStep"
-          :min                = "rangeMin"
-          :max                = "rangeMax"
+          :step               = "(state.input.options.values[0].Step || 1)"
+          :min                = "state.input.options.values[0].min"
+          :max                = "state.input.options.values[0].max"
         >
       </div>
 
@@ -278,7 +278,7 @@
             @change           = "onSelectChange"
             @search-input     = "searchAutocomplete"
           >
-            <x-option v-if = "showNullOption" value = "null"></x-option>
+            <x-option v-if = "false === multiple && [undefined, true].includes(state.nullOption)" value = "null"></x-option>
             <x-option v-for = "({key, value}) in state.input.options.values" :key = "value" :value = "getValue(value)">
               {{ key }}
             </x-option>
@@ -762,13 +762,6 @@
         return ['select_input', 'select_autocomplete_input'].includes(this.type) && !!this.state.input.options.allowmulti;
       },
       /**
-       * Whether a single-select control should expose its empty option.
-       * @returns {boolean}
-       */
-      showNullOption() {
-        return false === this.multiple && [undefined, true].includes(this.state.nullOption);
-      },
-      /**
        * Whether the field can currently be edited.
        * @returns {boolean}
        */
@@ -809,36 +802,6 @@
        */
       loadingState() {
         return this.state.input?.options?.loading?.state ?? null;
-      },
-      /**
-       * Minimum allowed value, from the range value tuple or slider options.
-       * @returns {number|string}
-       */
-      rangeMin() {
-        if ('range_input' === this.type) {
-          return this.state.input.options.values[0].min;
-        }
-        return this.state.input.options.min;
-      },
-      /**
-       * Maximum allowed value, from the range tuple or slider options.
-       * @returns {number|string}
-       */
-      rangeMax() {
-        if ('range_input' === this.type) {
-          return this.state.input.options.values[0].max;
-        }
-        return this.state.input.options.max;
-      },
-      /**
-       * Step size, using the legacy capitalized range option when applicable.
-       * @returns {number|string}
-       */
-      rangeStep() {
-        if ('range_input' === this.type) {
-          return this.state.input.options.values[0].Step || 1;
-        }
-        return this.state.input.options.step;
       },
       /**
        * Map the checkbox's boolean state to the matching configured option value.
