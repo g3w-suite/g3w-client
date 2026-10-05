@@ -520,8 +520,8 @@
 </template>
 
 <script>
-import JSZip                         from 'jszip/dist/jszip.min';
-import shp                           from 'shpjs';
+import { unzip }           from 'fflate';
+import shp                 from 'shpjs';
 
 import {
   GEOMETRY_FIELDS,
@@ -868,19 +868,47 @@ export default {
 
         // KMZ file
         if ('kmz' === this.file_type) {
-          const zip = await JSZip.loadAsync(input.files[0]);
-          data      = await zip.file(/\.kml$/i).at(-1).async('text'); // get last kml file within folder
+          const kmzData = new Uint8Array(await input.files[0].arrayBuffer());
+          const archive = await new Promise((resolve, reject) => {
+            unzip(kmzData, (error, files) => {
+              if (error) {
+                reject(error);
+                return;
+              }
+              resolve(files);
+            });
+          });
+          const kmlPath = Object.keys(archive).filter(path => /\.kml$/i.test(path)).at(-1); // get last kml file within folder
+          if (!kmlPath) {
+            throw new Error('KMZ archive does not contain a KML file');
+          }
+          data = new TextDecoder().decode(archive[kmlPath]);
         }
 
         // SHAPE FILE
         if ('zip' === this.file_type) {
           const out = {}; // un-zip folder data
-          const zip = await JSZip.loadAsync(input.files[0]);
-          for (const f in zip.files) {
-            if (/.+\.(shp|dbf|json|prj|cpg)$/i.test(f)) {
-              const ext = (f.split('.').at(-1) || '').toLowerCase();
-              out[ext] = await zip.files[f].async(['shp', 'dbf'].includes(ext) ?  'arraybuffer': 'text');
+          const zipData = new Uint8Array(await input.files[0].arrayBuffer());
+          const files = await new Promise((resolve, reject) => {
+            unzip(zipData, (error, unzipped) => {
+              if (error) {
+                reject(error);
+                return;
+              }
+              resolve(unzipped);
+            });
+          });
+          const decoder = new TextDecoder();
+          for (const [path, bytes] of Object.entries(files)) {
+            if (!/.+\.(shp|dbf|json|prj|cpg)$/i.test(path)) {
+              continue;
             }
+            const ext = path.split('.').at(-1).toLowerCase();
+            if ('shp' === ext || 'dbf' === ext) {
+              out[ext] = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+              continue;
+            }
+            out[ext] = decoder.decode(bytes);
           }
           data = JSON.stringify(await shp(out)); // convert to wsg84 (geojson)
         }

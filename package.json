@@ -30,9 +30,9 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",
     "@ungap/with-resolvers": "^0.1.0",
+    "fflate": "^0.8.2",
     "invokers-polyfill": "^0.5.5",
     "jsts": "^2.11.3",
-    "jszip": "^3.10.1",
     "lodash.clonedeep": "^4.5.0",
     "ol": "^10.8.0",
     "proj4": "^2.19.6",
