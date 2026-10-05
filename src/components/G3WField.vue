@@ -747,9 +747,6 @@
       filename() {
         return this.value ? this.value.split('/').pop() : this.value;
       },
-      geoData() {
-        return this.data || this.state.value?.value || this.state.value;
-      },
       /**
        * Whether this select uses remote autocomplete rather than a fixed list.
        * @returns {boolean}
@@ -2469,7 +2466,7 @@
      */
     async created() {
       if ('geo' === this.type) {
-        const data = this.geoData;
+        const data = this.data || this.state.value?.value || this.state.value;
         if (data && GUI.getMap()) {
           const mapProjection = GUI.getProjection().getCode();
           let style;
