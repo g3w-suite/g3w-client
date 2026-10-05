@@ -143,7 +143,7 @@
             :tabIndex = "tabIndex"
             v-disabled= "!editable"
             :class    = "{'input-error-validation' : notvalid}"
-            v-model   = "radioValue"
+            v-model   = "state.value"
             type      = "radio"
           />
           <label :for = "radioIds[index]" style = "padding: 5px">{{ option.key || option.value }}</label>
@@ -418,16 +418,16 @@
           <button type = "button" title = "Remove column" aria-label = "Remove column" :disabled = "!editable" @mousedown.prevent @click = "editEditorTable('column-remove')"><svg fill = "currentColor" width = "16" height = "16" viewBox = "0 0 16 16" aria-hidden = "true"><path d = "M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/><path d = "M4.6 4.6a.5.5 0 0 1 .8 0L8 7.3l2.6-2.7a.5.5 0 0 1 .8.8L8.7 8l2.7 2.6a.5.5 0 0 1-.8.8L8 8.7l-2.6 2.7a.5.5 0 0 1-.8-.8L7.3 8 4.6 5.4a.5.5 0 0 1 0-.8"/></svg></button>
         </div>
         <div
-          ref           = "rich_text_editor"
-          class         = "form-control g3w-input-richtext"
-          @keydown.stop = ""
-          @mousedown    = "closeEditorLink"
-          @click        = "onRichTextClick"
-          @input        = "onRichTextInput"
-          @paste        = "onRichTextPaste"
-          :contenteditable = "editorContentEditable"
-          :class        = "{'g3w-input-richtext-invalid': !state.validate.valid, 'g3w-input-richtext-source': edit_state.show_html}"
-          v-disabled    = "!editable"
+          ref              = "rich_text_editor"
+          class            = "form-control g3w-input-richtext"
+          @keydown.stop    = ""
+          @mousedown       = "closeEditorLink"
+          @click           = "onRichTextClick"
+          @input           = "onRichTextInput"
+          @paste           = "onRichTextPaste"
+          :contenteditable = "`${editable}`"
+          :class           = "{'g3w-input-richtext-invalid': !state.validate.valid, 'g3w-input-richtext-source': edit_state.show_html}"
+          v-disabled       = "!editable"
         ></div>
       </div>
 
@@ -496,8 +496,8 @@
   <!-- Uploaded files display their MIME-derived icon and keep caller content in the slot. -->
   <div v-else-if = "'media' === type && value" class = "preview">
     <a :href = "value" target = "_blank">
-      <div class = "previewtype" :class = "mediaType">
-        <i :class = "['fa-2x', mediaIcon]"></i>
+      <div class = "previewtype" :class = "media.type">
+        <i :class = "['fa-2x', media.icon]"></i>
       </div>
     </a>
     <div class = "filename">{{ filename }}</div>
@@ -700,40 +700,30 @@
           return { src: url };
         });
       },
-      mediaType() {
-        const mime_type = this.state.mime_type || this.state.value?.mime_type;
-        switch (mime_type) {
-          case 'image/gif':
-          case 'image/png':
-          case 'image/jpeg':
-          case 'image/bmp':
-            return 'image';
-          case 'application/pdf':
-            return 'pdf';
-          case 'video/mp4':
-          case 'video/ogg':
-          case 'video/x-ms-wmv':
-          case 'video/x-msvideo':
-          case 'video/quicktime':
-            return 'video';
-          case 'application/gzip':
-          case 'application/zip':
-            return 'zip';
-          case 'application/msword':
-          case 'application/vnd.oasis.opendocument.text':
-            return 'text';
-          case 'application/vnd.ms-office':
-          case 'application/vnd.oasis.opendocument.spreadsheet':
-            return 'excel';
-          case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
-          case 'application/vnd.ms-powerpoint':
-          case 'application/vnd.oasis.opendocument.presentation':
-            return 'ppt';
-        }
-        return 'unknow';
-      },
-      mediaIcon() {
-        return ({
+      media() {
+        const mimeType = this.state.mime_type || this.state.value?.mime_type;
+        const type = ({
+          'image/gif': 'image',
+          'image/png': 'image',
+          'image/jpeg': 'image',
+          'image/bmp': 'image',
+          'application/pdf': 'pdf',
+          'video/mp4': 'video',
+          'video/ogg': 'video',
+          'video/x-ms-wmv': 'video',
+          'video/x-msvideo': 'video',
+          'video/quicktime': 'video',
+          'application/gzip': 'zip',
+          'application/zip': 'zip',
+          'application/msword': 'text',
+          'application/vnd.oasis.opendocument.text': 'text',
+          'application/vnd.ms-office': 'excel',
+          'application/vnd.oasis.opendocument.spreadsheet': 'excel',
+          'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'ppt',
+          'application/vnd.ms-powerpoint': 'ppt',
+          'application/vnd.oasis.opendocument.presentation': 'ppt',
+        })[mimeType] || 'unknow';
+        const icon = ({
           image: 'far fa-image',
           pdf: 'fas fa-file-pdf',
           video: 'far fa-file-video',
@@ -742,7 +732,8 @@
           excel: 'far fa-file-excel',
           ppt: 'far fa-file-powerpoint',
           unknow: 'far fa-question-circle',
-        })[this.mediaType] || 'far fa-question-circle';
+        })[type];
+        return { type, icon };
       },
       filename() {
         return this.value ? this.value.split('/').pop() : this.value;
@@ -842,37 +833,6 @@
         const option = this.state.input.options.values.find(option => this.state.value == option.value) || {};
         return option.label ?? option.value;
       },
-      /**
-       * Read and update the currently selected radio option.
-       */
-      radioValue: {
-        /**
-         * @returns {*} Stored field value.
-         */
-        get() {
-          return this.state.value;
-        },
-        /**
-         * @param {*} value Newly selected option value.
-         */
-        set(value) {
-          this.state.value = value;
-        }
-      },
-      /**
-       * Whether map-coordinate capture is currently active.
-       * @returns {boolean}
-       */
-      getCoordinateActive() {
-        return this.coordinatebutton.active;
-      },
-      /**
-       * Keep the editor's enumerated contenteditable attribute explicit.
-       * @returns {string}
-       */
-      editorContentEditable() {
-        return `${this.editable}`;
-      }
     },
     /**
      * Allocate per-instance widget identifiers and mutable UI state.
@@ -1164,13 +1124,6 @@
         this.state.validate.message = this.state.info || `${_('Wrong data type')} ( ${_(this.state.type)} )`;
       },
       /**
-       * Share the coordinate button's reactive state with a legacy consumer.
-       * @param {Object} button Object containing the active boolean flag.
-       */
-      setCoordinateButtonReactiveObject(button) {
-        this.coordinatebutton = button;
-      },
-      /**
        * Set the options loader state used by the shared progress indicator.
        * @param {boolean} bool True while values are being loaded.
        */
@@ -1325,22 +1278,20 @@
        */
       async onUniqueSelect(event) {
         const selected = event.target.value;
-        let value = selected;
+        this.state.value = selected;
         if ('null' === selected) {
-          value = null;
+          this.state.value = null;
         }
-        if ('null' !== selected && ['integer', 'float', 'bigint'].includes(this.state.type)) {
-          value = Number(selected);
+        if (null !== this.state.value && ['integer', 'float', 'bigint'].includes(this.state.type)) {
+          this.state.value = Number(this.state.value);
         }
-        // The blank option uses the string sentinel "null".
-        this.state.value = 'null' === value ? null : value;
         await this.$nextTick();
       },
       /**
        * Store the selected field values in the form's serialized representation.
        * @param {CustomEvent} event Change emitted by x-select.
        */
-      onSelectChange(event) {
+      async onSelectChange(event) {
         if (!this.multiple) {
           // The blank option uses the string sentinel "null".
           this.state.value = 'null' === event.target.value ? null : event.target.value;
