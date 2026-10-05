@@ -1703,20 +1703,20 @@
        * Reflect the active Quill-style formats at the current selection.
        */
       updateEditorFormats() {
-        const editor = this.$refs.rich_text_editor;
+        const editor    = this.$refs.rich_text_editor;
         const selection = window.getSelection();
         if (!editor || this.edit_state.show_html || !selection?.rangeCount || !editor.contains(selection.anchorNode)) {
           return;
         }
-        const node = selection.anchorNode;
-        const block = this.getEditorBlock(node);
-        this.editorFormats.bold = !!this.getEditorAncestor(node, 'b, strong');
-        this.editorFormats.italic = !!this.getEditorAncestor(node, 'i, em');
+        const node                   = selection.anchorNode;
+        const block                  = this.getEditorBlock(node);
+        this.editorFormats.bold      = !!this.getEditorAncestor(node, 'b, strong');
+        this.editorFormats.italic    = !!this.getEditorAncestor(node, 'i, em');
         this.editorFormats.underline = !!this.getEditorAncestor(node, 'u');
-        this.editorFormats.ordered = !!this.getEditorAncestor(node, 'ol');
-        this.editorFormats.bullet = !!this.getEditorAncestor(node, 'ul');
-        this.editorFormats.align = block?.style.textAlign || 'left';
-        this.editorFormats.header = 'p';
+        this.editorFormats.ordered   = !!this.getEditorAncestor(node, 'ol');
+        this.editorFormats.bullet    = !!this.getEditorAncestor(node, 'ul');
+        this.editorFormats.align     = block?.style.textAlign || 'left';
+        this.editorFormats.header    = 'p';
         if (/^H[1-6]$/.test(block?.tagName || '')) {
           this.editorFormats.header = block.tagName.toLowerCase();
         }
