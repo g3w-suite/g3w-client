@@ -46,7 +46,7 @@
             v-if        = "showhelpicon"
             class       = "fas fa-info-circle skin-color"
             style       = "margin-left: 3px; cursor: pointer"
-            @click.stop = "showHideHelp"
+            @click.stop = "state.help.visible = !state.help.visible"
           ></i>
         </label>
       </template>
@@ -66,7 +66,6 @@
       <div v-if = "['text_input', 'string_input'].includes(type)" class = "form-group">
         <input
           :placeholder = "state.default"
-          @keyup       = "mobileChange($event)"
           :tabIndex    = "tabIndex"
           v-disabled   = "!editable"
           :field       = "state.name"
@@ -77,13 +76,11 @@
         >
       </div>
 
-      <!-- Textareas notify on both keystrokes and committed browser changes. -->
+      <!-- Textareas update the shared field value on input. -->
       <div v-if = "'textarea_input' === type" class = "form-group">
         <textarea
           @keydown.stop = ""
           :placeholder  = "state.default"
-          @input        = "change()"
-          @change       = "change()"
           style         = "max-width: 100%; min-width: 100%"
           rows          = "3"
           :tabIndex     = "tabIndex"
@@ -96,8 +93,6 @@
       <!-- Numeric aliases use a number control; the schema supplies its step. -->
       <div v-if = "['integer_input', 'bigint_input', 'float_input'].includes(type)" class = "form-group">
         <input
-          @change      = "change()"
-          @input       = "change()"
           class        = "form-control"
           style        = "width:100%"
           :tabIndex    = "tabIndex"
@@ -115,7 +110,6 @@
         <input
           :placeholder = "state.default"
           type         = "color"
-          @change      = "change()"
           :tabIndex    = "tabIndex"
           v-disabled   = "!editable"
           :field       = "state.name"
@@ -130,7 +124,6 @@
       <!-- Checkbox booleans are mapped to the configured stored option value. -->
       <div v-if = "'check_input' === type" class = "form-group" v-disabled = "!editable" style = "height: 20px; margin-top: 8px">
         <input
-          @change   = "change()"
           :tabIndex = "tabIndex"
           :class    = "{'input-error-validation' : notvalid}"
           v-model   = "checkboxValue"
@@ -181,7 +174,6 @@
         <!-- The current value is shown separately because range inputs do not display it. -->
         <span style = "font-weight: bold">{{ state.value }}</span>
         <input
-          @change     = "change()"
           style       = "width:100%; padding-right: 5px;"
           :tabIndex   = "tabIndex"
           v-disabled  = "!editable"
@@ -198,7 +190,7 @@
       <div v-if = "'media_input' === type" class = "form-group" v-disabled = "!editable">
         <div
           class           = "g3w_input_button skin-border-color"
-          @click          = "onClick"
+          @click          = "$el.ownerDocument.getElementById(mediaid).click()"
           style           = "border-style: solid; border-width: 2px; width:100%; cursor: pointer; text-align: center;"
           data-placement  = "top"
           :title          = "accept"
@@ -220,7 +212,7 @@
         </div>
         <div v-if = "loading" class = "bar-loader" style = "border: 0"></div>
         <g3w-field field-type = "media" :state = "mediaData">
-          <div class = "clearmedia" @click.stop = "clearMedia">
+          <div class = "clearmedia" @click.stop = "mediaData.value = mediaData.mime_type = state.value = null">
             <i class = "far fa-trash-alt g3w-icon"></i>
           </div>
         </g3w-field>
@@ -268,7 +260,7 @@
               :value          = "filter.value"
               :disabled       = "filter.disabled"
               searchable
-              @change         = "onRelationFilterChange(filter, $event)"
+              @change         = "filter.value = $event.target.value"
             >
               <x-option v-for = "option in filter.values" :key = "option.value" :value = "getValue(option.value)">{{ option.key }}</x-option>
             </x-select>
@@ -322,7 +314,6 @@
           class  = "fas fa-crosshairs skin-color"
         ></span>
         <input
-          @input     = "change()"
           @click     = "pickLayer"
           @blur      = "unpick"
           style      = "width: 100%"
@@ -358,7 +349,7 @@
           <div v-if = "state.relationField" style = "color: var(--skin-warning); padding: 3px 0 3px 15px">
             <i aria-hidden = "true" class = "fas fa-exclamation-circle"></i><span v-t = "'Relation key field'"></span>
           </div>
-          <input :id = "lonId" @change = "changeLonLat" :class = "{'input-error-validation' : notvalid}" class = "form-control" style = "width:100%; margin-bottom: 5px;" :tabIndex = "tabIndex" v-disabled = "!editable" v-model = "state.values.lon" type = "number" min = "-180" max = "180" placeholder = "Lon">
+          <input :id = "lonId" @change = "setValue" :class = "{'input-error-validation' : notvalid}" class = "form-control" style = "width:100%; margin-bottom: 5px;" :tabIndex = "tabIndex" v-disabled = "!editable" v-model = "state.values.lon" type = "number" min = "-180" max = "180" placeholder = "Lon">
         </div>
         <!-- Latitude mirrors longitude but uses its own identifier and bounds. -->
         <div v-if = "state.visible" class = "form-group">
@@ -370,7 +361,7 @@
           <div v-if = "state.relationField" style = "color: var(--skin-warning); padding: 3px 0 3px 15px">
             <i aria-hidden = "true" class = "fas fa-exclamation-circle"></i><span v-t = "'Relation key field'"></span>
           </div>
-          <input :id = "latId" @change = "changeLonLat" class = "form-control" style = "width:100%; margin-bottom: 5px;" :tabIndex = "tabIndex" v-disabled = "!editable" v-model = "state.values.lat" type = "number" :class = "{'input-error-validation' : notvalid}" min = "-90" max = "90" placeholder = "Lon">
+          <input :id = "latId" @change = "setValue" class = "form-control" style = "width:100%; margin-bottom: 5px;" :tabIndex = "tabIndex" v-disabled = "!editable" v-model = "state.values.lat" type = "number" :class = "{'input-error-validation' : notvalid}" min = "-90" max = "90" placeholder = "Lon">
         </div>
       </div>
 
@@ -478,7 +469,7 @@
     <div class = "field_value">
       <button
         class       = "btn skin-button field_link"
-        @click.stop = "openLink(value)"
+        @click.stop = "$el.ownerDocument.defaultView.open(value, '_blank')"
         :title      = "value"
       >{{ $t('Open') }}</button>
     </div>
@@ -516,7 +507,7 @@
   <!-- GeoJSON values can be toggled as a temporary vector layer on the map. -->
   <div v-else-if = "'geo' === type" class = "geo-content">
     <span
-      @click.stop = "showLayer()"
+      @click.stop = "visible = !visible; layer.setVisible(visible)"
       :class      = "['show-hide-geo', visible ? 'far fa-eye-slash' : 'far fa-eye']">
     </span>
   </div>
@@ -694,6 +685,12 @@
       value() {
         return this.state?.value?.value ?? this.state.value;
       },
+      /** Value observed by the shared change callback; empty strings and null are equivalent. */
+      inputValue() {
+        if (this.isInput && 'child' !== this.type) {
+          return null === this.state.value || '' === `${this.state.value}`.trim() ? null : this.state.value;
+        }
+      },
       images() {
         const imageValue = this.state.value?.mime_type ? this.state.value.value : this.state.value;
         return [].concat(imageValue || []).map(image => {
@@ -704,7 +701,36 @@
         });
       },
       mediaType() {
-        return this.getMediaType(this.state.mime_type || this.state.value?.mime_type).type;
+        const mime_type = this.state.mime_type || this.state.value?.mime_type;
+        switch (mime_type) {
+          case 'image/gif':
+          case 'image/png':
+          case 'image/jpeg':
+          case 'image/bmp':
+            return 'image';
+          case 'application/pdf':
+            return 'pdf';
+          case 'video/mp4':
+          case 'video/ogg':
+          case 'video/x-ms-wmv':
+          case 'video/x-msvideo':
+          case 'video/quicktime':
+            return 'video';
+          case 'application/gzip':
+          case 'application/zip':
+            return 'zip';
+          case 'application/msword':
+          case 'application/vnd.oasis.opendocument.text':
+            return 'text';
+          case 'application/vnd.ms-office':
+          case 'application/vnd.oasis.opendocument.spreadsheet':
+            return 'excel';
+          case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+          case 'application/vnd.ms-powerpoint':
+          case 'application/vnd.oasis.opendocument.presentation':
+            return 'ppt';
+        }
+        return 'unknow';
       },
       mediaIcon() {
         return ({
@@ -871,7 +897,6 @@
          */
         set(value) {
           this.state.value = value;
-          this.change();
         }
       },
       /**
@@ -980,14 +1005,9 @@
         if (!this.isInput) {
           return;
         }
-        // Expression-backed defaults can update state without a DOM input event.
-        if ('child' !== this.type && undefined !== this.state.input.options.default_expression) {
-          setTimeout(() => this.change());
-        }
         // The media preview is separate from the stored media object.
         if ('media_input' === this.type) {
           this.setMedia();
-          this.change();
         }
         // Avoid echoing the editor's own edit back into its DOM; external edits still refresh it.
         const editor = 'texthtml_input' === this.type && this.$refs.rich_text_editor && !this.edit_state.edit && this.$refs.rich_text_editor;
@@ -1034,21 +1054,13 @@
         if (!resetValue && !this.multiple) {
           value = (values.find(option => option.value == this.state.value) || { value: null }).value;
         }
-        const changed = value != this.state.value;
         if (undefined !== value) {
           this.state.value = value;
         }
         this.setValue();
-        if (changed) {
-          this.change();
-        }
       }
     },
     methods: {
-      /** Open a field URL in a separate browsing context. */
-      openLink(url) {
-        window.open(url, '_blank');
-      },
       /** Open the image collection in the application gallery. */
       async showGallery(images, index) {
         GUI.showGallery(images, index);
@@ -1056,94 +1068,6 @@
       /** Return whether a value uses the media-field object format. */
       isMedia(value) {
         return !!(value && 'object' === typeof value && Object === value.constructor && value.mime_type);
-      },
-      /** Map a MIME type to the icon family used by the media preview. */
-      getMediaType(mime_type) {
-        const media = { type: 'unknow', options: {} };
-        switch (mime_type) {
-          case 'image/gif':
-          case 'image/png':
-          case 'image/jpeg':
-          case 'image/bmp':
-            media.type = 'image';
-            break;
-          case 'application/pdf':
-            media.type = 'pdf';
-            break;
-          case 'video/mp4':
-          case 'video/ogg':
-          case 'video/x-ms-wmv':
-          case 'video/x-msvideo':
-          case 'video/quicktime':
-            media.type = 'video';
-            media.options.format = mime_type;
-            break;
-          case 'application/gzip':
-          case 'application/zip':
-            media.type = 'zip';
-            break;
-          case 'application/msword':
-          case 'application/vnd.oasis.opendocument.text':
-            media.type = 'text';
-            break;
-          case 'application/vnd.ms-office':
-          case 'application/vnd.oasis.opendocument.spreadsheet':
-            media.type = 'excel';
-            break;
-          case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
-          case 'application/vnd.ms-powerpoint':
-          case 'application/vnd.oasis.opendocument.presentation':
-            media.type = 'ppt';
-            break;
-        }
-        return media;
-      },
-      /** Toggle visibility of the GeoJSON vector layer. */
-      showLayer() {
-        this.visible = !this.visible;
-        this.layer.setVisible(this.visible);
-      },
-      /** Create and register the vector layer used by the GeoJSON preview. */
-      createLayer() {
-        const data = this.geoData;
-        if (!data || !GUI.getMap()) { return; }
-        const mapProjection = GUI.getProjection().getCode();
-        let style;
-        switch (data.type) {
-          case 'Point':
-          case 'MultiPoint':
-            style = [new ol.style.Style({
-              image: new ol.style.Circle({
-                radius: 6,
-                fill: new ol.style.Fill({ color: [255, 255, 255, 1.0] }),
-                stroke: new ol.style.Stroke({ color: [0, 0, 0, 1.0], width: 2 })
-              })
-            }), new ol.style.Style({
-              image: new ol.style.Circle({
-                radius: 2,
-                fill: new ol.style.Fill({ color: [255, 255, 255, 1.0] }),
-                stroke: new ol.style.Stroke({ color: [0, 0, 0, 1.0], width: 2 })
-              })
-            })];
-            break;
-          case 'Line':
-          case 'LineString':
-          case 'MultiLineString':
-          case 'Polygon':
-          case 'MultiPolygon':
-            style = new ol.style.Style({
-              fill: new ol.style.Fill({ color: 'rgba(255, 255, 255, 0.3)' }),
-              stroke: new ol.style.Stroke({ color: [0, 0, 0, 1.0], width: 2 })
-            });
-        }
-        this.layer = new ol.layer.Vector({
-          source: new ol.source.Vector({
-            features: new ol.format.GeoJSON().readFeatures(data, { featureProjection: mapProjection })
-          }),
-          visible: this.visible,
-          style
-        });
-        GUI.getMap().addLayer(this.layer);
       },
       /**
        * Validate emptiness, uniqueness and the active field-type rule in that order.
@@ -1268,20 +1192,6 @@
         this.state.input.options.loading.state = bool ? 'loading' : 'ready';
       },
       /**
-       * Toggle the visibility of the field's help message.
-       */
-      showHideHelp() {
-        this.state.help.visible = !this.state.help.visible;
-      },
-      /**
-       * Store a mobile text edit and run the standard validation/update flow.
-       * @param {Event} event Input event from the text control.
-       */
-      mobileChange(event) {
-        this.state.value = event.target.value;
-        this.change();
-      },
-      /**
        * Close active date-picker or select overlays after a layout resize.
        */
       resize() {
@@ -1364,22 +1274,13 @@
         this.$emit('removeinput', state);
       },
       /**
-       * Restore an optional range default and check its bounds.
-       * Required empty fields remain invalid.
+      * Restore an optional range default; the shared callback validates it.
        */
       checkRangeValue() {
-        const empty = null === this.state.value || '' === `${this.state.value}`.trim();
         // Optional ranges restore their schema default instead of persisting an empty value.
-        if (empty && !this.state.validate.required) {
+        if (!this.state.validate.required && (null === this.state.value || '' === `${this.state.value}`.trim())) {
           this.state.value = this.state.input.options.values[0].default;
         }
-        this.state.validate.valid = !this.state.validate.required;
-        // Required empty ranges are already invalid; otherwise validate the configured bounds.
-        if (!empty) {
-          const { min, max } = this.state.input.options.values[0];
-          this.state.validate.valid = 1 * this.state.value >= 1 * min && 1 * this.state.value <= 1 * max;
-        }
-        this.change();
       },
       /**
        * Adapt null to the string sentinel used by native select options.
@@ -1387,38 +1288,16 @@
        * @returns {*} A DOM-safe option value.
        */
       getValue(value) {
-        if (null === value) {
-          return 'null';
-        }
-        return value;
-      },
-      /**
-       * Convert the select empty-option sentinel back to null and validate it.
-       * @param {*} value Value received from the select.
-       * @returns {Promise<void>} Resolves after Vue applies the updated selection.
-       */
-      async changeSelect(value) {
-        // The blank option uses the string sentinel "null".
-        if ('null' === value) {
-          this.state.value = null;
-        }
-        if ('null' !== value) {
-          this.state.value = value;
-        }
-        await this.$nextTick();
-        this.change();
-      },
-      /**
-       * Remove every currently available option from the field schema.
-       */
-      resetValues() {
-        this.state.input.options.values.splice(0);
+        return null === value ? 'null' : value;
       },
       /**
        * Synchronize the stored coordinate pair or current select value to its widget.
        */
       setValue() {
         if ('lonlat_input' === this.type) {
+          const values = this.state.values;
+          values.lon = Math.max(-180, Math.min(180, values.lon));
+          values.lat = Math.max(-90, Math.min(90, values.lat));
           this.state.value = [[1 * this.state.values.lon, 1 * this.state.values.lat]];
         }
         if ('lonlat_input' !== this.type && this.$refs.select) {
@@ -1503,7 +1382,9 @@
         if ('null' !== selected && ['integer', 'float', 'bigint'].includes(this.state.type)) {
           value = Number(selected);
         }
-        await this.changeSelect(value);
+        // The blank option uses the string sentinel "null".
+        this.state.value = 'null' === value ? null : value;
+        await this.$nextTick();
       },
       /**
        * Store the selected field values in the form's serialized representation.
@@ -1511,7 +1392,9 @@
        */
       onSelectChange(event) {
         if (!this.multiple) {
-          this.changeSelect(event.target.value);
+          // The blank option uses the string sentinel "null".
+          this.state.value = 'null' === event.target.value ? null : event.target.value;
+          await this.$nextTick();
           return;
         }
         const values = event.target.selected_options.map(option => option.value).filter(value => 'null' !== value);
@@ -1519,15 +1402,9 @@
         if (values.length) {
           value = `{${values.join()}}`;
         }
-        this.changeSelect(value);
-      },
-      /**
-       * Store relation-filter changes after the control has been initialized.
-       * @param {Object} filter Relation filter state.
-       * @param {CustomEvent} event Change emitted by x-select.
-       */
-      onRelationFilterChange(filter, event) {
-        filter.value = event.target.value;
+        // The blank option uses the string sentinel "null".
+        this.state.value = 'null' === value ? null : value;
+        await this.$nextTick();
       },
       /**
        * Load remote autocomplete options while retaining the current selection.
@@ -1707,7 +1584,29 @@
           }
         }
         if ('formatBlock' === command) {
-          this.formatEditorBlock(value);
+          const block = this.getEditorBlock(range.startContainer);
+          const formatBlock = !block || 'li' !== block.tagName.toLowerCase();
+          if (formatBlock) {
+            const replacement = document.createElement(value.toLowerCase());
+            if (block) {
+              replacement.style.cssText = block.style.cssText;
+              replacement.append(...block.childNodes);
+              block.replaceWith(replacement);
+            }
+            if (!block) {
+              replacement.append(range.extractContents());
+              if (!replacement.childNodes.length) {
+                replacement.append(document.createElement('br'));
+              }
+              range.insertNode(replacement);
+              const caret = document.createRange();
+              caret.selectNodeContents(replacement);
+              caret.collapse(true);
+              const selection = window.getSelection();
+              selection.removeAllRanges();
+              selection.addRange(caret);
+            }
+          }
         }
         if ('insertOrderedList' === command) {
           this.toggleEditorList('ol');
@@ -1794,36 +1693,6 @@
         const element = document.createElement(tag);
         element.append(range.extractContents());
         range.insertNode(element);
-      },
-      /**
-       * Apply a heading or paragraph element to the current block.
-       * @param {string} tag Block element name.
-       */
-      formatEditorBlock(tag) {
-        const range = this.restoreEditorSelection();
-        const block = range && this.getEditorBlock(range.startContainer);
-        if (block && 'li' === block.tagName.toLowerCase()) {
-          return;
-        }
-        const replacement = document.createElement(tag.toLowerCase());
-        if (block) {
-          replacement.style.cssText = block.style.cssText;
-          replacement.append(...block.childNodes);
-          block.replaceWith(replacement);
-        }
-        if (!block) {
-          replacement.append(range.extractContents());
-          if (!replacement.childNodes.length) {
-            replacement.append(document.createElement('br'));
-          }
-          range.insertNode(replacement);
-          const caret = document.createRange();
-          caret.selectNodeContents(replacement);
-          caret.collapse(true);
-          const selection = window.getSelection();
-          selection.removeAllRanges();
-          selection.addRange(caret);
-        }
       },
       /**
        * Toggle the current block between a list and a paragraph.
@@ -1988,7 +1857,6 @@
           this.state.value = editor.innerHTML;
         }
         this.edit_state.edit = true;
-        this.change();
         setTimeout(() => { this.edit_state.edit = false; });
       },
       /**
@@ -2056,7 +1924,16 @@
         if (!range || !editor.contains(range.commonAncestorContainer)) {
           return;
         }
-        this.showEditorLink(range, this.getEditorLink(range));
+        const node = range.startContainer;
+        let parent = node.parentElement;
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          parent = node;
+        }
+        let link = parent?.closest('a');
+        if (!link || !editor.contains(link)) {
+          link = null;
+        }
+        this.showEditorLink(range, link);
       },
       /**
        * Open the link editor when an existing link is clicked in the document.
@@ -2141,7 +2018,20 @@
           buttons.remove = {
             label: _('Remove link'),
             className: 'btn-danger',
-            callback: () => this.removeEditorLink(),
+            callback: () => {
+              const link = this.editorLinkElement;
+              if (!link || !this.$refs.rich_text_editor.contains(link)) {
+                this.closeEditorLink();
+                return;
+              }
+              const parent = link.parentNode;
+              while (link.firstChild) {
+                parent.insertBefore(link.firstChild, link);
+              }
+              link.remove();
+              this.onRichTextInput();
+              this.closeEditorLink();
+            },
           };
         }
         buttons.save = {
@@ -2149,7 +2039,46 @@
           className: 'btn-primary',
           callback: () => {
             this.editorLinkValue = input.value;
-            this.applyEditorLink();
+            const href = this.getEditorLinkHref(this.editorLinkValue);
+            if (!href) {
+              return;
+            }
+            const editor = this.$refs.rich_text_editor;
+            editor.focus();
+            const range = this.restoreEditorSelection();
+            const selection = window.getSelection();
+            if (!range) {
+              return;
+            }
+            if (this.editorLinkElement && editor.contains(this.editorLinkElement)) {
+              this.editorLinkElement.setAttribute('href', href);
+              this.editorLinkElement.setAttribute('target', '_blank');
+              this.editorLinkElement.setAttribute('rel', 'noopener noreferrer');
+            }
+            if (!this.editorLinkElement || !editor.contains(this.editorLinkElement)) {
+              if (range.collapsed) {
+                const link = document.createElement('a');
+                link.setAttribute('href', href);
+                link.setAttribute('target', '_blank');
+                link.setAttribute('rel', 'noopener noreferrer');
+                link.textContent = href;
+                range.insertNode(link);
+                const linkRange = document.createRange();
+                linkRange.selectNodeContents(link);
+                selection.removeAllRanges();
+                selection.addRange(linkRange);
+              }
+              if (!range.collapsed) {
+                const link = document.createElement('a');
+                link.setAttribute('href', href);
+                link.setAttribute('target', '_blank');
+                link.setAttribute('rel', 'noopener noreferrer');
+                link.append(range.extractContents());
+                range.insertNode(link);
+              }
+            }
+            this.onRichTextInput();
+            this.closeEditorLink();
           },
         };
         this.editorLinkDialog = GUI.dialog({ title: _('Link'), message, buttons });
@@ -2164,65 +2093,6 @@
         });
         input.focus();
         input.select();
-      },
-      /**
-       * Return the link containing a selection range, if any.
-       * @param {Range} range Current editor selection.
-       * @returns {HTMLAnchorElement|null}
-       */
-      getEditorLink(range) {
-        const node = range.startContainer;
-        const parent = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
-        const link = parent?.closest('a');
-        if (!link || !this.$refs.rich_text_editor.contains(link)) {
-          return null;
-        }
-        return link;
-      },
-      /**
-       * Apply a safe URL to an existing link or to the selected editor text.
-       */
-      applyEditorLink() {
-        const href = this.getEditorLinkHref(this.editorLinkValue);
-        if (!href) {
-          return;
-        }
-        const editor = this.$refs.rich_text_editor;
-        editor.focus();
-        const range = this.restoreEditorSelection();
-        const selection = window.getSelection();
-        if (!range) {
-          return;
-        }
-        if (this.editorLinkElement && editor.contains(this.editorLinkElement)) {
-          this.editorLinkElement.setAttribute('href', href);
-          this.editorLinkElement.setAttribute('target', '_blank');
-          this.editorLinkElement.setAttribute('rel', 'noopener noreferrer');
-        }
-        if (!this.editorLinkElement || !editor.contains(this.editorLinkElement)) {
-          if (range.collapsed) {
-            const link = document.createElement('a');
-            link.setAttribute('href', href);
-            link.setAttribute('target', '_blank');
-            link.setAttribute('rel', 'noopener noreferrer');
-            link.textContent = href;
-            range.insertNode(link);
-            const linkRange = document.createRange();
-            linkRange.selectNodeContents(link);
-            selection.removeAllRanges();
-            selection.addRange(linkRange);
-          }
-          if (!range.collapsed) {
-            const link = document.createElement('a');
-            link.setAttribute('href', href);
-            link.setAttribute('target', '_blank');
-            link.setAttribute('rel', 'noopener noreferrer');
-            link.append(range.extractContents());
-            range.insertNode(link);
-          }
-        }
-        this.onRichTextInput();
-        this.closeEditorLink();
       },
       /**
        * Normalize a link URL and reject unsafe protocols.
@@ -2248,23 +2118,6 @@
           return null;
         }
         return href;
-      },
-      /**
-       * Remove an existing link while preserving its text and inline content.
-       */
-      removeEditorLink() {
-        const link = this.editorLinkElement;
-        if (!link || !this.$refs.rich_text_editor.contains(link)) {
-          this.closeEditorLink();
-          return;
-        }
-        const parent = link.parentNode;
-        while (link.firstChild) {
-          parent.insertBefore(link.firstChild, link);
-        }
-        link.remove();
-        this.onRichTextInput();
-        this.closeEditorLink();
       },
       /**
        * Close the link editor and return focus to the selected editor range.
@@ -2310,20 +2163,6 @@
         this.onRichTextInput();
       },
       /**
-       * Find the table cell containing the current editor selection.
-       * @returns {HTMLTableCellElement|null} Selected cell, when inside a table.
-       */
-      getSelectedEditorCell() {
-        const selection = window.getSelection();
-        const node = selection?.anchorNode;
-        const parent = node?.nodeType === Node.ELEMENT_NODE ? node : node?.parentElement;
-        const cell = parent?.closest('td, th');
-        if (!cell || !this.$refs.rich_text_editor.contains(cell)) {
-          return null;
-        }
-        return cell;
-      },
-      /**
        * Add or remove a row or column at the selected table cell.
        * @param {string} action Table operation identifier.
        */
@@ -2331,8 +2170,14 @@
         if (this.edit_state.show_html) {
           return;
         }
-        const cell = this.getSelectedEditorCell();
-        if (!cell) {
+        const selection = window.getSelection();
+        const node = selection?.anchorNode;
+        let parent = node?.parentElement;
+        if (node?.nodeType === Node.ELEMENT_NODE) {
+          parent = node;
+        }
+        const cell = parent?.closest('td, th');
+        if (!cell || !this.$refs.rich_text_editor.contains(cell)) {
           return;
         }
         const row = cell.parentElement;
@@ -2421,7 +2266,9 @@
             value = null;
           }
           if (valueChanged) {
-            await this.changeSelect(value);
+            // The blank option uses the string sentinel "null".
+            this.state.value = 'null' === value ? null : value;
+            await this.$nextTick();
             this.setValue();
           }
           // Successful matches close the transient feedback automatically.
@@ -2438,19 +2285,6 @@
           GUI.showUserMessage({ type: 'warning', message: 'No feature selected. Check if layer is on editing or visible at current scale', autoclose: true });
           this.picked = false;
         }
-      },
-      /**
-       * Open the hidden file input when the media upload affordance is clicked.
-       */
-      onClick() {
-        document.getElementById(this.mediaid).click();
-      },
-      /**
-       * Clear the media preview and propagate a null field value.
-       */
-      clearMedia() {
-        this.mediaData.value = this.mediaData.mime_type = this.state.value = null;
-        this.change();
       },
       /**
        * Copy the stored media URL and MIME type into the preview state.
@@ -2490,13 +2324,6 @@
           GUI.notify.error(this.$t('server_error'));
         }
         this.loading = false;
-      },
-      /**
-       * Validate edited longitude/latitude values and refresh the map-coordinate value.
-       */
-      changeLonLat() {
-        this.change();
-        this.setValue();
       },
       /**
        * Toggle map-coordinate capture and update the button's active state.
@@ -2642,7 +2469,46 @@
      */
     async created() {
       if ('geo' === this.type) {
-        this.createLayer();
+        const data = this.geoData;
+        if (data && GUI.getMap()) {
+          const mapProjection = GUI.getProjection().getCode();
+          let style;
+          switch (data.type) {
+            case 'Point':
+            case 'MultiPoint':
+              style = [new ol.style.Style({
+                image: new ol.style.Circle({
+                  radius: 6,
+                  fill: new ol.style.Fill({ color: [255, 255, 255, 1.0] }),
+                  stroke: new ol.style.Stroke({ color: [0, 0, 0, 1.0], width: 2 })
+                })
+              }), new ol.style.Style({
+                image: new ol.style.Circle({
+                  radius: 2,
+                  fill: new ol.style.Fill({ color: [255, 255, 255, 1.0] }),
+                  stroke: new ol.style.Stroke({ color: [0, 0, 0, 1.0], width: 2 })
+                })
+              })];
+              break;
+            case 'Line':
+            case 'LineString':
+            case 'MultiLineString':
+            case 'Polygon':
+            case 'MultiPolygon':
+              style = new ol.style.Style({
+                fill: new ol.style.Fill({ color: 'rgba(255, 255, 255, 0.3)' }),
+                stroke: new ol.style.Stroke({ color: [0, 0, 0, 1.0], width: 2 })
+              });
+          }
+          this.layer = new ol.layer.Vector({
+            source: new ol.source.Vector({
+              features: new ol.format.GeoJSON().readFeatures(data, { featureProjection: mapProjection })
+            }),
+            visible: this.visible,
+            style
+          });
+          GUI.getMap().addLayer(this.layer);
+        }
       }
       if (!this.isInput) {
         return;
@@ -2752,6 +2618,8 @@
         this.state.edit_states = this.state.edit_states || [];
         this.state.edit_states.push(this.edit_state);
       }
+
+      this.$watch('inputValue', this.change);
 
       if (is_select) {
         this.resize = throttle(this.resize.bind(this));
@@ -2950,7 +2818,9 @@
                 .join('|AND,'),
             })).data || []).map(([value, key]) => ({ key, value }));
             this.state.value = this.state.input.options.values?.[0]?.value ?? null;
-            await this.changeSelect(this.state.value);
+            // The blank option uses the string sentinel "null".
+            this.state.value = 'null' === this.state.value ? null : this.state.value;
+            await this.$nextTick();
             this.setLoading(false);
           }
         ));
@@ -3044,7 +2914,6 @@
         $(`#${this.iddatetimepicker}`).on('dp.change', () => {
           const newDate    = $(`#${this.idinputdatetimepiker}`).val();
           this.state.value = '' !== newDate.trim() ? moment(newDate, this.datetimedisplayformat).format(this.datetimefieldformat) : null;
-          this.change();
         });
         $(`#${this.iddatetimepicker}`).on('dp.show', () => this.$emit('datetimepickershow'));
         $(`#${this.iddatetimepicker}`).on('dp.hide', () => this.$emit('datetimepickershow'));
