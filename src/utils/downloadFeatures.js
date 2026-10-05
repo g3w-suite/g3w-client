@@ -13,8 +13,7 @@ import GUI                     from 'g3w-app';
 import { saveBlob }            from 'utils/saveBlob';
 import { getCatalogLayerById } from 'utils/getCatalogLayerById';
 import { getCatalogLayers }    from 'utils/getCatalogLayers';
-
-import shpwrite                from '@mapbox/shp-write';
+import { toShapefile }         from 'utils/toShapefile';
 
 
 // set download action tool
@@ -168,25 +167,15 @@ export async function downloadFeatures({
 
         else if ('external-shp' === format) {
           filename     = layer.name.split(`.${external_layer.type}`)[0];
-          blob         = await shpwrite.zip(
+          blob         = await toShapefile(
             // GeoJSONFile
             (new ol.format.GeoJSON()).writeFeaturesObject(
               GUI.getLayerByName(external_layer.name).getSource().getFeatures(),
               { dataProjection: external_layer.crs, featureProjection: GUI.getEpsg() || external_layer.crs }
             ),
             {
-              outputType:     "blob",
               prj:            external_layer.crs,
               folder:         filename,
-              types: {
-                point:        filename,
-                mulipoint:    filename,
-                polygon:      filename,
-                multipolygon: filename,
-                line:         filename,
-                polyline:     filename,
-                multiline:    filename,
-              }
           });
         }
 

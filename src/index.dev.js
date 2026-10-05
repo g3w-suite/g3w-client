@@ -2,9 +2,9 @@
  * @file Development entry point (app.min.js)
  * @since v3.8
  */
-import { idb }     from 'utils/idb';
-import { waitFor } from 'utils/waitFor';
-import shpwrite    from '@mapbox/shp-write';
+import { idb }         from 'utils/idb';
+import { waitFor }     from 'utils/waitFor';
+import { toShapefile } from 'utils/toShapefile';
 
 // expose global variables
 import 'g3w-globals';
@@ -300,21 +300,11 @@ g3w.app.once('after:setupControls', async () => {
   const zipFile = async name => {
     await waitFor(async () => name in (await idb.getItem('externalLayers')), 1000);
     const externalLayers = await idb.getItem('externalLayers');
-    const blob           = await shpwrite.zip(
+    const blob           = await toShapefile(
       JSON.parse(externalLayers[name].features),
       {
-        outputType:    "blob",
         folder:         name,
         prj:            externalLayers[name].options.crs,
-        types: {
-          point:        name,
-          mulipoint:    name,
-          polygon:      name,
-          multipolygon: name,
-          line:         name,
-          polyline:     name,
-          multiline:    name,
-        },
       }
     );
     return new File([blob], name.replace('.kml', '.zip'), { type: 'application/zip' });

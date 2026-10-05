@@ -29,7 +29,6 @@
   "homepage": "https://github.com/g3w-suite/g3w-client.git",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",
-    "@mapbox/shp-write": "^0.4.3",
     "@ungap/with-resolvers": "^0.1.0",
     "invokers-polyfill": "^0.5.5",
     "jsts": "^2.11.3",
