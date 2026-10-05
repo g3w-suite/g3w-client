@@ -4,9 +4,8 @@
  */
 
 // polyfills
-import '@ungap/with-resolvers';
 import 'invokers-polyfill';
-import 'temporal-polyfill/global'; // installed only when native Temporal is missing
+import 'temporal-polyfill/global';
 
 import * as ol              from 'ol';
 import * as array           from 'ol/array';
