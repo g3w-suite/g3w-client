@@ -1146,46 +1146,6 @@
         GUI.getMap().addLayer(this.layer);
       },
       /**
-       * Validate a value using the rule for this field and input control.
-       * @param {*} value Value to validate.
-       * @returns {*} Usually boolean; the char rule preserves its legacy falsy result.
-       */
-      validateValue(value) {
-        const state = this.state;
-        if ('lonlat_input' === this.type) {
-          const values = state.values;
-          values.lon = Math.max(-180, Math.min(180, values.lon));
-          values.lat = Math.max(-90, Math.min(90, values.lat));
-          return !Number.isNaN(1 * values.lon);
-        }
-        if ('range_input' === this.type) {
-          const { min, max } = state.input.options.values[0];
-          return 1 * value >= 1 * min && 1 * value <= 1 * max;
-        }
-        if ('slider_input' === this.type) {
-          const { min, max } = state.input.options;
-          return 1 * value >= 1 * min && 1 * value <= 1 * max;
-        }
-        switch (state.type) {
-          case 'float':
-            return !Number.isNaN(parseFloat(1 * value));
-          case 'bigint':
-            return Number.isSafeInteger(1 * value) && Math.abs(1 * value) <= Number.MAX_SAFE_INTEGER;
-          case 'integer':
-            return !Number.isNaN(1 * value) && Math.abs(1 * value) <= 2147483647;
-          case 'checkbox':
-            return (this.validationOptions.values || []).includes(value);
-          case 'datetimepicker':
-            return moment(value, this.validationOptions.fielddatetimeformat, true).isValid();
-          case 'char':
-            return value && 1 === `${value}`.length;
-          case 'range':
-            return 1 * value >= this.validationOptions.min && 1 * value <= this.validationOptions.max;
-          default:
-            return true;
-        }
-      },
-      /**
        * Validate emptiness, uniqueness and the active field-type rule in that order.
        * Temporary relation-reference IDs bypass the field-type rule, not uniqueness.
       * @returns {*} Validation result, also written to state.validate.valid.
@@ -1193,19 +1153,59 @@
       validate() {
         const state = this.state;
         // Required empty values fail before uniqueness or type-specific validation.
-        const isEmpty = state.validate.empty;
-        const checkUnique = state.validate.unique && state.validate.exclude_values?.size;
-        if (isEmpty) {
-          state.value = null;
+        const is_empty        = state.validate.empty;
+        const check_unique    = state.validate.unique && state.validate.exclude_values?.size;
+        const is_temp_id      = !is_empty && !check_unique && state.input.options.relation_reference && state?.value?.startsWith?.('_new_');
+        const should_validate = !is_empty && !check_unique && !is_temp_id;
+        const is_input        = ['lonlat_input', 'range_input', 'slider_input'].includes(this.type);
+        if (is_empty) {
+          state.value          = null;
           state.validate.valid = !state.validate.required;
         }
         // Exclusions compare string forms so numeric and string IDs are treated consistently.
-        if (!isEmpty && checkUnique) {
+        if (!is_empty && check_unique) {
           state.validate.valid = !state.validate.exclude_values.has(`${state.value}`);
         }
-        if (!isEmpty && !checkUnique) {
-          const temp_id = state.input.options.relation_reference && state?.value?.startsWith?.('_new_');
-          state.validate.valid = temp_id || this.validateValue(state.value);
+        if (is_temp_id) {
+          state.validate.valid = true;
+        }
+        if (should_validate) {
+          state.validate.valid = true;
+        }
+        if (should_validate && 'lonlat_input' === this.type) {
+          const values = state.values;
+          values.lon = Math.max(-180, Math.min(180, values.lon));
+          values.lat = Math.max(-90, Math.min(90, values.lat));
+          state.validate.valid = !Number.isNaN(1 * values.lon);
+        }
+        if (should_validate && 'range_input' === this.type) {
+          const { min, max } = state.input.options.values[0];
+          state.validate.valid = 1 * state.value >= 1 * min && 1 * state.value <= 1 * max;
+        }
+        if (should_validate && 'slider_input' === this.type) {
+          const { min, max } = state.input.options;
+          state.validate.valid = 1 * state.value >= 1 * min && 1 * state.value <= 1 * max;
+        }
+        if (should_validate && !is_input && 'float' === state.type) {
+          state.validate.valid = !Number.isNaN(parseFloat(1 * state.value));
+        }
+        if (should_validate && !is_input && 'bigint' === state.type) {
+          state.validate.valid = Number.isSafeInteger(1 * state.value) && Math.abs(1 * state.value) <= Number.MAX_SAFE_INTEGER;
+        }
+        if (should_validate && !is_input && 'integer' === state.type) {
+          state.validate.valid = !Number.isNaN(1 * state.value) && Math.abs(1 * state.value) <= 2147483647;
+        }
+        if (should_validate && !is_input && 'checkbox' === state.type) {
+          state.validate.valid = (this.validationOptions.values || []).includes(state.value);
+        }
+        if (should_validate && !is_input && 'datetimepicker' === state.type) {
+          state.validate.valid = moment(state.value, this.validationOptions.fielddatetimeformat, true).isValid();
+        }
+        if (should_validate && !is_input && 'char' === state.type) {
+          state.validate.valid = state.value && 1 === `${state.value}`.length;
+        }
+        if (should_validate && !is_input && 'range' === state.type) {
+          state.validate.valid = 1 * state.value >= this.validationOptions.min && 1 * state.value <= this.validationOptions.max;
         }
         this.setErrorMessage();
         if (!state.validate.valid) {
@@ -1382,7 +1382,8 @@
         this.state.validate.valid = !this.state.validate.required;
         // Required empty ranges are already invalid; otherwise validate the configured bounds.
         if (!empty) {
-          this.state.validate.valid = this.validateValue(this.state.value);
+          const { min, max } = this.state.input.options.values[0];
+          this.state.validate.valid = 1 * this.state.value >= 1 * min && 1 * this.state.value <= 1 * max;
         }
         this.change();
       },
