@@ -1340,7 +1340,7 @@
        * Store the selected field values in the form's serialized representation.
        * @param {CustomEvent} event Change emitted by x-select.
        */
-      onSelectChange(event) {
+      async onSelectChange(event) {
         if (!this.multiple) {
           // The blank option uses the string sentinel "null".
           this.state.value = 'null' === event.target.value ? null : event.target.value;
