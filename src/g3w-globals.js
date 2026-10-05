@@ -78,6 +78,7 @@ import { XHR }                                     from 'utils/XHR';
 import { getCatalogLayerById }                     from 'utils/getCatalogLayerById';
 import { getCatalogLayers }                        from 'utils/getCatalogLayers';
 import { cloneDeep }                               from 'utils/cloneDeep';
+import { deprecate }                               from 'utils/deprecate';
 import { saveBlob }                                from 'utils/saveBlob';
 import { flattenObject }                           from 'utils/flattenObject';
 import { normalizeEpsg }                           from 'utils/normalizeEpsg';
@@ -89,8 +90,6 @@ import MapControl                                  from 'g3w-control';
 import { SearchPanel }                             from 'components/g3w-search';
 
 import 'components/x-select';
-
-const deprecate = require('util-deprecate');
 
 /**
  * BACKCOMP: v3.x (proxy "esbuild" classes for legacy plugins, still based on babel)

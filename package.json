@@ -33,12 +33,10 @@
     "fflate": "^0.8.2",
     "invokers-polyfill": "^0.5.5",
     "jsts": "^2.11.3",
-    "lodash.clonedeep": "^4.5.0",
     "ol": "^10.8.0",
     "proj4": "^2.19.6",
     "shpjs": "^6.1.0",
     "temporal-polyfill": "^1.0.5",
-    "util-deprecate": "^1.0.2",
     "vue": "2.7.16"
   },
   "devDependencies": {

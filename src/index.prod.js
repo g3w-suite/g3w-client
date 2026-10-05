@@ -37,7 +37,6 @@ import { XHR }            from 'utils/XHR';
 import { normalizeEpsg }  from 'utils/normalizeEpsg';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 import { debounce }       from 'utils/debounce';
-import { cloneDeep }      from 'utils/cloneDeep';
 
 
 import { Layer }          from 'g3w-layer';
@@ -463,7 +462,7 @@ $.ajaxSetup({
   }
   //store original layerstree before modifying it for TOC rendering
   //Used by permalink to create the difference between the original and current layerstree
-  const layerstree = cloneDeep(config.layerstree ?? []);
+  const layerstree = structuredClone(config.layerstree ?? []);
 
   // change config.layerstree to have a root group node, so that the TOC can be rendered properly
   config.layerstree = [{
