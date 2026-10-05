@@ -373,13 +373,68 @@
         </div>
       </div>
 
-      <!-- Quill is mounted on this element and synchronized with state.value. -->
+      <!-- Native rich-text editor, with HTML source mode and browser formatting commands. -->
       <div v-if = "'texthtml_input' === type" class = "form-group">
         <div
-          ref           = "quill_editor"
-          class         = "form-control g3w-input-quill"
+          class  = "g3w-input-richtext-toolbar"
+          :class = "{'g3w-input-richtext-toolbar-source-mode': edit_state.show_html}"
+          ref    = "rich_text_toolbar"
+          role   = "toolbar"
+          @mousedown = "saveEditorSelection"
+        >
+          <select aria-label = "Heading" title = "Heading" data-placement = "top" :value = "editorFormats.header" :disabled = "!editable" @change = "runEditorCommand('formatBlock', $event.target.value)">
+            <option value = "p">Normal</option>
+            <option value = "h1">Heading 1</option>
+            <option value = "h2">Heading 2</option>
+            <option value = "h3">Heading 3</option>
+            <option value = "h4">Heading 4</option>
+            <option value = "h5">Heading 5</option>
+            <option value = "h6">Heading 6</option>
+          </select>
+          <button type = "button" title = "align: left" aria-label = "align: left" data-placement = "top" :class = "{'g3w-input-richtext-active': 'left' === editorFormats.align}" :disabled = "!editable" @mousedown.prevent @click = "runEditorCommand('justifyLeft')"><i class = "fas fa-align-left"></i></button>
+          <button type = "button" title = "align: center" aria-label = "align: center" data-placement = "top" :class = "{'g3w-input-richtext-active': 'center' === editorFormats.align}" :disabled = "!editable" @mousedown.prevent @click = "runEditorCommand('justifyCenter')"><i class = "fas fa-align-center"></i></button>
+          <button type = "button" title = "align: right" aria-label = "align: right" data-placement = "top" :class = "{'g3w-input-richtext-active': 'right' === editorFormats.align}" :disabled = "!editable" @mousedown.prevent @click = "runEditorCommand('justifyRight')"><i class = "fas fa-align-right"></i></button>
+          <button type = "button" title = "align: justify" aria-label = "align: justify" data-placement = "top" :class = "{'g3w-input-richtext-active': 'justify' === editorFormats.align}" :disabled = "!editable" @mousedown.prevent @click = "runEditorCommand('justifyFull')"><i class = "fas fa-align-justify"></i></button>
+          <div class = "g3w-input-richtext-color-picker">
+            <button type = "button" title = "color: text" aria-label = "color: text" data-placement = "top" :disabled = "!editable" @mousedown.prevent @click = "toggleEditorColorPicker('text')">A<span class = "g3w-input-richtext-color-indicator" :style = "{borderBottomColor: editorTextColor}"></span></button>
+            <div v-if = "'text' === editorColorPicker" class = "g3w-input-richtext-color-palette">
+              <button v-for = "color in editorColors" :key = "color" type = "button" :title = "color" :aria-label = "color" data-placement = "top" :style = "{backgroundColor: color}" @mousedown.prevent @click = "applyEditorColor('foreColor', color)"></button>
+            </div>
+          </div>
+          <div class = "g3w-input-richtext-color-picker">
+            <button type = "button" title = "color: background" aria-label = "color: background" data-placement = "top" :disabled = "!editable" @mousedown.prevent @click = "toggleEditorColorPicker('background')"><i class = "fas fa-highlighter"></i><span class = "g3w-input-richtext-color-indicator" :style = "{borderBottomColor: editorBackgroundColor}"></span></button>
+            <div v-if = "'background' === editorColorPicker" class = "g3w-input-richtext-color-palette">
+              <button v-for = "color in editorColors" :key = "color" type = "button" :title = "color" :aria-label = "color" data-placement = "top" :style = "{backgroundColor: color}" @mousedown.prevent @click = "applyEditorColor('hiliteColor', color)"></button>
+            </div>
+          </div>
+          <span class = "g3w-input-richtext-break" aria-hidden = "true"></span>
+          <button type = "button" title = "bold" aria-label = "bold" :class = "{'g3w-input-richtext-active': editorFormats.bold}" :disabled = "!editable" @mousedown.prevent @click = "runEditorCommand('bold')"><b>B</b></button>
+          <button type = "button" title = "italic" aria-label = "italic" :class = "{'g3w-input-richtext-active': editorFormats.italic}" :disabled = "!editable" @mousedown.prevent @click = "runEditorCommand('italic')"><i>I</i></button>
+          <button type = "button" title = "underline" aria-label = "underline" :class = "{'g3w-input-richtext-active': editorFormats.underline}" :disabled = "!editable" @mousedown.prevent @click = "runEditorCommand('underline')"><u>U</u></button>
+          <button type = "button" title = "list: ordered" aria-label = "list: ordered" :class = "{'g3w-input-richtext-active': editorFormats.ordered}" :disabled = "!editable" @mousedown.prevent @click = "runEditorCommand('insertOrderedList')"><i class = "fas fa-list-ol"></i></button>
+          <button type = "button" title = "list: bullet" aria-label = "list: bullet" :class = "{'g3w-input-richtext-active': editorFormats.bullet}" :disabled = "!editable" @mousedown.prevent @click = "runEditorCommand('insertUnorderedList')"><i class = "fas fa-list-ul"></i></button>
+          <button type = "button" title = "link" aria-label = "link" :disabled = "!editable" @mousedown.prevent @click = "openEditorLink"><i class = "fas fa-link"></i></button>
+          <button type = "button" title = "clean" aria-label = "clean" :disabled = "!editable" @mousedown.prevent @click = "cleanEditorFormatting"><i class = "fas fa-eraser"></i></button>
+          <button type = "button" class = "g3w-input-richtext-html" :class = "{'skin-color': edit_state.show_html}" title = "HTML source" aria-label = "HTML source" :disabled = "!editable" @mousedown.prevent @click = "toggleEditorSource">html</button>
+          <span class = "g3w-input-richtext-break" aria-hidden = "true"></span>
+          <button type = "button" title = "table" aria-label = "table" :disabled = "!editable" @mousedown.prevent @click = "insertEditorTable"><i class = "fas fa-table"></i></button>
+          <button type = "button" title = "Add row above" aria-label = "Add row above" :disabled = "!editable" @mousedown.prevent @click = "editEditorTable('row-above')"><svg fill = "currentColor" width = "16" height = "16" viewBox = "0 0 16 16" aria-hidden = "true"><path d = "m14 1 1 1v12l-1 1H2l-1-1V2l1-1zM2 0 0 2v12l2 2h12l2-2V2l-2-2z"/><path d = "M4 11h8v-1L8 6z"/></svg></button>
+          <button type = "button" title = "Add row below" aria-label = "Add row below" :disabled = "!editable" @mousedown.prevent @click = "editEditorTable('row-below')"><svg fill = "currentColor" width = "16" height = "16" viewBox = "0 0 16 16" aria-hidden = "true"><path d = "M4 7V6h8v1l-4 4z"/><path d = "m0 2 2-2h12l2 2v12l-2 2H2l-2-2zm15 0-1-1H2L1 2v12l1 1h12l1-1z"/></svg></button>
+          <button type = "button" title = "Remove row" aria-label = "Remove row" :disabled = "!editable" @mousedown.prevent @click = "editEditorTable('row-remove')"><svg fill = "currentColor" width = "16" height = "16" viewBox = "0 0 16 16" aria-hidden = "true"><path d = "M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/><path d = "m4 8 .5-.5h7a.5.5 0 0 1 0 1h-7z"/></svg></button>
+          <button type = "button" title = "Add column left" aria-label = "Add column left" :disabled = "!editable" @mousedown.prevent @click = "editEditorTable('column-left')"><svg fill = "currentColor" width = "16" height = "16" viewBox = "0 0 16 16" aria-hidden = "true"><path d = "m14 1 1 1v12l-1 1H2l-1-1V2l1-1zM2 0 0 2v12l2 2h12l2-2V2l-2-2z"/><path d = "M10 12V4H9L5 8z"/></svg></button>
+          <button type = "button" title = "Add column right" aria-label = "Add column right" :disabled = "!editable" @mousedown.prevent @click = "editEditorTable('column-right')"><svg fill = "currentColor" width = "16" height = "16" viewBox = "0 0 16 16" aria-hidden = "true"><path d = "m14 1 1 1v12l-1 1H2l-1-1V2l1-1zM2 0 0 2v12l2 2h12l2-2V2l-2-2z"/><path d = "M6 12V4l5 4z"/></svg></button>
+          <button type = "button" title = "Remove column" aria-label = "Remove column" :disabled = "!editable" @mousedown.prevent @click = "editEditorTable('column-remove')"><svg fill = "currentColor" width = "16" height = "16" viewBox = "0 0 16 16" aria-hidden = "true"><path d = "M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/><path d = "M4.6 4.6a.5.5 0 0 1 .8 0L8 7.3l2.6-2.7a.5.5 0 0 1 .8.8L8.7 8l2.7 2.6a.5.5 0 0 1-.8.8L8 8.7l-2.6 2.7a.5.5 0 0 1-.8-.8L7.3 8 4.6 5.4a.5.5 0 0 1 0-.8"/></svg></button>
+        </div>
+        <div
+          ref           = "rich_text_editor"
+          class         = "form-control g3w-input-richtext"
           @keydown.stop = ""
-          :class        = "{'g3w-input-quill-invalid': !state.validate.valid}"
+          @mousedown    = "closeEditorLink"
+          @click        = "onRichTextClick"
+          @input        = "onRichTextInput"
+          @paste        = "onRichTextPaste"
+          :contenteditable = "editorContentEditable"
+          :class        = "{'g3w-input-richtext-invalid': !state.validate.valid, 'g3w-input-richtext-source': edit_state.show_html}"
           v-disabled    = "!editable"
         ></div>
       </div>
@@ -417,7 +472,6 @@
   import { getUniqueDomId }                          from 'utils/getUniqueDomId';
   import { gettext as _ }                            from 'g3w-i18n';
   import { toRawType }                               from 'utils/toRawType';
-  import Quill                                       from 'quill';
   import { throttle }                                from 'utils/throttle';
   import { convertQGISDateTimeFormatToMoment }        from 'utils/convertQGISDateTimeFormatToMoment';
   import PickCoordinatesInteraction                  from 'interactions/pick-coordinates';
@@ -683,6 +737,13 @@
        */
       getCoordinateActive() {
         return this.coordinatebutton.active;
+      },
+      /**
+       * Keep the editor's enumerated contenteditable attribute explicit.
+       * @returns {string}
+       */
+      editorContentEditable() {
+        return `${this.editable}`;
       }
     },
     /**
@@ -703,6 +764,14 @@
         coordinatebutton:      { active: false },
         loading:               false,
         edit_state:            { edit: false, show_html: false },
+        editorColorPicker:     null,
+        editorTextColor:       '#000000',
+        editorBackgroundColor: '#ffffff',
+        editorLinkDialog:      false,
+        editorLinkValue:       '',
+        editorLinkExisting:    false,
+        editorFormats:         { bold: false, italic: false, underline: false, ordered: false, bullet: false, align: 'left', header: 'p' },
+        editorColors:          ['#000000', '#e60000', '#ff9900', '#ffff00', '#008a00', '#0066cc', '#9933ff', '#ffffff', '#facccc', '#ffebcc', '#ffffcc', '#cce8cc', '#cce0f5', '#ebd6ff', '#f06666', '#ffc266', '#ffff66', '#66b966', '#66a3e0', '#c285ff', '#a10000', '#b26b00', '#b2b200', '#006100', '#0047b2', '#6b24b2', '#5c0000', '#663d00', '#666600', '#003700', '#002966', '#3d1466'],
         showPickLayer:         false,
         picked:                false,
         filterFields:          [],
@@ -759,7 +828,7 @@
         }
       },
       /**
-       * Reflect external value changes in media, Quill and date-picker widgets.
+      * Reflect external value changes in media, the rich-text editor and date-picker widgets.
        */
       async 'state.value'(value) {
         // Expression-backed defaults can update state without a DOM input event.
@@ -771,13 +840,13 @@
           this.setMedia();
           this.change();
         }
-        // Avoid echoing Quill's own edit back into its DOM; external edits still refresh it.
-        const editor = 'texthtml_input' === this.type && this.quill && !this.edit_state.edit && this.quill.container.firstChild;
+        // Avoid echoing the editor's own edit back into its DOM; external edits still refresh it.
+        const editor = 'texthtml_input' === this.type && this.$refs.rich_text_editor && !this.edit_state.edit && this.$refs.rich_text_editor;
         if (editor && this.edit_state.show_html) {
-          editor.innerText = this.state.value;
+          editor.textContent = value || '';
         }
         if (editor && !this.edit_state.show_html) {
-          editor.innerHTML = this.state.value;
+          editor.innerHTML = this.sanitizeEditorHtml(value);
         }
         // Convert only when the stored value differs from the currently displayed date.
         const updateDate = 'datetimepicker_input' === this.type && this.datetimefieldformat && value !== $(`#${this.idinputdatetimepiker}`).val();
@@ -1299,6 +1368,769 @@
         }
         return Array.from(new Set(`${this.state.value}`.replace(/^{|}$/g, '').replace(/"/g, '').split(',')))
           .filter(value => this.autocomplete || this.state.input.options.values.map(option => `${option.value}`).includes(`${value}`));
+      },
+      /**
+       * Keep rich-text markup to the elements and attributes provided by this editor.
+       * @param {string} html HTML to sanitize before rendering or inserting.
+       * @returns {string} Sanitized HTML fragment.
+       */
+      sanitizeEditorHtml(html) {
+        const template = document.createElement('template');
+        template.innerHTML = String(html || '');
+        const allowed = new Set(['a', 'b', 'blockquote', 'br', 'code', 'div', 'em', 'font', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'i', 'li', 'ol', 'p', 'pre', 's', 'span', 'strong', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'u', 'ul']);
+        const blocked = new Set(['iframe', 'object', 'script', 'style', 'svg']);
+        template.content.querySelectorAll('*').forEach(element => {
+          const tag = element.tagName.toLowerCase();
+          if (blocked.has(tag)) {
+            element.remove();
+            return;
+          }
+          if (!allowed.has(tag)) {
+            element.replaceWith(...element.childNodes);
+            return;
+          }
+          const styles = {
+            color: element.style.color || element.getAttribute('color'),
+            backgroundColor: element.style.backgroundColor,
+            textAlign: element.style.textAlign,
+            border: element.style.border,
+            borderCollapse: element.style.borderCollapse,
+            padding: element.style.padding,
+            width: element.style.width,
+          };
+          Array.from(element.attributes).forEach(attribute => {
+            if ('style' === attribute.name || ('a' === tag && ['href', 'target', 'rel'].includes(attribute.name)) || ['colspan', 'rowspan', 'start'].includes(attribute.name)) {
+              return;
+            }
+            element.removeAttribute(attribute.name);
+          });
+          if (element.hasAttribute('href') && /^[a-z][a-z\d+.-]*:/i.test(element.getAttribute('href')) && !/^(https?:|mailto:|tel:)/i.test(element.getAttribute('href'))) {
+            element.removeAttribute('href');
+          }
+          if ('a' === tag && !element.hasAttribute('href')) {
+            element.removeAttribute('target');
+            element.removeAttribute('rel');
+          }
+          if ('a' === tag && element.hasAttribute('href')) {
+            element.setAttribute('target', '_blank');
+            element.setAttribute('rel', 'noopener noreferrer');
+          }
+          element.removeAttribute('style');
+          Object.entries(styles).forEach(([property, value]) => {
+            if (value) {
+              element.style[property] = value;
+            }
+          });
+        });
+        return template.innerHTML;
+      },
+      /**
+       * Apply a native rich-text command at the current editor selection.
+       * @param {string} command Browser editing command.
+       * @param {string|null} value Optional command value.
+       */
+      runEditorCommand(command, value = null) {
+        if (this.edit_state.show_html) {
+          return;
+        }
+        this.editorColorPicker = null;
+        const editor = this.$refs.rich_text_editor;
+        editor.focus();
+        const range = this.restoreEditorSelection();
+        if (!range) {
+          return;
+        }
+        if ('bold' === command) {
+          this.toggleEditorInlineFormat('strong');
+        }
+        if ('italic' === command) {
+          this.toggleEditorInlineFormat('em');
+        }
+        if ('underline' === command) {
+          this.toggleEditorInlineFormat('u');
+        }
+        if ('foreColor' === command) {
+          this.wrapEditorSelection('span', { color: value });
+        }
+        if ('hiliteColor' === command) {
+          this.wrapEditorSelection('span', { backgroundColor: value });
+        }
+        if (['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'].includes(command)) {
+          const align = { justifyLeft: 'left', justifyCenter: 'center', justifyRight: 'right', justifyFull: 'justify' }[command];
+          const block = this.getEditorBlock(range.startContainer);
+          if (block) {
+            block.style.textAlign = align;
+          }
+        }
+        if ('formatBlock' === command) {
+          this.formatEditorBlock(value);
+        }
+        if ('insertOrderedList' === command) {
+          this.toggleEditorList('ol');
+        }
+        if ('insertUnorderedList' === command) {
+          this.toggleEditorList('ul');
+        }
+        this.onRichTextInput();
+        this.updateEditorFormats();
+      },
+      /**
+       * Restore the toolbar-saved range, if it still belongs to this editor.
+       * @returns {Range|null} Current editor range.
+       */
+      restoreEditorSelection() {
+        const editor = this.$refs.rich_text_editor;
+        const selection = window.getSelection();
+        if (this.editorSelection && editor.contains(this.editorSelection.commonAncestorContainer)) {
+          selection.removeAllRanges();
+          selection.addRange(this.editorSelection);
+        }
+        this.editorSelection = null;
+        if (!selection?.rangeCount || !editor.contains(selection.getRangeAt(0).commonAncestorContainer)) {
+          return null;
+        }
+        return selection.getRangeAt(0);
+      },
+      /**
+       * Find the nearest formatting or block element around a DOM node.
+       * @param {Node} node Node inside the editor.
+       * @param {string} selector CSS selector to match.
+       * @returns {Element|null}
+       */
+      getEditorAncestor(node, selector) {
+        const parent = node?.nodeType === Node.ELEMENT_NODE ? node : node?.parentElement;
+        const element = parent?.closest(selector);
+        return element && element !== this.$refs.rich_text_editor && this.$refs.rich_text_editor.contains(element) ? element : null;
+      },
+      /**
+       * Find the current text block, excluding list-item wrappers.
+       * @param {Node} node Node inside the editor.
+       * @returns {HTMLElement|null}
+       */
+      getEditorBlock(node) {
+        return this.getEditorAncestor(node, 'p, h1, h2, h3, h4, h5, h6, div, li, blockquote');
+      },
+      /**
+       * Wrap the selected contents with an element and optional inline styles.
+       * @param {string} tag Wrapper element name.
+       * @param {Object} styles Inline styles to apply.
+       */
+      wrapEditorSelection(tag, styles = {}) {
+        const range = this.restoreEditorSelection();
+        if (!range || range.collapsed) {
+          return;
+        }
+        const wrapper = document.createElement(tag);
+        Object.assign(wrapper.style, styles);
+        wrapper.append(range.extractContents());
+        range.insertNode(wrapper);
+        range.selectNodeContents(wrapper);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+      },
+      /**
+       * Toggle a semantic inline format on the selected text.
+       * @param {string} tag Inline formatting element.
+       */
+      toggleEditorInlineFormat(tag) {
+        const range = this.restoreEditorSelection();
+        if (!range || range.collapsed) {
+          return;
+        }
+        const wrapper = this.getEditorAncestor(range.startContainer, tag);
+        if (wrapper && wrapper.contains(range.endContainer) && range.toString() === wrapper.textContent) {
+          const parent = wrapper.parentNode;
+          while (wrapper.firstChild) {
+            parent.insertBefore(wrapper.firstChild, wrapper);
+          }
+          wrapper.remove();
+          return;
+        }
+        const element = document.createElement(tag);
+        element.append(range.extractContents());
+        range.insertNode(element);
+      },
+      /**
+       * Apply a heading or paragraph element to the current block.
+       * @param {string} tag Block element name.
+       */
+      formatEditorBlock(tag) {
+        const range = this.restoreEditorSelection();
+        const block = range && this.getEditorBlock(range.startContainer);
+        if (block && 'li' === block.tagName.toLowerCase()) {
+          return;
+        }
+        const replacement = document.createElement(tag.toLowerCase());
+        if (block) {
+          replacement.style.cssText = block.style.cssText;
+          replacement.append(...block.childNodes);
+          block.replaceWith(replacement);
+        }
+        if (!block) {
+          replacement.append(range.extractContents());
+          if (!replacement.childNodes.length) {
+            replacement.append(document.createElement('br'));
+          }
+          range.insertNode(replacement);
+          const caret = document.createRange();
+          caret.selectNodeContents(replacement);
+          caret.collapse(true);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(caret);
+        }
+      },
+      /**
+       * Toggle the current block between a list and a paragraph.
+       * @param {string} tag List element name.
+       */
+      toggleEditorList(tag) {
+        const range = this.restoreEditorSelection();
+        const listItem = range && this.getEditorAncestor(range.startContainer, 'li');
+        if (listItem && listItem.parentElement.tagName.toLowerCase() === tag) {
+          const list = listItem.parentElement;
+          Array.from(list.children).forEach(item => {
+            const paragraph = document.createElement('p');
+            paragraph.append(...item.childNodes);
+            list.parentNode.insertBefore(paragraph, list);
+          });
+          list.remove();
+          return;
+        }
+        if (listItem) {
+          const currentList = listItem.parentElement;
+          const replacement = document.createElement(tag);
+          replacement.append(...currentList.childNodes);
+          currentList.replaceWith(replacement);
+          return;
+        }
+        const block = range && this.getEditorBlock(range.startContainer);
+        if (!block && range) {
+          const list = document.createElement(tag);
+          const item = document.createElement('li');
+          item.append(range.extractContents());
+          if (!item.childNodes.length) {
+            item.append(document.createElement('br'));
+          }
+          list.append(item);
+          range.insertNode(list);
+          const caret = document.createRange();
+          caret.selectNodeContents(item);
+          caret.collapse(true);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(caret);
+          return;
+        }
+        if (!block) {
+          return;
+        }
+        const list = document.createElement(tag);
+        const item = document.createElement('li');
+        item.append(...block.childNodes);
+        list.append(item);
+        block.replaceWith(list);
+      },
+      /**
+       * Reflect the active Quill-style formats at the current selection.
+       */
+      updateEditorFormats() {
+        const editor = this.$refs.rich_text_editor;
+        const selection = window.getSelection();
+        if (!editor || this.edit_state.show_html || !selection?.rangeCount || !editor.contains(selection.anchorNode)) {
+          return;
+        }
+        const node = selection.anchorNode;
+        const block = this.getEditorBlock(node);
+        this.editorFormats.bold = !!this.getEditorAncestor(node, 'b, strong');
+        this.editorFormats.italic = !!this.getEditorAncestor(node, 'i, em');
+        this.editorFormats.underline = !!this.getEditorAncestor(node, 'u');
+        this.editorFormats.ordered = !!this.getEditorAncestor(node, 'ol');
+        this.editorFormats.bullet = !!this.getEditorAncestor(node, 'ul');
+        this.editorFormats.align = block?.style.textAlign || 'left';
+        this.editorFormats.header = 'p';
+        if (/^H[1-6]$/.test(block?.tagName || '')) {
+          this.editorFormats.header = block.tagName.toLowerCase();
+        }
+      },
+      /**
+       * Remove inline, link, block, list and alignment formats like Quill's clean action.
+       */
+      cleanEditorFormatting() {
+        if (this.edit_state.show_html) {
+          return;
+        }
+        this.$refs.rich_text_editor.focus();
+        const range = this.restoreEditorSelection();
+        if (!range || range.collapsed) {
+          return;
+        }
+        const fragment = range.extractContents();
+        fragment.querySelectorAll('b, strong, i, em, u, s, a, font, span').forEach(element => {
+          const parent = element.parentNode;
+          while (element.firstChild) {
+            parent.insertBefore(element.firstChild, element);
+          }
+          element.remove();
+        });
+        fragment.querySelectorAll('h1, h2, h3, h4, h5, h6, blockquote, li').forEach(element => {
+          const paragraph = document.createElement('p');
+          paragraph.append(...element.childNodes);
+          element.replaceWith(paragraph);
+        });
+        fragment.querySelectorAll('ol, ul').forEach(list => list.remove());
+        fragment.querySelectorAll('p, div').forEach(element => { element.style.cssText = ''; });
+        range.insertNode(fragment);
+        this.onRichTextInput();
+      },
+      /**
+       * Toggle one of the Quill-style foreground/background color palettes.
+       * @param {string} picker Palette identifier.
+       */
+      toggleEditorColorPicker(picker) {
+        if (!this.editable || this.edit_state.show_html) {
+          return;
+        }
+        if (this.editorColorPicker === picker) {
+          this.editorColorPicker = null;
+          return;
+        }
+        this.editorColorPicker = picker;
+      },
+      /**
+       * Apply a palette color to the current selection.
+       * @param {string} command Native color command.
+       * @param {string} color Hexadecimal color.
+       */
+      applyEditorColor(command, color) {
+        if ('foreColor' === command) {
+          this.editorTextColor = color;
+        }
+        if ('hiliteColor' === command) {
+          this.editorBackgroundColor = color;
+        }
+        this.runEditorCommand(command, color);
+      },
+      /**
+       * Preserve the editor selection while a toolbar control takes focus.
+       */
+      saveEditorSelection(event) {
+        if (this.editorLinkDialog && !event?.target?.closest?.('.g3w-input-richtext-link-picker')) {
+          this.closeEditorLink();
+        }
+        if (this.editorColorPicker && !event?.target?.closest?.('.g3w-input-richtext-color-picker')) {
+          this.editorColorPicker = null;
+        }
+        const selection = window.getSelection();
+        if (!selection || !selection.rangeCount) {
+          return;
+        }
+        const range = selection.getRangeAt(0);
+        if (!this.$refs.rich_text_editor.contains(range.commonAncestorContainer)) {
+          return;
+        }
+        this.editorSelection = range.cloneRange();
+      },
+      /**
+       * Update the stored HTML or source text after an editor change.
+       */
+      onRichTextInput() {
+        const editor = this.$refs.rich_text_editor;
+        if (this.edit_state.show_html) {
+          this.state.value = editor.innerText;
+        }
+        if (!this.edit_state.show_html) {
+          this.state.value = editor.innerHTML;
+        }
+        this.edit_state.edit = true;
+        this.change();
+        setTimeout(() => { this.edit_state.edit = false; });
+      },
+      /**
+       * Sanitize rich HTML pasted into the visual editor.
+       * @param {ClipboardEvent} event Paste event.
+       */
+      onRichTextPaste(event) {
+        if (this.edit_state.show_html) {
+          return;
+        }
+        event.preventDefault();
+        const html = event.clipboardData.getData('text/html');
+        const text = event.clipboardData.getData('text/plain');
+        const range = this.restoreEditorSelection();
+        if (!range) {
+          return;
+        }
+        range.deleteContents();
+        if (html) {
+          const template = document.createElement('template');
+          template.innerHTML = this.sanitizeEditorHtml(html);
+          range.insertNode(template.content);
+        }
+        if (!html) {
+          range.insertNode(document.createTextNode(text));
+        }
+        this.onRichTextInput();
+      },
+      /**
+       * Toggle between visual editing and the plain-text HTML source.
+       */
+      toggleEditorSource() {
+        const editor = this.$refs.rich_text_editor;
+        const showHtml = !this.edit_state.show_html;
+        this.editorColorPicker = null;
+        this.closeEditorLink();
+        this.editorSelection = null;
+        this.edit_state.show_html = showHtml;
+        if (this.edit_state.show_html) {
+          editor.textContent = editor.innerHTML;
+        }
+        if (!this.edit_state.show_html) {
+          editor.innerHTML = this.sanitizeEditorHtml(editor.innerText);
+        }
+        this.onRichTextInput();
+      },
+      /**
+       * Open the link editor for the selected text or existing link.
+       */
+      openEditorLink() {
+        if (this.edit_state.show_html || !this.editable) {
+          return;
+        }
+        if (this.editorLinkDialog) {
+          this.closeEditorLink();
+          return;
+        }
+        this.editorColorPicker = null;
+        const editor = this.$refs.rich_text_editor;
+        const selection = window.getSelection();
+        let range = this.editorSelection;
+        if (!range && selection?.rangeCount) {
+          range = selection.getRangeAt(0);
+        }
+        if (!range || !editor.contains(range.commonAncestorContainer)) {
+          return;
+        }
+        this.showEditorLink(range, this.getEditorLink(range));
+      },
+      /**
+       * Open the link editor when an existing link is clicked in the document.
+       * @param {MouseEvent} event Editor click.
+       */
+      onRichTextClick(event) {
+        if (!this.editable || this.edit_state.show_html) {
+          return;
+        }
+        const link = event.target.closest('a');
+        if (!link || !this.$refs.rich_text_editor.contains(link)) {
+          return;
+        }
+        event.preventDefault();
+        const range = document.createRange();
+        range.selectNodeContents(link);
+        range.collapse(false);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        this.showEditorLink(range, link);
+      },
+      /**
+       * Show the URL editor for a selection and optional existing link.
+       * @param {Range} range Editor selection to restore after editing.
+       * @param {HTMLAnchorElement|null} link Existing link, if selected.
+       */
+      showEditorLink(range, link) {
+        this.editorSelection = range.cloneRange();
+        this.editorLinkElement = link;
+        this.editorLinkExisting = !!link;
+        this.editorLinkValue = link?.getAttribute('href') || range.toString();
+        const message = document.createElement('div');
+        message.style.display = 'grid';
+        message.style.gap = '8px';
+        message.style.minWidth = 'min(320px, calc(100vw - 64px))';
+        const label = document.createElement('label');
+        label.textContent = _('Link URL');
+        const input = document.createElement('input');
+        input.className = 'form-control';
+        input.type = 'text';
+        input.value = this.editorLinkValue;
+        input.placeholder = 'https://';
+        input.autocomplete = 'url';
+        input.spellcheck = false;
+        let visit = null;
+        const updateVisitLink = () => {
+          if (!visit) {
+            return;
+          }
+          const href = this.getEditorLinkHref(input.value);
+          if (href) {
+            visit.href = href;
+            visit.removeAttribute('aria-disabled');
+          }
+          if (!href) {
+            visit.removeAttribute('href');
+            visit.setAttribute('aria-disabled', 'true');
+          }
+        };
+        input.addEventListener('input', () => {
+          input.setCustomValidity('');
+          updateVisitLink();
+        });
+        message.append(label, input);
+        if (link) {
+          visit = document.createElement('a');
+          visit.target = '_blank';
+          visit.rel = 'noopener noreferrer';
+          visit.textContent = _('Visit link');
+          message.append(visit);
+          updateVisitLink();
+        }
+        const buttons = {
+          cancel: {
+            label: _('Cancel'),
+            className: 'btn-default',
+            callback: () => this.closeEditorLink(),
+          },
+        };
+        if (link) {
+          buttons.remove = {
+            label: _('Remove link'),
+            className: 'btn-danger',
+            callback: () => this.removeEditorLink(),
+          };
+        }
+        buttons.save = {
+          label: _('Save'),
+          className: 'btn-primary',
+          callback: () => {
+            this.editorLinkValue = input.value;
+            this.applyEditorLink();
+          },
+        };
+        this.editorLinkDialog = GUI.dialog({ title: _('Link'), message, buttons });
+        this.editorLinkDialog.addEventListener('click', event => {
+          const saveButton = event.target.closest('button[value="save"]');
+          if (!saveButton || this.getEditorLinkHref(input.value)) {
+            return;
+          }
+          event.preventDefault();
+          input.setCustomValidity(_('Enter a valid URL'));
+          input.reportValidity();
+        });
+        input.focus();
+        input.select();
+      },
+      /**
+       * Return the link containing a selection range, if any.
+       * @param {Range} range Current editor selection.
+       * @returns {HTMLAnchorElement|null}
+       */
+      getEditorLink(range) {
+        const node = range.startContainer;
+        const parent = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+        const link = parent?.closest('a');
+        if (!link || !this.$refs.rich_text_editor.contains(link)) {
+          return null;
+        }
+        return link;
+      },
+      /**
+       * Apply a safe URL to an existing link or to the selected editor text.
+       */
+      applyEditorLink() {
+        const href = this.getEditorLinkHref(this.editorLinkValue);
+        if (!href) {
+          return;
+        }
+        const editor = this.$refs.rich_text_editor;
+        editor.focus();
+        const range = this.restoreEditorSelection();
+        const selection = window.getSelection();
+        if (!range) {
+          return;
+        }
+        if (this.editorLinkElement && editor.contains(this.editorLinkElement)) {
+          this.editorLinkElement.setAttribute('href', href);
+          this.editorLinkElement.setAttribute('target', '_blank');
+          this.editorLinkElement.setAttribute('rel', 'noopener noreferrer');
+        }
+        if (!this.editorLinkElement || !editor.contains(this.editorLinkElement)) {
+          if (range.collapsed) {
+            const link = document.createElement('a');
+            link.setAttribute('href', href);
+            link.setAttribute('target', '_blank');
+            link.setAttribute('rel', 'noopener noreferrer');
+            link.textContent = href;
+            range.insertNode(link);
+            const linkRange = document.createRange();
+            linkRange.selectNodeContents(link);
+            selection.removeAllRanges();
+            selection.addRange(linkRange);
+          }
+          if (!range.collapsed) {
+            const link = document.createElement('a');
+            link.setAttribute('href', href);
+            link.setAttribute('target', '_blank');
+            link.setAttribute('rel', 'noopener noreferrer');
+            link.append(range.extractContents());
+            range.insertNode(link);
+          }
+        }
+        this.onRichTextInput();
+        this.closeEditorLink();
+      },
+      /**
+       * Normalize a link URL and reject unsafe protocols.
+       * @param {string} value URL from the link dialog.
+       * @returns {string|null} Safe href, or null when invalid.
+       */
+      getEditorLinkHref(value) {
+        let href = value.trim();
+        if (!href) {
+          return null;
+        }
+        const hasProtocol = /^[a-z][a-z\d+.-]*:/i.test(href);
+        const isRelative = href.startsWith('/') || href.startsWith('#') || href.startsWith('?');
+        if (!hasProtocol && !isRelative) {
+          href = `https://${href}`;
+        }
+        try {
+          const parsedUrl = new URL(href, document.baseURI);
+          if (!['http:', 'https:', 'mailto:', 'tel:'].includes(parsedUrl.protocol)) {
+            return null;
+          }
+        } catch (error) {
+          return null;
+        }
+        return href;
+      },
+      /**
+       * Remove an existing link while preserving its text and inline content.
+       */
+      removeEditorLink() {
+        const link = this.editorLinkElement;
+        if (!link || !this.$refs.rich_text_editor.contains(link)) {
+          this.closeEditorLink();
+          return;
+        }
+        const parent = link.parentNode;
+        while (link.firstChild) {
+          parent.insertBefore(link.firstChild, link);
+        }
+        link.remove();
+        this.onRichTextInput();
+        this.closeEditorLink();
+      },
+      /**
+       * Close the link editor and return focus to the selected editor range.
+       */
+      closeEditorLink() {
+        const editor = this.$refs.rich_text_editor;
+        const dialog = this.editorLinkDialog;
+        this.editorLinkDialog = false;
+        if (dialog?.open) {
+          dialog.close();
+        }
+        if (editor && this.editorSelection) {
+          editor.focus();
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(this.editorSelection);
+        }
+        this.editorLinkValue = '';
+        this.editorLinkExisting = false;
+        this.editorLinkElement = null;
+        this.editorSelection = null;
+      },
+      /**
+       * Insert a small editable table at the current selection.
+       */
+      insertEditorTable() {
+        if (this.edit_state.show_html) {
+          return;
+        }
+        this.$refs.rich_text_editor.focus();
+        const range = this.restoreEditorSelection();
+        if (!range) {
+          return;
+        }
+        const table = document.createElement('table');
+        table.style.cssText = 'border-collapse:collapse;width:100%';
+        const row = table.insertRow();
+        const cell = row.insertCell();
+        cell.style.cssText = 'border:1px solid #999;padding:4px';
+        cell.append(document.createElement('br'));
+        range.deleteContents();
+        range.insertNode(table);
+        this.onRichTextInput();
+      },
+      /**
+       * Find the table cell containing the current editor selection.
+       * @returns {HTMLTableCellElement|null} Selected cell, when inside a table.
+       */
+      getSelectedEditorCell() {
+        const selection = window.getSelection();
+        const node = selection?.anchorNode;
+        const parent = node?.nodeType === Node.ELEMENT_NODE ? node : node?.parentElement;
+        const cell = parent?.closest('td, th');
+        if (!cell || !this.$refs.rich_text_editor.contains(cell)) {
+          return null;
+        }
+        return cell;
+      },
+      /**
+       * Add or remove a row or column at the selected table cell.
+       * @param {string} action Table operation identifier.
+       */
+      editEditorTable(action) {
+        if (this.edit_state.show_html) {
+          return;
+        }
+        const cell = this.getSelectedEditorCell();
+        if (!cell) {
+          return;
+        }
+        const row = cell.parentElement;
+        const table = cell.closest('table');
+        let index = cell.cellIndex;
+        if ('row-above' === action || 'row-below' === action) {
+          const newRow = row.cloneNode(false);
+          Array.from(row.cells).forEach(() => {
+            const newCell = newRow.insertCell();
+            newCell.style.border = '1px solid #999';
+            newCell.style.padding = '4px';
+            newCell.innerHTML = '<br>';
+          });
+          if ('row-above' === action) {
+            row.parentNode.insertBefore(newRow, row);
+          }
+          if ('row-below' === action) {
+            row.parentNode.insertBefore(newRow, row.nextSibling);
+          }
+        }
+        if ('row-remove' === action) {
+          row.remove();
+        }
+        if ('column-right' === action) {
+          index++;
+        }
+        if (['column-left', 'column-right'].includes(action)) {
+          Array.from(table.rows).forEach(tableRow => {
+            const newCell = tableRow.insertCell(index);
+            newCell.style.border = '1px solid #999';
+            newCell.style.padding = '4px';
+            newCell.innerHTML = '<br>';
+          });
+        }
+        if ('column-remove' === action) {
+          Array.from(table.rows).forEach(tableRow => {
+            if (tableRow.cells[index]) {
+              tableRow.deleteCell(index);
+            }
+          });
+        }
+        this.onRichTextInput();
       },
       /**
        * Pick a feature, update the selected value and report the pick outcome.
@@ -1883,7 +2715,7 @@
     /**
      * Attach external widgets after their DOM nodes have been rendered.
      * Selects preload labels and synchronize selection; date/time sets display
-     * and storage formats; rich-text fields attach Quill and toolbar handlers.
+    * and storage formats; rich-text fields attach their native editor handlers.
      */
     async mounted() {
       const is_select   = ['select_input', 'select_autocomplete_input'].includes(this.type);
@@ -1971,85 +2803,19 @@
         this.setValue();
       }
 
-      // Quill edits rich text as HTML unless the source-view toggle is active.
+      // Rich-text fields use the browser's native contenteditable surface.
       if ('texthtml_input' === this.type) {
         await this.$nextTick();
-        this.quill = new Quill(this.$refs.quill_editor, {
-          theme: 'snow',
-          modules: {
-            clipboard: { matchVisual: false },
-            table: true,
-            toolbar: {
-              container: [
-                [{ header: [1, 2, 3, 4, 5, 6, false] }],
-                [{ align: '' }, { align: 'center' }, { align: 'right' }, { align: 'justify' }],
-                [{ color: [] }, { background: [] }],
-                ['bold', 'italic', 'underline', { list: 'ordered' }, { list: 'bullet' }, 'link', 'clean', 'html'],
-                ['table', 'column-left', 'column-right', 'column-remove', 'row-above', 'row-below', 'row-remove'],
-              ],
-              handlers: {
-                html: () => {
-                  this.edit_state.show_html = !this.edit_state.show_html;
-                  const editor = this.quill.container.firstChild;
-                  if (this.edit_state.show_html) {
-                    editor.innerText = editor.innerHTML;
-                  }
-                  if (!this.edit_state.show_html) {
-                    editor.innerHTML = editor.innerText;
-                  }
-                  this.$el.querySelectorAll('.ql-formats > *').forEach(child => {
-                    if (child.classList.contains('ql-html')) {
-                      child.classList.toggle('skin-color');
-                    }
-                    if (!child.classList.contains('ql-html')) {
-                      child.classList.toggle('g3w-disabled');
-                    }
-                  });
-                },
-                'column-left': () => this.table.insertColumnLeft(),
-                'column-right': () => this.table.insertColumnRight(),
-                'column-remove': () => this.table.deleteColumn(),
-                'row-above': () => this.table.insertRowAbove(),
-                'row-below': () => this.table.insertRowBelow(),
-                'row-remove': () => this.table.deleteRow(),
-              },
-            },
-          },
+        this.$refs.rich_text_toolbar.querySelectorAll('button[title]').forEach(button => {
+          button.dataset.placement = 'top';
         });
-        this.quill.clipboard.dangerouslyPasteHTML(0, this.state.value);
-        this.table = this.quill.getModule('table');
-        this.$el.querySelector('.ql-formats button[aria-label="align: "]').ariaLabel     = 'align: left';
-        this.$el.querySelector('.ql-formats .ql-color.ql-picker').title                  = 'color: text';
-        this.$el.querySelector('.ql-formats .ql-color.ql-picker').dataset.placement      = 'top';
-        this.$el.querySelector('.ql-formats .ql-background.ql-picker').title             = 'color: background';
-        this.$el.querySelector('.ql-formats .ql-background.ql-picker').dataset.placement = 'top';
-        this.$el.querySelectorAll('.ql-formats button').forEach(btn => { btn.title = btn.ariaLabel; btn.dataset.placement = 'top'; });
-        Object.entries({
-          '.ql-html':          ['html', 'HTML source'],
-          '.ql-column-left':   ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="m14 1 1 1v12l-1 1H2l-1-1V2l1-1zM2 0 0 2v12l2 2h12l2-2V2l-2-2z"/><path d="M10 12V4H9L5 8z"/></svg>', 'Add column left'],
-          '.ql-column-right':  ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="m14 1 1 1v12l-1 1H2l-1-1V2l1-1zM2 0 0 2v12l2 2h12l2-2V2l-2-2z"/><path d="M6 12V4l5 4z"/></svg>', 'Add column right'],
-          '.ql-column-remove': ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/><path d="M4.6 4.6a.5.5 0 0 1 .8 0L8 7.3l2.6-2.7a.5.5 0 0 1 .8.8L8.7 8l2.7 2.6a.5.5 0 0 1-.8.8L8 8.7l-2.6 2.7a.5.5 0 0 1-.8-.8L7.3 8 4.6 5.4a.5.5 0 0 1 0-.8"/></svg>', 'Remove column'],
-          '.ql-row-above':     ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="m14 1 1 1v12l-1 1H2l-1-1V2l1-1zM2 0 0 2v12l2 2h12l2-2V2l-2-2z"/><path d="M4 11h8v-1L8 6z"/></svg>', 'Add row above'],
-          '.ql-row-below':     ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="M4 7V6h8v1l-4 4z"/><path d="m0 2 2-2h12l2 2v12l-2 2H2l-2-2zm15 0-1-1H2L1 2v12l1 1h12l1-1z"/></svg>', 'Add row below'],
-          '.ql-row-remove':    ['<svg fill="currentColor" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/><path d="m4 8 .5-.5h7a.5.5 0 0 1 0 1h-7z"/></svg>', 'Remove row'],
-        }).forEach(([selector, [label, title]]) => {
-          const btn = this.$el.querySelector(selector);
-          btn.innerHTML = label;
-          btn.style.width = '.ql-html' === selector ? 'unset' : btn.style.width;
-          btn.title = title;
-        });
-        this.quillHandler = () => {
-          const editor         = this.quill.container.firstChild;
-          this.state.value     = this.edit_state.show_html ? editor.innerText : editor.innerHTML;
-          this.edit_state.edit = true;
-          this.change();
-          setTimeout(() => { this.edit_state.edit = false; });
-        };
-        this.quill.on('text-change', this.quillHandler);
+        this.$refs.rich_text_editor.innerHTML = this.sanitizeEditorHtml(this.state.value);
+        document.addEventListener('selectionchange', this.updateEditorFormats);
+        this.updateEditorFormats();
       }
     },
     /**
-     * Remove map listeners, global resize hooks, relation watchers and Quill handlers.
+    * Remove map listeners, global resize hooks and relation watchers.
       * Invalidate autocomplete responses and release the picking interaction.
      */
     beforeDestroy() {
@@ -2072,10 +2838,11 @@
         this.filterFieldsUnwatches?.forEach(unwatch => unwatch());
         this.filterFieldsUnwatches = null;
       }
-      if (this.quill) {
-        this.quill.off('text-change', this.quillHandler);
-        this.quill = null;
-        this.quillHandler = null;
+      if ('texthtml_input' === this.type) {
+        document.removeEventListener('selectionchange', this.updateEditorFormats);
+        if (this.editorLinkDialog) {
+          this.closeEditorLink();
+        }
       }
       this.edit_state.edit = false;
       this.edit_state.show_html = false;
@@ -2093,10 +2860,118 @@
 .g3w-input-coordinate-button-active {
   border: 2px solid !important;
 }
-.g3w-input-quill {
+.g3w-input-richtext {
   border: 1px solid #ccc;
+  box-sizing: border-box;
+  line-height: 1.42;
+  min-height: 72px;
+  overflow: auto;
+  padding: 12px 15px;
+  height: auto;
 }
-.g3w-input-quill.g3w-input-quill-invalid {
-  border: 1px solid reed;
+.g3w-input-richtext-toolbar {
+  align-items: center;
+  border: 1px solid #ccc;
+  border-bottom: 0;
+  color: #444;
+  column-gap: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 4px 5px;
+}
+.g3w-input-richtext-toolbar button {
+  background: transparent;
+  border: 0;
+  border-radius: 2px;
+  color: inherit;
+  cursor: pointer;
+  font-size: 15px;
+  height: 28px;
+  line-height: 1;
+  min-width: 30px;
+  padding: 4px 6px;
+  flex: 0 0 auto;
+}
+.g3w-input-richtext-toolbar button:hover:not(:disabled),
+.g3w-input-richtext-toolbar button:focus-visible {
+  background: #e6e6e6;
+}
+.g3w-input-richtext-toolbar button.g3w-input-richtext-active {
+  background: #e8f2ff;
+  color: #06c;
+}
+.g3w-input-richtext-toolbar button:disabled {
+  cursor: default;
+  opacity: .45;
+}
+.g3w-input-richtext-break {
+  flex-basis: 100%;
+  height: 0;
+}
+.g3w-input-richtext-toolbar select {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font-size: 16px;
+  height: 28px;
+  min-width: 118px;
+  padding: 0 20px 0 8px;
+}
+.g3w-input-richtext-toolbar select:disabled {
+  cursor: default;
+}
+.g3w-input-richtext-color-picker {
+  display: inline-block;
+  position: relative;
+  vertical-align: middle;
+}
+.g3w-input-richtext-color-indicator {
+  border-bottom: 2px solid #000;
+  bottom: 3px;
+  left: 6px;
+  position: absolute;
+  right: 6px;
+}
+.g3w-input-richtext-color-palette {
+  background: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 5px #0003;
+  display: grid;
+  grid-template-columns: repeat(7, 18px);
+  left: 0;
+  padding: 4px;
+  position: absolute;
+  top: 30px;
+  width: max-content;
+  z-index: 10;
+}
+.g3w-input-richtext-color-palette button {
+  border: 1px solid #ddd;
+  height: 16px;
+  min-width: 16px;
+  padding: 0;
+  width: 16px;
+}
+.g3w-input-richtext-toolbar-source-mode select,
+.g3w-input-richtext-toolbar-source-mode button:not(.g3w-input-richtext-html) {
+  cursor: not-allowed;
+  opacity: .45;
+  pointer-events: none;
+}
+.g3w-input-richtext-color-picker > button {
+  font-size: 17px !important;
+  font-weight: 600;
+}
+.g3w-input-richtext-html {
+  font-weight: 700;
+  text-transform: lowercase;
+}
+.g3w-input-richtext.g3w-input-richtext-source {
+  font-family: monospace;
+  white-space: pre-wrap;
+}
+.g3w-input-richtext.g3w-input-richtext-invalid {
+  border: 1px solid red;
 }
 </style>
