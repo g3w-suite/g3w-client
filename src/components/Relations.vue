@@ -452,13 +452,10 @@
       },
 
      /**
-      * @param { Object } geometry
-      * @param geometry.type        Point, MultiPoint, etc ...
-      * @param geometry.coordinates
-      *
-      * @since 3.9.0
-      */
-      zoomToGeometry(geometry) {
+      * @since 4.2.0
+      */  
+      zoomToGeometry(_, feature) {
+        const geometry = feature?.geometry;
         if (geometry) {
           const geom = new ol.geom[geometry.type](geometry.coordinates);
           GUI.zoomToExtent(geom?.getExtent(), { highlight: true, highLightGeometry: geom });
