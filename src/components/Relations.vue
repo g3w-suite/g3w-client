@@ -130,7 +130,7 @@
                 v-if  = "showTools"
                 class = "table-tools"
               >
-                <span v-for = "action in getFeatureActions(feature)" :key = "action.id"
+                <span v-for = "action in getFeatureActions(table.features[i])" :key = "action.id"
                   @click.stop    = "runAction(action, i)"
                   :title         = "action.hint"
                   data-placement = "right"
@@ -757,7 +757,6 @@
         this.columns[i].search = e.target.value.trim();
         this.getData();
       });
-
       // autoload selected relation
       if (this.relation) {
         this.actions[this.table.layerId].push(...[
