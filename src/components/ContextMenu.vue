@@ -355,6 +355,10 @@
   import { downloadFeatures }    from 'utils/downloadFeatures';
   import { copyUrl }             from 'utils/copyUrl';
   import { gettext as _ }        from 'g3w-i18n';
+  import { GEOMETRY_FIELDS }     from 'g3w-constants';
+  
+  import Table                   from 'components/Table.vue';
+
 
   /**
    * @see https://www.w3schools.com/howto/howto_js_draggable.asp 
