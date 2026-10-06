@@ -521,7 +521,7 @@
 
 <script>
 import { unzip }           from 'fflate';
-import toGeoJSON           from 'utils/toGeoJSON';
+import { toGeoJSON }       from 'utils/toGeoJSON';
 
 import {
   GEOMETRY_FIELDS,
