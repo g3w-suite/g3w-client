@@ -210,7 +210,6 @@
   import { getDataForSearchInput }             from 'utils/getDataForSearchInput';
   import { getRelationLayerById }              from 'utils/getRelationLayerById';
   import { throttle }                          from 'utils/throttle';
-  import { debounce }                          from 'utils/debounce';
 
   export default {
 

@@ -521,7 +521,7 @@
 
 <script>
 import { unzip }           from 'fflate';
-import shp                 from 'shpjs';
+import toGeoJSON           from 'utils/toGeoJSON';
 
 import {
   GEOMETRY_FIELDS,
@@ -910,7 +910,7 @@ export default {
             }
             out[ext] = decoder.decode(bytes);
           }
-          data = JSON.stringify(await shp(out)); // convert to wsg84 (geojson)
+          data = JSON.stringify(await toGeoJSON(out)); // convert to wsg84 (geojson)
         }
 
         // CSV file
@@ -981,7 +981,7 @@ export default {
           });
         }
 
-        // @since 3.11.0 shp function create always features in 4326 coordinates
+        // @since 3.11.0 toGeoJSON always creates features in 4326 coordinates
         if ('zip' === this.file_type && this.layer_crs !== 'EPSG:4326') {
           features.forEach(f => f.getGeometry().transform('EPSG:4326', this.layer_crs));
         }

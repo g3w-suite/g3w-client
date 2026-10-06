@@ -1,5 +1,5 @@
 import { unzip }           from 'fflate';
-import shp                 from 'shpjs';
+import toGeoJSON           from 'utils/toGeoJSON';
 
 import { GEOMETRY_FIELDS } from 'g3w-constants';
 import { getUniqueDomId }  from 'utils/getUniqueDomId';
@@ -22,7 +22,7 @@ export async function createVectorLayerFromFile({ name, type, crs, mapCrs, data,
 
   // SHAPE FILE
   if ('zip' === type) {
-    data = JSON.stringify(await shp(await data.arrayBuffer())); // un-zip folder data 
+    data = JSON.stringify(await toGeoJSON(await data.arrayBuffer())); // un-zip folder data
   }
 
   // KMZ FILE

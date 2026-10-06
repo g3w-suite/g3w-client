@@ -38,7 +38,6 @@ import * as style           from 'ol/style';
 import * as tilegrid        from 'ol/tilegrid';
 import * as xml             from 'ol/xml';
 
-import shp                  from 'shpjs';
 import proj4                from 'proj4';
 import Vue                  from 'vue/dist/vue.js';
 import { jQuery }           from 'shims/jquery';
@@ -97,8 +96,6 @@ Object.assign(globalThis, {
     script.onload = callback;
     document.head.appendChild(script);
   },
-  /** @deprecated since 3.11.0 */
-  shp,
   /** @deprecated since 3.11.0 */
   proj4,
 });
