@@ -457,7 +457,7 @@
           </div>
 
           <!-- LAYER COLOR -->
-          <div v-if = "layer_data">
+          <div v-if = "layer_data && has_geometry">
             <!-- Configures the new layer color: plane selects saturation/brightness; sliders select hue/opacity. -->
             <div class="g3w-color-picker" @click.stop>
               <div class="g3w-color-picker-heading">
