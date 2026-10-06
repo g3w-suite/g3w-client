@@ -3089,7 +3089,7 @@ export class Layer extends Emitter {
           url:             this.state.url,
           projection,
           layer:           this.config.name,
-          matrixSet:       `${grids?.at?.(0)?.crs ?? 'EPSG:3857'}`,
+          matrixSet:       `${grids?.at?.(0)?.crs ?? ApplicationState.project.getProjection().getCode()}`,
           transparent:     false,
           format:          formats?.at?.(0) ?? 'image/png',
           style:           'default',
