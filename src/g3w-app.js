@@ -817,24 +817,6 @@ export default new (class GUI extends Emitter {
     this.setLoadingContent(this.showData.reqs.length > 0);
   }
 
-  showForm(opts = {}) {
-    const { FormComponent } = require('components/g3w-form');
-    // new instance every time
-    const formComponent = opts.formComponent ? new opts.formComponent(opts) : new FormComponent(opts);
-    this.setContent({
-      perc:       opts.perc,
-      //@since 4.1.0 used instead crumb
-      title:      formComponent?.layer?.getName?.(),
-      content:    formComponent,
-      split:      undefined !== opts.split ? opts.split : 'h',
-      push:       !!opts.push, //only one (if other deletes previous component)
-      showgoback: !!opts.showgoback,
-      closable:   false
-    });
-    // return service
-    return formComponent.getService();
-  }
-
   /**
    *
    * @param pop remove or not content or pop
@@ -992,12 +974,22 @@ export default new (class GUI extends Emitter {
     iconClass = null, //@since 3.11.0
   } = {}) {
 
+    const icon = iconClass
+      ? Vue.prototype.$fa(iconClass)
+      : ({
+        tool:    'fas fa-cog',
+        warning: 'fas fa-exclamation-circle',
+        alert:   'fas fa-exclamation-triangle',
+        info:    'fas fa-info-circle',
+        success: 'far fa-check-circle',
+      })[type] || Vue.prototype.$fa(type);
+
     const dialog = Object.assign(document.createElement('template'), {
         innerHTML: /* html */ `
           <dialog class="usermessage-${type}" popover="manual">
             <form tabindex="0">
               <header>
-                <i class = "${g3w.app.getFontClass(iconClass || type)}"></i>
+                <i class = "${icon}"></i>
                 <div>
                   <h4 style="font-weight: bold;">${title ? _(title): type.toUpperCase()}</h4>
                   ${ subtitle ? `<h5>${_(subtitle)}</h5>` : '' }
@@ -2176,17 +2168,6 @@ export default new (class GUI extends Emitter {
    * @since 4.1.0
    */
   postRender(element) {}
-
-  /**
-   * Method that call editing plugin method to edit a feature from a layer
-   * @since 4.2.0
-   */
-  editFeature({ layer, feature } = {}) {
-    this.getPlugin('editing')?.editFeature?.({
-      layer,
-      feature,
-    })
-  }
 
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
@@ -3576,7 +3557,7 @@ export default new (class GUI extends Emitter {
             style  = "padding-bottom:5px; border-bottom: 1px solid #eee;"
             :style = "{ backgroundColor: backgroundLegend }"
           >
-            <bar-loader :loading = "url.loading" />
+            <div v-if = "url.loading" class = "bar-loader" style = "border: 0"></div>
             <img
               v-show = "!url.loading && !url.error"
               :src   = "url.url"
@@ -4421,9 +4402,13 @@ export default new (class GUI extends Emitter {
       view:                new ol.View({
         padding,
         extent,
-        projection:    this.getProjection(),
-        center:        ol.extent.getCenter(initextent),
-        resolution:    Math.max(ol.extent.getWidth(initextent) / width, ol.extent.getHeight(initextent) / height), // max(xInitRes, yInitRes)
+        /**@since 4.2.0 set center constraint */
+        constrainOnlyCenter: true,
+        projection:          this.getProjection(),
+        center:              ol.extent.getCenter(initextent),
+        resolution:          Math.max(ol.extent.getWidth(initextent) / width, ol.extent.getHeight(initextent) / height), // max(xInitRes, yInitRes)
+        /**@since 4.2.0 set max resolution */
+        maxResolution:       Math.max(ol.extent.getWidth(extent) / width, ol.extent.getHeight(extent) / height),
       }),
     });
 
@@ -4528,7 +4513,7 @@ export default new (class GUI extends Emitter {
 
     this.#map.getViewport().insertAdjacentHTML(
       'afterbegin',
-      /* html */`<div id="map-spinner" style="position:absolute; top: 50%; right: 50%; z-index: 1;"></div>`
+      /* html */`<div id="map-spinner"></div>`
     );
 
     this.#map.getInteractions().forEach(int => this.#watchInteraction(int));

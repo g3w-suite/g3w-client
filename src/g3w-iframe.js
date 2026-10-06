@@ -75,10 +75,8 @@ export class IframeApp extends Emitter {
 
     // emit 'app:ready' message when ready
     GUI.isMapReady().then(async () => {
-      // wait until "editing" plugin is loaded
-      if (window.initConfig.plugins.editing) {
-        await waitFor(() => GUI.getPlugin('editing'));
-      }
+      // wait until all plugins are loaded
+      await waitFor(() => 0 === ApplicationState.plugins.length);
       window.parent?.postMessage?.({
         id:        null,
         action:   'app:ready',
