@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file Browse related features and relation records.
   @since v3.7
 -->
 
@@ -130,30 +130,17 @@
                 v-if  = "showTools"
                 class = "table-tools"
               >
-                <span
-                  v-if           = "table.features[i].geometry"
-                  @click.stop    = "zoomToGeometry(table.features[i].geometry)"
-                  class          = "action-button row-form skin-color fas fa-map-marker-alt"
-                  title          = "Zoom to Geometry"
+                <span v-for = "action in getFeatureActions(table.features[i])" :key = "action.id"
+                  @click.stop    = "runAction(action, i)"
+                  :title         = "action.hint"
                   data-placement = "right"
-                ></span>
-                <span
-                  v-if           = "form_structure"
-                  @click.stop    = "showForm(i)"
-                  title          = "Form View"
-                  data-placement = "right"
-                  class          = "action-button row-form skin-color fas fa-table"
-                ></span>
-                <span
-                  v-if           = "isEditable"
-                  @click.stop    = "editFeature(i)"
-                  class          = "action-button row-form skin-color fas fa-pencil-alt"
-                  title          = "Edit"
-                  data-placement = "right"
+                  class          = "action-button row-form skin-color"
+                  :class         = "[action.class, { 'disabled': !!(action.state || {}).disabled }]"
+                  :style         = "action.style"
                 ></span>
               </td>
               <td v-for = "value in row">
-                <field :state = "{ value }" />
+                <g3w-field :field-type = "getFieldType({ value })" :state = "{ value }" />
               </td>
             </tr>
           </tbody>
@@ -209,8 +196,9 @@
   import { G3W_FID, PAGELENGTHS, TIMEOUT } from 'g3w-constants';
   import ApplicationState                  from 'g3w-state';
   import Component                         from 'g3w-component';
-  import Field                             from 'components/FieldG3W.vue';
-  import { FieldsService }                 from 'components/g3w-fields';
+  import G3WField                          from 'components/G3WField.vue';
+  import G3WTabs                           from 'components/G3WTabs.vue';
+  import { toRawType }                     from 'utils/toRawType';
   import GUI                               from 'g3w-app';
   import { debounce }                      from 'utils/debounce';
   import { getCatalogLayerById }           from 'utils/getCatalogLayerById';
@@ -224,7 +212,7 @@
     name: 'relation',
 
     components: {
-      Field,
+      'g3w-field': G3WField,
     },
 
     data() {
@@ -291,6 +279,8 @@
          * @since 4.1.0
          */
         layerId:     this.$options.layerId,
+        /**@since 4.2.0 contains array of action feature */
+        actions:     { [layer.getId()]: [] },
       };
     },
 
@@ -302,7 +292,7 @@
        * @since 3.9.0
        */
       showTools() {
-        return [!!this.isEditable, !!this.form_structure, !!this.table.features?.some(f => f.geometry)].filter(Boolean).length;
+        return [!!this.layer.isEditable(), !!this.form_structure, !!this.table.features?.some(f => f.geometry)].filter(Boolean).length;
       },
 
       /**
@@ -338,15 +328,6 @@
        */
       columns() {
         return this.layer.getTableHeaders();
-      },
-
-      /**
-       * @returns { boolean } whether relation layer is editable
-       * 
-       * @since 4.1.0 
-       */
-      isEditable() {
-        return this.layer.isEditable() && !this.layer.isInEditing();
       },
 
       /**
@@ -393,6 +374,54 @@
     },
 
     methods: {
+      getFieldType(field) {
+        let type = field.type;
+        if ('vue' !== type) {
+          const fieldValue = field.value;
+          const value = fieldValue && 'Object' === toRawType(fieldValue) && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
+          if (!value) {
+            type = 'simple';
+          } else if (value && 'object' === typeof value) {
+            if (value.coordinates) {
+              type = 'geo';
+            } else if (value.vue) {
+              type = 'vue';
+            }
+          } else if (value && Array.isArray(value)) {
+            if (value.length && value[0].photo) {
+              type = 'photo';
+            } else {
+              type = 'simple'
+            }
+          } else if (value.toString().toLowerCase().match(/^(https?:\/\/[^\s]+)\.(png|jpg|jpeg|gif)$/g)) {
+            type = 'photo';
+          } else if (value.toString().match(/^(https?:\/\/[^\s]+)/g)) {
+            type = 'link';
+          } else {
+            type = 'simple';
+          }
+        }
+        return `${type}_field`;
+      },
+
+      /**
+       * @since 4.2.0
+       * @param action the action to run
+       * @param feature the feature on which the action is run
+       * @param i the index of the action in the list
+       */
+      runAction(action, i) {
+        action?.cbk?.(this.layer.state, this.table.features[i], action);
+      },
+
+      /**
+       * @since 4.2.0 
+       * @param action 
+       * @param feature 
+       */
+      getFeatureActions(feature) {
+        return this.actions[this.layer.getId()]?.filter(a => a.condition?.({ layer: this.layer, feature }) ?? a.show ?? true);
+      },
 
       /**
        * @param relation
@@ -423,13 +452,10 @@
       },
 
      /**
-      * @param { Object } geometry
-      * @param geometry.type        Point, MultiPoint, etc ...
-      * @param geometry.coordinates
-      *
-      * @since 3.9.0
-      */
-      zoomToGeometry(geometry) {
+      * @since 4.2.0
+      */  
+      zoomToGeometry(_, feature) {
+        const geometry = feature?.geometry;
         if (geometry) {
           const geom = new ol.geom[geometry.type](geometry.coordinates);
           GUI.zoomToExtent(geom?.getExtent(), { highlight: true, highLightGeometry: geom });
@@ -523,18 +549,21 @@
       /**
        * @param i index
        */
-      async showForm(i) {
+      async showForm(layer, feature) {
         GUI.showContent({
           content: new Component({
             internalComponent: new (Vue.extend({
+              components: {
+                'g3w-tabs': G3WTabs,
+              },
               data: () => ({
-                layerid:        this.table.layerId,
-                feature:        this.table.features[i],
+                layerid:        layer.id,
+                feature:        feature,
                 fields:         this.columns.map(c => Object.assign(c, {
-                  value: this.table.features[i].attributes[c.name],
+                  value: feature.attributes[c.name],
                   query: true,
                   input: {
-                    type: `${FieldsService.getType(c)}`
+                    type: this.getFieldType(c)
                   }
                 })),
                 form_structure:    this.form_structure,
@@ -558,7 +587,7 @@
                       <tbody>
                         <tr class="featurebox-body">
                           <td>
-                            <tabs
+                            <g3w-tabs
                               :layerid = "layerid"
                               :feature = "feature"
                               :fields  = "fields"
@@ -577,23 +606,10 @@
               }
             }))
           }),
-          title:      this.table.features[i].id,
+          title:      feature.id,
           text:       true,
           push:       true,
           showgoback: true,
-        });
-      },
-
-      /**
-       * @param index
-       */
-      editFeature(index) {
-        GUI.editFeature({
-          layer: {
-            id:         this?.nmRelation?.referencedLayer ?? this.relation.referencingLayer,
-            attributes: this.columns,
-          },
-          feature: this.table.features[index],
         });
       },
 
@@ -733,13 +749,36 @@
     },
 
     async mounted() {
+
       this.changeColumn = debounce((e, i) => {
         this.columns[i].search = e.target.value.trim();
         this.getData();
       });
-
       // autoload selected relation
       if (this.relation) {
+        this.actions[this.table.layerId].push(...[
+          {
+            id :   "zoomgeometry",
+            cbk:   this.zoomToGeometry.bind(this),
+            hint:  "Zoom to Geometry",         
+            class: "fas fa-map-marker-alt",
+            condition: ({ layer, feature } = {}) => layer.state.geolayer && feature.geometry,
+          },
+          {
+            id:        "showform",
+            hint:      "Show Form",         
+            class:     "fas fa-table",
+            cbk:       this.showForm.bind(this),
+            condition: () => this.form_structure,
+          }   
+        ]);
+        //call setters
+        GUI.addActionsForLayers(this.actions, [ {
+          id:       this.table.layerId,
+          features: this.state.features,
+        }]);
+        
+
         this.relation.title = this.relation.name;
         if ('ONE' !== this.relation.type) {
           this.getData();
@@ -766,6 +805,8 @@
       if (1 === this.relations.length) {
         delete this.relations[0].noback;
       }
+
+      this.actions[this.table.layerId] = [];
     },
 
   };
@@ -796,7 +837,6 @@
 
   .layer-relation:not([style*="display: none"]) {
     margin-top: 3px;
-    display: flex !important;
     flex-direction: column;
   }
 

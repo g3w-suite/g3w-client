@@ -64,8 +64,7 @@ export default class Component extends Emitter {
       disabled:                     false,
       closewhenshowviewportcontent: true,
       ...opts,
-      // TODO: check why `GUI.getFontClass` is undefined
-      icon: GUI.getFontClass?.(opts.icon) ?? opts.icon
+      icon: Vue.prototype.$fa?.(opts.icon) ?? opts.icon
     });
 
     this.#service = this.service || this;
@@ -81,7 +80,7 @@ export default class Component extends Emitter {
       });
     }
 
-    if (this.internalComponent) {
+    if (this.internalComponent && this.#service.state) {
       this.internalComponent.state = this.#service.state;
     }
 

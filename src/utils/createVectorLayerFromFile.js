@@ -1,5 +1,5 @@
-import JSZip               from 'jszip/dist/jszip.min';
-import shp                 from 'shpjs';
+import { unzip }           from 'fflate';
+import { toGeoJSON }       from 'utils/toGeoJSON';
 
 import { GEOMETRY_FIELDS } from 'g3w-constants';
 import { getUniqueDomId }  from 'utils/getUniqueDomId';
@@ -22,13 +22,26 @@ export async function createVectorLayerFromFile({ name, type, crs, mapCrs, data,
 
   // SHAPE FILE
   if ('zip' === type) {
-    data = JSON.stringify(await shp(await data.arrayBuffer())); // un-zip folder data 
+    data = JSON.stringify(await toGeoJSON(await data.arrayBuffer())); // un-zip folder data
   }
 
   // KMZ FILE
   if ('kmz' === type) {
-    const zip = await JSZip.loadAsync(data.arrayBuffer());
-    data      = await zip.file(/\.kml$/i).at(-1).async('text'); // get last kml file within folder
+    const kmzData = new Uint8Array(await data.arrayBuffer());
+    const archive = await new Promise((resolve, reject) => {
+      unzip(kmzData, (error, files) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve(files);
+      });
+    });
+    const kmlPath = Object.keys(archive).filter(path => /\.kml$/i.test(path)).at(-1); // get last kml file within folder
+    if (!kmlPath) {
+      throw new Error('KMZ archive does not contain a KML file');
+    }
+    data = new TextDecoder().decode(archive[kmlPath]);
   }
 
   // CSV FILE

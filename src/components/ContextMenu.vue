@@ -1,5 +1,5 @@
 <!--
-  @file ORIGINAL SOURCE: src/components/CatalogContextMenu.vue@v4.0.0
+  @file Render contextual actions for catalog items.
   @since v4.1.0
 -->
 
@@ -205,18 +205,56 @@
       >
         <i class = "fa fa-tint"></i>
         {{ $t('Color') }}
-        <i    ref="layer_color" style  = "width: 10px;height: 10px;border-radius: 10px;position: absolute;right: 20px;margin-top: 4px;" :style="{ backgroundColor: layer.color }"></i>
+        <i    ref="layer_color" style  = "width: 10px;height: 10px;border-radius: 10px;position: absolute;right: 20px;margin-top: 4px;" :style="{ backgroundColor: layer.color.hex || layer.color }"></i>
         <i class = "fas fa-chevron-right" style = "position: absolute; right: 0; margin-top: 3px"></i>
-        <ul class = "sub-contex-menu">
-          <li style="padding: 14px; background-color: #E0E0E0;">
-            <chrome-picker
-              ref                 = "color_picker"
-              v-model             = "layer.color"
-              @click.prevent.stop = ""
-              @hook:beforeDestroy = "() => $refs.color_picker.$off()"
-              @input              = "onChangeColor"
-              style               = "width: 100%"
-            />
+        <ul class = "sub-contex-menu g3w-color-submenu">
+          <li class="g3w-color-controls" @click.stop>
+            <!-- Edits the active layer immediately: plane selects saturation/brightness; sliders select hue/opacity. -->
+            <div class="g3w-color-picker" @click.stop>
+              <div class="g3w-color-picker-heading">
+                <span v-t="'Color'"></span>
+                <output>{{ color.hex }}</output>
+              </div>
+              <div
+                class                = "g3w-color-picker-plane"
+                role                 = "application"
+                tabindex             = "0"
+                :aria-label          = "$t('Color')"
+                :style               = "{ backgroundColor: hueColor }"
+                @pointerdown.prevent = "onColorPlanePointerDown"
+                @pointermove.prevent = "onColorPlanePointerMove"
+                @keydown.stop        = "onColorPlaneKeydown"
+              >
+                <span
+                  class  = "g3w-color-picker-indicator"
+                  :style = "{ left: saturation * 100 + '%', top: (1 - brightness) * 100 + '%' }"
+                ></span>
+              </div>
+              <input
+                class       = "g3w-color-picker-hue"
+                type        = "range"
+                min         = "0"
+                max         = "359"
+                step        = "1"
+                :value      = "hue"
+                :aria-label = "$t('Color')"
+                @input      = "onColorHueInput"
+              >
+              <label class="g3w-color-picker-label">
+                <span v-t="'Opacity'"></span>
+                <output>{{ Math.round(alpha * 100) }}%</output>
+                <input
+                  class       = "g3w-color-picker-opacity"
+                  type        = "range"
+                  min         = "0"
+                  max         = "1"
+                  step        = "0.01"
+                  :value      = "alpha"
+                  :aria-label = "$t('Opacity')"
+                  @input      = "onColorOpacityInput"
+                >
+              </label>
+            </div>
           </li>
         </ul>
       </li>
@@ -309,10 +347,10 @@
 </template>
 
 <script>
-  import { Chrome as ChromeComponent } from 'vue-color';
-
   import ApplicationState        from 'g3w-state';
   import GUI                     from 'g3w-app';
+  import { colorFromHsv }        from 'utils/colorFromHsv';
+  import { colorToHsv }          from 'utils/colorToHsv';
   import { getCatalogLayerById } from 'utils/getCatalogLayerById';
   import { downloadFeatures }    from 'utils/downloadFeatures';
   import { copyUrl }             from 'utils/copyUrl';
@@ -321,7 +359,7 @@
   /**
    * @see https://www.w3schools.com/howto/howto_js_draggable.asp 
    */
-   function dragElement(menu) {
+  function dragElement(menu, onPositionChange) {
     const el = menu.querySelector('li.title');
     if (!el || menu._drag) {
       return;
@@ -352,8 +390,11 @@
       y1 = e.clientY;
       if (menu.style.marginLeft) { x2 -= parseInt(menu.style.marginLeft); menu.style.marginLeft = null; }
       if (menu.style.marginTop)  { y2 -= parseInt(menu.style.marginTop);  menu.style.marginTop  = null; }
-      menu.style.top  = (menu.offsetTop - y2)    + "px";
-      menu.style.left = (menu.offsetLeft - x2) + "px";
+      const top  = menu.offsetTop - y2;
+      const left = menu.offsetLeft - x2;
+      menu.style.top  = top + "px";
+      menu.style.left = left + "px";
+      onPositionChange({ top, left });
     }
   }
 
@@ -376,10 +417,24 @@
         context:          null,
         map_coords:       [],
         items:            [], /**@since 4.1.0 store custom items add from plugins/custom.js */
+        hue:              0,
+        saturation:       0,
+        brightness:       1,
+        alpha:            1,
       };
     },
 
     computed: {
+
+      /** Current selection in the color object format used by layer styles. */
+      color() {
+        return colorFromHsv(this.hue, this.saturation, this.brightness, this.alpha);
+      },
+
+      /** Fully saturated hue used as the plane's background. */
+      hueColor() {
+        return colorFromHsv(this.hue, 1, 1).hex;
+      },
 
       edit_url() {
         return ApplicationState.project.getState().edit_url;
@@ -395,8 +450,19 @@
 
     },
 
-    components: {
-      'chrome-picker': ChromeComponent,
+    watch: {
+
+      // Keep the controls aligned when the active layer or its color changes.
+      'layer.color': {
+        deep: true,
+        handler(value) {
+          if (!value) {
+            return;
+          }
+          this.syncColorPicker(value);
+        },
+      },
+
     },
 
     methods: {
@@ -473,7 +539,10 @@
           this.top  = (window.innerHeight / 2) - (this.$refs.menu.clientHeight / 2);
         }
 
-        dragElement(this.$refs.menu);
+        dragElement(this.$refs.menu, ({ top, left }) => {
+          this.top  = top;
+          this.left = left;
+        });
 
         const rect = this.$refs.menu.getBoundingClientRect();
 
@@ -502,12 +571,92 @@
         this.layerstree   = null;
       },
 
-      onChangeColor(val) {
-        this.layer.color         = val;
-        this.$refs.layer_color.style.backgroundColor = val.hex;
+      /** Synchronize the HSV controls, parsing legacy CSS colors when needed. */
+      syncColorPicker(value) {
+        let color = value;
+        if (!value.rgba) {
+          const context = document.createElement('canvas').getContext('2d');
+          context.fillStyle = value.hex || value;
+          const normalized = context.fillStyle;
+          const values = normalized.match(/[\d.]+/g)?.map(Number) || [0, 0, 0, 0];
+          let [red, green, blue] = values;
+
+          if (normalized.startsWith('#')) {
+            [red, green, blue] = normalized.slice(1).match(/../g).map(channel => Number.parseInt(channel, 16));
+          }
+
+          const alpha = value.a ?? values[3] ?? 1;
+          const hex = `#${[red, green, blue].map(channel => Math.round(channel).toString(16).padStart(2, '0')).join('')}`;
+          color = { hex, rgba: { r: red, g: green, b: blue, a: alpha }, a: alpha };
+        }
+        if (!color) {
+          return;
+        }
+        Object.assign(this, colorToHsv(color), { alpha: color.rgba?.a ?? color.a });
+      },
+
+      /** Store the current selection and apply it to the active map layer. */
+      emitColor() {
+        this.layer.color = this.color;
+        this.applyLayerColor();
+      },
+
+      onColorPlanePointerDown(event) {
+        event.currentTarget.setPointerCapture(event.pointerId);
+        this.updateColorPlane(event);
+      },
+
+      /** Continue updating the plane while a pointer button is held. */
+      onColorPlanePointerMove(event) {
+        if (event.buttons) {
+          this.updateColorPlane(event);
+        }
+      },
+
+      /** Map pointer coordinates to saturation and brightness, clamped to the plane. */
+      updateColorPlane(event) {
+        const bounds = event.currentTarget.getBoundingClientRect();
+        this.saturation = Math.min(1, Math.max(0, (event.clientX - bounds.left) / bounds.width));
+        this.brightness = 1 - Math.min(1, Math.max(0, (event.clientY - bounds.top) / bounds.height));
+        this.emitColor();
+      },
+
+      /** Adjust saturation or brightness by two percent with the arrow keys. */
+      onColorPlaneKeydown(event) {
+        const movement = {
+          ArrowLeft:  [-0.02, 0],
+          ArrowRight: [ 0.02, 0],
+          ArrowUp:    [0,  0.02],
+          ArrowDown:  [0, -0.02],
+        }[event.key];
+
+        if (!movement) {
+          return;
+        }
+
+        event.preventDefault();
+        this.saturation = Math.min(1, Math.max(0, this.saturation + movement[0]));
+        this.brightness = Math.min(1, Math.max(0, this.brightness + movement[1]));
+        this.emitColor();
+      },
+
+      /** Apply the hue slider's degree value while preserving saturation and brightness. */
+      onColorHueInput(event) {
+        this.hue = Number(event.target.value);
+        this.emitColor();
+      },
+
+      /** Apply the opacity slider while preserving the selected HSV color. */
+      onColorOpacityInput(event) {
+        this.alpha = Number(event.target.value);
+        this.emitColor();
+      },
+
+      applyLayerColor() {
+        this.$refs.layer_color.style.backgroundColor = this.layer.color.hex;
         const layer              = GUI.getLayerByName(this.layer.name || '');
         const style              = layer.getStyle();
-        style._g3w_options.color = val;
+        style._g3w_options.color = this.layer.color;
         layer.setStyle(style);
       },
 
@@ -563,13 +712,6 @@
           })
         }
         this.closeMenu();
-      },
-
-      /**
-       * @since 4.1.0
-       */
-      editableGeometryLayers() {
-        return Object.values(GUI.getPlugin('editing')?.getEditableLayers() || {}).filter(l => l.isGeoLayer());
       },
       
       /**
@@ -690,6 +832,15 @@
           const overflowY    = (ul.offsetHeight + ul.getBoundingClientRect().top) >= (this.$refs.menu.offsetHeight + this.$refs.menu.getBoundingClientRect().top);
           ul.style.top       = ul.offsetHeight > this.$refs.menu.offsetHeight ? 0 : undefined;
           ul.style.left      = this.$refs.menu.offsetWidth -2 + 'px';
+
+          if (ul.classList.contains('g3w-color-submenu')) {
+            ul.style.maxHeight = 'none';
+            ul.style.bottom    = 'auto';
+            ul.style.marginTop = '-5px';
+            ul.style.overflowY = 'visible';
+            return;
+          }
+
           ul.style.maxHeight = this.$refs.menu.offsetHeight + 'px';
           ul.style.bottom    = overflowY ? 0         : undefined;
           ul.style.marginTop = overflowY ? undefined : '-5px';
@@ -924,3 +1075,18 @@
 
   };
 </script>
+
+<style scoped>
+.g3w-color-picker                         { display: grid; gap: 8px; width: 100%; color: #263238; }
+.g3w-color-picker-heading                 { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-weight: 600; }
+.g3w-color-picker-label                   { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 6px 8px; margin: 0; font-weight: 600; }
+.g3w-color-picker output                  { color: #53636b; font: 12px monospace; }
+.g3w-color-picker-plane                   { position: relative; aspect-ratio: 2 / 1; overflow: hidden; border-radius: 3px; cursor: crosshair; touch-action: none; background-image: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent); }
+.g3w-color-picker-plane:focus-visible     { outline: 2px solid var(--skin-focus); outline-offset: 2px; }
+.g3w-color-picker-indicator               { position: absolute; width: 14px; height: 14px; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px #1e292e, 0 1px 3px #0008; transform: translate(-50%, -50%); pointer-events: none; }
+.g3w-color-picker input[type="range"]     { grid-column: 1 / -1; width: 100%; margin: 0; cursor: pointer; }
+.g3w-color-picker-hue                     { height: 14px; border-radius: 7px; appearance: none; background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); }
+.g3w-color-picker-hue::-webkit-slider-thumb { width: 18px; height: 18px; border: 2px solid #fff; border-radius: 50%; appearance: none; background: #fff; box-shadow: 0 1px 4px #0008; }
+.g3w-color-picker-hue::-moz-range-thumb   { width: 14px; height: 14px; border: 2px solid #fff; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px #0008; }
+.g3w-color-picker-opacity                 { accent-color: var(--skin-color); }
+</style>

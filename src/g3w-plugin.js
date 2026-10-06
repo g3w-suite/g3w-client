@@ -8,7 +8,6 @@ import Component        from 'g3w-component';
 import ApplicationState from 'g3w-state';
 import GUI              from 'g3w-app';
 import { toRawType }    from 'utils/toRawType';
-import { cloneDeep }    from 'utils/cloneDeep';
 import { waitFor }      from 'utils/waitFor';
 import { gettext as _ } from 'g3w-i18n';
 
@@ -204,7 +203,7 @@ export class Plugin extends Emitter {
    * @see g3wsdk.core.ApplicationState.layout
    */
   setLayout(config) {
-    config = config ?? cloneDeep(ApplicationState.layout.app);
+    config = config ?? structuredClone(ApplicationState.layout.app);
 
     const default_config = config.rightpanel || {
       width:          50, // ie. width == 50%
@@ -414,8 +413,6 @@ export class Plugin extends Emitter {
  * - "ws-trento",
  * - "br-service",
  * - "cdu",
- * - "iternet",
- * - "geonotes",
  * - "billboards",
  * - "politowps",
  * - "law",

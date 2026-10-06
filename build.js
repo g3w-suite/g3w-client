@@ -4,9 +4,6 @@
  * @since 4.1.0
  */
 
-// polyfills
-require('@ungap/with-resolvers');
-
 // esbuild
 const esbuild     = require('esbuild');
 

@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file Add WMS, TMS, and local file layers.
   @since 3.11.0
 -->
 
@@ -430,14 +430,54 @@
             <small v-t = "'field shown on map'"></small>
           </div>
 
-          <!-- LAYER COLOR  -->
+          <!-- LAYER COLOR -->
           <div v-if = "layer_data">
-            <p v-t = "'Layer Color'" style = "font-weight: 700;"></p>
-            <chrome-picker
-              v-model = "layer_color"
-              @input  = "onChangeColor"
-              style   = "width:100%;"
-            />
+            <!-- Configures the new layer color: plane selects saturation/brightness; sliders select hue/opacity. -->
+            <div class="g3w-color-picker" @click.stop>
+              <div class="g3w-color-picker-heading">
+                <span v-t="'Color'"></span>
+                <output>{{ color.hex }}</output>
+              </div>
+              <div
+                class                = "g3w-color-picker-plane"
+                role                 = "application"
+                tabindex             = "0"
+                :aria-label          = "$t('Color')"
+                :style               = "{ backgroundColor: hueColor }"
+                @pointerdown.prevent = "onColorPlanePointerDown"
+                @pointermove.prevent = "onColorPlanePointerMove"
+                @keydown.stop        = "onColorPlaneKeydown"
+              >
+                <span
+                  class  = "g3w-color-picker-indicator"
+                  :style = "{ left: saturation * 100 + '%', top: (1 - brightness) * 100 + '%' }"
+                ></span>
+              </div>
+              <input
+                class       = "g3w-color-picker-hue"
+                type        = "range"
+                min         = "0"
+                max         = "359"
+                step        = "1"
+                :value      = "hue"
+                :aria-label = "$t('Color')"
+                @input      = "onColorHueInput"
+              >
+              <label class="g3w-color-picker-label">
+                <span v-t="'Opacity'"></span>
+                <output>{{ Math.round(alpha * 100) }}%</output>
+                <input
+                  class       = "g3w-color-picker-opacity"
+                  type        = "range"
+                  min         = "0"
+                  max         = "1"
+                  step        = "0.01"
+                  :value      = "alpha"
+                  :aria-label = "$t('Opacity')"
+                  @input      = "onColorOpacityInput"
+                >
+              </label>
+            </div>
           </div>
 
         </div>
@@ -480,9 +520,8 @@
 </template>
 
 <script>
-import { Chrome as ChromeComponent } from 'vue-color';
-import JSZip                         from 'jszip/dist/jszip.min';
-import shp                           from 'shpjs';
+import { unzip }           from 'fflate';
+import { toGeoJSON }       from 'utils/toGeoJSON';
 
 import {
   GEOMETRY_FIELDS,
@@ -490,6 +529,8 @@ import {
 }                          from 'g3w-constants';
 import ApplicationState    from 'g3w-state';
 import GUI                 from 'g3w-app';
+import { colorFromHsv }    from 'utils/colorFromHsv';
+import { colorToHsv }      from 'utils/colorToHsv';
 import { getUniqueDomId }  from 'utils/getUniqueDomId';
 import { XHR }             from 'utils/XHR';
 
@@ -538,6 +579,12 @@ export default {
 
   data() {
 
+    const layerColor = {
+      hex:  '#194d33',
+      rgba: { r: 25, g: 77, b: 51, a: 1 },
+      a:    1,
+    };
+
     return {
       is_localhost:   'localhost' === window.location.hostname,
       pid:             ApplicationState.project.getId(),
@@ -545,11 +592,9 @@ export default {
       file_type:       null,
       layer_name:      null,
       layer_crs:       ApplicationState.project.getProjection().getCode(),
-      layer_color: {
-        hex:  '#194d33',
-        rgba: { r: 25, g: 77, b: 51, a: 1, },
-        a:    1,
-      },
+      ...colorToHsv(layerColor),
+      alpha:            layerColor.a,
+      layer_color:      layerColor,
       wms_config:       null,
       wms_urls:         [],   // array of object {id, url}
       wms_projection:   null, // choose epsg project
@@ -587,11 +632,17 @@ export default {
     }
   },
 
-  components: {
-    'chrome-picker': ChromeComponent,
-  },
-
   computed: {
+
+    /** Current selection in the color object format used by layer styles. */
+    color() {
+      return colorFromHsv(this.hue, this.saturation, this.brightness, this.alpha);
+    },
+
+    /** Fully saturated hue used as the plane's background. */
+    hueColor() {
+      return colorFromHsv(this.hue, 1, 1).hex;
+    },
 
     /**
      * @since 4.1.0 
@@ -632,6 +683,14 @@ export default {
   },
 
   watch: {
+
+    // Rebuild the HSV controls when the layer color is initialized or reset.
+    layer_color: {
+      deep: true,
+      handler(value) {
+        this.syncColorPicker(value);
+      },
+    },
 
     /**
      * Handle selected layers change  
@@ -704,8 +763,65 @@ export default {
 
   methods: {
 
-    onChangeColor(val) {
-      this.layer_color = val;
+    /** Synchronize the HSV controls when the layer color is initialized or reset. */
+    syncColorPicker(value) {
+      Object.assign(this, colorToHsv(value), { alpha: value.a });
+    },
+
+    /** Store the current selection as the layer color. */
+    emitColor() {
+      this.layer_color = this.color;
+    },
+
+    onColorPlanePointerDown(event) {
+      event.currentTarget.setPointerCapture(event.pointerId);
+      this.updateColorPlane(event);
+    },
+
+    /** Continue updating the plane while a pointer button is held. */
+    onColorPlanePointerMove(event) {
+      if (event.buttons) {
+        this.updateColorPlane(event);
+      }
+    },
+
+    /** Map pointer coordinates to saturation and brightness, clamped to the plane. */
+    updateColorPlane(event) {
+      const bounds = event.currentTarget.getBoundingClientRect();
+      this.saturation = Math.min(1, Math.max(0, (event.clientX - bounds.left) / bounds.width));
+      this.brightness = 1 - Math.min(1, Math.max(0, (event.clientY - bounds.top) / bounds.height));
+      this.emitColor();
+    },
+
+    /** Adjust saturation or brightness by two percent with the arrow keys. */
+    onColorPlaneKeydown(event) {
+      const movement = {
+        ArrowLeft:  [-0.02, 0],
+        ArrowRight: [ 0.02, 0],
+        ArrowUp:    [0,  0.02],
+        ArrowDown:  [0, -0.02],
+      }[event.key];
+
+      if (!movement) {
+        return;
+      }
+
+      event.preventDefault();
+      this.saturation = Math.min(1, Math.max(0, this.saturation + movement[0]));
+      this.brightness = Math.min(1, Math.max(0, this.brightness + movement[1]));
+      this.emitColor();
+    },
+
+    /** Apply the hue slider's degree value while preserving saturation and brightness. */
+    onColorHueInput(event) {
+      this.hue = Number(event.target.value);
+      this.emitColor();
+    },
+
+    /** Apply the opacity slider while preserving the selected HSV color. */
+    onColorOpacityInput(event) {
+      this.alpha = Number(event.target.value);
+      this.emitColor();
     },
 
     onToggleSelectAllWMS(e) {
@@ -752,21 +868,49 @@ export default {
 
         // KMZ file
         if ('kmz' === this.file_type) {
-          const zip = await JSZip.loadAsync(input.files[0]);
-          data      = await zip.file(/\.kml$/i).at(-1).async('text'); // get last kml file within folder
+          const kmzData = new Uint8Array(await input.files[0].arrayBuffer());
+          const archive = await new Promise((resolve, reject) => {
+            unzip(kmzData, (error, files) => {
+              if (error) {
+                reject(error);
+                return;
+              }
+              resolve(files);
+            });
+          });
+          const kmlPath = Object.keys(archive).filter(path => /\.kml$/i.test(path)).at(-1); // get last kml file within folder
+          if (!kmlPath) {
+            throw new Error('KMZ archive does not contain a KML file');
+          }
+          data = new TextDecoder().decode(archive[kmlPath]);
         }
 
         // SHAPE FILE
         if ('zip' === this.file_type) {
           const out = {}; // un-zip folder data
-          const zip = await JSZip.loadAsync(input.files[0]);
-          for (const f in zip.files) {
-            if (/.+\.(shp|dbf|json|prj|cpg)$/i.test(f)) {
-              const ext = (f.split('.').at(-1) || '').toLowerCase();
-              out[ext] = await zip.files[f].async(['shp', 'dbf'].includes(ext) ?  'arraybuffer': 'text');
+          const zipData = new Uint8Array(await input.files[0].arrayBuffer());
+          const files = await new Promise((resolve, reject) => {
+            unzip(zipData, (error, unzipped) => {
+              if (error) {
+                reject(error);
+                return;
+              }
+              resolve(unzipped);
+            });
+          });
+          const decoder = new TextDecoder();
+          for (const [path, bytes] of Object.entries(files)) {
+            if (!/.+\.(shp|dbf|json|prj|cpg)$/i.test(path)) {
+              continue;
             }
+            const ext = path.split('.').at(-1).toLowerCase();
+            if ('shp' === ext || 'dbf' === ext) {
+              out[ext] = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+              continue;
+            }
+            out[ext] = decoder.decode(bytes);
           }
-          data = JSON.stringify(await shp(out)); // convert to wsg84 (geojson)
+          data = JSON.stringify(await toGeoJSON(out)); // convert to wsg84 (geojson)
         }
 
         // CSV file
@@ -837,7 +981,7 @@ export default {
           });
         }
 
-        // @since 3.11.0 shp function create always features in 4326 coordinates
+        // @since 3.11.0 toGeoJSON always creates features in 4326 coordinates
         if ('zip' === this.file_type && this.layer_crs !== 'EPSG:4326') {
           features.forEach(f => f.getGeometry().transform('EPSG:4326', this.layer_crs));
         }
@@ -1269,6 +1413,19 @@ export default {
 </script>
 
 <style scoped>
+  .g3w-color-picker                         { display: grid; gap: 8px; width: 100%; color: #263238; }
+  .g3w-color-picker-heading                 { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-weight: 600; }
+  .g3w-color-picker-label                   { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 6px 8px; margin: 0; font-weight: 600; }
+  .g3w-color-picker output                  { color: #53636b; font: 12px monospace; }
+  .g3w-color-picker-plane                   { position: relative; aspect-ratio: 2 / 1; overflow: hidden; border-radius: 3px; cursor: crosshair; touch-action: none; background-image: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent); }
+  .g3w-color-picker-plane:focus-visible     { outline: 2px solid var(--skin-focus); outline-offset: 2px; }
+  .g3w-color-picker-indicator               { position: absolute; width: 14px; height: 14px; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px #1e292e, 0 1px 3px #0008; transform: translate(-50%, -50%); pointer-events: none; }
+  .g3w-color-picker input[type="range"]     { grid-column: 1 / -1; width: 100%; margin: 0; cursor: pointer; }
+  .g3w-color-picker-hue                     { height: 14px; border-radius: 7px; appearance: none; background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); }
+  .g3w-color-picker-hue::-webkit-slider-thumb { width: 18px; height: 18px; border: 2px solid #fff; border-radius: 50%; appearance: none; background: #fff; box-shadow: 0 1px 4px #0008; }
+  .g3w-color-picker-hue::-moz-range-thumb   { width: 14px; height: 14px; border: 2px solid #fff; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px #0008; }
+  .g3w-color-picker-opacity                 { accent-color: var(--skin-color); }
+
   #addcustomlayer {
     margin: 10px 0 10px 0px;
     position: relative;

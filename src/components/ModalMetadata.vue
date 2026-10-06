@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file Display project and layer metadata.
   @since v3.7
 -->
 
@@ -439,7 +439,7 @@
           <div id = "metadata_legend" class = "tab-pane">
             <b style="display: block;">{{ $t('legend').toUpperCase() }}</b> 
               <div v-for = "url in legendurls" :key = "url.url">
-                <bar-loader :loading = "url.loading"/>
+                <div v-if = "url.loading" class = "bar-loader" style = "border: 0"></div>
                 <img
                   :src       = "getLegendUrl(url.url)"
                   loading    = "lazy"

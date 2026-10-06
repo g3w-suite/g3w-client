@@ -24,7 +24,7 @@ import GUI                from 'g3w-app';
 
 // components
 import App                from 'components/App.vue';
-import Tabs               from 'components/GlobalTabs.vue';
+import G3WTabs            from 'components/G3WTabs.vue';
 
 // directives
 import vDisabled          from 'directives/v-disabled';
@@ -37,7 +37,6 @@ import { XHR }            from 'utils/XHR';
 import { normalizeEpsg }  from 'utils/normalizeEpsg';
 import { getUniqueDomId } from 'utils/getUniqueDomId';
 import { debounce }       from 'utils/debounce';
-import { cloneDeep }      from 'utils/cloneDeep';
 
 
 import { Layer }          from 'g3w-layer';
@@ -55,7 +54,7 @@ Object
     Component,
     GUI,
     App,
-    Tabs,
+    G3WTabs,
     Layer
   })
   .forEach(([k, v]) => console.assert(undefined !== v, `${k} is undefined`));
@@ -116,7 +115,7 @@ Vue.component('datetime', {
         <div class = 'input-group date' ref = "iddatetimepicker">
           <input :id = "id" ref = "idinputdatetimepiker" type = 'text' @change = "changeInput" class = "form-control" />
           <span class = "input-group-addon" style="cursor:pointer;">
-            <span class  = "datetimeinput" :class = "g3wtemplate.getFontClass('time' === type ? 'time': 'calendar')"></span>
+            <span :class = "['datetimeinput', 'time' === type ? 'far fa-clock' : 'fas fa-calendar-alt']"></span>
           </span>
         </div>
       </div>
@@ -223,7 +222,7 @@ Vue.component('range', {
 /**
  * @deprecated global `<tabs>` component
  */
-Vue.component(Tabs.name, Tabs);
+Vue.component('tabs', G3WTabs);
 
 /**
  * Install global directives
@@ -463,7 +462,7 @@ $.ajaxSetup({
   }
   //store original layerstree before modifying it for TOC rendering
   //Used by permalink to create the difference between the original and current layerstree
-  const layerstree = cloneDeep(config.layerstree ?? []);
+  const layerstree = structuredClone(config.layerstree ?? []);
 
   // change config.layerstree to have a root group node, so that the TOC can be rendered properly
   config.layerstree = [{

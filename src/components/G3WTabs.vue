@@ -1,6 +1,6 @@
 <!--
-  @file
-  @since v3.7
+  @file Render nested tab and group form layouts.
+  @since v4.2
 -->
 
 <template>
@@ -42,36 +42,97 @@
               class  = "tab-pane"
               :class = "{'active': index === 0}"
             >
-              <node
-                :showRelationByField = "showRelationByField"
-                :handleRelation      = "handleRelation"
-                :feature             = "feature"
-                :layerid             = "layerid"
-                :contenttype         = "contenttype"
-                :addToValidate       = "addToValidate"
-                :removeToValidate    = "removeToValidate"
-                :changeInput         = "changeInput"
-                :fields              = "fields"
-                :showTitle           = "false"
-                :node                = "tab"/>
+              <div class = "tab-node group">
+                <div
+                  v-for  = "row in getNodeRows(tab)"
+                  class = "node-row"
+                  :class = "{'mobile': isMobile()}"
+                >
+                  <template v-for = "column in row">
+                    <g3w-field
+                      v-if              = "'field' === getNodeType(column)"
+                      style             = "padding: 5px 3px 5px 3px;"
+                      :state            = "getNodeField(column)"
+                      :field-type       = "getNodeField(column).query && getNodeField(column).input.type || 'input'"
+                      @changeinput      = "changeInput"
+                      @addinput         = "addToValidate"
+                      @removeinput      = "removeToValidate"
+                      :changeInput      = "changeInput"
+                      :addToValidate    = "addToValidate"
+                      :removeToValidate = "removeToValidate"
+                      :feature          = "feature"
+                    />
+                    <g3w-tabs
+                      v-else-if = "'group' === getNodeType(column)"
+                      class     = "sub-group" style = "width: 100% !important"
+                      v-bind    = "{ ...$props, group: true, tabs: [column] }"/>
+                    <div
+                      v-else-if       = "showRelationByField"
+                      v-disabled     = "isRelationDisabled(column) || loadingRelation(column).loading"
+                      @click.stop    = "handleRelation({ relation: column, feature: feature, layerId: layerid })"
+                      :style         = "{cursor: showRelationByField && 'pointer'}"
+                    >
+                      <div v-if = "loadingRelation(column).loading" class = "bar-loader" style = "border: 0"></div>
+                      <div style = "display: flex; align-items: center">
+                        <div class = "query_relation_field">
+                          <i :class = "'query' === contenttype ? 'fas fa-sitemap' : 'fas fa-pencil-alt'"></i>
+                        </div>
+                        <span class = "query_relation_field_message g3w-long-text">
+                          <span style = "text-transform: uppercase">{{ getRelationName(column.name) }}</span>
+                        </span>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </div>
             </div>
           </template>
         </div>
       </template>
 
-      <node v-else
-        :class               = "[(i % 2 ) ? 'odd': 'even']"
-        :showRelationByField = "showRelationByField"
-        :handleRelation      = "handleRelation"
-        :feature             = "feature"
-        :layerid             = "layerid"
-        :contenttype         = "contenttype"
-        :addToValidate       = "addToValidate"
-        :removeToValidate    = "removeToValidate"
-        :changeInput         = "changeInput"
-        :fields              = "fields"
-        :showTitle           = "false"
-        :node                = "root_tab"/>
+      <div v-else class = "tab-node group" :class = "[(i % 2) ? 'odd' : 'even']">
+        <div
+          v-for  = "row in getNodeRows(root_tab)"
+          class = "node-row"
+          :class = "{'mobile': isMobile()}"
+        >
+          <template v-for = "column in row">
+            <g3w-field
+              v-if              = "'field' === getNodeType(column)"
+              style             = "padding: 5px 3px 5px 3px;"
+              :state            = "getNodeField(column)"
+              :field-type       = "getNodeField(column).query && getNodeField(column).input.type || 'input'"
+              @changeinput      = "changeInput"
+              @addinput         = "addToValidate"
+              @removeinput      = "removeToValidate"
+              :changeInput      = "changeInput"
+              :addToValidate    = "addToValidate"
+              :removeToValidate = "removeToValidate"
+              :feature          = "feature"
+            />
+            <g3w-tabs
+              v-else-if = "'group' === getNodeType(column)"
+              class     = "sub-group" style = "width: 100% !important"
+              v-bind    = "{ ...$props, group: true, tabs: [column] }"/>
+            <div
+              v-else-if    = "showRelationByField"
+              v-disabled  = "isRelationDisabled(column) || loadingRelation(column).loading"
+              @click.stop = "handleRelation({ relation: column, feature: feature, layerId: layerid })"
+              :style      = "{cursor: showRelationByField && 'pointer'}"
+            >
+              <div v-if = "loadingRelation(column).loading" class = "bar-loader" style = "border: 0"></div>
+              <div style = "display: flex; align-items: center">
+                <div class = "query_relation_field">
+                  <i :class = "'query' === contenttype ? 'fas fa-sitemap' : 'fas fa-pencil-alt'"></i>
+                </div>
+                <span class = "query_relation_field_message g3w-long-text">
+                  <span style = "text-transform: uppercase">{{ getRelationName(column.name) }}</span>
+                </span>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
         
     </template>
   </div>
@@ -81,7 +142,7 @@
 
   import ApplicationState         from 'g3w-state';
   import { G3W_FID }              from 'g3w-constants';
-  import Node                     from 'components/GlobalTabsNode.vue';
+  import G3WField                 from 'components/G3WField.vue';
   import GUI                      from 'g3w-app';
   import { getAlphanumericProps } from 'utils/getAlphanumericProps';
   import { getUniqueDomId }       from 'utils/getUniqueDomId';
@@ -111,7 +172,7 @@
   }
 
   export default {
-    name: "tabs",
+    name: "g3w-tabs",
     props: {
       group: {
         type:    Boolean,
@@ -185,6 +246,20 @@
           }),
         });
         if (response.result) {
+          // in case the tab was previously visible but is now not visible, remove its inputs from validation
+          if (tab.visible && !response.value) {
+            const removeInputs = nodes => nodes.forEach(node => {
+              if (node.nodes) {
+                removeInputs(node.nodes);
+              } else {
+                const field = this.fields.find(field => node.field_name === field.name);
+                if (field && !field.query) {
+                  this.removeToValidate(field);
+                }
+              }
+            });
+            removeInputs(tab.nodes || []);
+          }
           tab.visible = response.value;
         } else {
           throw JSON.stringify(response.error);
@@ -201,6 +276,48 @@
       getField(name) {
         return this.fields.find(f => name === f.name);
       },
+      getNodeType(node) {
+        const type = (node.groupbox || node.nodes) ? 'group' : node.relation ? 'relation' : 'field';
+        if ('field' === type && [undefined, ''].includes(node.alias)) {
+          node.alias = node.field_name;
+        }
+        return type;
+      },
+      getNodeRows(node) {
+        const nodes = node?.nodes?.filter(child => {
+          if ('group' === this.getNodeType(child)) { return true }
+          if (!child.nodes && child.name && 'group' != this.getNodeType(child)) {
+            child.relation = true;
+            return true;
+          }
+          return !!this.fields.find(field => child.field_name === (field.name || child.relation));
+        }) || [];
+        if (!nodes.length) { return [] }
+        const columns = Math.min(parseInt(node.columncount) || 1, nodes.length);
+        const rows = columns <= nodes.length ? Math.floor(nodes.length / columns) + (nodes.length % columns) : 1;
+        return Array.from({ length: rows }, (_, index) => nodes.slice(index * columns, (index + 1) * columns));
+      },
+      getNodeField(node) {
+        if (node.relation) { return node }
+        const field = this.fields.find(field => node.field_name === field.name);
+        field.showlabel = node.showlabel;
+        return field;
+      },
+      loadingRelation(relation) {
+        return (ApplicationState.project.getLayerById(this.layerid)?.getRelationById(relation.name) || { state: { loading: false } }).state;
+      },
+      isRelationDisabled(relation) {
+        return undefined === this.getRelationName(relation.name) ||
+          ('editing' === this.contenttype && this.isRelationChildLayerNotEditable(relation));
+      },
+      getRelationName(relationId) {
+        return (ApplicationState.project.getRelationById(relationId) || {}).name;
+      },
+      isRelationChildLayerNotEditable(relation) {
+        const projectRelation = ApplicationState.project.getRelationById(relation.name);
+        const relationLayer   = ApplicationState.project.getLayerById(projectRelation.referencingLayer);
+        return !(relationLayer && relationLayer.isEditable());
+      },
 
       /**
        * Mimics <details> tag behaviour
@@ -214,7 +331,7 @@
 
     },
     components: {
-      Node
+      'g3w-field': G3WField,
     },
     async created() {
       this.unwatch = [];
@@ -327,4 +444,10 @@
   .tabs-wrapper.collapsed > .formquerytabs + .tab-content {
     display: none;
   }
+</style>
+
+<style>
+  .tabs-wrapper .tab-node { min-width: 0; overflow: hidden; }
+  .tabs-wrapper .tab-node.odd { background-color: hsl(from var(--skin-color) h s l / 0.1); }
+  .tabs-wrapper .tab-node > .node-row { margin-bottom: 0; column-gap: 2px; margin-top: 0; display: grid; grid-auto-columns: minmax(0, 1fr); grid-auto-flow: column; }
 </style>

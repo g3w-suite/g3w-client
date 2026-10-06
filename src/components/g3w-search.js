@@ -1,5 +1,5 @@
 /**
- * @file
+ * @file Provide the application search service and panel.
  * @since 3.10.0
  */
 
@@ -12,7 +12,6 @@ import Panel                          from 'g3w-panel';
 import ApplicationState               from 'g3w-state'
 import GUI                            from 'g3w-app';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';
-import { createFilterFormInputs }     from 'utils/createFilterFormInputs';
 import { toRawType }                  from 'utils/toRawType';
 import { getDataForSearchInput }      from 'utils/getDataForSearchInput';
 import { debounce }                   from 'utils/debounce';
@@ -293,4 +292,27 @@ async function doSearch({
   state.searching = false;
 
   return parsed || data;
+}
+
+/**
+ * @param layer single layer or an array of layers
+ * @param inputs
+ * 
+ * @returns {*}
+ */
+function createFilterFormInputs({
+  layer,
+  inputs = [],
+}) {
+  const filter = inputs.map((input, i) => Array.isArray(input.attribute)
+    // multi key relation fields
+    ? input.attribute.map((attr, j) => [].concat(input.value[j]).map(v => `${attr}|${(input.operator || 'eq').toLowerCase()}|${encodeURIComponent(v)}`).join(`|null,`)).join('|AND,')
+    // input logic operator 
+    : `${i > 0 ? `|${inputs[i-1].logicop},` : ''}${'in' === input.operator 
+      ? `${input.attribute}|${input.operator}|(${[].concat(input.value).map(v => encodeURIComponent(v)).join(',')})` 
+      : [].concat(input.value).map(v => `${input.attribute}|${(input.operator || 'eq').toLowerCase()}|${encodeURIComponent(v)}`).join(`|${undefined !== input.logicop ? input.logicop : 'OR'},`)}`
+  ).join('') || undefined;
+
+  // check if is a single layer of an array of layers
+  return Array.isArray(layer) ? layer.map(() => filter) : filter;
 }

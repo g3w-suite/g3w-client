@@ -1,5 +1,5 @@
 <!--
-  @file
+  @file List saved searches and open the query builder.
   @since v3.7
 -->
 
@@ -29,7 +29,7 @@
       :key  = "search.id"
     >
       <div style = "position:relative" @click = "edit(search)">
-        <bar-loader :loading = "search.qbloading"/>
+        <div v-if = "search.qbloading" class = "bar-loader" style = "border: 0"></div>
         <div class = "search-tools">
           <button
             type           = "button"
