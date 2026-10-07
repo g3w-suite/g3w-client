@@ -46,7 +46,7 @@ http://localhost:3000 # local proxy to dev.g3wsuite.it
 
 ### Enabling a plugin
 
-Add its name to `plugins` array within your local [`config.js`](../../config.js):
+Add its name to `plugins` array within your local [`config.js`](../../config.template.js):
 
 ```js
 plugins: ['panoramax'],
