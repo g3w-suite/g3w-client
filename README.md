@@ -105,7 +105,7 @@ See [`src/plugins/README.md`](src/plugins/README.md) for custom plugin developme
 ## Publish
 
 <details>
-<summary> 1. Releasing a new version of G3W-CLIENT </summary
+<summary> 1. Releasing a new version of G3W-CLIENT </summary>
 
 ## 
 
@@ -117,7 +117,7 @@ See [`src/plugins/README.md`](src/plugins/README.md) for custom plugin developme
 </details>
 
 <details>
-<summary> 2. Updating G3W-ADMIN after the release </summary
+<summary> 2. Updating G3W-ADMIN after the release </summary>
 
 ##
 
