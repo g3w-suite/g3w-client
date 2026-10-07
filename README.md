@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/license-MPL%202-blue.svg?style=flat)](LICENSE)
 
-G3W-SUITE scripts and configuration files needed to set up a suitable local development enviroment for the [g3w-client](https://g3w-suite.readthedocs.io/en/latest/g3wsuite_client.html) cartographic viewer.
+G3W-SUITE scripts and configuration files needed to set up a suitable local development environment for the [g3w-client](https://g3w-suite.readthedocs.io/en/latest/g3wsuite_client.html) cartographic viewer.
 
 ![g3w-client](https://g3w-suite.readthedocs.io/en/latest/_images/g3wclient_interface.png)
 
@@ -10,7 +10,7 @@ G3W-SUITE scripts and configuration files needed to set up a suitable local deve
 
 ## Project setup
 
-Download and install [Node.js and NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) and [Docker Compose](https://docs.docker.com/compose/install/) in your development enviroment.
+Download and install [Node.js and NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) and [Docker Compose](https://docs.docker.com/compose/install/) in your development environment.
 
 Clone and place the [g3w-suite-docker](https://github.com/g3w-suite/g3w-suite-docker), [g3w-admin](https://github.com/g3w-suite/g3w-admin) and [g3w-client](https://github.com/g3w-suite/g3w-client) repositories into three separated adjacent folders:
 
@@ -30,7 +30,7 @@ cd ./g3w-client
 npm install         # javascript dependencies (client)
 ```
 ```sh
-npm run docker pull # docker dependencies (admin)
+npm run docker:pull  # docker dependencies (admin)
 ```
 
 Create these configuration files from the available templates:
@@ -50,7 +50,7 @@ G3WSUITE_LOCAL_CODE_PATH=../g3w-admin       # path to local g3w-admin folder
 G3WSUITE_DEBUG=True                         # default: False
 ```
 
-Now your folder structure should matches this one:
+Now your folder structure should look like this:
 
 ```
 .
@@ -102,39 +102,7 @@ npm run dev       # watch g3w-client assets (frontend)
 
 ### Plugins
 
-If you want develop client plugins you need place them in the [`src/plugins`](https://github.com/g3w-suite/g3w-client/blob/dev/src/plugins) folder:
-
-```sh
-.
-└── src/
-    └── plugins/
-        ├── base
-        ├── eleprofile
-        ├── sidebar
-        └── ...
-```
-
-Update your [`config.js`](https://github.com/g3w-suite/g3w-client/blob/dev/config.template.js) file accordingly:
-
-```js
-// overrides global `window.initConfig.group.plugins` property for custom plugin development
-
-const G3W_PLUGINS = [
-  'base',
-  'eleprofile',
-  'sidebar',
-  ...
-];
-```
-
-And then start again the development servers:
-
-```sh
-npm run docker:up      # backend server (g3w-admin)
-npm run dev            # frontend server (g3w-client)
-```
-
-For further information about plugin development, see also: [`src/plugins/README.md`](https://github.com/g3w-suite/g3w-client/blob/dev/src/src/plugins/README.md)
+See [`src/plugins/README.md`](src/plugins/README.md) for custom plugin development workflow and API details.
 
 ## Publish
 
@@ -147,48 +115,6 @@ For further information about plugin development, see also: [`src/plugins/README
 - [ ] Create or checkout to a new appropriate branch: (eg. `v3.5.x` when bumping code from `3.5.0` to `3.5.1`)
 - [ ] Compile and create new tag: `npm version v3.5.1`
 - [ ] Draft a new [GitHub Relase](https://github.com/g3w-suite/g3w-client/releases/new)
-
-<details>
-
-<summary> 1.1 <code>git tag</code> usage </summary>
-
-**Listing local tags:**
-```sh
-git tag
-```
-
-**Add a new tag:**
-```sh
-git tag v3.5
-```
-
-**Update an existing tag:**
-```sh
-git tag -f v3.5
-```
-
-**Delete an  existing tag:**
-```sh
-git tag -d v3.5
-```
-
-**Publish a local tag:**
-```sh
-git push origin v3.5
-```
-
-**Publish all local tags:**
-```sh
-git push --tags
-```
-
----
-
-Fore more info:
-
-- https://www.atlassian.com/git/tutorials/inspecting-a-repository/git-tag
-
-</details>
 
 </details>
 
@@ -286,43 +212,7 @@ For more info:
 
 <details>
 
-<summary>3. How can I keep client plugins updated ?</summary>
-
-Currently built-in and custom plugins are managed with several "independent" git repositories, so there is currently no automated task to achieve this.
-
-You can use the following commands to fetch the latest changes of built-in plugins:
-
-```sh
-cd /g3w-client/src/plugins/editing
-
-git pull editing
-```
-
-```sh
-cd /g3w-client/src/plugins/openrouteservice
-
-git pull openrouteservice
-```
-
-```sh
-cd /g3w-client/src/plugins/qplotly
-
-git pull qplotly
-```
-
-```sh
-cd /g3w-client/src/plugins/qtimeseries
-
-git pull qtimeseries
-```
-
-If you are looking for an alternative workflow, also try to take a look at [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) or [git subtrees](https://www.atlassian.com/git/tutorials/git-subtree)
-
-</details>
-
-<details>
-
-<summary>4. How can I add a custom item to main menu?</summary>
+<summary>3. How can I add a custom item to main menu?</summary>
 
 Example, adding a custom link to "change map" modal:
 
@@ -364,7 +254,7 @@ For more info: [`G3W_CLIENT_HEADER_CUSTOM_LINKS`](https://g3w-suite.readthedocs.
 
 <details>
 
-<summary>5. How can I add a custom context menu item?</summary>
+<summary>4. How can I add a custom context menu item?</summary>
 
 ```js
 /* Custom context menu item (v4.1.0) */
@@ -382,7 +272,7 @@ g3w.app.on('map:context-menu', menu => {
 
 <details>
 
-<summary>6. How can I change the default colors?</summary>
+<summary>5. How can I change the default colors?</summary>
 
 There are several options (depending on your coding skills 👨‍💻), but our basic advice is almost always the same 👉 [`G3WSUITE_CUSTOM_CSS`](https://g3w-suite.readthedocs.io/en/v3.11.x/branding.html#g3wsuite-custom-css).
 
@@ -424,7 +314,7 @@ Here is a foundation you can use for create a your own custom theme:
 
 <details>
 
-<summary>7. How can I translate this project?</summary>
+<summary>6. How can I translate this project?</summary>
 
 Language files are stored into the [`src/static/locales`](https://github.com/g3w-suite/g3w-client/blob/dev/src/static/locales) folder.
 
