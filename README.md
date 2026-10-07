@@ -100,8 +100,6 @@ npm run docker:up # start g3w-admin server (backend)
 npm run dev       # watch g3w-client assets (frontend)
 ```
 
-### Plugins
-
 See [`src/plugins/README.md`](src/plugins/README.md) for custom plugin development workflow and API details.
 
 ## Publish
