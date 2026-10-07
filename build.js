@@ -196,10 +196,10 @@ export default function __vue_create_injector__() {
 
           build.onLoad({ filter: /\.vue$/ }, async ({ path: filename }) => {
             const source      = await fs.promises.readFile(filename, 'utf8');
-            const descriptor  = parse({ source, filename });
-            const errors      = descriptor.errors
+            const { descriptor, errors: parseErrors } = parse(source, { filename });
+            const errors = parseErrors
               .filter(error => !/^tag <(?:area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)\b.*has no matching end tag\.$/.test(error))
-              .map(text => ({ text }));
+              .map(error => ({ text: error.message || String(error) }));
 
             if (descriptor.scriptSetup) {
               errors.push({ text: 'Vue script setup blocks are not supported.' });
