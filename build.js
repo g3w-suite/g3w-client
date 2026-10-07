@@ -237,7 +237,7 @@ export default function __vue_create_injector__() {
               errors.push(...result.errors.map(error => ({ text: error.msg || error.message || String(error) })));
               return {
                 id:       `${id}-${index}`,
-                css:      result.code,
+                css:      esbuild.transformSync(result.code, { loader: 'css', minify: production }).code,
                 media:    style.attrs.media || '',
                 filename: path.relative(process.cwd(), filename).split(path.sep).join('/').replace(/\*\//g, '* /')
               };
