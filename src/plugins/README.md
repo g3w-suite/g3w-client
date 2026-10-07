@@ -44,6 +44,28 @@ http://localhost:8000 # local docker instance
 http://localhost:3000 # local proxy to dev.g3wsuite.it
 ```
 
+### Enabling a plugin
+
+Add its name to `plugins` array within your local [`config.js`](../../config.template.js):
+
+```js
+plugins: ['panoramax'],
+```
+
+Add its name to `G3WADMIN_LOCAL_MORE_APPS` within your server [`settings_docker.py`](https://github.com/g3w-suite/g3w-suite-docker/blob/01ee8f0a8fbf4e64deb3abfeefcea23fe3755094/config/g3w-suite/settings_docker.py#L19-L26).
+
+```py
+G3WADMIN_LOCAL_MORE_APPS = [
+    'caching',
+    'editing',
+    'filemanager',
+    'qplotly',
+    'qtimeseries',
+    'frontend',
+    'panoramax'
+]
+```
+
 ## Writing a minimal Plugin
 
 Modern plugins are defined as ES6 classes extending `g3w.Plugin`.
