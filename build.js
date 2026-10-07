@@ -95,17 +95,13 @@ const task = args[0];
       }
 
       if (production) {
-        /**
-         * Need to remove stati and template folders only when prodcution is true
-         * otherwise if we run dev and docker admin is running, /code/static and /code/templates are deleted 
-         * and static and templates link to admin code and no more to overrides
-        */
         // clean overrides
         fs.rmSync(`${g3w.admin_overrides_folder}/static/`,    { recursive: true, force: true });
         fs.rmSync(`${g3w.admin_overrides_folder}/templates/`, { recursive: true, force: true });
       }
       
 
+      // Keep the checked-out README's heading in sync with package.json before building.
       const readme = (await fs.promises.readFile('./README.md', 'utf8')).split('\n');
       readme.splice(0, 1, `# G3W-CLIENT v${get_version()}`);
       await fs.promises.writeFile('./README.md', readme.join('\n'), 'utf8');
@@ -120,7 +116,7 @@ const task = args[0];
 
     case 'help':
     default:
-      console.log(`\nUsage: node gulpfile.js <task> [options]\n`);
+      console.log(`\nUsage: node build.js <task>\n`);
       console.log(`Tasks:`);
       console.log(`  build         production build`);
       console.log(`  dev           development mode`);
@@ -174,6 +170,7 @@ async function build_app() {
             namespace: 'g3w-vue'
           }));
 
+          // Keep one style element per page and inject each component's styles only once.
           build.onLoad({ filter: /^style-injector$/, namespace: 'g3w-vue' }, () => ({
             loader: 'js',
             contents: `
@@ -194,6 +191,8 @@ export default function __vue_create_injector__() {
 }`,
           }));
 
+          // Compile the subset of Vue 2 SFC syntax used by g3w-client app; script setup and
+          // external, module, or preprocessed style blocks are intentionally rejected.
           build.onLoad({ filter: /\.vue$/ }, async ({ path: filename }) => {
             const source      = await fs.promises.readFile(filename, 'utf8');
             const descriptor = parse({ source, filename });
@@ -205,6 +204,7 @@ export default function __vue_create_injector__() {
               errors.push({ text: 'Vue script setup blocks are not supported.' });
             }
 
+            // A content-derived ID keeps scoped CSS identifiers stable until the SFC changes.
             const id = crypto.createHash('sha256').update(filename + source).digest('hex').slice(0, 8);
             const scoped = descriptor.styles.some(style => style.scoped);
             let template;
