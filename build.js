@@ -8,10 +8,16 @@
 const esbuild     = require('esbuild');
 
 // Node.js
+const crypto      = require('crypto');
 const fs          = require('fs');
 const path        = require('path');
-const readline    = require('readline');
 const execSync    = require('child_process').execSync;
+const {
+  compileStyle,
+  compileTemplate,
+  parse,
+  rewriteDefault,
+}                 = require('@vue/compiler-sfc');
 
 const packageJSON = require('./package.json');
 const packageLock = require('./package-lock.json');
@@ -89,27 +95,16 @@ const task = args[0];
       }
 
       if (production) {
-        /**
-         * Need to remove stati and template folders only when prodcution is true
-         * otherwise if we run dev and docker admin is running, /code/static and /code/templates are deleted 
-         * and static and templates link to admin code and no more to overrides
-        */
         // clean overrides
         fs.rmSync(`${g3w.admin_overrides_folder}/static/`,    { recursive: true, force: true });
         fs.rmSync(`${g3w.admin_overrides_folder}/templates/`, { recursive: true, force: true });
       }
       
 
-      // update versions
-      await Promise.all([''].concat(dev_plugins).map(pluginName => new Promise(done => {
-        const src     = pluginName ? `${g3w.pluginsFolder}/${pluginName}` : '.';
-        const version = get_version(pluginName);
-        fs.readFile(`${src}/README.md`, 'utf8', function (_, data) {
-          data = (data || '').toString().split("\n");
-          data.splice(0, 1, pluginName ? `# g3w-client-plugin-${pluginName} v${version}` : `# G3W-CLIENT v${version}`);
-          fs.writeFile(`${src}/README.md`, data.join("\n"), 'utf8', (err) => { if (err) return console.log(err); done() });
-        });
-      })));
+      // Keep the checked-out README's heading in sync with package.json before building.
+      const readme = (await fs.promises.readFile('./README.md', 'utf8')).split('\n');
+      readme.splice(0, 1, `# G3W-CLIENT v${get_version()}`);
+      await fs.promises.writeFile('./README.md', readme.join('\n'), 'utf8');
 
       await build_app();
 
@@ -121,7 +116,7 @@ const task = args[0];
 
     case 'help':
     default:
-      console.log(`\nUsage: node gulpfile.js <task> [options]\n`);
+      console.log(`\nUsage: node build.js <task>\n`);
       console.log(`Tasks:`);
       console.log(`  build         production build`);
       console.log(`  dev           development mode`);
@@ -138,52 +133,7 @@ async function build_app() {
   const index  = `index.${production ? 'prod' : 'dev'}.js`
 
   console.log(INFO__ + 'App entry point:' + __RESET + ' → ' + `src/${index}` + '\n');
-  console.log(INFO__ + 'Building client:' + __RESET + ' → ' + `${outputFolder}/static/client`);
-
-  let plugins = ['client', ...dev_plugins];
-  let choices = [0]; // 0 = client
-
-  /**plugins
-   * Make sure that all g3w.plugins bundles are there
-   *
-   * CORE PLUGINS:
-   * - [submodule "src/plugins/editing"]     --> src/plugins/editing/plugin.js
-   * - [submodule "src/plugins/qtimeseries"] --> src/plugins/qtimeseries/plugin.js
-   * - [submodule "src/plugins/qplotly"]     --> src/plugins/qplotly/plugin.js
-   * - [submodule "src/plugins/qtimeseries"] --> src/plugins/qtimeseries/plugin.js
-   *
-   * CUSTOM PLUGINS:
-   * - [submodule "src/plugins/eleprofile"]  --> src/plugins/eleprofile/plugin.js
-   * - [submodule "src/plugins/sidebar"]     --> src/plugins/sidebar/plugin.js
-   */
-  if (!production) {
-    dev_plugins.forEach(p => build_plugin(p)); // build all plugins (async)
-  } else if('build:ci' !== task) {
-    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-    await new Promise(done => {
-      plugins.forEach((p, i) => { console.log(`  [${i}] ${p}`); });
-      rl.question('Choose plugins (comma separated, default=0): ', async (answer) => {
-        rl.close();
-        //filter no response (Press ENTER only)
-        choices = answer.trim().split(',').map(n => parseInt(n.trim(), 10)).filter(idx => !Number.isNaN(idx));
-        //Filter only plugin (idx more than 0)
-        for (const idx of choices.filter(idx => idx !== 0)) {
-          if (plugins[idx]) {
-            await build_plugin(plugins[idx]);
-          }
-        }
-        if (!choices.length) {
-          choices = [0];
-        }
-        done();
-      });
-    });
-  }
-
-  // skip when building only specific plugins
-  if (!choices.includes(0)) {
-    return;
-  }
+  console.log(INFO__ + 'Building client:' + __RESET + ' → ' + `${outputFolder}/static/client` + '\n');
 
   const version = get_version();
   const branch  = get_branch();
@@ -212,7 +162,111 @@ async function build_app() {
     //   },
     // assetNames: 'assets/[name]-[hash]',
     plugins: [
-      require('esbuild-vue')({ production }),
+      {
+        name: 'g3w-vue',
+        setup(build) {
+          build.onResolve({ filter: /^g3w-vue:style-injector$/ }, () => ({
+            path: 'style-injector',
+            namespace: 'g3w-vue'
+          }));
+
+          // Keep one style element per page and inject each component's styles only once.
+          build.onLoad({ filter: /^style-injector$/, namespace: 'g3w-vue' }, () => ({
+            loader: 'js',
+            contents: `
+export default function __vue_create_injector__() {
+  const styles = __vue_create_injector__.styles ||= new Set();
+  return function addStyle({ id, css, media, filename }) {
+    if (styles.has(id)) return;
+    if (!__vue_create_injector__.element) {
+      const element = document.createElement('style');
+      document.head.appendChild(element);
+      __vue_create_injector__.element = element;
+    }
+    let code = css;
+    if (media) code = '@media ' + media + ' {\\n' + code + '\\n}';
+    __vue_create_injector__.element.appendChild(document.createTextNode('\\n/* ' + filename + ' */\\n' + code + '\\n'));
+    styles.add(id);
+  };
+}`,
+          }));
+
+          // Compile the subset of Vue 2 SFC syntax used by g3w-client app; script setup and
+          // external, module, or preprocessed style blocks are intentionally rejected.
+          build.onLoad({ filter: /\.vue$/ }, async ({ path: filename }) => {
+            const source      = await fs.promises.readFile(filename, 'utf8');
+            const descriptor = parse({ source, filename });
+            const errors = descriptor.errors
+              .filter(error => !/^tag <(?:area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)\b.*has no matching end tag\.$/.test(error))
+              .map(error => ({ text: error.message || String(error) }));
+
+            if (descriptor.scriptSetup) {
+              errors.push({ text: 'Vue script setup blocks are not supported.' });
+            }
+
+            // A content-derived ID keeps scoped CSS identifiers stable until the SFC changes.
+            const id = crypto.createHash('sha256').update(filename + source).digest('hex').slice(0, 8);
+            const scoped = descriptor.styles.some(style => style.scoped);
+            let template;
+
+            if (descriptor.template) {
+              template = compileTemplate({
+                source: descriptor.template.content,
+                filename,
+                id,
+                scoped,
+                isProduction: production,
+                compilerOptions: { outputSourceRange: true }
+              });
+              errors.push(...template.errors.map(error => ({ text: error.msg || error.message || String(error) })));
+            }
+
+            const styles = descriptor.styles.map((style, index) => {
+              if (style.lang || style.src || style.module) {
+                errors.push({ text: `Unsupported style block in ${filename}.` });
+                return null;
+              }
+
+              const result = compileStyle({
+                source: style.content,
+                filename,
+                id: `data-v-${id}`,
+                scoped: style.scoped
+              });
+
+              errors.push(...result.errors.map(error => ({ text: error.msg || error.message || String(error) })));
+              return {
+                id:       `${id}-${index}`,
+                css:      esbuild.transformSync(result.code, { loader: 'css', minify: production }).code,
+                media:    style.attrs.media || '',
+                filename: path.relative(process.cwd(), filename).split(path.sep).join('/').replace(/\*\//g, '* /')
+              };
+            }).filter(Boolean);
+
+            if (errors.length) {
+              return { errors };
+            }
+
+            return {
+              loader: 'js',
+              resolveDir: path.dirname(filename),
+              contents: `/* script */\n`
+                + `${descriptor.script ? rewriteDefault(descriptor.script.content, '__vue_script__') : 'const __vue_script__ = {}'}\n\n/`
+                + `* template */\n`
+                + `${descriptor.template ? (template.code + '\nconst __vue_render__ = render;\nconst __vue_staticRenderFns__ = staticRenderFns;') : 'var __vue_render__ = undefined; var __vue_staticRenderFns__ = [];'}\n\n`
+                + `const __vue_component__ = __vue_script__;\n`
+                + `__vue_component__.render = __vue_render__;\n`
+                + `__vue_component__.staticRenderFns = __vue_staticRenderFns__;\n`
+                + `__vue_component__._compiled = true;\n`
+                + `__vue_component__.__file = ${JSON.stringify(filename)};\n`
+                + `${scoped ? `__vue_component__._scopeId = ${JSON.stringify(`data-v-${id}`)};` : ''}\n`
+                + `/* style inject */\n`
+                + `${styles.length ? `import __vue_create_injector__ from 'g3w-vue:style-injector';\n${JSON.stringify(styles)}.forEach(__vue_create_injector__());` : ''}\n`
+                + `export default __vue_component__;`,
+            };
+          });
+        }
+      },
       {
         name: 'g3w-assets',
         setup(build) {
@@ -228,6 +282,11 @@ async function build_app() {
             }
           });
           build.onEnd(async result => {
+            if (result.errors.length) {
+              console.error(await esbuild.formatMessages(result.errors, { kind: 'error', color: true }));
+              return;
+            }
+
             console.log(GREEN__ + '[client]' + __RESET + ' → ' + Math.round((fs.statSync(`${outputFolder}/static/client/app.min.js`).size + fs.statSync(`${outputFolder}/static/client/vendor.min.js`).size) / 1024)+ 'KB');
 
             // copy assets (fonts and images)
@@ -270,7 +329,10 @@ async function build_app() {
     ]
   });
   if (production) {
-    await ctx.rebuild();
+    const result = await ctx.rebuild();
+    if (result.errors.length) {
+      process.exitCode = 1;
+    }
     ctx.dispose();
   } else {
     ctx.watch();
@@ -285,117 +347,21 @@ async function build_app() {
   return promise;
 }
 
-/**
- * @param { string } pluginName name of plugin to build (eg. 'editing')
- * @param { boolean } watch     whether to watchify source files
- * 
- * @since 3.10.0
- */
-async function build_plugin(pluginName) {
-
-  const outputFolder = production
-    ? `${g3w.admin_plugins_folder}/${pluginName}/static/${pluginName}/js/`// plugin folder (PROD env)
-    : `${g3w.admin_overrides_folder}/static/${pluginName}/js/`;           // plugin folder (DEV env)
-
-  console.log(INFO__ + `Building plugin:` + __RESET + ' → ' + outputFolder);
-
-  const version = get_version(pluginName);
-  const hash    = get_hash(pluginName);
-  const branch  = get_branch(pluginName);
-
-  const { promise, resolve } = Promise.withResolvers();
-
-  const ctx = await esbuild.context({
-    entryPoints: [`${g3w.pluginsFolder}/${pluginName}/index.js`],
-    bundle:      true,
-    minify:      production,
-    sourcemap:   true,
-    outfile:    `${outputFolder}/plugin.js`,
-    define: {
-      'process.env.g3w_plugin_name':    `"${pluginName}"`,
-      'process.env.g3w_plugin_version': `"${is_prod_branch(branch) ? version : version.split('-')[0] + '-' + branch }"`,
-      'process.env.g3w_plugin_hash':    `"${hash}"`,
-      'process.env.g3w_plugin_branch':  `"${branch}"`,
-    },
-    plugins: [
-      require('esbuild-vue')({ production }),
-      {
-        name: 'onBuildEnd',
-        setup(build) {
-          build.onEnd(result => {
-            console.log(GREEN__ + '[' + pluginName + ']' + __RESET + ' → ' + Math.round(fs.statSync(`${outputFolder}plugin.js`).size / 1024) + 'KB');
-            // Add "plugin.js" to git repository (eg. ./src/editing/plugin.js)
-            fs.cpSync(`${outputFolder}plugin.js`, `${g3w.pluginsFolder}/${pluginName}/plugin.js`);
-            resolve();
-          })
-        },
-      }
-    ],
-    banner: { js: /* js */ `
-(function() {
-  const plugins = window?.initConfig?.plugins;
-  if (plugins) {
-    plugins["${pluginName}"] = Object.assign(plugins["${pluginName}"] || {},
-      {
-        version : "${is_prod_branch(branch) ? version : version.split('-')[0] + '-' + branch }",
-        hash    : "${hash}",
-        branch  : "${branch}",
-      });
-  }
-})();` }
-  });
-  if (production) {
-    await ctx.rebuild();
-    ctx.dispose();
-  } else {
-    ctx.watch();
-  }
-  return promise;
-}
-
-function get_version(pluginName) {
-  const src = (pluginName ? `${g3w.pluginsFolder}/${pluginName}` : '.');
+function get_version() {
   // delete cache of require otherwise no package.json version rests the old (cache) one
   try {
-    delete require.cache[require.resolve(`${src}/package.json`)];
-  } catch (e) {
-    console.warn(YELLOW__ + '[WARN] ' + __RESET + 'package.json not found (' + GREEN__ + pluginName + __RESET + ')');
-  }
-  try {
-    return require(`${src}/package.json`).version;
-  } catch(e) {
-    console.warn(YELLOW__ + '[WARN] ' + __RESET + 'package.json not found (' + GREEN__ + pluginName + __RESET + ')' );
+    delete require.cache[require.resolve('./package.json')];
+    return require('./package.json').version;
+  } catch (error) {
+    return packageJSON.version;
   }
 }
 
-/**
- * @param { string } pluginName
- * 
- * @since 3.10.0
- */
-function get_hash(pluginName) {
-  const src = (pluginName ? `${g3w.pluginsFolder}/${pluginName}` : '.');
+function get_branch() {
   try {
-    let branch = execSync(`git -C  ${src} rev-parse --abbrev-ref HEAD`, { encoding: 'utf8' }).trim();
-    if (branch && 'HEAD' !== branch.trim()) {
-      return execSync(`git -C  ${src} rev-parse --short HEAD`, { encoding: 'utf8' }).trim();
-    }
+    return execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
   } catch(err) {
-    console.warn(YELLOW__ + '[WARN] ' + __RESET + 'git repository not found (' + GREEN__ + src + __RESET + ')' );
-  }
-}
-
-/**
- * @param { string } pluginName
- * 
- * @since 3.10.0
- */
-function get_branch(pluginName) {
-  const src = (pluginName ? `${g3w.pluginsFolder}/${pluginName}` : '.');
-  try {
-    return execSync(`git -C  ${src} rev-parse --abbrev-ref HEAD`, { encoding: 'utf8' }).trim();
-  } catch(err) {
-    console.warn(YELLOW__ + '[WARN] ' + __RESET + 'git repository not found (' + GREEN__ + src + __RESET + ')' );
+    console.warn(YELLOW__ + '[WARN] ' + __RESET + 'git repository not found');
   }
 }
 

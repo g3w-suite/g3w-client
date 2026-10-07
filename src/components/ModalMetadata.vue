@@ -78,24 +78,24 @@
                   <td class = "col-sm-10 value">
 
                     <!-- CONTACT NAME -->
-                    <div v-if="(project.metadata.contactinformation.personprimary || {}).contactperson || (project.metadata.contactinformation.personprimary || {}).ContactPerson" style = "margin-bottom: 5px;">
+                    <div v-if="project.metadata.contactinformation.personprimary?.contactperson || project.metadata.contactinformation.personprimary?.ContactPerson" style = "margin-bottom: 5px;">
                       <i style = "margin-right: 3px;" class = "fas fa-user-tie" aria-hidden = "true"></i>
                       <b hidden>{{ $t('Person') }}</b>
-                      {{ (project.metadata.contactinformation.personprimary || {}).contactperson || (project.metadata.contactinformation.personprimary || {}).ContactPerson }}
+                      {{ project.metadata.contactinformation.personprimary?.contactperson || project.metadata.contactinformation.personprimary?.ContactPerson }}
                     </div>
 
                     <!-- CONTACT ORGANIZATION -->
-                    <div v-if="(project.metadata.contactinformation.personprimary || {}).contactorganization || (project.metadata.contactinformation.personprimary || {}).ContactOrganization" style = "margin-bottom: 5px;">
+                    <div v-if="project.metadata.contactinformation.personprimary?.contactorganization || project.metadata.contactinformation.personprimary?.ContactOrganization" style = "margin-bottom: 5px;">
                       <i style = "margin-right: 3px;" class = "fa fa-building" aria-hidden = "true"></i>
                       <b hidden>{{ $t('Organization') }}</b>
-                      {{ (project.metadata.contactinformation.personprimary || {}).contactorganization || (project.metadata.contactinformation.personprimary || {}).ContactOrganization }}
+                      {{ project.metadata.contactinformation.personprimary?.contactorganization || project.metadata.contactinformation.personprimary?.ContactOrganization }}
                     </div>
 
                     <!-- CONTACT ROLE -->
-                    <div v-if="(project.metadata.contactinformation.personprimary || {}).contactposition || (project.metadata.contactinformation.personprimary || {}).ContactPosition" style = "margin-bottom: 5px;">
+                    <div v-if="project.metadata.contactinformation.personprimary?.contactposition || project.metadata.contactinformation.personprimary?.ContactPosition" style = "margin-bottom: 5px;">
                       <i style = "margin-right: 3px;" class = "fas fa-sitemap" aria-hidden = "true"></i>
                       <b hidden>{{ $t('Role') }}</b>
-                      {{ (project.metadata.contactinformation.personprimary || {}).contactposition || (project.metadata.contactinformation.personprimary || {}).ContactPosition }}
+                      {{ project.metadata.contactinformation.personprimary?.contactposition || project.metadata.contactinformation.personprimary?.ContactPosition }}
                     </div>
 
                     <!-- CONTACT EMAIL -->
