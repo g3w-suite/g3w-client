@@ -231,7 +231,7 @@ export default function __vue_create_injector__() {
                 source: style.content,
                 filename,
                 id: `data-v-${id}`,
-                scoped: style.scoped
+                scoped: style.scoped ?? false
               });
 
               errors.push(...result.errors.map(error => ({ text: error.msg || error.message || String(error) })));
@@ -399,59 +399,168 @@ function copyDir(src, dest) {
 /**
  * Proxy demo server for Local Development
  * 
+ * Starts the local development proxy on port 3000.
+ * Serves locally built client/plugin assets when present and forwards all
+ * other requests to `g3w.proxy`, adapting origins and text responses so the
+ * remote application works from the local browser origin.
+ *
  * @since 4.1.0
  */
 async function start_proxy_server() {
-  const http      = require('http');
-  const httpProxy = require('http-proxy');
-  const mime      = require('mime-types');
-  const modifyResponse = require('http-proxy-response-rewrite');
+  const http  = require('http');
+  const https = require('https');
+  const zlib  = require('zlib');
 
   //check if valid url
   try {
     const SERVER_URL = new URL(g3w.proxy);
-
-    const proxy      = httpProxy.createProxyServer({
-      secure: false,
-      changeOrigin: true,
-    });
+    const contentTypes = {
+      '.avif': 'image/avif',
+      '.bmp': 'image/bmp',
+      '.cjs': 'text/javascript',
+      '.css': 'text/css',
+      '.eot': 'application/vnd.ms-fontobject',
+      '.gif': 'image/gif',
+      '.htm': 'text/html',
+      '.html': 'text/html',
+      '.ico': 'image/x-icon',
+      '.jpeg': 'image/jpeg',
+      '.jpg': 'image/jpeg',
+      '.js': 'text/javascript',
+      '.json': 'application/json',
+      '.map': 'application/json',
+      '.md': 'text/markdown',
+      '.mjs': 'text/javascript',
+      '.mp3': 'audio/mpeg',
+      '.mp4': 'video/mp4',
+      '.png': 'image/png',
+      '.pdf': 'application/pdf',
+      '.php': 'application/x-httpd-php',
+      '.svg': 'image/svg+xml',
+      '.ttf': 'font/ttf',
+      '.txt': 'text/plain',
+      '.wasm': 'application/wasm',
+      '.webm': 'video/webm',
+      '.webmanifest': 'application/manifest+json',
+      '.webp': 'image/webp',
+      '.woff': 'font/woff',
+      '.woff2': 'font/woff2',
+      '.zip': 'application/zip',
+      '.xml': 'application/xml'
+    };
 
     const server = http.createServer((req, res) => {
       const url = new URL(req.url, `http://${req.headers.host}`);
       let localPath;
-      // proxy core and static plugins
+      // Prefer local build output for client and bundled static plugins.
       for (const pluginName of ['client', 'editing', 'openrouteservice', 'qplotly', 'qtimeseries']) {
+        // The client build lives in the overrides folder; plugins use their own folders.
         if ('client' === pluginName) {
           localPath = path.join(g3w.admin_overrides_folder, url.pathname)
         } else {
           localPath = path.join(`${g3w.pluginsFolder}/g3w-admin-${pluginName}`, url.pathname);
         }
+        // Serve locally only when the URL belongs to this asset group and the file exists.
         if (url.pathname.startsWith(`/static/${pluginName}`) && fs.existsSync(localPath)) {
           console.log(true, '→', localPath);
-          const contentType = mime.lookup(localPath) || 'application/octet-stream'; // Determine MIME type
-          res.setHeader('Content-Type', contentType);                               // Set the Content-Type header
-          res.end(require('fs').readFileSync(localPath));
+          res.setHeader('Content-Type', contentTypes[path.extname(localPath).toLowerCase()] || 'application/octet-stream'); // Set appropriate Content-Type header
+          res.end(fs.readFileSync(localPath));
           return;
         }
       }
       console.log(false, '→', `${SERVER_URL.origin.replace(/\/$/g, '')}${url.pathname}`);
-      proxy.web(req, res, { target: SERVER_URL.origin });
-    });
-
-    // replace `SERVER_URL` → `http://localhost:3000` within text/html responses
-    proxy.on('proxyRes', function (proxyRes, req, res) {
-      if (!proxyRes.headers['content-type'] || !proxyRes.headers['content-type'].includes('text') || req.url.startsWith('/media')) {
-        return;
-      }
-      modifyResponse(res, proxyRes.headers['content-encoding'], function (body) {
-        if (body) {
-            const modifiedBody  = body.replaceAll(SERVER_URL.origin, 'http://localhost:3000');
-            res.setHeader('Content-Length', Buffer.byteLength(modifiedBody));
-            return modifiedBody;
+      // Match the upstream protocol so the proxy can serve either HTTP or HTTPS targets.
+      const transport = SERVER_URL.protocol === 'https:' ? https : http;
+      const referer   = URL.canParse(req.headers.referer) && new URL(req.headers.referer);
+      const proxy     = transport.request({
+        protocol: SERVER_URL.protocol,
+        hostname: SERVER_URL.hostname,
+        port:     SERVER_URL.port,
+        path:     req.url,
+        method:   req.method,
+        headers: {
+          ...req.headers,
+          origin:            'http://localhost:3000' === req.headers?.origin ? SERVER_URL.origin                                     : req.headers?.origin,
+          referer:           'http://localhost:3000' === referer?.origin     ? SERVER_URL.origin + referer.pathname + referer.search : req.headers?.referer,
+          host:              SERVER_URL.host,
+          'accept-encoding': 'identity'
+        },
+        rejectUnauthorized: false,
+      }, proxyRes => {
+        const headers = { ...proxyRes.headers };
+        // Keep same-server redirects and cookies usable on the local origin.
+        // Rewrite only redirects with a Location header.
+          const redirect = headers.location && new URL(headers.location, SERVER_URL);
+        // Leave redirects to other hosts untouched.
+        if (redirect && redirect.origin === SERVER_URL.origin) {
+          headers.location = 'http://localhost:3000' + redirect.pathname + redirect.search + redirect.hash;
         }
-        return body;
+        // Remove upstream cookie domains so the browser accepts cookies for localhost.
+        if (headers['set-cookie']) {
+          headers['set-cookie'] = headers['set-cookie']
+            .map(cookie => cookie.split(';')
+            .filter(attribute => !/^\s*domain\s*=/i.test(attribute))
+            .join(';'));
+        }
+        // Rewrite only eligible text bodies; binary/media responses and bodyless
+        // responses are passed through unchanged.
+        // Stream pass-through responses without buffering or changing their payload.
+        if (!(headers['content-type'] || '').includes('text') || req.url.startsWith('/media') || 'HEAD' === req.method || [204, 304].includes(proxyRes.statusCode)) {
+          res.writeHead(proxyRes.statusCode, headers);
+          proxyRes.pipe(res);
+          return;
+        }
+
+        const chunks = [];
+        proxyRes.on('data', chunk => chunks.push(chunk));
+        proxyRes.on('end', () => {
+          const originalBody = Buffer.concat(chunks);
+          const encoding = (headers['content-encoding'] || '').toLowerCase();
+          // Re-encode after rewriting so the response retains its original encoding.
+          const decompress = { br: zlib.brotliDecompressSync, deflate: zlib.inflateSync, gzip: zlib.gunzipSync }[encoding];
+          const compress   = { br: zlib.brotliCompressSync,   deflate: zlib.deflateSync, gzip: zlib.gzipSync }[encoding];
+          let body = originalBody;
+
+          try {
+            // Unknown encodings cannot be safely rewritten; preserve the upstream response.
+            if (encoding && !decompress) {
+              res.writeHead(proxyRes.statusCode, headers);
+              res.end(originalBody);
+              return;
+            }
+            // Decompress only when the upstream declared a supported content encoding.
+            if (decompress) {
+              body = decompress(body)
+            };
+            body = Buffer.from(body.toString().replaceAll(SERVER_URL.origin, 'http://localhost:3000'));
+            // Restore compression after rewriting so response headers remain accurate.
+            if (compress) {
+              body = compress(body);
+            }
+          } catch (error) {
+            res.writeHead(proxyRes.statusCode, headers);
+            res.end(originalBody);
+            return;
+          }
+
+          delete headers['transfer-encoding'];
+          headers['content-length'] = body.length;
+          res.writeHead(proxyRes.statusCode, headers);
+          res.end(body);
+        });
+      });
+
+      proxy.on('error', error => {
+        console.warn(error);
+        // Once headers are sent, terminate the partial response instead of sending a second status.
+        if (res.headersSent) {
+          return res.destroy(error);
+        }
+        res.writeHead(502);
+        res.end('Bad Gateway');
+      });
+      req.pipe(proxy);
     });
-  });
 
     server.listen(3000, () => {
       console.log('\n' + GREEN__ + 'Proxy server running at: http://localhost:3000' + __RESET);
@@ -460,6 +569,5 @@ async function start_proxy_server() {
   } catch(e) {
     console.warn(e);
   }
- 
 }
 

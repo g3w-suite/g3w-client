@@ -40,9 +40,6 @@
   "devDependencies": {
     "@vue/compiler-sfc": "2.7.16",
     "esbuild": "^0.28.2",
-    "http-proxy": "^1.18.1",
-    "http-proxy-response-rewrite": "^0.0.1",
-    "mime-types": "^3.0.1",
     "playwright": "^1.55.0"
   },
   "engines": {
