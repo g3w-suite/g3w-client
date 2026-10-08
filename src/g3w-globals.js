@@ -366,46 +366,14 @@ globalThis.g3wsdk = {
       Panel,
       SearchPanel,
       Fields: {
-        simple_field: {
-          name: 'field-text',
-          extends: G3WField,
-          props: { fieldType: { type: String, default: 'text' } }
-        },
-        text_field: {
-          name: 'field-text',
-          extends: G3WField,
-          props: { fieldType: { type: String, default: 'text' } }
-        },
-        link_field: {
-          name: 'field-link',
-          extends: G3WField,
-          props: { fieldType: { type: String, default: 'link' } }
-        },
-        image_field: {
-          name: 'field-image',
-          extends: G3WField,
-          props: { fieldType: { type: String, default: 'image' } }
-        },
-        geo_field: {
-          name: 'g3w-geospatial',
-          extends: G3WField,
-          props: { fieldType: { type: String, default: 'geo' } }
-        },
-        photo_field: {
-          name: 'field-image',
-          extends: G3WField,
-          props: { fieldType: { type: String, default: 'image' } }
-        },
-        media_field: {
-          name: 'g3w-media',
-          extends: G3WField,
-          props: { fieldType: { type: String, default: 'media' } }
-        },
-        vue_field: {
-          name: 'vuefield',
-          extends: G3WField,
-          props: { fieldType: { type: String, default: 'vue' } }
-        }
+        simple_field: { name: 'field-text',     extends: G3WField, props: { fieldType: { type: String, default: 'text' } } },
+        text_field:   { name: 'field-text',     extends: G3WField, props: { fieldType: { type: String, default: 'text' } } },
+        link_field:   { name: 'field-link',     extends: G3WField, props: { fieldType: { type: String, default: 'link' } } },
+        image_field:  { name: 'field-image',    extends: G3WField, props: { fieldType: { type: String, default: 'image' } } },
+        geo_field:    { name: 'g3w-geospatial', extends: G3WField, props: { fieldType: { type: String, default: 'geo' } } },
+        photo_field:  { name: 'field-image',    extends: G3WField, props: { fieldType: { type: String, default: 'image' } } },
+        media_field:  { name: 'g3w-media',      extends: G3WField, props: { fieldType: { type: String, default: 'media' } } },
+        vue_field:    { name: 'vuefield',       extends: G3WField, props: { fieldType: { type: String, default: 'vue' } } }
       },
       Inputs: {
         G3WInput,
