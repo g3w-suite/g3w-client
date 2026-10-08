@@ -480,8 +480,8 @@ async function start_proxy_server() {
         method:   req.method,
         headers: {
           ...req.headers,
-          origin:            'http://localhost:3000' === req.headers?.origin ? SERVER_URL.origin                                     : req.headers?.origin,
-          referer:           'http://localhost:3000' === referer?.origin     ? SERVER_URL.origin + referer.pathname + referer.search : req.headers?.referer,
+          ...('http://localhost:3000' === req.headers.origin && { origin: SERVER_URL.origin }),
+          ...('http://localhost:3000' === referer?.origin    && { referer: SERVER_URL.origin + referer.pathname + referer.search }),
           host:              SERVER_URL.host,
           'accept-encoding': 'identity'
         },
