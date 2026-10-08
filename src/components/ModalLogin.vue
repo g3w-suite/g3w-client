@@ -42,18 +42,17 @@ export default {
   computed: {
 
     login_url() {
-      return 'localhost:3000' === window.location.host
-        ? (new URL(`/#/${window.g3w.state.language}/login`, initConfig.baseurl)).toString()
-        : window.initConfig.user.login_url;
+      return window.initConfig.user.login_url;
     },
 
   },
 
   methods: {
 
-     onIframeLoaded(e) {
-      const iframe = this.$refs.login_iframe?.contentWindow?.g3wsdk?.core?.ApplicationState;
-      if (iframe?.user?.logout_url) {
+    onIframeLoaded() {
+      const iframe = this.$refs.login_iframe?.contentWindow;
+      const user   = iframe?.initConfig?.user || iframe?.g3w?.state?.user;
+      if (user?.logout_url && this.show) {
         this.show = false;
         window.location.reload();
       }
