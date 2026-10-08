@@ -485,7 +485,7 @@ async function start_proxy_server() {
           host:              SERVER_URL.host,
           'accept-encoding': 'identity'
         },
-        rejectUnauthorized: false,
+        rejectUnauthorized: true,
       }, proxyRes => {
         const headers = { ...proxyRes.headers };
         // Keep same-server redirects and cookies usable on the local origin.
