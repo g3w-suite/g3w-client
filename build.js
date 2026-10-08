@@ -530,7 +530,7 @@ async function start_proxy_server() {
             }
             // Decompress only when the upstream declared a supported content encoding.
             if (decompress) {
-              body = decompress(body)
+              body = decompress(body);
             };
             body = Buffer.from(body.toString().replaceAll(SERVER_URL.origin, 'http://localhost:3000'));
             // Restore compression after rewriting so response headers remain accurate.
