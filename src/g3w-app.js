@@ -3279,7 +3279,7 @@ export default new (class GUI extends Emitter {
    */
   onLayerLoadError() {
     /** @since 4.1.0 - notify warning */
-    if (ApplicationState.project.state.show_load_layer_error && !this.onLayerLoadError.shown) {
+    if (!this.onLayerLoadError.shown) {
       this.showUserMessage({ type: 'warning', message: 'Some layers are not available' });
       this.onLayerLoadError.shown = true;
     }
