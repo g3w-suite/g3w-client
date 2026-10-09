@@ -1332,7 +1332,7 @@ export default {
         ...(this.ApplicationState.catalog.external?.vector || []),
         ...(this.ApplicationState.catalog.external?.wms || []),
         ...(this.ApplicationState.catalog.external?.tms || []),
-      ].forEach(l => l.checked = this.externalayers.checked);
+      ].filter(l => false !== l.geolayer).forEach(l => l.checked = this.externalayers.checked);
     },
 
     /**
@@ -1354,7 +1354,7 @@ export default {
         ...(ApplicationState.catalog.external?.vector || []),
         ...(ApplicationState.catalog.external?.wms || []),
         ...(ApplicationState.catalog.external?.tms || []),
-      ];
+      ].filter(l => false !== l.geolayer);
       this.externalayers.checked = !!(checked.length && checked.every(l => l.checked));
     },
 

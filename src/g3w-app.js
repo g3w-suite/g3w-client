@@ -4862,7 +4862,7 @@ export default new (class GUI extends Emitter {
         features: []
       };
 
-      if (options.color) {
+      if (options.color && false !== options.geolayer) {
         vectorLayer.setStyle(Object.assign(
           feat => {
             options.color = options.color.rgba ? 'rgba(' + [options.color.rgba.r, options.color.rgba.g, options.color.rgba.b, options.color.rgba.a].join() + ')' : options.color;
@@ -4943,6 +4943,8 @@ export default new (class GUI extends Emitter {
          * @since 3.8.3
          */
         downloadUrl: options.downloadUrl,
+        geolayer:    false !== options.geolayer, //@since 4.1.0 false = alphanumeric table (eg. csv without geometry)
+        openattributetable: true,
         toc:         true, //@since 4.1.0 whether to show layer in TOC
       };
     }
@@ -4979,13 +4981,13 @@ export default new (class GUI extends Emitter {
 
     const layer    = 'vector' === type ? vectorLayer : externalLayer;
     const features = 'vector' === type && layer.getSource().getFeatures() || [];
-    const extent   = 'vector' === type && layer.getSource().getExtent()   || [];
+    const extent   = 'vector' === type && false !== options.geolayer && layer.getSource().getExtent() || [];
 
     // prefix each feature with layer id
     features.forEach((f, i) => f.setId(`${externalLayer.id}_${i}`));
 
     if (features.length) {
-      externalLayer.geometryType = features[0].getGeometry().getType();
+      externalLayer.geometryType = features[0].getGeometry()?.getType() ?? 'NoGeometry';
       externalLayer.selected     = false;
     }
 
@@ -5028,7 +5030,8 @@ export default new (class GUI extends Emitter {
     this.#layers.external.push(layer);
 
     if (vectorLayer && false !== options.persistent) {
-      idb.getItem('externalLayers').then(externalLayers => {
+      // defer heavy GeoJSON serialization (large files) after UI updates
+      (window.requestIdleCallback || setTimeout)(() => idb.getItem('externalLayers').then(externalLayers => {
         idb.setItem('externalLayers', {
           ...(externalLayers || {}),
           [vectorLayer.get('name')]: {
@@ -5036,7 +5039,7 @@ export default new (class GUI extends Emitter {
             options
           }
         });
-      });
+      }));
     }
 
     this.getService('catalog').addExternalLayer({ layer: externalLayer, type });
