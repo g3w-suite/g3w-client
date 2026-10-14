@@ -16,7 +16,7 @@ import { gettext as _ } from 'g3w-i18n';
  * ORIGINAL SOURCE: src/app/core/plugin/plugin.js@v3.10.2
  */
 export class Plugin extends Emitter {
-  
+  #app = GUI; //get app
   constructor({
     name         = null,
     config       = window.initConfig.plugins[name],
@@ -49,6 +49,14 @@ export class Plugin extends Emitter {
       }
     }, 10000); // 10 seconds
 
+  }
+
+  /**
+   * 
+   * @returns Get app object 
+   */
+  getApp() {
+    return this.#app;
   }
 
   /**
