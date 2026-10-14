@@ -34,15 +34,23 @@ export default class Emitter {
     this.___setters = value || {};
 
     // register and handle setters (before/after)
-    Object.entries(this.___setters).forEach(([evt, listener]) => {
-      this[evt] = new Proxy(listener, {
-        apply: (target, ctx, args) => {
-          this.trigger(`onbefore:${evt}`, args);  // call "onbefore" listeners
-          const result = target.apply(ctx, args); // execute setter function
-          this.trigger(`onafter:${evt}`, args);   // call "onafter" listeners
-          return result;
-        }
-      });
+    Object.entries(this.___setters).forEach(([evt, listener]) => this.___hook(evt, listener));
+  }
+
+  /**
+   * Wrap a method so that it triggers "onbefore:<name>" and "onafter:<name>" events
+   * 
+   * @since 4.2.0
+   */
+  ___hook(evt, listener = this[evt]) {
+    this.___setters[evt] = listener;
+    this[evt] = new Proxy(listener, {
+      apply: (target, ctx, args) => {
+        this.trigger(`onbefore:${evt}`, args);  // call "onbefore" listeners
+        const result = target.apply(ctx, args); // execute setter function
+        this.trigger(`onafter:${evt}`, args);   // call "onafter" listeners
+        return result;
+      }
     });
   }
 
@@ -64,6 +72,12 @@ export default class Emitter {
    */
   on(evt, listener, priority, once = false, keyEvent = false) {
     this.___events[evt] = this.___events[evt] || [];
+
+    // @since 4.2.0 any method can be listened (before/after) without declaring it as setter
+    const [, method] = /^on(?:before|after):(.+)$/.exec(evt) || [];
+    if (method && !(method in this.___setters) && 'function' === typeof this[method]) {
+      this.___hook(method);
+    }
 
     let key;
 

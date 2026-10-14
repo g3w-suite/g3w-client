@@ -490,6 +490,7 @@ export default new (class GUI extends Emitter {
         }
         component.mount(sidebarItem.$refs['component-placeholder']);
       }).$mount();
+      component.sidebarItem = sidebarItem;
       ApplicationState.sidebar.components.push(component);
     }
     return component;
@@ -507,6 +508,24 @@ export default new (class GUI extends Emitter {
       return this.#CONTENTS;
     }
     return ApplicationState.sidebar.components.find(c => id === c.getId());
+  }
+
+  /**
+   * Remove a sidebar item (added through `addComponent`)
+   * 
+   * @param { string } id component id
+   * 
+   * @since 4.2.0
+   */
+  removeComponent(id) {
+    const component = ApplicationState.sidebar.components.find(c => id === c.getId());
+    if (!component) {
+      return;
+    }
+    component.unmount();
+    component.sidebarItem?.$destroy();
+    component.sidebarItem?.$el?.remove();
+    ApplicationState.sidebar.components.splice(ApplicationState.sidebar.components.indexOf(component), 1);
   }
 
   /**

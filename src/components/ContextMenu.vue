@@ -17,16 +17,29 @@
   >
 
     <!-- CUSTOM ITEMS -->
-    <li v-for = "(item, i) in items" :key = "i"  @click.prevent.stop = "item.cbk && item.cbk($event)" :style="{ order: item.position }">
-      <i v-if = "item.children" class = "fas fa-chevron-right" style  = "position: absolute; right: 0; margin-top: 3px"></i>
-      <i v-if = "item.icon" :class = "$fa(item.icon)"></i> {{ $t(item.label) }}
+    <li
+      v-for                     = "(item, i) in items"
+      :key                      = "i"
+      :role                     = "item.children ? null : 'button'"
+      tabindex                  = "0"
+      @click.prevent.stop       = "item.cbk && item.cbk($event)"
+      @keydown.enter.prevent.stop = "item.cbk && item.cbk($event)"
+      @keydown.space.prevent.stop = "item.cbk && item.cbk($event)"
+      :style                    = "{ order: item.position }"
+    >
+      <i v-if = "item.children" class = "fas fa-chevron-right" style  = "position: absolute; right: 0; margin-top: 3px" aria-hidden="true"></i>
+      <i v-if = "item.icon" :class = "$fa(item.icon)" aria-hidden="true"></i> {{ $t(item.label) }}
       <!--SUB MENU-->
       <ul v-if = "item.children" class = "sub-contex-menu">
         <li
-          v-for       = "(child, j) in item.children"
-          @click.stop = "child.cbk"
-          :key        = "j"
-          style       = "display: list-item;"
+          v-for                     = "(child, j) in item.children"
+          role                      = "button"
+          tabindex                  = "0"
+          @click.stop               = "child.cbk"
+          @keydown.enter.prevent.stop = "child.cbk"
+          @keydown.space.prevent.stop = "child.cbk"
+          :key                      = "j"
+          style                     = "display: list-item;"
         >
           <span style = "font-weight: bold">{{ $t(child.label) }}</span>
         </li>
