@@ -5355,6 +5355,31 @@ export default new (class GUI extends Emitter {
   }
 
   /**
+   * Logs debug information about the G3W-SUITE environment, including versions of the admin, client, plugins, browser, and operating system.
+   */
+  info() {
+    Promise
+      .allSettled([
+        new Promise((resolve) => $script('https://unpkg.com/platform@1.3.6/platform.js', resolve)),
+        new Promise((resolve) => this.state.complete ? resolve() : this.state.on('complete', resolve))
+      ])
+      .finally(async () => {
+        /** @since 3.8.0 */
+        const platform = window.platform || {};
+
+        window.console.info(`
+          [g3wsdk.info]\n
+          - g3w-admin: __${initConfig.version}__
+          - g3w-client: __${process.env.g3w_client_rev}__
+          ${Object.entries(window.initConfig.plugins).map((p) => (`    - ${p[0]}: __${p[1].version}__`)).join('\n')}
+          - browser: __${platform.name} ${platform.version}__
+          - operating system: __${platform.os.toString()}__
+          `.trim()
+        );
+      });
+  }
+
+  /**
    * ORIGINAL SOURCE: src/services/data.js@v4.0.0
    * 
    * @private invoked by `getData('query:coordinates')`
