@@ -210,27 +210,63 @@
 
     </nav>
 
+    <nav class="sidebar-controls no-print" :class="{ 'has-geocoding': initConfig.mapcontrols && initConfig.mapcontrols.geocoding }" :aria-label="$t('Tools')" v-disabled="disabled">
+      <div class="sidebar-control-list">
+        <div
+          v-for="item in sidebarControls"
+          :key="item.id"
+          class="ol-control"
+        >
+          <button
+            type="button"
+            :class="{ 'g3w-ol-toggled': item.open || (ApplicationState.sidebar.open && activeSidebarId === item.id) }"
+            :aria-label="$t(item.title)"
+            :aria-pressed="item.open || (ApplicationState.sidebar.open && activeSidebarId === item.id) ? 'true' : 'false'"
+            :disabled="item.disabled || disabled || (panels.length > 0 && activeSidebarId !== item.id)"
+            :data-i18n-title="item.title"
+            data-placement="right"
+            @click="selectSidebarItem(item.id)"
+          >
+            <i :class="item.icon" :style="{ color: item.iconColor }" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+      <div :class="{ 'sidebar-plugin-loading': true, 'g3w-hide': 0 === ApplicationState.plugins.length }" role="status" aria-label="Loading plugins" data-i18n-title="Loading plugins" data-placement="right">
+        <i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i>
+      </div>
+    </nav>
+
     <!-- SIDEBAR MENU -->
-    <aside :class = "{ 'main-sidebar no-print': true, 'g3w-disabled': disabled }">
+    <aside :class = "{ 'main-sidebar no-print': true, 'g3w-disabled': disabled }" :data-active-item="activeSidebarId">
+      <div v-if="!panels.length" class="sidebar-section-actions">
+        <h4 v-if="sidebarTitle" class="sidebar-control-title">{{ $t(sidebarTitle) }}</h4>
+        <button
+          type="button"
+          class="btn btn-outline sidebar-close-button"
+          :aria-label="$t(ApplicationState.sidebar.tooltip_close || 'close')"
+          :data-i18n-title="ApplicationState.sidebar.tooltip_close || 'close'"
+          :disabled="disabled"
+          @click="closeSidebar"
+        ><i class="fas fa-times" aria-hidden="true"></i></button>
+      </div>
       <!-- SIDEBAR CONTENT -->
       <div
         :hidden = "panels.length <= 0"
         class   = "sidebar-panel"
       >
-        <div
-          style  = "display: flex; overflow: hidden;line-height: 14px;font-size: 1.5em;min-height: 35px;border-bottom: 1px solid #FFF;padding-bottom: 5px;margin-bottom: 5px;"
-          :style = "{ justifyContent: ApplicationState.sidebar.title ? 'space-between' : 'flex-end' }"
-        >
+        <div class="sidebar-panel-heading">
           <h4
-            v-if  = "title"
-            style = "display: inline-block; font-weight: bold"
-            v-t   = "title"
-          ></h4>
+            v-if  = "sidebarTitle"
+            class = "sidebar-control-title"
+          >{{ $t(sidebarTitle) }}</h4>
 
           <button
             v-if           = "panels.length > 1"
+            type           = "button"
             @click         = "closePanel"
-            :title         = "'back'"
+            :aria-label    = "$t('back')"
+            :data-i18n-title = "'back'"
+            :disabled      = "disabled || false === ApplicationState.sidebar.btn_close"
             data-placement = "left"
             class          = "btn btn-outline"
             style          = "margin-left: auto; margin-right: 1ch;"
@@ -242,19 +278,13 @@
             ></i>
           </button>
           <button
-            type           = "button"
-            @click         = "ApplicationState.sidebar.btn_close && closeAllPanels()"
-            :title         = "ApplicationState.sidebar.tooltip_close || 'close'"
-            :data-i18n-title = "ApplicationState.sidebar.tooltip_close || 'close'"
-            data-placement = "right"
-            class          = "btn btn-outline"
-          >
-            <i
-              :style      = "{ opacity: ApplicationState.sidebar.btn_close ? '1' : '0.7', cursor: ApplicationState.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
-              aria-hidden = "true"
-              class       = "fas fa-times"
-            ></i>
-          </button>
+            type="button"
+            class="btn btn-outline sidebar-close-button"
+            :aria-label="$t(ApplicationState.sidebar.tooltip_close || 'close')"
+            :data-i18n-title="ApplicationState.sidebar.tooltip_close || 'close'"
+            :disabled="disabled || false === ApplicationState.sidebar.btn_close"
+            @click="closeSidebar"
+          ><i class="fas fa-times" aria-hidden="true"></i></button>
         </div>
 
         <div
@@ -268,8 +298,6 @@
         :hidden  = "!showmainpanel"
         class    = "sidebar-menu"
         @click   = "toggleSidebarItem"
-        role     = "menu"
-        tabindex = "0"
       >
 
       <li id = "legend" class = "sidebar-item">
@@ -298,7 +326,7 @@
       </li>
 
       <!-- THEME SELECTOR -->
-      <li id = "themes" class = "sidebar-item" v-show = "ApplicationState.sidebar.open">
+      <li id = "themes" :class = "{ 'sidebar-item': true, 'selected': activeSidebarId === 'themes' }" v-show = "ApplicationState.sidebar.open">
         <!-- whether at least one TOC layer is visible on toc -->
         <template v-if = "ApplicationState.project.state.layerstree[0].nodes.length" >
           <a
@@ -323,7 +351,6 @@
           <ul
             id     = "g3w-themes"
             :class = "{'menu-open': !theme_selector_collapsed}"
-            style  = "margin-bottom: 5px; border-bottom: 2px solid var(--skin-color);"
           >
             <!-- LIST PROJECT MAP THEME -->
             <li
@@ -332,16 +359,18 @@
             >
               <ul style = "padding: 0">
                 <li v-if="is_staff">
-                  <div class = "project_map_theme">{{ $t('Project Themes') }}</div>
+                  <h2 class = "project_map_theme">{{ $t('Project Themes') }}</h2>
                 </li>
-                <li style = "padding: 5px 5px 5px 17px;">
+                <li class = "map-theme-list">
                   <div
                     v-for = "(map_theme, i) in ApplicationState.project.state.map_themes.project"
                     :key  = "map_theme.theme"
+                    class = "map-theme-row"
+                    :class = "{ 'is-selected': active_theme.theme === map_theme.theme }"
                   >
-                    <label :for  = "`g3w-map_theme-${i}`">
-                      <input type = "radio" name = "radio" :id = "`g3w-map_theme-${i}`" :value = "map_theme.theme" v-model  = "active_theme.theme" />
-                      <span class = "g3w-long-text">{{ map_theme.theme }}</span>
+                    <label class = "map-theme-choice" :for = "`g3w-map_theme-${i}`">
+                      <input type = "radio" name = "map-theme" :id = "`g3w-map_theme-${i}`" :value = "map_theme.theme" v-model = "active_theme.theme" />
+                      <span>{{ map_theme.theme }}</span>
                     </label>
                   </div>
                 </li>
@@ -355,60 +384,61 @@
               <ul style = "padding: 0">
                 <li>
                   <div class = "user_map_theme">
-                    <span>{{ $t('User Themes') }}</span>
+                    <h2>{{ $t('User Themes') }}</h2>
                     <!-- ADD MAP THEME -->
                     <button
                       type   = "button"
-                      title  = "add"
+                      :aria-label = "$t('add')"
+                      :data-i18n-title = "'add'"
                       @click = "theme_dialog_open = !theme_dialog_open"
-                      class  = "action sidebar-button"
-                      style  = "margin-left: auto; padding: 5px; font-size: 1.2em; border: 0;"
+                      class  = "map-theme-add"
                     >
-                      <i aria-hidden="true" class = "fas fa-plus-square"></i>
+                      <i aria-hidden="true" class = "fas fa-plus"></i>
                     </button>
                   </div>
                 </li>
-                <li style = "padding: 5px 5px 5px 17px">
+                <li class = "map-theme-list">
                   <div
                     v-for = "(map_theme, i) in ApplicationState.project.state.map_themes.custom"
                     :key  = "map_theme.theme"
-                    style = "display: flex; justify-content: space-between;"
+                    class = "map-theme-row"
+                    :class = "{ 'is-selected': active_theme.theme === map_theme.theme }"
                   >
-                    <span>
-                      <label :for = "`g3w-map_theme-${i}-user`">
+                      <label class = "map-theme-choice" :for = "`g3w-map_theme-${i}-user`">
                         <input
                           type     = "radio"
-                          name     = "radio"
+                          name     = "map-theme"
                           :id      = "`g3w-map_theme-${i}-user`"
                           :value   = "map_theme.theme"
                           v-model  = "active_theme.theme"
                         />
-                        <span class = "g3w-long-text">{{ map_theme.theme }}</span>
+                        <span>{{ map_theme.theme }}</span>
                       </label>
-                    </span>
-                    <span>
+                    <div class = "map-theme-actions">
                       <!-- UPDATE MAP THEME -->
-                      <span
+                      <button
+                        type           = "button"
                         @click.stop    = "updateTheme(map_theme.theme)"
-                        class          = "action sidebar-button"
-                        style          = "padding: 5px;"
-                        title          = "update"
+                        class          = "map-theme-action"
+                        :aria-label    = "$t('update') + ': ' + map_theme.theme"
+                        :data-i18n-title = "'update'"
                         data-placement = "top"
-                        v-disabled     = "active_theme.theme !== map_theme.theme"
+                        :disabled      = "active_theme.theme !== map_theme.theme"
                       >
-                        <i aria-hidden="true" class = "far fa-save" style = "color: var(--skin-color);"></i>
-                      </span>
+                        <i aria-hidden="true" class = "far fa-save"></i>
+                      </button>
                       <!-- DELETE MAP THEME -->
-                      <span
+                      <button
+                        type           = "button"
                         @click.stop    = "deleteTheme(map_theme.theme)"
-                        class          = "action sidebar-button"
-                        style          = "padding: 5px;"
-                        title          = "cancel"
+                        class          = "map-theme-action map-theme-delete"
+                        :aria-label    = "$t('delete') + ': ' + map_theme.theme"
+                        :data-i18n-title = "'delete'"
                         data-placement = "top"
                       >
-                        <i aria-hidden="true" class = "fas fa-trash" style = "color: red;"></i>
-                      </span>
-                    </span>
+                        <i aria-hidden="true" class = "far fa-trash-alt"></i>
+                      </button>
+                    </div>
 
                   </div>
                 </li>
@@ -437,7 +467,7 @@
         </template>
       </li>
 
-      <li id="catalog" class="sidebar-item">
+      <li id="catalog" :class="{ 'sidebar-item': true, 'selected': activeSidebarId === 'catalog' }">
         <a
           href             = "#"
           @click.prevent   = "showSidebar"
@@ -600,7 +630,7 @@
           <b style = "font-size: 0.35em">download</b>
         </div>
         <!-- PLUGINS -->
-        <div :class = "{ 'g3w-hide': 0 === ApplicationState.plugins.length }" style = "color: #994b10">
+        <div class="plugin-loading-indicator" :class = "{ 'g3w-hide': 0 === ApplicationState.plugins.length }" style = "color: #994b10">
           <div class = "bar-loader" style = "border: 0" aria-label="loading plugins"></div>
           <i class = "fas fa-cogs" aria-hidden = "true"></i>
           <b style = "font-size: 0.4em">plugins</b>
@@ -861,6 +891,7 @@ export default {
       GUI,
       ApplicationState,
       language:              null,
+      selected_sidebar:      'catalog',
       custom_links:          (window.initConfig.header_custom_links || []).concat(ApplicationState.navbaritems).filter(Boolean).map(l => Object.assign(l, { id: l.id || getUniqueDomId() })),
       mouse: {
         visible:     true,
@@ -891,6 +922,33 @@ export default {
   },
 
   computed: {
+
+    activeSidebarId() {
+      return ApplicationState.sidebar.components.find(component => component.getOpen())?.id || this.selected_sidebar;
+    },
+
+    sidebarTitle() {
+      return (this.panels.length && ApplicationState.sidebar.title) || this.sidebarControls.find(item => item.id === this.activeSidebarId)?.title || '';
+    },
+
+    sidebarControls() {
+      return [
+        { id: 'legend', title: 'legend', icon: 'fas fa-list' },
+        { id: 'metadata', title: 'Metadata', icon: 'fas fa-file-code' },
+        ...ApplicationState.sidebar.components.filter(component => component.visible).map(component => ({
+          id: component.id,
+          title: String(component.title || component.id),
+          icon: component.icon,
+          iconColor: component.iconColor,
+          disabled: component.disabled,
+          open: !component.collapsible && component.getOpen(),
+        })),
+        ...(ApplicationState.project.state.layerstree[0].nodes.length ? [{ id: 'themes', title: 'THEME', icon: 'far fa-eye' }] : []),
+        { id: 'catalog', title: 'Layers', icon: 'far fa-map', iconColor: 'rgb(1, 154, 76)' },
+        { id: 'add-layer', title: 'Add Layer', icon: 'fas fa-layer-group' },
+        ...(this.has_related_maps && !ApplicationState.iframe ? [{ id: 'change-map', title: 'changemap', icon: 'fas fa-sync-alt' }] : []),
+      ];
+    },
 
     languages() {
       const languages = (Array.isArray(this.initConfig.i18n) && this.initConfig.i18n || []).sort((a, b) => a[0].localeCompare(b[0]));
@@ -1201,11 +1259,21 @@ export default {
 
     async closeAllPanels() {
       ApplicationState.sidebar.title = null;
-      const data = ApplicationState.sidebar.contentsdata;
-      if (data.length) {
-        await Promise.allSettled(data.map(async d => await d.content.unmount()));
-        data.splice(0, data.length);
+      while (ApplicationState.sidebar.contentsdata.length) {
+        await GUI.closePanel();
       }
+    },
+
+    async closeSidebar() {
+      if (ApplicationState.sidebar.disabled || (this.panels.length && false === ApplicationState.sidebar.btn_close)) {
+        return;
+      }
+      const component = ApplicationState.sidebar.components.find(item => item.id === this.activeSidebarId);
+      await this.closeAllPanels();
+      if (component?.getOpen()) {
+        component.click({ open: false });
+      }
+      GUI.hideSidebar();
     },
 
     /**
@@ -1227,6 +1295,49 @@ export default {
      * 
      * @since 3.11.0
      */
+    async selectSidebarItem(id) {
+      const component = ApplicationState.sidebar.components.find(item => item.id === id);
+      if (ApplicationState.sidebar.disabled || (this.panels.length && this.activeSidebarId !== id) || component?.disabled) {
+        return;
+      }
+      if ('add-layer' === id) {
+        this.showaddLayerModal();
+        return;
+      }
+      if ('change-map' === id) {
+        this.openChangeMapMenu();
+        return;
+      }
+      if ('metadata' === id) {
+        document.querySelector('#metadata > a').click();
+        return;
+      }
+      if ((ApplicationState.sidebar.open && this.activeSidebarId === id) || component?.getOpen()) {
+        return this.closeSidebar();
+      }
+      if (component && !component.collapsible) {
+        this.selected_sidebar = id;
+        GUI.hideSidebar();
+        component.click({ open: true });
+        return;
+      }
+      await this.closeAllPanels();
+      ApplicationState.sidebar.components.forEach(item => {
+        if (item.getOpen() && item !== component) {
+          item.click({ open: false });
+        }
+      });
+      this.selected_sidebar = id;
+      GUI.showSidebar();
+      if (component) {
+        component.click({ open: true });
+      } else if ('legend' === id) {
+        this.showLegendPanel();
+      } else if ('themes' === id) {
+        this.theme_selector_collapsed = false;
+      }
+    },
+
     toggleSidebarItem(e) {
       // skip toggling element
       if ('g3w-menu' === e.target.id) {
@@ -1237,6 +1348,9 @@ export default {
       const collapsed = document.body.classList.contains('sidebar-collapse');
 
       const li        = e.target.closest('.sidebar-item');
+      if (!li) {
+        return;
+      }
       const component = ApplicationState.sidebar.components.find(comp => li.id === comp.id);
 
       // open sidebar only in case of mini/collapsed sidebar and has a component that has a li id collapsible
@@ -1759,7 +1873,7 @@ export default {
     document.body.appendChild(this.$el.querySelector('#modal-fullscreen'));
 
     //In case of sidebar collapssed by default
-    if (document.body.classList.contains('sidebar-collapse')) {
+    if (window.innerWidth >= 768 || document.body.classList.contains('sidebar-collapse')) {
       //need sync with GUI state
       GUI.hideSidebar();
     }

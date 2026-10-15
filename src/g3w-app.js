@@ -917,6 +917,7 @@ export default new (class GUI extends Emitter {
     ApplicationState.sidebar.title = content.title;
 
     data.push({ content, options: { parent: '#sidebar-panel-placeholder' } });
+    this.showSidebar();
   }
 
   async closePanel() {
@@ -935,6 +936,13 @@ export default new (class GUI extends Emitter {
     if (current) {
       current.content.internalPanel.$el.style.display = 'block';
       ApplicationState.sidebar.title                  = current.content.title;
+    } else {
+      this.hideSidebar();
+      ApplicationState.sidebar.components.forEach(component => {
+        if (!component.collapsible && component.getOpen()) {
+          component.setOpen(false);
+        }
+      });
     }
   }
 

@@ -58,11 +58,11 @@ export default class Panel extends Emitter {
   }
 
   show() {
-    GUI.showPanel(this);
+    return GUI.showPanel(this);
   }
 
   close() {
-    GUI.closePanel();
+    return GUI.closePanel();
   }
 
   async mount(parent) {
