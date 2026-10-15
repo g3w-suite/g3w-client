@@ -473,6 +473,8 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
 .navbar .sidebar-toggle                                      { color: #fff; }
 .navbar .sidebar-toggle:hover                                { background-color: hsl(from var(--skin-color) h s calc(l - 5)); }
 .is-iframe .navbar                                           { display: none !important; }
+.mobile-navbar-dialog[open],
+.mobile-navbar-dialog[open] > nav                             { display: contents; }
 
 #app,
 .main-sidebar                                                { background-color: var(--bgcolor); }
@@ -494,7 +496,11 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
   .nav-links > li                                            { color: inherit; border: 0; }
   .nav-links > li > a:not(.nav-user) [hidden]                { display: inline-block; position: static; width: auto; height: auto; margin: 0; overflow: visible; clip-path: none; white-space: normal; }
   .nav-links > li > a:not(.nav-user)                         { margin: 5px 8px; padding: 10px; border: 1px dashed #fff; display: flex; flex-direction: row; justify-content: left; align-items: center; gap: 8px; }
-  .nav-lang button                                           { width: 100%; }
+  .navbar .nav-links > li.nav-lang > button                  { width: auto; margin: 0; justify-content: flex-start; padding: 0 10px; border: 1px solid rgba(255, 255, 255, .35); border-radius: 5px; color: #fff; background: rgba(255, 255, 255, .1); }
+  .navbar .nav-links > li.nav-lang > button:hover             { background: rgba(255, 255, 255, .18); }
+  .navbar .nav-links > li.nav-lang > button:focus-visible     { outline: 2px solid #fff; outline-offset: 2px; }
+  .nav-lang-label                                             { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nav-lang button .triangle                                 { display: none; }
   .navbar .dropdown-menu li.divider                          { background-color: rgba(255, 255, 255, 0.1); }
   .navbar .dropdown-menu li a                                { color: #fff; }
   .navbar .dropdown-menu li a:hover                          { background: hsl(from var(--skin-color) h s calc(l - 5)); }
@@ -548,6 +554,7 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
 .sidebar-panel-heading                                             { display: flex; align-items: center; gap: 10px; min-height: 35px; border-bottom: 1px solid #fff; padding-bottom: 5px; margin-bottom: 5px; }
 .sidebar-section-actions                                           { margin: 10px 15px 5px; }
 .main-sidebar .sidebar-control-title                               { flex: 1; min-width: 0; margin: 0; font-size: 1.8rem; line-height: 1.5; font-weight: 700; color: #fff; overflow-wrap: anywhere; }
+.main-sidebar .sidebar-hide-button                                 { flex: 0 0 34px; width: 34px; height: 34px; padding: 0; }
 .main-sidebar .sidebar-close-button                                { flex: 0 0 34px; width: 34px; height: 34px; padding: 0; margin-left: auto; }
 .main-sidebar .sidebar-close-button:disabled                        { opacity: .5; cursor: not-allowed; }
 .main-sidebar .sidebar-close-button:focus-visible                   { outline: 2px solid #b9eaf3; outline-offset: 2px; }
@@ -593,10 +600,51 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
 
 .sidebar-controls { display: none; }
 
-@media (min-width: 768px) {
+@media (max-width: 767px) {
   .sidebar-controls {
     position: fixed;
     top: calc(var(--mt, 50px) + 5px);
+    left: calc(var(--ml, 0px) + 5px);
+    z-index: 3;
+    display: flex;
+    align-items: flex-start;
+    pointer-events: none;
+  }
+  .sidebar-controls.has-geocoding { flex-direction: column; top: calc(var(--mt, 50px) + 50px); }
+  .sidebar-control-list {
+    display: flex;
+    flex-flow: column wrap;
+    align-content: flex-start;
+    max-height: calc(100vh - 100px);
+  }
+  .sidebar-control-list > .ol-control { position: relative; padding: 3px; pointer-events: auto; }
+  .sidebar-plugin-loading {
+    display: flex;
+    flex: 0 0 39px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 39px;
+    height: 39px;
+    min-height: 39px;
+    padding: 0;
+    margin: 3px;
+    border: 1px solid rgba(0, 0, 0, .5);
+    border-radius: 3px;
+    color: #222d32;
+    background: #fff;
+    pointer-events: auto;
+  }
+  .sidebar-plugin-loading .plugin-loading-icon { font-size: 2.5rem; }
+  #aria-live > .plugin-loading-indicator { display: none; }
+  .sidebar-controls button:disabled { opacity: .5; cursor: not-allowed; }
+  .navbar.mobile-menu-open ~ .main-sidebar { display: none; }
+}
+
+@media (min-width: 768px) {
+  .sidebar-controls {
+    position: fixed;
+    top: calc(var(--mt, 50px));
     left: calc(var(--ml, 0px) + 5px);
     z-index: 3;
     display: flex;
@@ -660,22 +708,78 @@ ul.sidebar-menu > li a:hover                                       { color: hsl(
   .navbar-toggler                                             { color: #fff; padding: 12px; font-size: 1.3em; position: absolute; z-index: 101; right: 0; top: 0; display: block; border: 0;background: none;}
   .main-sidebar,
   .sidebar-aside-toggle                                       { transition: none !important; }
-  .sidebar-open .navbar-toggler                               { position: fixed; background: var(--skin-color); }
-  .sidebar-open .nav-links                                    { --bgcolor: #212c31; background-color: var(--bgcolor)!important; flex-direction: column !important; }
-  .sidebar-open .project_title                                { position: fixed !important; inset: 0 !important; background-color: var(--skin-color); padding-left: 4px; max-width: calc(100% - 18px); padding-right: 105px; z-index: 3; }
-  .sidebar-open .navbar a[aria-label="logo"]                  { visibility: hidden; }
-  .sidebar-open .main-sidebar                                 { position: relative !important; inset: 0 !important; }
-  .sidebar-open, .sidebar-open #app                           { overflow-y: visible; }
-  .sidebar-open:has(#g3w-menu:not([hidden])) .sidebar-panel:not([hidden]),
-  .sidebar-open .main-sidebar                                 { height: auto !important; }
-  .sidebar-open .navbar                                       { display: block !important; height: auto !important; }
-  .sidebar-open .nav-links :is(.nav-changemap, .nav-addlayer),
-  .sidebar-open:has(#g3w-menu[hidden]) .nav-links             { display: none !important; }
+  /* The active mobile tool fills the screen; its toolbar is not shown over the content. */
+  .sidebar-open .main-sidebar                                 { left: 0; width: 100%; }
+  .sidebar-open .sidebar-controls                             { display: none; }
+  /* The content header provides the explicit route back to tool options. */
+  .sidebar-controls.has-right-panel                           { display: none; }
+  .g3w-content .mobile-show-sidebar {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .g3w-content .mobile-show-sidebar:focus-visible { outline: 2px solid var(--skin-color); outline-offset: 2px; }
+  .main-sidebar #g3w-menu > li                                { display: none; }
+  .main-sidebar #g3w-menu > :is(li.active, li.selected)       { display: block; }
+  .main-sidebar #g3w-menu > li > a:not(:has(.action)),
+  .main-sidebar #g3w-menu > li > a:has(.action) > div:first-child,
+  .main-sidebar #g3w-menu > li > a:has(.action) > div > i     { display: none !important; }
+  .navbar.mobile-menu-open .navbar-toggler                    { position: fixed; background: var(--skin-color); }
+  .navbar.mobile-menu-open .nav-links                         { --bgcolor: #212c31; background-color: var(--bgcolor)!important; flex-direction: column !important; }
+  .navbar.mobile-menu-open .project_title                     { visibility: hidden; }
+  .navbar.mobile-menu-open a[aria-label="logo"]               { visibility: hidden; }
+  /* Center the menu over the map when no mobile sidebar is open. */
+  .mobile-navbar-dialog[open]:modal {
+    display: block;
+    position: fixed;
+    inset: 50% auto auto 50%;
+    transform: translate(-50%, -50%);
+    width: min(380px, calc(100vw - 96px));
+    min-width: 0;
+    max-width: none;
+    max-height: calc(100dvh - 100px);
+    margin: 0;
+    padding: 10px;
+    overflow: auto;
+    color: #fff;
+    background: #212c31;
+    border: 1px solid #fff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+    animation: none;
+  }
+  .mobile-navbar-dialog[open] > nav { position: relative; display: block; }
+  .mobile-navbar-dialog .mobile-menu-close {
+    position: sticky;
+    top: 0;
+    display: block;
+    width: 40px;
+    height: 40px;
+    margin: 0 0 8px auto;
+    color: #fff;
+    background: transparent;
+    border: 1px solid #fff;
+    cursor: pointer;
+  }
+  .mobile-navbar-dialog .nav-links > li.nav-lang {
+    position: absolute;
+    top: 0;
+    right: auto;
+    left: 0;
+    z-index: 1;
+    max-width: calc(100% - 48px);
+  }
+  .mobile-navbar-dialog .nav-links > li.nav-lang > button { height: 40px; max-width: 100%; }
+  .mobile-navbar-dialog .nav-links { width: 100%; text-align: left !important; white-space: normal !important; }
+  .navbar.mobile-menu-open .nav-links :is(.nav-changemap, .nav-addlayer),
+  .navbar:not(.mobile-menu-open) .nav-links                    { display: none !important; }
 }
 
 /** handle scrollbars width (desktop small) */
 @media (max-width: 767px) and (pointer: fine) {
-  .sidebar-open .navbar-toggler { right: 18px; }
+  .navbar.mobile-menu-open .navbar-toggler { right: 18px; }
 }
 
 
@@ -1297,7 +1401,7 @@ i.triangle                             { border-color: currentColor transparent 
 }
 
 @media (max-width: 767px) {
-  body:not(.sidebar-open) .navbar-toggler ~ *,
+  .navbar:not(.mobile-menu-open) .navbar-toggler ~ *,
   .nav-user > .dropdown-toggle,
   .user-header                        { display: none !important; }
   .navbar-nav                         { flex-direction: column; }

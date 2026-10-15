@@ -33,6 +33,7 @@ export default {
   'Find Address': 'Recherche d’adresse',
   show: 'Afficher',
   hide: 'Cacher',
+  'Show options': 'Afficher les options',
   copy_form_data: 'Copier les données du formulaire',
   paste_form_data: 'Coller',
   copy_form_data_from_feature: 'Copier les informations de l’entité',

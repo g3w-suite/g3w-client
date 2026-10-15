@@ -29,6 +29,7 @@ export default {
   'Find Address': 'Hae osoite',
   show: 'Näytä',
   hide: 'Piilota',
+  'Show options': 'Näytä vaihtoehdot',
   copy_form_data: 'Kopioi tiedot',
   paste_form_data: 'Liitä',
   copy_form_data_from_feature: 'Kopioi tiedot kartalta',

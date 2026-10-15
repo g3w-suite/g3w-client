@@ -12,7 +12,8 @@
     <!-- NAVBAR TOP (MAIN MENU) -->
     <nav
       ref   = "navbar"
-      class = "navbar no-print"
+      class  = "navbar no-print"
+      :class = "{ 'mobile-menu-open': mobileNavbarOpen }"
       style = "display: flex;justify-content: start; height: 50px;"
     >
 
@@ -27,7 +28,7 @@
         <img style="height: 100%;" alt = "" :src = "logo_url" />
       </a>
 
-      <button type="button" class="navbar-toggler" hidden="" @click="toggleSidebar">
+      <button type="button" class="navbar-toggler" hidden="" @click="toggleMobileNavbar">
         <i aria-hidden = "true" class = "fas fa-bars" ></i>
         <b style="margin-left: 8px;">MENU</b>
       </button>
@@ -36,6 +37,24 @@
         <p class = "h2">{{ main_title }}</p>
         <h1>{{ project_title }}</h1>
       </hgroup>
+
+      <!-- Share one navigation list between the desktop navbar and mobile modal. -->
+      <dialog
+        ref         = "mobileNavbarDialog"
+        class       = "mobile-navbar-dialog"
+        :open       = "!mobileViewport"
+        :role       = "mobileViewport ? 'dialog' : 'none'"
+        :aria-label = "mobileViewport ? $t('Menu') : undefined"
+        @close      = "mobileNavbarOpen = false"
+      >
+        <nav :aria-label="$t('Menu')" @click="handleMobileMenuClick">
+          <button
+            v-if        = "mobileViewport"
+            type        = "button"
+            class       = "mobile-menu-close"
+            :aria-label = "$t('close')"
+            @click      = "closeMobileNavbar"
+          ><i class="fas fa-times" aria-hidden="true"></i></button>
 
       <ul class = "nav-links" style = "display: flex; text-align: center;  white-space: nowrap; list-style: none; padding: 0; margin: 0;">
 
@@ -175,7 +194,7 @@
         >
           <button type = "button" commandfor = "nav-lang-dialog" command = "show-modal" style = "display: flex; gap:5px; align-items: center;">
             <img :src = "urls.staticurl +'img/flags/' + language.toLowerCase() + '.png'" width = "24" height = "16" alt = "" />
-            {{ languages.find(l => l[0] === language).at(1) }}
+            <span class="nav-lang-label">{{ languages.find(l => l[0] === language).at(1) }}</span>
             <i class = "triangle" aria-hidden="true" style = "margin-top: 8px;"></i>
           </button>
           <dialog 
@@ -207,10 +226,12 @@
         </li>
 
       </ul>
+        </nav>
+      </dialog>
 
     </nav>
 
-    <nav class="sidebar-controls no-print" :class="{ 'has-geocoding': initConfig.mapcontrols && initConfig.mapcontrols.geocoding }" :aria-label="$t('Tools')" v-disabled="disabled">
+    <nav class="sidebar-controls no-print" :class="{ 'has-geocoding': initConfig.mapcontrols && initConfig.mapcontrols.geocoding, 'has-right-panel': has_panel }" :aria-label="$t('Tools')" v-disabled="disabled">
       <div class="sidebar-control-list">
         <div
           v-for="item in sidebarControls"
@@ -240,6 +261,16 @@
     <aside :class = "{ 'main-sidebar no-print': true, 'g3w-disabled': disabled }" :data-active-item="activeSidebarId">
       <div v-if="!panels.length" class="sidebar-section-actions">
         <h4 v-if="sidebarTitle" class="sidebar-control-title">{{ $t(sidebarTitle) }}</h4>
+        <!-- Hide the sidebar without deactivating its selected control. -->
+        <button
+          v-if        = "mobileViewport"
+          type        = "button"
+          class       = "btn btn-outline sidebar-hide-button"
+          :aria-label = "$t('Hide panel')"
+          :data-i18n-title = "'Hide panel'"
+          :disabled   = "disabled"
+          @click      = "hideMobileSidebar"
+        ><i class="fas fa-eye-slash" aria-hidden="true"></i></button>
         <button
           type="button"
           class="btn btn-outline sidebar-close-button"
@@ -277,6 +308,15 @@
               :style = "{ opacity: ApplicationState.sidebar.btn_close ? '1' : '0.7', cursor: ApplicationState.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
             ></i>
           </button>
+          <button
+            v-if           = "mobileViewport"
+            type           = "button"
+            class          = "btn btn-outline sidebar-hide-button"
+            :aria-label    = "$t('Hide panel')"
+            :data-i18n-title = "'Hide panel'"
+            :disabled      = "disabled"
+            @click         = "hideMobileSidebar"
+          ><i class="fas fa-eye-slash" aria-hidden="true"></i></button>
           <button
             type="button"
             class="btn btn-outline sidebar-close-button"
@@ -794,6 +834,18 @@
           class = "g3-content-header-action-tools"
           style = "display: flex; align-items: center; gap: .5ch; padding: 0 .5ch;"
         >
+          <!-- Reopen the active tool's options without closing its content. -->
+          <button
+            v-if        = "mobileViewport && has_panel"
+            type        = "button"
+            class       = "btn btn-default mobile-show-sidebar"
+            :aria-label = "$t('Show options')"
+            :data-i18n-title = "'Show options'"
+            @click      = "showSidebar"
+          >
+            <i class="fas fa-list" aria-hidden="true"></i>
+            <span>{{ $t('Show options') }}</span>
+          </button>
           <component v-for = "tool in state.content.headertools" :is = "tool"/>
           <button
             v-if           = "undefined !== state.split"
@@ -890,6 +942,8 @@ export default {
       state:                 ApplicationState,
       GUI,
       ApplicationState,
+      mobileNavbarOpen:      false,
+      mobileViewport:        window.innerWidth < 768,
       language:              null,
       selected_sidebar:      'catalog',
       custom_links:          (window.initConfig.header_custom_links || []).concat(ApplicationState.navbaritems).filter(Boolean).map(l => Object.assign(l, { id: l.id || getUniqueDomId() })),
@@ -941,7 +995,7 @@ export default {
           icon: component.icon,
           iconColor: component.iconColor,
           disabled: component.disabled,
-          open: !component.collapsible && component.getOpen(),
+          open: component.getOpen(),
         })),
         ...(ApplicationState.project.state.layerstree[0].nodes.length ? [{ id: 'themes', title: 'THEME', icon: 'far fa-eye' }] : []),
         { id: 'catalog', title: 'Layers', icon: 'far fa-map', iconColor: 'rgb(1, 154, 76)' },
@@ -1088,6 +1142,40 @@ export default {
   },
 
   methods: {
+
+    toggleMobileNavbar() {
+      const dialog = this.$refs.mobileNavbarDialog;
+      if (this.mobileNavbarOpen) {
+        dialog.close();
+      } else {
+        dialog.showModal();
+        this.mobileNavbarOpen = true;
+      }
+    },
+
+    hideMobileSidebar() {
+      GUI.hideSidebar();
+    },
+
+    closeMobileNavbar() {
+      if (this.mobileNavbarOpen) {
+        this.$refs.mobileNavbarDialog.close();
+      }
+    },
+
+    handleMobileMenuClick(event) {
+      if (event.target.closest('.nav-links a:not(.dropdown-toggle)')) {
+        this.closeMobileNavbar();
+      }
+    },
+
+    updateMobileViewport() {
+      const mobileViewport = window.innerWidth < 768;
+      if (this.mobileViewport !== mobileViewport) {
+        this.closeMobileNavbar();
+        this.mobileViewport = mobileViewport;
+      }
+    },
 
     /**
      * @since 3.11.0
@@ -1310,6 +1398,10 @@ export default {
       }
       if ('metadata' === id) {
         document.querySelector('#metadata > a').click();
+        return;
+      }
+      if (component?.getOpen() && !ApplicationState.sidebar.open) {
+        GUI.showSidebar();
         return;
       }
       if ((ApplicationState.sidebar.open && this.activeSidebarId === id) || component?.getOpen()) {
@@ -1870,6 +1962,8 @@ export default {
 
   async mounted() {
 
+    window.addEventListener('resize', this.updateMobileViewport);
+
     document.body.appendChild(this.$el.querySelector('#modal-fullscreen'));
 
     //In case of sidebar collapssed by default
@@ -1917,6 +2011,10 @@ export default {
     if ('legend' === ApplicationState.project.state.catalog_tab) {
       GUI.showLegendPanel();
     }
+  },
+
+  beforeDestroy() {
+    window.removeEventListener('resize', this.updateMobileViewport);
   },
 
 };

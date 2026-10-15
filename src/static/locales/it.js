@@ -53,6 +53,7 @@ export default {
   'Clear selection': 'Cancella elementi selezionati',
   'Toggle layer': 'Attiva/disattiva livello',
   'Toggle sidebar': 'Attiva/disattiva barra laterale',
+  'Show options': 'Mostra opzioni',
   show: 'Mostra',
   hide: 'Nascondi',
   copy_form_data: 'Copia i dati del modulo',

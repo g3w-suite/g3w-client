@@ -29,6 +29,7 @@ export default {
   'Find Address': 'Znajdź adres',
   show: 'Pokazywać',
   hide: 'Ukrywać',
+  'Show options': 'Pokaż opcje',
   copy_form_data: 'Skopiuj dane',
   paste_form_data: 'Pasta',
   copy_form_data_from_feature: 'Skopiuj dane z mapy',

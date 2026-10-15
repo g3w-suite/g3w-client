@@ -288,19 +288,6 @@ export class Plugin extends Emitter {
     }, 0 /* 0 = allow any previously "setTimeout" to execute */)
   }
 
-  /**
-   * Return a promise that resolves when the plugin is ready (eg. after "setReady(true)" is called)
-   * 
-    * Rejects on incompatible projects or initialization failures.
-    *
-    * @returns { Promise<boolean> }
-   * 
-   * @since 4.0.0
-   */
-  isReady() {
-    // Reuse the startup promise so late callers also receive its result or error.
-    return this._initialization;
-  }
 
   /**
    * Check and register plugin only when compatible with current projectId (eg: qdjango:1)
