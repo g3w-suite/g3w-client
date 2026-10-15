@@ -439,7 +439,7 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
  * 3. Header
  **************************************************************************************/
 
-.navbar                                                      { position: relative; z-index: 4; min-height: 50px; margin-bottom: 20px; border: 1px solid transparent; transition: margin-left .3s ease-in-out; margin-bottom: 0; margin-left: 0; border: none; min-height: 50px; border-radius: 0;}
+.navbar                                                      { position: relative; min-height: 50px; margin-bottom: 20px; border: 1px solid transparent; transition: margin-left .3s ease-in-out; margin-bottom: 0; margin-left: 0; border: none; min-height: 50px; border-radius: 0;}
 
 .nav-links li                                                { font-weight: bold; border-right: 1px solid rgba(255,255,255,0.2); letter-spacing: 0.5px; }
 .nav-links li:last-child                                     { border: 0; }
