@@ -477,7 +477,7 @@ export default new (class GUI extends Emitter {
       };
 
       // append to `g3w-menu`
-      sidebarItem.$on('hook:mounted', () => {
+      sidebarItem.$on('hook:mounted', async () => {
         const sidebar = document.getElementById('g3w-menu');
         if ([null, undefined].includes(options?.position) || options?.position < 0 || options?.position >= sidebar.children.length) {
           sidebar.querySelector('#themes').insertAdjacentElement('beforebegin', sidebarItem.$el);
@@ -488,7 +488,11 @@ export default new (class GUI extends Emitter {
             }
           });
         }
-        component.mount(sidebarItem.$refs['component-placeholder']);
+        await component.mount(sidebarItem.$refs['component-placeholder']);
+        if (component.collapsible && component.getOpen()) {
+          component.click({ open: true });
+          this.showSidebar();
+        }
       }).$mount();
       component.sidebarItem = sidebarItem;
       ApplicationState.sidebar.components.push(component);

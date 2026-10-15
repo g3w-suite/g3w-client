@@ -232,7 +232,7 @@
         </div>
       </div>
       <div :class="{ 'sidebar-plugin-loading': true, 'g3w-hide': 0 === ApplicationState.plugins.length }" role="status" aria-label="Loading plugins" data-i18n-title="Loading plugins" data-placement="right">
-        <i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i>
+        <i class="fas fa-plug plugin-loading-icon" aria-hidden="true"></i>
       </div>
     </nav>
 

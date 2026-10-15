@@ -55,6 +55,77 @@ function setupPanels() {
   return { gui, state, panel };
 }
 
+function setupRegistration(state) {
+  const source = readFileSync(new URL('../../../src/g3w-app.js', import.meta.url), 'utf8');
+  const start = source.indexOf('  addComponent(component, options = {}) {');
+  const end = source.indexOf('\n  /**', start);
+  const mounted = [];
+  const classes = () => {
+    const values = new Set();
+    return {
+      toggle(name, enabled) { enabled ? values.add(name) : values.delete(name); },
+      contains(name) { return values.has(name); },
+    };
+  };
+  const Vue = {
+    extend: () => class {
+      $el = { classList: classes() };
+      $refs = { 'component-placeholder': {} };
+      $on(event, callback) { this.mounted = callback; return this; }
+      $mount() { mounted.push(this.mounted()); return this; }
+    },
+  };
+  const sidebar = { children: [], querySelector: () => ({ insertAdjacentElement() {} }) };
+  const gui = runInNewContext(`(new class {${source.slice(start, end)}})`, {
+    ApplicationState: state, Vue, isMobile: { any: false },
+    document: { getElementById: () => sidebar },
+  });
+  gui.showSidebar = () => { state.sidebar.open = true; };
+  const component = (id, open, collapsible = true) => {
+    const node = { classList: classes(), parentNode: { classList: classes() } };
+    return {
+      id, title: id, visible: true, open, collapsible,
+      getOpen() { return this.open; },
+      setOpen(open) { this.open = open; },
+      getInternalComponent: () => ({ $el: node }),
+      mount: async () => {},
+    };
+  };
+  return { gui, component, mounted: () => Promise.all(mounted) };
+}
+
+test('an initially active sidebar control opens its content and supports closing without a first click', async () => {
+  const env = setup();
+  const registration = setupRegistration(env.state);
+  const component = registration.component('Bookmarks', true);
+  registration.gui.addComponent(component);
+  await registration.mounted();
+  assert.equal(env.state.sidebar.open, true);
+  assert.equal(env.context.activeSidebarId, 'Bookmarks');
+  assert.equal(env.app.computed.sidebarTitle.call(env.context), 'Bookmarks');
+  assert.equal(component.getInternalComponent().$el.classList.contains('menu-open'), true);
+  await env.select('Bookmarks');
+  assert.equal(component.getOpen(), false);
+  assert.equal(env.state.sidebar.open, false);
+  assert.equal(component.getInternalComponent().$el.classList.contains('menu-open'), false);
+});
+
+test('registration leaves inactive and non-collapsible controls closed without replaying activation', async () => {
+  for (const [open, collapsible] of [[false, true], [true, false]]) {
+    const env = setup();
+    const registration = setupRegistration(env.state);
+    const component = registration.component('plugin', open, collapsible);
+    let activations = 0;
+    component.setOpen = () => { activations++; };
+    registration.gui.addComponent(component);
+    await registration.mounted();
+    assert.equal(env.state.sidebar.open, false);
+    assert.equal(activations, 0);
+    assert.equal(component.getOpen(), open);
+    assert.equal(env.context.sidebarControls.find(item => item.id === 'plugin').open, open);
+  }
+});
+
 test('sidebar shell compiles with named icon controls', () => {
   const result = compileTemplate({ source: descriptor.template.content, filename: 'App.vue', id: 'app' });
   assert.deepEqual(result.errors, []);
@@ -63,6 +134,22 @@ test('sidebar shell compiles with named icon controls', () => {
   const sidebar = descriptor.template.content.split('<!-- SIDEBAR MENU -->')[1].split('<ul')[0];
   assert.equal(sidebar.match(/@click="closeSidebar"/g).length, 2);
   assert.equal(sidebar.match(/class="fas fa-times"/g).length, 2);
+});
+
+test('plugin loading uses a Font Awesome plug pulsing until hidden when motion is allowed', () => {
+  const indicator = descriptor.template.content.match(/<div :class="\{ 'sidebar-plugin-loading':[\s\S]*?<\/div>/)[0];
+  assert.match(indicator, /role="status"/);
+  assert.doesNotMatch(indicator, /@click|tabindex|tabIndex|<button/);
+  assert.match(descriptor.template.content, /class="fas fa-plug plugin-loading-icon" aria-hidden="true"/);
+  assert.doesNotMatch(indicator, /is-loading/);
+  assert.doesNotMatch(descriptor.template.content, /fa-circle-notch|fa-spin/);
+  const css = readFileSync(new URL('../../../src/static/app.css', import.meta.url), 'utf8');
+  assert.doesNotThrow(() => transformSync(css, { loader: 'css' }));
+  assert.match(css, /\.sidebar-plugin-loading \{[^}]*width: 39px;[^}]*height: 39px;/);
+  assert.match(css, /\.sidebar-plugin-loading \{[^}]*cursor: default;/);
+  assert.match(css, /\.sidebar-plugin-loading \.plugin-loading-icon \{ font-size: 2\.5rem; \}/);
+  assert.match(css, /@keyframes plugin-loading-pulse \{\s*0%, 100% \{ transform: scale\(\.65\); \}\s*50% \{ transform: scale\(1\); \}/);
+  assert.match(css, /@media \(prefers-reduced-motion: no-preference\)\s*\{\s*\.sidebar-plugin-loading:not\(\.g3w-hide\) \.plugin-loading-icon \{ animation: plugin-loading-pulse 2s ease-in-out infinite;/);
 });
 
 test('sidebar headers show the active control title with panel titles taking precedence', () => {
