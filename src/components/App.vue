@@ -1245,8 +1245,15 @@ export default {
       return index < (this.breadcrumb.length - 1);
     },
 
-    closeContent() {
+    async closeContent() {
+      const component = ApplicationState.sidebar.components.find(component => component.collapsible && component.getOpen());
       GUI.closeContent();
+      if ('search' === component?.id) {
+        await this.closeAllPanels();
+        GUI.showSidebar();
+      } else if (component) {
+        GUI.hideSidebar();
+      }
     },
 
     async popContent(size = 1) {
@@ -1357,6 +1364,11 @@ export default {
         return;
       }
       const component = ApplicationState.sidebar.components.find(item => item.id === this.activeSidebarId);
+      if (this.panels.length > 1 || (this.panels.length && 'search' === component?.id)) {
+        await this.closePanel();
+        GUI.showSidebar();
+        return;
+      }
       await this.closeAllPanels();
       if (component?.getOpen()) {
         component.click({ open: false });
@@ -1419,7 +1431,9 @@ export default {
           item.click({ open: false });
         }
       });
-      this.selected_sidebar = id;
+      if (!component) {
+        this.selected_sidebar = id;
+      }
       GUI.showSidebar();
       if (component) {
         component.click({ open: true });

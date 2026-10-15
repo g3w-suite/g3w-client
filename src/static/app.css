@@ -439,7 +439,7 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
  * 3. Header
  **************************************************************************************/
 
-.navbar                                                      { position: relative; min-height: 50px; margin-bottom: 20px; border: 1px solid transparent; transition: margin-left .3s ease-in-out; margin-bottom: 0; margin-left: 0; border: none; min-height: 50px; border-radius: 0;}
+.navbar                                                      { position: relative; z-index: 4; min-height: 50px; margin-bottom: 20px; border: 1px solid transparent; transition: margin-left .3s ease-in-out; margin-bottom: 0; margin-left: 0; border: none; min-height: 50px; border-radius: 0;}
 
 .nav-links li                                                { font-weight: bold; border-right: 1px solid rgba(255,255,255,0.2); letter-spacing: 0.5px; }
 .nav-links li:last-child                                     { border: 0; }
@@ -1427,7 +1427,7 @@ i.triangle                             { border-color: currentColor transparent 
   .sidebar-open #map_footer { display: none; }
 }
 
-.context-menu                              { background: #fafafa; border: 1px solid #bdbdbd; border-radius: 3px; display: block; list-style: none; margin: 0; padding: 0; position: fixed; min-width: 150px; z-index: 2; color: #000; outline: none; display: flex; flex-direction: column; }
+.context-menu                              { background: #fafafa; border: 1px solid #bdbdbd; border-radius: 3px; display: block; list-style: none; margin: 0; padding: 0; position: fixed; min-width: 150px; z-index: 5; color: #000; outline: none; display: flex; flex-direction: column; }
 .context-menu li ul                        { position: absolute; width: max-content; order: 1; padding-left: 0; background-color: #fff; color:#000; }
 .context-menu li:not(:hover, :focus-within) ul { display: none; }
 .context-menu li                           { border-bottom: 1px solid #e0e0e0; margin: 0; padding: 8px 25px 8px 15px; display: flex; flex-direction: row; order: sibling-index(); }

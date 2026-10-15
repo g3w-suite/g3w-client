@@ -12,11 +12,17 @@ const code = transformSync(descriptor.script.content, { format: 'cjs' }).code;
 function setup() {
   const state = {
     sidebar: { open: false, components: [], contentsdata: [] },
+    content: { contentsdata: [] },
     project: { state: { layerstree: [{ nodes: [{}] }] } },
   };
   const gui = {
     showSidebar: () => { state.sidebar.open = true; },
     hideSidebar: () => { state.sidebar.open = false; },
+    closePanel: async () => {
+      context.panels.pop();
+      state.sidebar.open = context.panels.length > 0;
+    },
+    closeContent() {},
   };
   const module = { exports: {} };
   runInNewContext(code, {
@@ -32,6 +38,7 @@ function setup() {
     showLegendPanel: () => { context.panels.push('legend'); },
   };
   context.closeSidebar = () => app.methods.closeSidebar.call(context);
+  context.closePanel = () => app.methods.closePanel.call(context);
   Object.defineProperty(context, 'activeSidebarId', { get: () => app.computed.activeSidebarId.call(context) });
   Object.defineProperty(context, 'sidebarControls', { get: () => app.computed.sidebarControls.call(context) });
   return { app, gui, state, context, select: id => app.methods.selectSidebarItem.call(context, id) };
@@ -183,8 +190,8 @@ test('sidebar headers show the active control title with panel titles taking pre
   assert.doesNotMatch(descriptor.template.content, /v-t\s*=\s*"sidebarTitle"/);
 });
 
-test('the close button clears the toggle for built-in sections and all sidebar plugin types', async () => {
-  for (const id of ['catalog', 'themes', 'legend']) {
+test('the close button closes built-in sections and plugin controls without stacked panels', async () => {
+  for (const id of ['catalog', 'themes']) {
     const env = setup();
     await env.select(id);
     assert.equal(env.state.sidebar.open, true);
@@ -203,7 +210,6 @@ test('the close button clears the toggle for built-in sections and all sidebar p
     };
     env.state.sidebar.components.push(component);
     env.state.sidebar.open = true;
-    env.context.panels.push('plugin-panel');
     await env.context.closeSidebar();
     assert.equal(component.open, false);
     assert.equal(env.state.sidebar.open, false);
@@ -212,6 +218,26 @@ test('the close button clears the toggle for built-in sections and all sidebar p
     await env.select('plugin');
     assert.equal(component.open, true);
   }
+});
+
+test('closing the search panel returns to its list without hiding the sidebar', async () => {
+  const env = setup();
+  const search = {
+    id: 'search', collapsible: true, open: true, visible: true,
+    getOpen() { return this.open; },
+    click({ open }) { this.open = open; },
+  };
+  env.state.sidebar.components.push(search);
+  env.state.sidebar.open = true;
+  env.context.selected_sidebar = 'search';
+  env.context.panels.push('search-form');
+
+  await env.context.closeSidebar();
+
+  assert.deepEqual(env.context.panels, []);
+  assert.equal(search.open, true);
+  assert.equal(env.state.sidebar.open, true);
+  assert.equal(env.context.activeSidebarId, 'search');
 });
 
 test('the close button respects sidebar and panel closing locks', async () => {
@@ -259,6 +285,76 @@ test('selects only the current plugin or catalog and toggles the panel', async (
   assert.equal(env.context.activeSidebarId, 'catalog');
   await env.select('catalog');
   assert.equal(env.state.sidebar.open, false);
+});
+
+test('restores the previously selected sidebar when a collapsible component closes', async () => {
+  for (const previousSidebar of ['catalog', 'themes']) {
+    const env = setup();
+    const component = {
+      id: 'qplotly', collapsible: true, open: false,
+      getOpen() { return this.open; },
+      click({ open }) { this.open = open; },
+    };
+    env.context.selected_sidebar = previousSidebar;
+    env.state.sidebar.components.push(component);
+    await env.select('qplotly');
+    assert.equal(env.context.activeSidebarId, 'qplotly');
+    component.click({ open: false });
+    assert.equal(env.context.activeSidebarId, previousSidebar);
+  }
+});
+
+test('closing charts hides an open collapsible control without opening the catalog', async () => {
+  const env = setup();
+  env.state.sidebar.open = true;
+  env.state.sidebar.components.push({
+    id: 'qplotly',
+    collapsible: true,
+    getOpen: () => true,
+  });
+  await env.app.methods.closeContent.call(env.context);
+  assert.equal(env.state.sidebar.open, false);
+
+  env.state.sidebar.open = true;
+  env.state.sidebar.components[0].getOpen = () => false;
+  await env.app.methods.closeContent.call(env.context);
+  assert.equal(env.state.sidebar.open, true);
+});
+
+test('closing search results restores the search list and keeps search open', async () => {
+  const env = setup();
+  env.state.sidebar.open = true;
+  env.state.sidebar.components.push({
+    id: 'search',
+    collapsible: true,
+    getOpen: () => true,
+  });
+  env.context.panels.push('search-panel');
+
+  await env.app.methods.closeContent.call(env.context);
+
+  assert.deepEqual(env.context.panels, []);
+  assert.equal(env.state.sidebar.open, true);
+  assert.equal(env.context.activeSidebarId, 'search');
+});
+
+test('closing a stacked search panel shows the panel underneath', async () => {
+  const env = setup();
+  const search = {
+    id: 'search', collapsible: true, open: true,
+    getOpen() { return this.open; },
+    click({ open }) { this.open = open; },
+  };
+  env.state.sidebar.components.push(search);
+  env.state.sidebar.open = true;
+  env.context.selected_sidebar = 'search';
+  env.context.panels.push('search-list-panel', 'search-form-panel');
+
+  await env.context.closeSidebar();
+
+  assert.deepEqual(env.context.panels, ['search-list-panel']);
+  assert.equal(search.open, true);
+  assert.equal(env.state.sidebar.open, true);
 });
 
 test('clicking the legend again closes it without duplicating panels', async () => {
