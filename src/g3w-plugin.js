@@ -12,11 +12,12 @@ import Observable,
 import { toRawType }    from 'utils/toRawType';
 import { gettext as _ } from 'g3w-i18n';
 
+const { promise, resolve, reject } = Promise.withResolvers();
+
 /**
  * ORIGINAL SOURCE: src/app/core/plugin/plugin.js@v3.10.2
  */
 export class Plugin extends Emitter {
-  #app = GUI; //get app
   constructor({
     name         = null,
     config       = window.initConfig.plugins[name],
@@ -49,6 +50,32 @@ export class Plugin extends Emitter {
       }
     }, 10000); // 10 seconds
 
+    // Every plugin waits for the GUI; subclass initialization is optional.
+    // The promise callback runs after the subclass constructor and fields are initialized.
+    GUI.isReady()
+    .then(async () => {
+      if (!this.registerPlugin(this.config?.gid)) {
+        throw new Error(`[G3W-CLIENT] plugin "${this.name}" is not available on this project`);
+      }
+      //In case of init function call it
+      await this.init?.();
+      this.setReady(true);
+      // Resolve await with the instance without recursively assimilating its then().
+      resolve(true)
+    })
+    .catch(e => {
+      console.error(`[G3W-CLIENT] plugin "${this.name}" initialization failed`, e);
+      this.setReady(false);
+      reject(e);
+    })
+  }
+
+  /**
+   * Check if the plugin is ready.
+   * @returns { Promise } whether the plugin is ready
+   */
+  isReady() {
+    return promise;
   }
 
   /**
@@ -56,7 +83,7 @@ export class Plugin extends Emitter {
    * @returns Get app object 
    */
   getApp() {
-    return this.#app;
+    return GUI;
   }
 
   /**
@@ -264,25 +291,15 @@ export class Plugin extends Emitter {
   /**
    * Return a promise that resolves when the plugin is ready (eg. after "setReady(true)" is called)
    * 
-   * @returns { Promise }
+    * Rejects on incompatible projects or initialization failures.
+    *
+    * @returns { Promise<boolean> }
    * 
    * @since 4.0.0
    */
   isReady() {
-    return new Promise((resolve) => {
-      this._ready
-        ? resolve(this._ready)
-        : this.once('set-ready', isReady => { this._ready = isReady; resolve(this._ready); })
-    });
-  }
-
-  /**
-   * @param { string } gid plugin's gid (eg: qdjango:1)
-   * 
-   * @returns whether plugin is compatible with current projectId
-   */
-  isCurrentProjectCompatible(gid) {
-    return gid === ApplicationState.project.getGid();
+    // Reuse the startup promise so late callers also receive its result or error.
+    return this._initialization;
   }
 
   /**
@@ -293,7 +310,7 @@ export class Plugin extends Emitter {
    * @returns { boolean } whether plugin is compatible with current projectId
    */
   registerPlugin(gid) {
-    const iscompatible  = this.isCurrentProjectCompatible(gid);
+    const iscompatible = gid === ApplicationState.project.getGid();
     if (iscompatible) {
       GUI.registerPlugin(this);
     } else {
@@ -322,7 +339,7 @@ export class Plugin extends Emitter {
     }
 
     const config = window.initConfig.plugins[name];
-    if (!config || (config.gid && !this.isCurrentProjectCompatible(config.gid))) {
+    if (!config || (config.gid && config.gid !== ApplicationState.project.getGid())) {
       throw new Error(`[G3W-CLIENT] plugin "${name}" is not available on this project`);
     }
 
