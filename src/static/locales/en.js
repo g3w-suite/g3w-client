@@ -24,6 +24,7 @@ export default {
   show: "Show",
   hide: "Hide",
   'Show options': 'Show options',
+  'Hide side panel': 'Hide side panel',
   copy_form_data: "Copy data",
   paste_form_data: "Paste",
   copy_form_data_from_feature: "Copy data from map",

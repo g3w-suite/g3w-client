@@ -266,11 +266,11 @@
           v-if        = "mobileViewport"
           type        = "button"
           class       = "btn btn-outline sidebar-hide-button"
-          :aria-label = "$t('Hide panel')"
-          :data-i18n-title = "'Hide panel'"
+          :aria-label = "$t('Hide side panel')"
+          :data-i18n-title = "'Hide side panel'"
           :disabled   = "disabled"
           @click      = "hideMobileSidebar"
-        ><i class="fas fa-eye-slash" aria-hidden="true"></i></button>
+        ><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
         <button
           type="button"
           class="btn btn-outline sidebar-close-button"
@@ -312,11 +312,11 @@
             v-if           = "mobileViewport"
             type           = "button"
             class          = "btn btn-outline sidebar-hide-button"
-            :aria-label    = "$t('Hide panel')"
-            :data-i18n-title = "'Hide panel'"
+            :aria-label    = "$t('Hide side panel')"
+            :data-i18n-title = "'Hide side panel'"
             :disabled      = "disabled"
             @click         = "hideMobileSidebar"
-          ><i class="fas fa-eye-slash" aria-hidden="true"></i></button>
+          ><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
           <button
             type="button"
             class="btn btn-outline sidebar-close-button"

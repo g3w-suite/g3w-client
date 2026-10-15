@@ -43,6 +43,7 @@ export default {
   show: 'Покажи',
   hide: 'Скрий',
   'Show options': 'Покажи опциите',
+  'Hide side panel': 'Скрий страничния панел',
   copy_form_data: 'Копирай данните от формата',
   paste_form_data: 'Постави',
   copy_form_data_from_feature: 'Копирай данни от обект',

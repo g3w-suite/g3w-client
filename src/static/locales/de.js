@@ -29,6 +29,7 @@ export default {
   show: 'Anzeigen',
   hide: 'Ausblenden',
   'Show options': 'Optionen anzeigen',
+  'Hide side panel': 'Seitenleiste ausblenden',
   copy_form_data: 'Daten kopieren',
   paste_form_data: 'Einfügen',
   copy_form_data_from_feature: 'Daten von der Karte kopieren',

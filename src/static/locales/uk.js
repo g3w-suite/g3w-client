@@ -35,6 +35,7 @@ export default {
   show: 'Показати',
   hide: 'Сховати',
   'Show options': 'Показати опції',
+  'Hide side panel': 'Сховати бічну панель',
   copy_form_data: 'Копіювати',
   paste_form_data: 'Вставити',
   copy_form_data_from_feature: 'Копіювати дані з мапи',

@@ -46,6 +46,7 @@ export default {
   show: 'Mostrar',
   hide: 'Ocultar',
   'Show options': 'Mostrar opciones',
+  'Hide side panel': 'Ocultar panel lateral',
   copy_form_data: 'Copiar datos del formulario',
   paste_form_data: 'Pegar',
   copy_form_data_from_feature: 'Copiar datos desde el mapa',

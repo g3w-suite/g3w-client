@@ -54,6 +54,7 @@ export default {
   'Toggle layer': 'Attiva/disattiva livello',
   'Toggle sidebar': 'Attiva/disattiva barra laterale',
   'Show options': 'Mostra opzioni',
+  'Hide side panel': 'Nascondi pannello laterale',
   show: 'Mostra',
   hide: 'Nascondi',
   copy_form_data: 'Copia i dati del modulo',

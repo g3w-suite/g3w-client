@@ -30,6 +30,7 @@ export default {
   show: 'Visa',
   hide: 'Dölj',
   'Show options': 'Visa alternativ',
+  'Hide side panel': 'Dölj sidopanelen',
   copy_form_data: 'Kopiera uppgifterna',
   paste_form_data: 'Infoga',
   copy_form_data_from_feature: 'Kopiera uppgifter från kartan',

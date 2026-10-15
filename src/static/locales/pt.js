@@ -35,6 +35,7 @@ export default {
   show: 'Mostrar',
   hide: 'Esconder',
   'Show options': 'Mostrar opções',
+  'Hide side panel': 'Ocultar painel lateral',
   copy_form_data: 'Copiar dados',
   paste_form_data: 'Colar',
   copy_form_data_from_feature: 'Copia dados do mapa',
