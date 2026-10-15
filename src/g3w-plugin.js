@@ -67,7 +67,7 @@ export class Plugin extends Emitter {
       console.error(`[G3W-CLIENT] plugin "${this.name}" initialization failed`, e);
       this.setReady(false);
       reject(e);
-    })
+    });
   }
 
   /**
