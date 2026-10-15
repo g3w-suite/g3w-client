@@ -3790,27 +3790,26 @@ export default new (class GUI extends Emitter {
    * 
    * @since 4.1.0
    */
-  addHideMap({ layers=[] } = {}) {
+  async addHideMap({ layers=[] } = {}) {
     const MAP = {
       id: `hidemap_${Date.now()}`,
       map: null,
     };
     this.state.hidemaps.push(MAP);
     // create Map
-    Vue.nextTick().then(async () => {
-      MAP.map = new ol.Map({
-        controls:            ol.control.defaults({ attribution: false, zoom: false }),
-        interactions:        ol.interaction.defaults(),
-        view:                new ol.View({
-          projection: this.getMap().getView().getProjection(),
-          center:     this.getMap().getView().getCenter(),
-          resolution: this.getMap().getView().getResolution()
-        }),
-        keyboardEventTarget: document,
-        target:              MAP.id,
-      });
-      layers.forEach(l => MAP.map.addLayer(l));
+    await Vue.nextTick();
+    MAP.map = new ol.Map({
+      controls:            ol.control.defaults({ attribution: false, zoom: false }),
+      interactions:        ol.interaction.defaults(),
+      view:                new ol.View({
+        projection: this.getMap().getView().getProjection(),
+        center:     this.getMap().getView().getCenter(),
+        resolution: this.getMap().getView().getResolution()
+      }),
+      keyboardEventTarget: document,
+      target:              MAP.id,
     });
+    layers.forEach(l => MAP.map.addLayer(l));
     return MAP;
   }
 
