@@ -952,30 +952,45 @@ export default new (class GUI extends Emitter {
   /**
    * @see https://www.w3schools.com/howto/howto_js_draggable.asp 
    */
-  #makeDraggable(el) {
+  #makeDraggable(el, handle = el) {
     let x2 = 0, y2 = 0, x1 = 0, y1 = 0;
 
-    el.addEventListener('mousedown', e => {
+    const move = (left, top) => Object.assign(el.style, { margin: '0', inset: 'auto', left: `${left}px`, top: `${top}px` });
+    if (handle !== el) {
+      handle.tabIndex = 0;
+      handle.addEventListener('keydown', event => {
+        const offset = { ArrowLeft: [-10, 0], ArrowRight: [10, 0], ArrowUp: [0, -10], ArrowDown: [0, 10] }[event.key];
+        if (event.target === handle && offset) {
+          event.preventDefault();
+          const rect = el.getBoundingClientRect();
+          move(rect.left + offset[0], rect.top + offset[1]);
+        }
+      });
+    }
+    handle.style.cursor = 'move';
+    handle.addEventListener('pointerdown', e => {
       // skip dragging on form elements
-      if (['.select2-container', 'button', 'select', 'input', 'textarea', 'x-select'].some(i => e.target.closest(i))) {
+      if (e.button !== 0 || ['.select2-container', 'button', 'select', 'input', 'textarea', 'x-select'].some(i => e.target.closest(i))) {
         return;
       }
       e.preventDefault();
 
+      // Freeze the centered dialog's position before moving it in viewport coordinates.
       const rect = el.getBoundingClientRect();
-      if (!el.style.top)  el.style.top  = rect.top + "px";
-      if (!el.style.left) el.style.left = rect.left + "px";
+      move(rect.left, rect.top);
 
       x1 = e.clientX;
       y1 = e.clientY;
 
-      document.addEventListener('mouseup', mouseUp);
-      document.addEventListener('mousemove', mouseMove);
+      document.addEventListener('pointerup', mouseUp);
+      document.addEventListener('pointercancel', mouseUp);
+      document.addEventListener('pointermove', mouseMove);
     });
 
     function mouseUp() {
-      document.removeEventListener('mouseup', mouseUp);
-      document.removeEventListener('mousemove', mouseMove);
+      document.removeEventListener('pointerup', mouseUp);
+      document.removeEventListener('pointercancel', mouseUp);
+      document.removeEventListener('pointermove', mouseMove);
     }
     
     function mouseMove(e) {
@@ -985,8 +1000,7 @@ export default new (class GUI extends Emitter {
       x1 = e.clientX;
       y1 = e.clientY;
 
-      el.style.top  = (parseFloat(el.style.top)  - y2) + "px";
-      el.style.left = (parseFloat(el.style.left) - x2) + "px";
+      move(parseFloat(el.style.left) - x2, parseFloat(el.style.top) - y2);
     }
   }
 
@@ -999,6 +1013,8 @@ export default new (class GUI extends Emitter {
     textMessage = false,
     closable = true,
     draggable = false,
+    modal = false,
+    mapInteractive = false,
     autoclose,
     hooks = {},
     iconClass = null, //@since 3.11.0
@@ -1020,18 +1036,18 @@ export default new (class GUI extends Emitter {
 
     const dialog = Object.assign(document.createElement('template'), {
         innerHTML: /* html */ `
-          <dialog class="usermessage-${type}" popover="manual">
-            <form tabindex="0">
-              <header>
+          <dialog class="${modal ? 'map-themes-dialog' : `usermessage-${type}`}" ${modal ? `data-tool-dialog data-tool-message${mapInteractive ? ' data-map-interactive' : ''}` : 'popover="manual"'} aria-label="${title ? _(title) : type.toUpperCase()}">
+            <${modal ? 'div' : 'form'} tabindex="0">
+              <header ${modal ? 'class="map-themes-header"' : ''}>
                 <i class = "${icon}"></i>
-                <div>
-                  <h4 style="font-weight: bold;">${title ? _(title): type.toUpperCase()}</h4>
+                <div ${modal ? 'style="flex: 1; min-width: 0;"' : ''}>
+                  <${modal ? 'h2' : 'h4'} style="font-weight: bold;">${title ? _(title): type.toUpperCase()}</${modal ? 'h2' : 'h4'}>
                   ${ subtitle ? `<h5>${_(subtitle)}</h5>` : '' }
                 </div>
-                <button type="button" value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
+                <button type="button" value="cancel" ${modal ? 'class="map-theme-action"' : ''} aria-label="${_('close')}" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
               </header>
               <div>${ textMessage ? message : _(message) }</div>
-            </form>
+            </${modal ? 'div' : 'form'}>
           </dialog>
       `.trim()
       }).content.firstChild;
@@ -1046,8 +1062,8 @@ export default new (class GUI extends Emitter {
       .filter(h => h)
       .forEach(h => dialog.appendChild((new (Vue.extend(h))().$mount()).$el));  
 
-    dialog.addEventListener('beforetoggle', e => {
-      if (e.newState === 'closed') {
+    dialog.addEventListener(modal ? 'close' : 'beforetoggle', e => {
+      if (modal || e.newState === 'closed') {
         // clean up childs (vue)
         Array.from(dialog.children).forEach(el => {
           el.__vue__?.$destroy();
@@ -1059,38 +1075,43 @@ export default new (class GUI extends Emitter {
 
     document.body.append(dialog);
 
-    dialog.showPopover();
-
-    if (draggable || 'tool' === type) {
-      this.#makeDraggable(dialog);
+    if (modal) {
+      this.showToolDialog(dialog);
+    } else {
+      dialog.showPopover();
     }
 
+    if (draggable || 'tool' === type) {
+      this.#makeDraggable(dialog, modal ? dialog.querySelector('header') : dialog);
+    }
+
+    const close = () => modal ? dialog.close() : dialog.hidePopover();
     // close dialog on x icon
-    dialog.querySelector('button[value="cancel"]').addEventListener('click', () => {
-      dialog.hidePopover();
-    });
+    dialog.querySelector('button[value="cancel"]').addEventListener('click', close);
 
     if (autoclose) {
       const timer = setTimeout(() => {
-        dialog.hidePopover();
+        close();
         clearTimeout(timer)
       }, duration);
     }
 
     if ((autoclose || closable) && 'tool' !== type) {
       dialog.style.cursor = 'pointer';
-      dialog.addEventListener('click', () => {
-        dialog.hidePopover();
-      });
+      dialog.addEventListener('click', close);
     }
 
   }
 
-  /** Open a tool modal, replacing other tool windows but leaving notifications alone. */
+  /** Replace the current tool window; printing keeps the map interactive. */
   showToolDialog(dialog) {
     this.closeToolDialogs(dialog);
     dialog.returnValue = '';
-    dialog.showModal();
+    if (dialog.hasAttribute('data-map-interactive')) {
+      dialog.show();
+    } else {
+      dialog.showModal();
+    }
   }
 
   closeToolDialogs(except) {
@@ -1104,7 +1125,12 @@ export default new (class GUI extends Emitter {
   }
 
   closeUserMessage() {
-    document.querySelector('.usermessage-tool')?.hidePopover();
+    const dialog = document.querySelector('[data-tool-message], .usermessage-tool');
+    if (dialog?.hasAttribute('data-tool-message')) {
+      dialog.close();
+    } else {
+      dialog?.hidePopover();
+    }
   }
 
   /**

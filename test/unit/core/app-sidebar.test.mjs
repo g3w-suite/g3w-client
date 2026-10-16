@@ -323,20 +323,105 @@ test('bookmarks opens its existing component in a modal instead of the catalog',
   assert.equal(component.open, false);
 });
 
+test('Print opens in the centered tool dialog and closes through the native lifecycle', async () => {
+  const source = readFileSync(new URL('../../../src/g3w-app.js', import.meta.url), 'utf8');
+  const start = source.indexOf('  async showUserMessage({');
+  const end = source.indexOf('\n  /** Replace the current tool window', start);
+  const events = {};
+  const button = { addEventListener: (name, callback) => { button[name] = callback; } };
+  const header = {};
+  let markup;
+  let opened = false;
+  let removed = false;
+  const dialog = {
+    children: [],
+    addEventListener: (name, callback) => { events[name] = callback; },
+    querySelector: selector => selector === 'header' ? header : button,
+    close() { events.close(); },
+    remove() { removed = true; },
+  };
+  const gui = runInNewContext(`(new class {${source.slice(start, end).replaceAll('this.#makeDraggable', 'this.makeDraggable')}})`, {
+    Vue: { prototype: { $fa: icon => icon } },
+    _: text => text,
+    document: {
+      createElement: () => ({
+        set innerHTML(value) { markup = value; },
+        content: { firstChild: dialog },
+      }),
+      body: { append() {} },
+    },
+  });
+  gui.closeToolDialogs = () => {};
+  gui.showToolDialog = value => { assert.equal(value, dialog); opened = true; };
+  gui.makeDraggable = (value, handle) => {
+    assert.equal(value, dialog);
+    assert.equal(handle, header);
+  };
+  await gui.showUserMessage({ title: 'Print', modal: true, mapInteractive: true });
+  assert.equal(opened, true);
+  assert.match(markup, /class="map-themes-dialog" data-tool-dialog data-tool-message/);
+  assert.match(markup, /data-map-interactive/);
+  assert.match(markup, /class="map-themes-header"/);
+  assert.doesNotMatch(markup, /popover=|<form/);
+  button.click();
+  assert.equal(removed, true);
+  const screenshot = readFileSync(new URL('../../../src/static/map-controls/screenshot.js', import.meta.url), 'utf8');
+  assert.match(screenshot, /title:\s*'print',[\s\S]*?modal:\s*true/);
+  assert.match(screenshot, /mapInteractive:\s*true/);
+});
+
+test('dragging a centered dialog uses viewport coordinates and leaves buttons interactive', () => {
+  const source = readFileSync(new URL('../../../src/g3w-app.js', import.meta.url), 'utf8');
+  const start = source.indexOf('  #makeDraggable(el, handle = el) {');
+  const end = source.indexOf('\n  async showUserMessage', start);
+  const listeners = new Map();
+  let pointerDown;
+  let keyDown;
+  const gui = runInNewContext(`(new class {${source.slice(start, end).replace('#makeDraggable', 'makeDraggable')}})`, {
+    document: {
+      addEventListener: (name, callback) => listeners.set(name, callback),
+      removeEventListener: name => listeners.delete(name),
+    },
+  });
+  const dialog = {
+    style: { margin: 'auto' },
+    getBoundingClientRect: () => ({ top: 200, left: 300 }),
+  };
+  const header = { style: {}, addEventListener: (name, callback) => {
+    if (name === 'pointerdown') pointerDown = callback;
+    if (name === 'keydown') keyDown = callback;
+  } };
+  gui.makeDraggable(dialog, header);
+  assert.equal(header.tabIndex, 0);
+  keyDown({ key: 'ArrowRight', target: header, preventDefault() {} });
+  assert.equal(dialog.style.left, '310px');
+  pointerDown({ button: 0, target: { closest: () => true } });
+  assert.equal(listeners.size, 0);
+  pointerDown({ button: 0, clientX: 310, clientY: 210, target: { closest: () => null }, preventDefault() {} });
+  assert.equal(dialog.style.margin, '0');
+  listeners.get('pointermove')({ clientX: 350, clientY: 240, preventDefault() {} });
+  assert.equal(dialog.style.left, '340px');
+  assert.equal(dialog.style.top, '230px');
+  listeners.get('pointercancel')();
+  assert.equal(listeners.size, 0);
+});
+
 test('tool dialogs replace each other and close Print before opening', () => {
   const guiSource = readFileSync(new URL('../../../src/g3w-app.js', import.meta.url), 'utf8');
   const start = guiSource.indexOf('  showToolDialog(dialog) {');
   const end = guiSource.indexOf('\n  /**', start);
   let printOpen = true;
-  const dialog = () => ({
+  const dialog = (mapInteractive = false) => ({
     open: false,
+    hasAttribute: name => name === 'data-map-interactive' && mapInteractive,
+    show() { this.open = true; this.blocking = false; },
     showModal() { this.open = true; },
     close(value) { this.open = false; this.returnValue = value; },
   });
   const themes = dialog();
   const bookmarks = dialog();
   const document = {
-    querySelector: () => printOpen ? { hidePopover() { printOpen = false; } } : null,
+    querySelector: () => printOpen ? { hasAttribute: () => false, hidePopover() { printOpen = false; } } : null,
     querySelectorAll: () => [themes, bookmarks].filter(item => item.open),
   };
   const gui = runInNewContext(`(new class {${guiSource.slice(start, end)}})`, { document });
@@ -347,6 +432,11 @@ test('tool dialogs replace each other and close Print before opening', () => {
   assert.equal(themes.open, false);
   assert.equal(themes.returnValue, 'replace');
   assert.equal(bookmarks.open, true);
+  const print = dialog(true);
+  gui.showToolDialog(print);
+  assert.equal(bookmarks.open, false);
+  assert.equal(print.open, true);
+  assert.equal(print.blocking, false);
   gui.closeToolDialogs();
   assert.equal(bookmarks.open, false);
   assert.match(guiSource, /if \('tool' === type\) \{\s*this.closeToolDialogs\(\);/);

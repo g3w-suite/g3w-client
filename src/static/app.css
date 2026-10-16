@@ -1341,7 +1341,10 @@ dialog:is(.usermessage-alert, .usermessage-info, .usermessage-warning, .usermess
 body.is-mobile .tree-item input[type="checkbox"]    { accent-color: var(--skin-color); }
 
 .map-themes-dialog                     { width: min(520px, calc(100% - 24px)); min-width: 0; max-height: calc(100% - 24px); padding: 16px; color: #212c31; background: #fff; border-radius: 6px; }
+.map-themes-dialog[data-map-interactive] { position: fixed; inset: 0; margin: auto; z-index: 1000; }
 .map-themes-header                     { gap: 12px; margin-bottom: 16px; }
+.map-themes-header[style*="cursor: move"] { touch-action: none; }
+.map-themes-header:focus-visible        { outline: 2px solid #245b67; outline-offset: 2px; }
 .map-themes-header > i                 { flex: 0 0 40px; }
 .map-themes-header h2                  { flex: 1; min-width: 0; margin: 10px 0; font-size: 1.8rem; font-weight: bold; text-align: center; overflow-wrap: anywhere; }
 .map-themes-header .map-theme-action   { flex: 0 0 40px; width: 40px; height: 40px; align-self: flex-start; color: inherit; }
