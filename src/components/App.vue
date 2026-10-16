@@ -643,14 +643,6 @@
     <!-- MAIN (content) -->
     <div v-if = "state.content.loading && 0 === state.contentsdata.length" class = "bar-loader" style = "border: 0; position: absolute; z-index: 1;"></div>
     
-    <!-- ORIGINAL SOURCE: src/components/Map.vue -->
-    <div
-      v-for = "hidemap in ApplicationState.hidemaps"
-      :key  = "hidemap.id"
-      :id   = "hidemap.id"
-      class = "g3w-map hidemap"
-    ></div>
-
     <div id = "map" class = "g3w-map" @drop.prevent = "onDrop" @dragenter.prevent = "onDrop" @dragleave.prevent = "onDrop" @dragover.prevent>
 
       <div class = "drop-area" hidden>
