@@ -15,6 +15,7 @@
       class               = "menu-item"
       @click              = "showPanel(search)"
       @keydown.enter.stop = "showPanel(search)"
+      @keydown.space.stop.prevent = "showPanel(search)"
       role                = "button"
       tabindex            = "0"
       
@@ -57,6 +58,7 @@
       class               = "menu-item"
       @click.stop         = "showQueryBuilderPanel"
       @keydown.enter.stop = "showQueryBuilderPanel"
+      @keydown.space.stop.prevent = "showQueryBuilderPanel"
       role                = "button"
       tabindex            = "0"
     >
@@ -179,6 +181,34 @@ export default {
 </script>
 
 <style scoped>
+#g3w-search {
+  gap: 4px;
+  padding: 6px 10px 12px;
+}
+#g3w-search > li {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  margin: 0 0 4px;
+  padding: 6px 9px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background-color: hsl(from var(--bgcolor) h s calc(l + 4));
+  transition: background-color .15s ease, border-color .15s ease;
+}
+#g3w-search > li:hover,
+#g3w-search > li:focus-visible {
+  border-color: hsl(from var(--skin-color) h s calc(l + 12));
+  background-color: hsl(from var(--bgcolor) h s calc(l + 10));
+}
+#g3w-search > li:focus-visible {
+  outline: 2px solid var(--skin-color);
+  outline-offset: 1px;
+}
+#g3w-search > li > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 li.menu-item {
   padding-right: 20px !important;
 }
@@ -188,18 +218,30 @@ li.menu-item span {
 }
 #g3w-search li i {
   width: 20px;
+  flex: 0 0 20px;
+  color: var(--skin-color);
 }
 .search-tools {
   display:flex;
-  align-items: baseline;
+  align-items: center;
+  width: 100%;
+  gap: 6px;
 }
 .search-tools > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
 .search-tools > button {
   text-shadow: 0 2px 5px rgba(0,0,0,.3);
-  padding: 0 4px;
+  flex: 0 0 24px;
+  min-height: 24px;
+  padding: 0;
   border: none;
   background-color: unset;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #g3w-search > li { transition: none; }
 }
 </style>

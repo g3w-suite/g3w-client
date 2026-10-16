@@ -7,15 +7,17 @@ import Emitter          from 'g3w-emitter';
 import Component        from 'g3w-component';
 import ApplicationState from 'g3w-state';
 import GUI              from 'g3w-app';
+import Observable,
+ { unByKey }            from 'ol/Observable';
 import { toRawType }    from 'utils/toRawType';
-import { waitFor }      from 'utils/waitFor';
 import { gettext as _ } from 'g3w-i18n';
+
+const { promise, resolve, reject } = Promise.withResolvers();
 
 /**
  * ORIGINAL SOURCE: src/app/core/plugin/plugin.js@v3.10.2
  */
 export class Plugin extends Emitter {
-  
   constructor({
     name         = null,
     config       = window.initConfig.plugins[name],
@@ -48,6 +50,40 @@ export class Plugin extends Emitter {
       }
     }, 10000); // 10 seconds
 
+    // Every plugin waits for the GUI; subclass initialization is optional.
+    // The promise callback runs after the subclass constructor and fields are initialized.
+    GUI.isReady()
+    .then(async () => {
+      if (!this.registerPlugin(this.config?.gid)) {
+        throw new Error(`[G3W-CLIENT] plugin "${this.name}" is not available on this project`);
+      }
+      //In case of init function call it
+      await this.init?.();
+      this.setReady(true);
+      // Resolve await with the instance without recursively assimilating its then().
+      resolve(true)
+    })
+    .catch(e => {
+      console.error(`[G3W-CLIENT] plugin "${this.name}" initialization failed`, e);
+      this.setReady(false);
+      reject(e);
+    });
+  }
+
+  /**
+   * Check if the plugin is ready.
+   * @returns { Promise } whether the plugin is ready
+   */
+  isReady() {
+    return promise;
+  }
+
+  /**
+   * 
+   * @returns Get app object 
+   */
+  getApp() {
+    return GUI;
   }
 
   /**
@@ -91,7 +127,7 @@ export class Plugin extends Emitter {
         console.warn(e);
       }
 
-      Vue.watch(() => ApplicationState.language, async lang => {
+      this.listen(() => ApplicationState.language, async lang => {
         try {
           this.setLocale({ [lang]: (await import(`${i18n.replace(/\/+$/, '')}/${lang}.js`)).default });
         } catch(e) {
@@ -252,29 +288,6 @@ export class Plugin extends Emitter {
     }, 0 /* 0 = allow any previously "setTimeout" to execute */)
   }
 
-  /**
-   * Return a promise that resolves when the plugin is ready (eg. after "setReady(true)" is called)
-   * 
-   * @returns { Promise }
-   * 
-   * @since 4.0.0
-   */
-  isReady() {
-    return new Promise((resolve) => {
-      this._ready
-        ? resolve(this._ready)
-        : this.once('set-ready', isReady => { this._ready = isReady; resolve(this._ready); })
-    });
-  }
-
-  /**
-   * @param { string } gid plugin's gid (eg: qdjango:1)
-   * 
-   * @returns whether plugin is compatible with current projectId
-   */
-  isCurrentProjectCompatible(gid) {
-    return gid === ApplicationState.project.getGid();
-  }
 
   /**
    * Check and register plugin only when compatible with current projectId (eg: qdjango:1)
@@ -284,7 +297,7 @@ export class Plugin extends Emitter {
    * @returns { boolean } whether plugin is compatible with current projectId
    */
   registerPlugin(gid) {
-    const iscompatible  = this.isCurrentProjectCompatible(gid);
+    const iscompatible = gid === ApplicationState.project.getGid();
     if (iscompatible) {
       GUI.registerPlugin(this);
     } else {
@@ -295,11 +308,44 @@ export class Plugin extends Emitter {
   }
 
   /**
+   * Wait until another plugin is ready and return it.
+   * 
+   * @param { string | string[] } name plugin name (eg. 'editing') or a list of names
+   * 
+   * @returns { Promise<Plugin | Plugin[]> } rejects when the plugin is not available on the current project
+   * 
+   * @example
+   * const editing = await this.waitForPlugin('editing');
+   * editing.startEditing(layerId);
+   * 
+   * @since 4.2.0
+   */
+  async waitForPlugin(name) {
+    if (Array.isArray(name)) {
+      return Promise.all(name.map(n => this.waitForPlugin(n)));
+    }
+
+    const config = window.initConfig.plugins[name];
+    if (!config || (config.gid && config.gid !== ApplicationState.project.getGid())) {
+      throw new Error(`[G3W-CLIENT] plugin "${name}" is not available on this project`);
+    }
+
+    // returning true removes the listener (see Emitter.trigger)
+    const plugin = GUI.getPlugin(name) || await new Promise(resolve => GUI.onafter('registerPlugin', p => name === p.name && (resolve(p), true)));
+
+    await plugin.isReady();
+
+    return plugin;
+  }
+
+  /**
    * Used by the following plugins: "archiweb"
    * 
    * @param { Array } pluginsName plugin dependencies
    * 
    * @since 4.0.0
+   * 
+   * @deprecated since 4.2.0, use `this.waitForPlugin(names)` instead
    */
   getDependencyPlugins(pluginsName) {
     this.dependencies = pluginsName || this.dependencies;
@@ -312,6 +358,8 @@ export class Plugin extends Emitter {
    * @returns { Object } plugin dependencies API
    * 
    * @since 4.0.0
+   * 
+   * @deprecated since 4.2.0, use `this.waitForPlugin(names)` instead
    */
   async getDependencyPluginsObject(pluginsName) {
     const api      = {};
@@ -321,15 +369,14 @@ export class Plugin extends Emitter {
   }
 
   /**
-   * @deprecated plugin APIs are deprecated, use `GUI.getPlugin(name)` instead.
+   * @deprecated plugin APIs are deprecated, use `this.waitForPlugin(name)` instead.
    */
   async getDependencyPlugin(pluginName) {
-    // is there a plugin
-    if (window.initConfig.plugins[pluginName]) {
-      await waitFor(() => GUI.getPlugin(pluginName)?.isReady?.());
-      return GUI.getPlugin(pluginName).getApi();
+    try {
+      return (await this.waitForPlugin(pluginName)).getApi();
+    } catch (e) {
+      return Promise.reject({ error: 'no plugin' });
     }
-    return Promise.reject({ error: 'no plugin' });
   }
 
   /**
@@ -353,6 +400,7 @@ export class Plugin extends Emitter {
    * 
    * @listens unload
    * 
+   * @deprecated since 4.2.0, use `this.addSidebarItem()` instead
    */
   createSideBarComponent(vue, opts = {}) {
 
@@ -364,6 +412,201 @@ export class Plugin extends Emitter {
     GUI.addComponent(new Component(opts), opts.sidebarOptions);
     
     return GUI.getComponent(opts.id) ;
+  }
+
+  /**
+   * Listen to any kind of event with a single syntax.
+   * 
+   * @param { Emitter | ol.Observable | Function } target GUI, layer, component, OpenLayers map/source/interaction or a getter function (reactive watch)
+   * @param { string | Function } event  event name, `'before:<method>'` / `'after:<method>'` to run code around any method call, or the handler when target is a getter
+   * @param { Function | Object } handler event handler or watch options when target is a getter
+   * @param { Object }  opts
+   * @param { boolean } opts.once remove the listener after the first call
+   * 
+   * @returns { Function } call it to stop listening
+   * 
+   * @example
+   * this.listen(GUI, 'ready', () => {});
+   * this.listen(GUI.getComponent('metadata'), 'after:setOpen', open => {});
+   * this.listen(GUI, 'before:closeContent', () => {});
+   * this.listen(GUI.getMap(), 'click', e => console.log(e.coordinate));
+   * const off = this.listen(() => ApplicationState.language, lang => {}, { immediate: true });
+   * off();
+   * 
+   * @since 4.2.0
+   */
+  listen(target, event, handler, opts = {}) {
+    if ('function' === typeof target) {
+      return Vue.watch(target, event, handler);
+    }
+
+    const once = !!opts.once;
+
+    if (target instanceof Emitter) {
+      // plain events can also start with "after:" (eg. 'after:setupControls'), so map only real methods
+      const [, when, method] = /^(before|after):(.+)$/.exec(event) || [];
+      const evt = 'function' === typeof target[method] ? `on${when}:${method}` : event;
+      const key = target.on(evt, handler, undefined, once, true);
+      // undefined key = duplicated listener, and `off(evt, undefined)` would remove all listeners
+      return () => key && target.off(evt, key);
+    }
+
+    if (target instanceof Observable) {
+      const key = once ? target.once(event, handler) : target.on(event, handler);
+      return () => unByKey(key);
+    }
+
+    console.warn('[G3W-CLIENT] unsupported event target', target);
+    return () => {};
+  }
+
+  /**
+   * Add an item on the left sidebar.
+   * 
+   * @param { Object }          opts
+   * @param { string }          opts.id
+   * @param { string }          opts.title       i18n key or text
+   * @param { string }          opts.icon        icon name (eg. 'pencil') or css class
+   * @param { string }          opts.color       icon color
+   * @param { Object }          opts.component   vue component object (SFC) shown when the item is open
+   * @param { number | string } opts.position    index or id of a sidebar item to insert before
+   * @param { boolean }         opts.open
+   * @param { boolean }         opts.collapsible false = simple button (no content)
+   * @param { boolean }         opts.mobile      show on mobile devices
+   * @param { Function }        opts.onOpen
+   * @param { Function }        opts.onClose
+   * 
+   * @returns {{ component: Component, off: Function }}
+   * 
+   * @example
+   * this.addSidebarItem({ id: 'hello', title: 'Hello', icon: 'info', collapsible: false, onOpen: () => alert('hello') });
+   * 
+   * @since 4.2.0
+   */
+  addSidebarItem({ id, title, icon, color, component = {}, position = 1, open = false, collapsible = true, mobile = true, onOpen, onClose } = {}) {
+    const comp = this.createSideBarComponent(component, { id, title, icon, iconColor: color, open, collapsible, mobile, sidebarOptions: { position } });
+
+    // not added (eg. `mobile: false` on a mobile device)
+    if (!comp) {
+      return { component: comp, off: () => {} };
+    }
+
+    const unlisten = this.listen(comp, 'after:setOpen', bool => bool ? onOpen?.(comp) : onClose?.(comp));
+
+    return {
+      component: comp,
+      off: () => { unlisten(); GUI.removeComponent(id); },
+    };
+  }
+
+  /**
+   * Add a map control.
+   *
+   * @param { Object } opts
+   * @param { string } opts.id
+   * @param { boolean } [opts.add=true] whether to add it to the map controls
+   * @param { string } opts.label
+   * @param { Function } opts.onclick
+   *
+   * @returns { MapControl }
+   *
+   * @example
+   * this.addMapControl({ id: 'hello', label: 'Hello', onclick: () => alert('hello') });
+   *
+   * @since 4.2.0
+   */
+  addMapControl({ id, add = true, ...options } = {}) {
+    return GUI.createMapControl(id, { add, options });
+  }
+
+  /**
+   * Add a button on each feature of the results.
+   * 
+   * @param { Object }              opts
+   * @param { string }              opts.id
+   * @param { string }              opts.icon      icon name (eg. 'pencil') or css class
+   * @param { string }              opts.hint      tooltip (i18n key or text)
+   * @param { string[] | Function } opts.layers    layer ids or `layer => boolean` (default: all layers)
+   * @param { Function }            opts.condition `({ layer, feature }) => boolean` show the button only for some features
+   * @param { number | string }     opts.position  index, `'before:<action id>'` or `'after:<action id>'` (default: last)
+   * @param { boolean }             opts.toggle    button keeps a pressed state (passed as `toggled` to onClick)
+   * @param { Function }            opts.onClick   `({ layer, feature, index, container, action, toggled }) => {}`
+   * @param { Function }            opts.onClear   called when query results are closed
+   * 
+   * @returns { Function } call it to remove the action
+   * 
+   * @example
+   * this.addResultAction({ id: 'log', icon: 'info', hint: 'Log', onClick: ({ feature }) => console.log(feature) });
+   * 
+   * @since 4.2.0
+   */
+  addResultAction({ id, icon, hint, layers, condition, position, toggle = false, onClick, onClear } = {}) {
+    return this.listen(GUI, 'after:addActionsForLayers', (actions, queried = []) => {
+      queried.forEach(layer => {
+        const list = actions[layer.id];
+        if (
+          !list || list.some(a => id === a.id) ||
+          (Array.isArray(layers) && !layers.includes(layer.id)) ||
+          ('function' === typeof layers && !layers(layer))
+        ) {
+          return;
+        }
+
+        const [where, ref] = 'string' === typeof position ? position.split(':') : [];
+        const i            = list.findIndex(a => ref === a.id);
+
+        list.splice('number' === typeof position ? position : (-1 === i ? list.length : i + ('after' === where ? 1 : 0)), 0, {
+          id,
+          hint,
+          condition,
+          class: Vue.prototype.$fa?.(icon) ?? icon,
+          state: Vue.observable({ toggled: {} }),
+          clear: onClear,
+          cbk(layer, feature, action, index, container) {
+            if (toggle) {
+              Vue.set(action.state.toggled, index, !action.state.toggled[index]);
+            }
+            return onClick?.({ layer, feature, index, container, action, toggled: !!action.state.toggled[index] });
+          },
+        });
+      });
+    });
+  }
+
+  /**
+   * Add an item on the context menu (right click).
+   * 
+   * @param { Object }            opts
+   * @param { string | string[] } opts.context   'map', 'layer', 'project' (catalog root) or a list of them
+   * @param { string }            opts.label     i18n key or text
+   * @param { string }            opts.icon      icon name (eg. 'pencil') or css class
+   * @param { number }            opts.position  css order (lower = first)
+   * @param { Function }          opts.condition `({ context, layer, coordinate }) => boolean`
+   * @param { Function }          opts.onClick   `({ context, layer, coordinate }) => {}`
+   * @param { Array }             opts.children  sub menu items: `[{ label, onClick }]`
+   * 
+   * @returns { Function } call it to remove the item
+   * 
+   * @example
+   * this.addContextMenuItem({ context: 'layer', label: 'Log layer', icon: 'info', onClick: ({ layer }) => console.log(layer) });
+   * 
+   * @since 4.2.0
+   */
+  addContextMenuItem({ context = 'map', label, icon, position, condition, onClick, children } = {}) {
+    const offs = [].concat(context).map(ctx => this.listen(GUI, `${ctx}:context-menu`, menu => {
+      const info = { context: ctx, layer: menu.layer, coordinate: menu.map_coords };
+      if (condition && !condition(info)) {
+        return;
+      }
+      menu.items.push({
+        label,
+        icon,
+        position,
+        cbk:      onClick && (() => onClick(info)),
+        children: children?.map(c => ({ label: c.label, cbk: () => c.onClick?.(info) })),
+      });
+    }));
+    return () => offs.forEach(off => off());
   }
 
   /**

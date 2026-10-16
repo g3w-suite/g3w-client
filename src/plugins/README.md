@@ -70,31 +70,49 @@ G3WADMIN_LOCAL_MORE_APPS = [
 
 Modern plugins are defined as ES6 classes extending `g3w.Plugin`.
 
-Below an excerpt from [panoramax/plugin.js](https://github.com/g3w-suite/g3w-admin-panoramax/blob/master/panoramax/static/panoramax/js/plugin.js).
+Every plugin automatically waits for the GUI and registers when ready.
+Define an optional `init()` method for plugin-specific initialization:
 
 ```js
 /* plugin.js */
 
-(function () {
-  new class extends g3w.Plugin {
+(async function () {
+  class Plugin extends g3w.Plugin {
     constructor() {
       super({ name: 'my-plugin' });
-
-      g3w.app.isReady().then(() => {
-        // check if plugin is related to current project by gid
-        if (!this.registerPlugin(this.config.gid)) {
-          return;
-        }
-
-        // ... plugin initialization logic here ...
-
-        // need to be called to hide the loading icon on the map
-        this.setReady(true);
-      });
     }
-  };
-})();
+
+    async init() {
+      // ... plugin initialization logic here ...
+    }
+  }
+
+  const plugin = await new Plugin();
+  // The plugin is initialized, ready, and registered here.
+  console.log(plugin.getName());
+})().catch(console.error);
 ```
+
+The base class waits for `g3w.app.isReady()`, checks the configured project `gid`
+and registers the plugin through `registerPlugin()`, awaits `init()`, and calls `setReady(true)`.
+Initialization errors are logged and also clear the loading indicator.
+Define `init()` as a class method, not a class field. Instance fields and the
+constructor body are initialized before `init()` runs. Do not return or await the
+plugin instance inside `init()`: it would wait for its own initialization.
+Subclasses without `init()` use the same lifecycle, skipping only initialization.
+When migrating existing plugins, remove manual GUI readiness, registration, and
+`setReady()` calls; move plugin-specific startup code into `init()` when needed.
+
+All plugin instances support `await new Plugin()` through a temporary `then()` method,
+without replacing the instance with a Promise during subclass construction.
+The await resolves to the instance itself; incompatible projects and initialization
+failures reject. After success, the instance is no longer thenable, so repeated or
+concurrent awaits safely return the same instance.
+Direct `new g3w.Plugin({ name: 'my-plugin' })` instances use the same lifecycle,
+without an `init()` step.
+`await plugin.isReady()` remains available and resolves to `true` on success,
+or rejects on incompatibility or initialization failure.
+To wait for another registered plugin, use `await this.waitForPlugin('editing')`.
 
 For more info refer to [src/g3w-plugin.js](https://github.com/g3w-suite/g3w-client/blob/5a94440de592f40fa9a206ecf9066f643ba217ad/src/g3w-plugin.js)
 

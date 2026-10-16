@@ -475,10 +475,10 @@ export default new (class GUI extends Emitter {
       };
 
       // append to `g3w-menu`
-      sidebarItem.$on('hook:mounted', () => {
+      sidebarItem.$on('hook:mounted', async () => {
         const sidebar = document.getElementById('g3w-menu');
         if ([null, undefined].includes(options?.position) || options?.position < 0 || options?.position >= sidebar.children.length) {
-          sidebar.querySelector('#themes').insertAdjacentElement('beforebegin', sidebarItem.$el);
+          sidebar.querySelector('#catalog').insertAdjacentElement('beforebegin', sidebarItem.$el);
         } else {
           Array.from(sidebar.children).forEach((child, i) => {
             if (i === options?.position || child.id === options?.position) {
@@ -486,8 +486,13 @@ export default new (class GUI extends Emitter {
             }
           });
         }
-        component.mount(sidebarItem.$refs['component-placeholder']);
+        await component.mount(sidebarItem.$refs['component-placeholder']);
+        if (component.collapsible && component.getOpen()) {
+          component.click({ open: true });
+          this.showSidebar();
+        }
       }).$mount();
+      component.sidebarItem = sidebarItem;
       ApplicationState.sidebar.components.push(component);
     }
     return component;
@@ -508,6 +513,24 @@ export default new (class GUI extends Emitter {
   }
 
   /**
+   * Remove a sidebar item (added through `addComponent`)
+   * 
+   * @param { string } id component id
+   * 
+   * @since 4.2.0
+   */
+  removeComponent(id) {
+    const component = ApplicationState.sidebar.components.find(c => id === c.getId());
+    if (!component) {
+      return;
+    }
+    component.unmount();
+    component.sidebarItem?.$destroy();
+    component.sidebarItem?.$el?.remove();
+    ApplicationState.sidebar.components.splice(ApplicationState.sidebar.components.indexOf(component), 1);
+  }
+
+  /**
    * ORIGINAL SOURCE: src/index.prod.js@v4.0.0
    * ORIGINAL SOURCE: src/services/gui.js@v4.0.0
    */
@@ -519,6 +542,7 @@ export default new (class GUI extends Emitter {
       icon:               'far fa-bookmark',
       iconColor:          '#00bcd4',
       title:              'Bookmarks',
+      collapsible:        false,
       vueComponentObject: require('components/SpatialBookMarks.vue').default,
     }));
 
@@ -896,6 +920,7 @@ export default new (class GUI extends Emitter {
     ApplicationState.sidebar.title = content.title;
 
     data.push({ content, options: { parent: '#sidebar-panel-placeholder' } });
+    this.showSidebar();
   }
 
   async closePanel() {
@@ -914,36 +939,58 @@ export default new (class GUI extends Emitter {
     if (current) {
       current.content.internalPanel.$el.style.display = 'block';
       ApplicationState.sidebar.title                  = current.content.title;
+    } else {
+      this.hideSidebar();
+      ApplicationState.sidebar.components.forEach(component => {
+        if (!component.collapsible && component.getOpen()) {
+          component.setOpen(false);
+        }
+      });
     }
   }
 
   /**
    * @see https://www.w3schools.com/howto/howto_js_draggable.asp 
    */
-  #makeDraggable(el) {
+  #makeDraggable(el, handle = el) {
     let x2 = 0, y2 = 0, x1 = 0, y1 = 0;
 
-    el.addEventListener('mousedown', e => {
+    const move = (left, top) => Object.assign(el.style, { margin: '0', inset: 'auto', left: `${left}px`, top: `${top}px` });
+    if (handle !== el) {
+      handle.tabIndex = 0;
+      handle.addEventListener('keydown', event => {
+        const offset = { ArrowLeft: [-10, 0], ArrowRight: [10, 0], ArrowUp: [0, -10], ArrowDown: [0, 10] }[event.key];
+        if (event.target === handle && offset) {
+          event.preventDefault();
+          const rect = el.getBoundingClientRect();
+          move(rect.left + offset[0], rect.top + offset[1]);
+        }
+      });
+    }
+    handle.style.cursor = 'move';
+    handle.addEventListener('pointerdown', e => {
       // skip dragging on form elements
-      if (['.select2-container', 'button', 'select', 'input', 'textarea', 'x-select'].some(i => e.target.closest(i))) {
+      if (e.button !== 0 || ['.select2-container', 'button', 'select', 'input', 'textarea', 'x-select'].some(i => e.target.closest(i))) {
         return;
       }
       e.preventDefault();
 
+      // Freeze the centered dialog's position before moving it in viewport coordinates.
       const rect = el.getBoundingClientRect();
-      if (!el.style.top)  el.style.top  = rect.top + "px";
-      if (!el.style.left) el.style.left = rect.left + "px";
+      move(rect.left, rect.top);
 
       x1 = e.clientX;
       y1 = e.clientY;
 
-      document.addEventListener('mouseup', mouseUp);
-      document.addEventListener('mousemove', mouseMove);
+      document.addEventListener('pointerup', mouseUp);
+      document.addEventListener('pointercancel', mouseUp);
+      document.addEventListener('pointermove', mouseMove);
     });
 
     function mouseUp() {
-      document.removeEventListener('mouseup', mouseUp);
-      document.removeEventListener('mousemove', mouseMove);
+      document.removeEventListener('pointerup', mouseUp);
+      document.removeEventListener('pointercancel', mouseUp);
+      document.removeEventListener('pointermove', mouseMove);
     }
     
     function mouseMove(e) {
@@ -953,8 +1000,7 @@ export default new (class GUI extends Emitter {
       x1 = e.clientX;
       y1 = e.clientY;
 
-      el.style.top  = (parseFloat(el.style.top)  - y2) + "px";
-      el.style.left = (parseFloat(el.style.left) - x2) + "px";
+      move(parseFloat(el.style.left) - x2, parseFloat(el.style.top) - y2);
     }
   }
 
@@ -967,10 +1013,16 @@ export default new (class GUI extends Emitter {
     textMessage = false,
     closable = true,
     draggable = false,
+    modal = false,
+    mapInteractive = false,
     autoclose,
     hooks = {},
     iconClass = null, //@since 3.11.0
   } = {}) {
+
+    if ('tool' === type) {
+      this.closeToolDialogs();
+    }
 
     const icon = iconClass
       ? Vue.prototype.$fa(iconClass)
@@ -984,18 +1036,18 @@ export default new (class GUI extends Emitter {
 
     const dialog = Object.assign(document.createElement('template'), {
         innerHTML: /* html */ `
-          <dialog class="usermessage-${type}" popover="manual">
-            <form tabindex="0">
-              <header>
+          <dialog class="${modal ? 'map-themes-dialog' : `usermessage-${type}`}" ${modal ? `data-tool-dialog data-tool-message${mapInteractive ? ' data-map-interactive' : ''}` : 'popover="manual"'} aria-label="${title ? _(title) : type.toUpperCase()}">
+            <${modal ? 'div' : 'form'} tabindex="0">
+              <header ${modal ? 'class="map-themes-header"' : ''}>
                 <i class = "${icon}"></i>
-                <div>
-                  <h4 style="font-weight: bold;">${title ? _(title): type.toUpperCase()}</h4>
+                <div ${modal ? 'style="flex: 1; min-width: 0;"' : ''}>
+                  <${modal ? 'h2' : 'h4'} style="font-weight: bold;">${title ? _(title): type.toUpperCase()}</${modal ? 'h2' : 'h4'}>
                   ${ subtitle ? `<h5>${_(subtitle)}</h5>` : '' }
                 </div>
-                <button type="button" value="cancel" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
+                <button type="button" value="cancel" ${modal ? 'class="map-theme-action"' : ''} aria-label="${_('close')}" style="align-self: flex-start;border: none;line-height: 1;font-weight: 700;font-size: 25px;background: none;width: 40px;height: 40px;${ closable ? '' : 'visibility:hidden;' }">&times;</button>
               </header>
               <div>${ textMessage ? message : _(message) }</div>
-            </form>
+            </${modal ? 'div' : 'form'}>
           </dialog>
       `.trim()
       }).content.firstChild;
@@ -1010,8 +1062,8 @@ export default new (class GUI extends Emitter {
       .filter(h => h)
       .forEach(h => dialog.appendChild((new (Vue.extend(h))().$mount()).$el));  
 
-    dialog.addEventListener('beforetoggle', e => {
-      if (e.newState === 'closed') {
+    dialog.addEventListener(modal ? 'close' : 'beforetoggle', e => {
+      if (modal || e.newState === 'closed') {
         // clean up childs (vue)
         Array.from(dialog.children).forEach(el => {
           el.__vue__?.$destroy();
@@ -1023,35 +1075,62 @@ export default new (class GUI extends Emitter {
 
     document.body.append(dialog);
 
-    dialog.showPopover();
-
-    if (draggable || 'tool' === type) {
-      this.#makeDraggable(dialog);
+    if (modal) {
+      this.showToolDialog(dialog);
+    } else {
+      dialog.showPopover();
     }
 
+    if (draggable || 'tool' === type) {
+      this.#makeDraggable(dialog, modal ? dialog.querySelector('header') : dialog);
+    }
+
+    const close = () => modal ? dialog.close() : dialog.hidePopover();
     // close dialog on x icon
-    dialog.querySelector('button[value="cancel"]').addEventListener('click', () => {
-      dialog.hidePopover();
-    });
+    dialog.querySelector('button[value="cancel"]').addEventListener('click', close);
 
     if (autoclose) {
       const timer = setTimeout(() => {
-        dialog.hidePopover();
+        close();
         clearTimeout(timer)
       }, duration);
     }
 
     if ((autoclose || closable) && 'tool' !== type) {
       dialog.style.cursor = 'pointer';
-      dialog.addEventListener('click', () => {
-        dialog.hidePopover();
-      });
+      dialog.addEventListener('click', close);
     }
 
   }
 
+  /** Replace the current tool window; printing keeps the map interactive. */
+  showToolDialog(dialog) {
+    this.closeToolDialogs(dialog);
+    dialog.returnValue = '';
+    if (dialog.hasAttribute('data-map-interactive')) {
+      dialog.show();
+    } else {
+      dialog.showModal();
+    }
+  }
+
+  closeToolDialogs(except) {
+    this.closeUserMessage();
+    document.querySelectorAll('dialog[data-tool-dialog][open]').forEach(dialog => {
+      if (dialog !== except) {
+        // Child forms must not reopen their parent when another tool replaces them.
+        dialog.close('replace');
+      }
+    });
+  }
+
   closeUserMessage() {
-    document.querySelector('.usermessage-tool')?.hidePopover();
+    const dialog = document.querySelector('[data-tool-message], .usermessage-tool');
+    if (dialog?.hasAttribute('data-tool-message')) {
+      dialog.close();
+    } else {
+      dialog?.hidePopover();
+    }
   }
 
   /**
@@ -5247,6 +5326,31 @@ export default new (class GUI extends Emitter {
         })
       )
     ).map(({ value }) => value);
+  }
+
+  /**
+   * Logs debug information about the G3W-SUITE environment, including versions of the admin, client, plugins, browser, and operating system.
+   */
+  info() {
+    Promise
+      .allSettled([
+        new Promise((resolve) => $script('https://unpkg.com/platform@1.3.6/platform.js', resolve)),
+        new Promise((resolve) => this.state.complete ? resolve() : this.state.on('complete', resolve))
+      ])
+      .finally(async () => {
+        /** @since 3.8.0 */
+        const platform = window.platform || {};
+
+        window.console.info(`
+          [g3wsdk.info]\n
+          - g3w-admin: __${initConfig.version}__
+          - g3w-client: __${process.env.g3w_client_rev}__
+          ${Object.entries(window.initConfig.plugins).map((p) => (`    - ${p[0]}: __${p[1].version}__`)).join('\n')}
+          - browser: __${platform.name} ${platform.version}__
+          - operating system: __${platform.os.toString()}__
+          `.trim()
+        );
+      });
   }
 
   /**
