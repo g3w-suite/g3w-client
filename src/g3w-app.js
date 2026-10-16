@@ -478,7 +478,7 @@ export default new (class GUI extends Emitter {
       sidebarItem.$on('hook:mounted', async () => {
         const sidebar = document.getElementById('g3w-menu');
         if ([null, undefined].includes(options?.position) || options?.position < 0 || options?.position >= sidebar.children.length) {
-          sidebar.querySelector('#themes').insertAdjacentElement('beforebegin', sidebarItem.$el);
+          sidebar.querySelector('#catalog').insertAdjacentElement('beforebegin', sidebarItem.$el);
         } else {
           Array.from(sidebar.children).forEach((child, i) => {
             if (i === options?.position || child.id === options?.position) {
@@ -542,6 +542,7 @@ export default new (class GUI extends Emitter {
       icon:               'far fa-bookmark',
       iconColor:          '#00bcd4',
       title:              'Bookmarks',
+      collapsible:        false,
       vueComponentObject: require('components/SpatialBookMarks.vue').default,
     }));
 
@@ -1003,6 +1004,10 @@ export default new (class GUI extends Emitter {
     iconClass = null, //@since 3.11.0
   } = {}) {
 
+    if ('tool' === type) {
+      this.closeToolDialogs();
+    }
+
     const icon = iconClass
       ? Vue.prototype.$fa(iconClass)
       : ({
@@ -1079,6 +1084,23 @@ export default new (class GUI extends Emitter {
       });
     }
 
+  }
+
+  /** Open a tool modal, replacing other tool windows but leaving notifications alone. */
+  showToolDialog(dialog) {
+    this.closeToolDialogs(dialog);
+    dialog.returnValue = '';
+    dialog.showModal();
+  }
+
+  closeToolDialogs(except) {
+    this.closeUserMessage();
+    document.querySelectorAll('dialog[data-tool-dialog][open]').forEach(dialog => {
+      if (dialog !== except) {
+        // Child forms must not reopen their parent when another tool replaces them.
+        dialog.close('replace');
+      }
+    });
   }
 
   closeUserMessage() {

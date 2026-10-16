@@ -365,148 +365,6 @@
         </a>
       </li>
 
-      <!-- THEME SELECTOR -->
-      <li id = "themes" :class = "{ 'sidebar-item': true, 'selected': activeSidebarId === 'themes' }" v-show = "ApplicationState.sidebar.open">
-        <!-- whether at least one TOC layer is visible on toc -->
-        <template v-if = "ApplicationState.project.state.layerstree[0].nodes.length" >
-          <a
-            href        = "#"
-            style       = "display: flex; flex-wrap: wrap; align-items: center;"
-            @click.stop = "toggleThemeSelector"
-          >
-            <i aria-hidden="true" class = "far fa-eye"></i>
-            <!-- Text of current theme -->
-            <span
-              v-if  = "active_theme.theme"
-              class = "current_map_theme treeview-label g3w-long-text"
-            >
-              <span style="color:#fff;">{{ $t('THEME') }}:</span>
-              <span class = "skin-color" style = "font-size: 1.1em;">{{ active_theme.theme }}</span>
-            </span>
-            <!-- Choose a theme -->
-            <b v-else class = "treeview-label" style="color:#fff;">{{ $t('THEME') }}</b>
-            <i aria-hidden="true" :class = "theme_selector_collapsed ? 'fas fa-angle-left' : 'fas fa-angle-down'" style = "margin-left: auto; margin-right: 10px;"></i>
-          </a>
-
-          <ul
-            id     = "g3w-themes"
-            :class = "{'menu-open': !theme_selector_collapsed}"
-          >
-            <!-- LIST PROJECT MAP THEME -->
-            <li
-              v-if = "(ApplicationState.project.state.map_themes.project || []).length > 0"
-              id   = "g3w-themes-project"
-            >
-              <ul style = "padding: 0">
-                <li v-if="is_staff">
-                  <h2 class = "project_map_theme">{{ $t('Project Themes') }}</h2>
-                </li>
-                <li class = "map-theme-list">
-                  <div
-                    v-for = "(map_theme, i) in ApplicationState.project.state.map_themes.project"
-                    :key  = "map_theme.theme"
-                    class = "map-theme-row"
-                    :class = "{ 'is-selected': active_theme.theme === map_theme.theme }"
-                  >
-                    <label class = "map-theme-choice" :for = "`g3w-map_theme-${i}`">
-                      <input type = "radio" name = "map-theme" :id = "`g3w-map_theme-${i}`" :value = "map_theme.theme" v-model = "active_theme.theme" />
-                      <span>{{ map_theme.theme }}</span>
-                    </label>
-                  </div>
-                </li>
-              </ul>
-            </li>
-            <!-- LIST USER MAP THEME -->
-            <li
-              v-if = "ApplicationState.logged"
-              id   = "g3w-themes-user"
-            >
-              <ul style = "padding: 0">
-                <li>
-                  <div class = "user_map_theme">
-                    <h2>{{ $t('User Themes') }}</h2>
-                    <!-- ADD MAP THEME -->
-                    <button
-                      type   = "button"
-                      :aria-label = "$t('add')"
-                      :data-i18n-title = "'add'"
-                      @click = "theme_dialog_open = !theme_dialog_open"
-                      class  = "map-theme-add"
-                    >
-                      <i aria-hidden="true" class = "fas fa-plus"></i>
-                    </button>
-                  </div>
-                </li>
-                <li class = "map-theme-list">
-                  <div
-                    v-for = "(map_theme, i) in ApplicationState.project.state.map_themes.custom"
-                    :key  = "map_theme.theme"
-                    class = "map-theme-row"
-                    :class = "{ 'is-selected': active_theme.theme === map_theme.theme }"
-                  >
-                      <label class = "map-theme-choice" :for = "`g3w-map_theme-${i}-user`">
-                        <input
-                          type     = "radio"
-                          name     = "map-theme"
-                          :id      = "`g3w-map_theme-${i}-user`"
-                          :value   = "map_theme.theme"
-                          v-model  = "active_theme.theme"
-                        />
-                        <span>{{ map_theme.theme }}</span>
-                      </label>
-                    <div class = "map-theme-actions">
-                      <!-- UPDATE MAP THEME -->
-                      <button
-                        type           = "button"
-                        @click.stop    = "updateTheme(map_theme.theme)"
-                        class          = "map-theme-action"
-                        :aria-label    = "$t('update') + ': ' + map_theme.theme"
-                        :data-i18n-title = "'update'"
-                        data-placement = "top"
-                        :disabled      = "active_theme.theme !== map_theme.theme"
-                      >
-                        <i aria-hidden="true" class = "far fa-save"></i>
-                      </button>
-                      <!-- DELETE MAP THEME -->
-                      <button
-                        type           = "button"
-                        @click.stop    = "deleteTheme(map_theme.theme)"
-                        class          = "map-theme-action map-theme-delete"
-                        :aria-label    = "$t('delete') + ': ' + map_theme.theme"
-                        :data-i18n-title = "'delete'"
-                        data-placement = "top"
-                      >
-                        <i aria-hidden="true" class = "far fa-trash-alt"></i>
-                      </button>
-                    </div>
-
-                  </div>
-                </li>
-              </ul>
-            </li>
-          </ul>
-
-          <!-- ADD NEW MAP THEME (FORM) -->
-          <dialog ref = "add_map_theme" @beforetoggle = "onBeforetoggleThemeDialog">
-            <div style="display: flex; justify-content: end; padding-top: 5px;">
-              <button
-                type        = "button"
-                title       = "close"
-                @click.stop = "theme_dialog_open = false"
-                class       = "fas fa-times"
-                style       = "border: medium;line-height: 1;font-weight: 700;font-size: 15px;background: none;width: 40px;height: 40px;"
-              ></button>
-            </div>
-            <form @submit.prevent = "saveTheme">
-              <label for = "add-theme">{{ $t('Name of new map theme') }} *</label>
-              <input id = "add-theme" type = "text" required class = "form-control" ref = "add_map_theme_input" v-model = "custom_theme_input" />
-              <p v-if="custom_theme_invalid" class="g3w-long-text error-input-message" style = "margin: 0">{{ $t('Invalid or exiting name') }}</p>
-              <button type = "submit" class = "btn btn-block btn-success" style = "margin-top: 20px;">{{ $t('add') }}</button>
-            </form>
-          </dialog>
-        </template>
-      </li>
-
       <li id="catalog" :class="{ 'sidebar-item': true, 'selected': activeSidebarId === 'catalog' }">
         <a
           href             = "#"
@@ -877,6 +735,145 @@
 
     <context-menu />
 
+    <dialog
+      v-if = "ApplicationState.project.state.layerstree[0].nodes.length"
+      ref = "mapThemesDialog"
+      class = "map-themes-dialog"
+      aria-labelledby = "map-themes-title"
+      data-tool-dialog
+    >
+      <header class = "map-themes-header">
+        <i class = "far fa-eye" aria-hidden = "true"></i>
+        <h2 id = "map-themes-title">{{ $t('THEME') }}</h2>
+        <button
+          type = "button"
+          class = "map-theme-action"
+          :aria-label = "$t('close')"
+          :data-i18n-title = "'close'"
+          @click = "$refs.mapThemesDialog.close()"
+        ><i class = "fas fa-times" aria-hidden = "true"></i></button>
+      </header>
+      <ul id = "g3w-themes">
+        <li
+          v-if = "(ApplicationState.project.state.map_themes.project || []).length > 0"
+          id = "g3w-themes-project"
+        >
+          <ul>
+            <li v-if = "is_staff">
+              <h3 class = "project_map_theme">{{ $t('Project Themes') }}</h3>
+            </li>
+            <li class = "map-theme-list">
+              <div
+                v-for = "(map_theme, i) in ApplicationState.project.state.map_themes.project"
+                :key = "map_theme.theme"
+                class = "map-theme-row"
+                :class = "{ 'is-selected': active_theme.theme === map_theme.theme }"
+              >
+                <label class = "map-theme-choice" :for = "`g3w-map_theme-${i}`">
+                  <input type = "radio" name = "map-theme" :id = "`g3w-map_theme-${i}`" :value = "map_theme.theme" v-model = "active_theme.theme" />
+                  <span>{{ map_theme.theme }}</span>
+                </label>
+              </div>
+            </li>
+          </ul>
+        </li>
+        <li v-if = "ApplicationState.logged" id = "g3w-themes-user">
+          <ul>
+            <li>
+              <div class = "user_map_theme">
+                <h3>{{ $t('User Themes') }}</h3>
+                <button
+                  type = "button"
+                  :aria-label = "$t('add')"
+                  :data-i18n-title = "'add'"
+                  @click = "theme_dialog_open = !theme_dialog_open"
+                  class = "map-theme-add"
+                ><i aria-hidden = "true" class = "fas fa-plus"></i></button>
+              </div>
+            </li>
+            <li class = "map-theme-list">
+              <div
+                v-for = "(map_theme, i) in ApplicationState.project.state.map_themes.custom"
+                :key = "map_theme.theme"
+                class = "map-theme-row"
+                :class = "{ 'is-selected': active_theme.theme === map_theme.theme }"
+              >
+                <label class = "map-theme-choice" :for = "`g3w-map_theme-${i}-user`">
+                  <input
+                    type = "radio"
+                    name = "map-theme"
+                    :id = "`g3w-map_theme-${i}-user`"
+                    :value = "map_theme.theme"
+                    v-model = "active_theme.theme"
+                  />
+                  <span>{{ map_theme.theme }}</span>
+                </label>
+                <div class = "map-theme-actions">
+                  <button
+                    type = "button"
+                    @click.stop = "updateTheme(map_theme.theme)"
+                    class = "map-theme-action"
+                    :aria-label = "$t('update') + ': ' + map_theme.theme"
+                    :data-i18n-title = "'update'"
+                    data-placement = "top"
+                    :disabled = "active_theme.theme !== map_theme.theme"
+                  ><i aria-hidden = "true" class = "far fa-save"></i></button>
+                  <button
+                    type = "button"
+                    @click.stop = "deleteTheme(map_theme.theme)"
+                    class = "map-theme-action map-theme-delete"
+                    :aria-label = "$t('delete') + ': ' + map_theme.theme"
+                    :data-i18n-title = "'delete'"
+                    data-placement = "top"
+                  ><i aria-hidden = "true" class = "far fa-trash-alt"></i></button>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </dialog>
+
+    <dialog
+      ref = "bookmarksDialog"
+      class = "map-themes-dialog bookmarks-dialog"
+      aria-labelledby = "bookmarks-title"
+      data-tool-dialog
+      @close = "onBookmarksDialogClose"
+    >
+      <header class = "map-themes-header">
+        <i class = "far fa-bookmark" aria-hidden = "true"></i>
+        <h2 id = "bookmarks-title">{{ $t('Bookmarks') }}</h2>
+        <button
+          type = "button"
+          class = "map-theme-action"
+          :aria-label = "$t('close')"
+          :data-i18n-title = "'close'"
+          @click = "$refs.bookmarksDialog.close()"
+        ><i class = "fas fa-times" aria-hidden = "true"></i></button>
+      </header>
+      <div ref = "bookmarksContent"></div>
+    </dialog>
+
+    <!-- ADD NEW MAP THEME (FORM) -->
+    <dialog ref = "add_map_theme" data-tool-dialog :aria-label = "$t('Name of new map theme')" @beforetoggle = "onBeforetoggleThemeDialog" @close = "onAddThemeClose">
+      <div style="display: flex; justify-content: end; padding-top: 5px;">
+        <button
+          type        = "button"
+          :aria-label = "$t('close')"
+          @click.stop = "theme_dialog_open = false"
+          class       = "fas fa-times"
+          style       = "border: medium;line-height: 1;font-weight: 700;font-size: 15px;background: none;width: 40px;height: 40px;"
+        ></button>
+      </div>
+      <form @submit.prevent = "saveTheme">
+        <label for = "add-theme">{{ $t('Name of new map theme') }} *</label>
+        <input id = "add-theme" type = "text" required class = "form-control" ref = "add_map_theme_input" v-model = "custom_theme_input" />
+        <p v-if="custom_theme_invalid" class="g3w-long-text error-input-message" style = "margin: 0">{{ $t('Invalid or exiting name') }}</p>
+        <button type = "submit" class = "btn btn-block btn-success" style = "margin-top: 20px;">{{ $t('add') }}</button>
+      </form>
+    </dialog>
+
     <!-- COOKIE BANNER -->
     <div v-if = "!state.cookie_accepted" class = "cookie-banner">
       <div>{{ $t('This website uses cookies to ensure you get the best experience on our website.') }}</div>
@@ -951,7 +948,6 @@ export default {
       },
       // user themes
       active_theme:             ApplicationState.map_theme,
-      theme_selector_collapsed: 'collapsed' === ApplicationState.project.state.toc_themes_init_status,
       custom_theme_input:       null,
       theme_dialog_open:        false,
     }
@@ -1104,14 +1100,6 @@ export default {
       return ApplicationState.sidebar.components.length > 0 && !this.panels.length;
     },
 
-    componentname() {
-      return ApplicationState.sidebar.components.length > 0 ? ApplicationState.sidebar.components.slice(-1)[0].getTitle(): '';
-    },
-
-    panelname() {
-      return this.panels.length > 0 ? this.panels.slice(-1)[0].content.getTitle() : '';
-    },
-
     version() {
       return `Powered by G3W-SUITE ${initConfig.version}`;
     },
@@ -1231,10 +1219,6 @@ export default {
 
     showAccessibility() {
       $('#modal-accessibility').modal('show');
-    },
-
-    isNotLastCrumb(index) {
-      return index < (this.breadcrumb.length - 1);
     },
 
     async closeContent() {
@@ -1382,41 +1366,46 @@ export default {
       GUI.showSidebar();
     },
 
-    /**
-     * Toggle sidebar tree items on click
-     * 
-     * @since 3.11.0
-     */
+    onBookmarksDialogClose() {
+      ApplicationState.sidebar.components.find(item => item.id === 'spatialbookmarks')?.setOpen(false);
+    },
+
+    /** Open a control's command, modal or sidebar content without bypassing panel locks. */
     async selectSidebarItem(id) {
       const component = ApplicationState.sidebar.components.find(item => item.id === id);
       if (ApplicationState.sidebar.disabled || (this.panels.length && this.activeSidebarId !== id) || component?.disabled) {
         return;
       }
-      if ('add-layer' === id) {
-        this.showaddLayerModal();
-        return;
+
+      // Commands and modals do not replace the selected sidebar content.
+      switch (id) {
+        case 'add-layer': return this.showaddLayerModal();
+        case 'change-map': return this.openChangeMapMenu();
+        case 'metadata': return document.querySelector('#metadata > a').click();
+        case 'themes': return GUI.showToolDialog(this.$refs.mapThemesDialog);
+        case 'spatialbookmarks':
+          // Reuse the mounted component: its bookmark data and listeners stay intact.
+          this.$refs.bookmarksContent.appendChild(component.getInternalComponent().$el);
+          GUI.showToolDialog(this.$refs.bookmarksDialog);
+          return component.setOpen(true);
       }
-      if ('change-map' === id) {
-        this.openChangeMapMenu();
-        return;
+
+      // A hidden sidebar is reopened; an already visible control is closed.
+      if (component?.getOpen()) {
+        return component.collapsible && !ApplicationState.sidebar.open ? GUI.showSidebar() : this.closeSidebar();
       }
-      if ('metadata' === id) {
-        document.querySelector('#metadata > a').click();
-        return;
-      }
-      if (component?.getOpen() && !ApplicationState.sidebar.open) {
-        GUI.showSidebar();
-        return;
-      }
-      if ((ApplicationState.sidebar.open && this.activeSidebarId === id) || component?.getOpen()) {
+      if (ApplicationState.sidebar.open && this.activeSidebarId === id) {
         return this.closeSidebar();
       }
+
+      // Non-collapsible plugins (e.g. Print) manage their own window.
       if (component && !component.collapsible) {
         this.selected_sidebar = id;
         GUI.hideSidebar();
-        component.click({ open: true });
-        return;
+        return component.click({ open: true });
       }
+
+      // Sidebar content replaces the previous control only after its panels close.
       await this.closeAllPanels();
       ApplicationState.sidebar.components.forEach(item => {
         if (item.getOpen() && item !== component) {
@@ -1431,45 +1420,15 @@ export default {
         component.click({ open: true });
       } else if ('legend' === id) {
         this.showLegendPanel();
-      } else if ('themes' === id) {
-        this.theme_selector_collapsed = false;
       }
     },
 
     toggleSidebarItem(e) {
-      // skip toggling element
-      if ('g3w-menu' === e.target.id) {
-        return;
+      // Legacy sidebar headers use the same route as toolbar buttons; content clicks do not.
+      const link = e.target.closest('.sidebar-item > a');
+      if (link && ApplicationState.sidebar.components.some(component => component.id === link.parentElement.id)) {
+        return this.selectSidebarItem(link.parentElement.id);
       }
-
-      const mini      = document.body.classList.contains('sidebar-mini');
-      const collapsed = document.body.classList.contains('sidebar-collapse');
-
-      const li        = e.target.closest('.sidebar-item');
-      if (!li) {
-        return;
-      }
-      const component = ApplicationState.sidebar.components.find(comp => li.id === comp.id);
-
-      // open sidebar only in case of mini/collapsed sidebar and has a component that has a li id collapsible
-      if (mini && collapsed && component?.collapsible) {
-        GUI.showSidebar();
-      }
-
-      const open      = component?.getOpen();
-      const menu      = li.querySelector('.treeview-menu');
-
-      // skip toggling element
-      if (!component || (open && collapsed) || (menu && menu.contains(e.target))) {
-        return;
-      }
-
-      // automatically toggle sidebar on mobile
-      if (!component.collapsible && window.innerWidth <= 767) {
-        GUI.toggleSidebar();
-      }
-
-      component.click({ open: !open });
     },
 
     /**
@@ -1701,19 +1660,6 @@ export default {
     },
 
     /**
-     * @since 4.1.0
-     */
-    toggleThemeSelector() {
-      //skip when no show form
-      if (this.theme_dialog_open) { 
-        return; 
-      }
-      //in case of no new form map_theme is show
-      document.getElementById('g3w-themes').classList.toggle('menu-open');
-      this.theme_selector_collapsed = !this.theme_selector_collapsed;
-    },
-
-    /**
      * Create params for save or update custom map theme
      * 
      * @since 4.1.0
@@ -1873,6 +1819,12 @@ export default {
       }
     },
 
+    onAddThemeClose(event) {
+      if ('replace' !== event.target.returnValue) {
+        GUI.showToolDialog(this.$refs.mapThemesDialog);
+      }
+    },
+
   },
 
   watch: {
@@ -1954,7 +1906,7 @@ export default {
     async theme_dialog_open(bool) {
       this.custom_theme_input = null;
       if (bool) {
-        this.$refs.add_map_theme.showModal();
+        GUI.showToolDialog(this.$refs.add_map_theme);
       } else {
         this.$refs.add_map_theme.close();
       }

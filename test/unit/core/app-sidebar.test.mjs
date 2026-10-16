@@ -16,6 +16,7 @@ function setup() {
     project: { state: { layerstree: [{ nodes: [{}] }] } },
   };
   const gui = {
+    showToolDialog: dialog => dialog.showModal(),
     showSidebar: () => { state.sidebar.open = true; },
     hideSidebar: () => { state.sidebar.open = false; },
     closePanel: async () => {
@@ -82,7 +83,10 @@ function setupRegistration(state) {
       $mount() { mounted.push(this.mounted()); return this; }
     },
   };
-  const sidebar = { children: [], querySelector: () => ({ insertAdjacentElement() {} }) };
+  const sidebar = { children: [], querySelector: selector => {
+    assert.equal(selector, '#catalog');
+    return { insertAdjacentElement() {} };
+  } };
   const gui = runInNewContext(`(new class {${source.slice(start, end)}})`, {
     ApplicationState: state, Vue, isMobile: { any: false },
     document: { getElementById: () => sidebar },
@@ -163,8 +167,6 @@ test('sidebar headers show the active control title with panel titles taking pre
   const env = setup();
   const title = () => env.app.computed.sidebarTitle.call(env.context);
   assert.equal(title(), 'Layers');
-  env.context.selected_sidebar = 'themes';
-  assert.equal(title(), 'THEME');
   env.context.selected_sidebar = 'legend';
   assert.equal(title(), 'legend');
   const bookmarks = {
@@ -191,7 +193,7 @@ test('sidebar headers show the active control title with panel titles taking pre
 });
 
 test('the close button closes built-in sections and plugin controls without stacked panels', async () => {
-  for (const id of ['catalog', 'themes']) {
+  for (const id of ['catalog', 'legend']) {
     const env = setup();
     await env.select(id);
     assert.equal(env.state.sidebar.open, true);
@@ -255,12 +257,118 @@ test('the close button respects sidebar and panel closing locks', async () => {
   assert.deepEqual(env.context.panels, ['editing-panel']);
 });
 
+test('themes opens a modal without opening the sidebar or deactivating its current control', async () => {
+  for (const open of [false, true]) {
+    const env = setup();
+    let opened = 0;
+    env.context.$refs = { mapThemesDialog: { showModal() { opened++; } } };
+    env.state.sidebar.open = open;
+    const component = { id: 'plugin', getOpen: () => true };
+    env.state.sidebar.components.push(component);
+    await env.select('themes');
+    assert.equal(opened, 1);
+    assert.equal(env.state.sidebar.open, open);
+    assert.equal(env.context.selected_sidebar, 'catalog');
+    assert.equal(env.context.activeSidebarId, 'plugin');
+  }
+  const modal = descriptor.template.content.split('<context-menu />')[1].split('<!-- ADD NEW MAP THEME (FORM) -->')[0];
+  assert.match(modal, /<dialog[\s\S]*?ref\s*=\s*"mapThemesDialog"/);
+  assert.match(modal, /aria-labelledby\s*=\s*"map-themes-title"/);
+  assert.match(modal, /@click\s*=\s*"\$refs.mapThemesDialog.close\(\)"/);
+  assert.match(modal, /<header class\s*=\s*"map-themes-header">\s*<i class\s*=\s*"far fa-eye" aria-hidden\s*=\s*"true"><\/i>/);
+  const css = readFileSync(new URL('../../../src/static/app.css', import.meta.url), 'utf8');
+  assert.match(css, /\[class\^="usermessage-"\] > form > header,\s*\.map-themes-header\s*\{[^}]*border-bottom: 2px solid #eee;/);
+  assert.match(css, /\.map-themes-header h2\s*\{[^}]*font-weight: bold; text-align: center;/);
+});
+
+test('legacy sidebar headers use the toolbar route and ignore clicks inside control content', () => {
+  const env = setup();
+  const selected = [];
+  env.state.sidebar.components.push({ id: 'spatialbookmarks' });
+  env.context.selectSidebarItem = id => selected.push(id);
+  const click = link => env.app.methods.toggleSidebarItem.call(env.context, {
+    target: { closest(selector) {
+      assert.equal(selector, '.sidebar-item > a');
+      return link;
+    } },
+  });
+  click({ parentElement: { id: 'spatialbookmarks' } });
+  click({ parentElement: { id: 'catalog' } });
+  click(null);
+  assert.deepEqual(selected, ['spatialbookmarks']);
+});
+
+test('bookmarks opens its existing component in a modal instead of the catalog', async () => {
+  const env = setup();
+  let opened = 0;
+  let mounted;
+  const node = {};
+  const component = {
+    id: 'spatialbookmarks', open: false, collapsible: false,
+    getOpen() { return this.open; },
+    setOpen(open) { this.open = open; },
+    getInternalComponent: () => ({ $el: node }),
+  };
+  env.state.sidebar.components.push(component);
+  env.context.$refs = {
+    bookmarksDialog: { showModal() { opened++; } },
+    bookmarksContent: { appendChild(value) { mounted = value; } },
+  };
+  await env.select('spatialbookmarks');
+  assert.equal(opened, 1);
+  assert.equal(mounted, node);
+  assert.equal(env.state.sidebar.open, false);
+  assert.equal(component.open, true);
+  env.app.methods.onBookmarksDialogClose.call(env.context);
+  assert.equal(component.open, false);
+});
+
+test('tool dialogs replace each other and close Print before opening', () => {
+  const guiSource = readFileSync(new URL('../../../src/g3w-app.js', import.meta.url), 'utf8');
+  const start = guiSource.indexOf('  showToolDialog(dialog) {');
+  const end = guiSource.indexOf('\n  /**', start);
+  let printOpen = true;
+  const dialog = () => ({
+    open: false,
+    showModal() { this.open = true; },
+    close(value) { this.open = false; this.returnValue = value; },
+  });
+  const themes = dialog();
+  const bookmarks = dialog();
+  const document = {
+    querySelector: () => printOpen ? { hidePopover() { printOpen = false; } } : null,
+    querySelectorAll: () => [themes, bookmarks].filter(item => item.open),
+  };
+  const gui = runInNewContext(`(new class {${guiSource.slice(start, end)}})`, { document });
+  gui.showToolDialog(themes);
+  assert.equal(printOpen, false);
+  assert.equal(themes.open, true);
+  gui.showToolDialog(bookmarks);
+  assert.equal(themes.open, false);
+  assert.equal(themes.returnValue, 'replace');
+  assert.equal(bookmarks.open, true);
+  gui.closeToolDialogs();
+  assert.equal(bookmarks.open, false);
+  assert.match(guiSource, /if \('tool' === type\) \{\s*this.closeToolDialogs\(\);/);
+});
+
+test('bookmark component compiles and its add form uses the exclusive dialog flow', () => {
+  const source = readFileSync(new URL('../../../src/components/SpatialBookMarks.vue', import.meta.url), 'utf8');
+  const descriptor = parse({ source, filename: 'SpatialBookMarks.vue' });
+  assert.deepEqual(compileTemplate({ source: descriptor.template.content, filename: 'SpatialBookMarks.vue', id: 'bookmarks' }).errors, []);
+  assert.doesNotThrow(() => transformSync(descriptor.script.content, { format: 'cjs' }));
+  assert.doesNotThrow(() => transformSync(descriptor.styles[0].content, { loader: 'css' }));
+  assert.match(source, /GUI.showToolDialog\(this.\$refs.add_bookmark\)/);
+  assert.match(source, /for = "add-bookmark"/);
+  assert.doesNotMatch(source, /:hidden\s*=\s*"is_mobile"/);
+});
+
 test('theme controls have an accessible icon-only add button and native actions', () => {
-  const themes = descriptor.template.content.split('id     = "g3w-themes"')[1].split('<!-- ADD NEW MAP THEME (FORM) -->')[0];
+  const themes = descriptor.template.content.split('id = "g3w-themes"')[1].split('<!-- ADD NEW MAP THEME (FORM) -->')[0];
   const add = themes.match(/<button\b[^>]*class\s*=\s*"map-theme-add"[^>]*>[\s\S]*?<\/button>/)[0];
   assert.match(add, /:aria-label\s*=\s*"\$t\('add'\)"/);
   assert.match(add, /:data-i18n-title\s*=\s*"'add'"/);
-  assert.match(add, /<i aria-hidden="true" class\s*=\s*"fas fa-plus"><\/i>/);
+  assert.match(add, /<i aria-hidden\s*=\s*"true" class\s*=\s*"fas fa-plus"><\/i>/);
   assert.doesNotMatch(add, /<span>/);
   assert.match(themes, /<button[\s\S]*?:aria-label\s*=\s*"\$t\('update'\)/);
   assert.match(themes, /:disabled\s*=\s*"active_theme.theme !== map_theme.theme"/);
@@ -288,7 +396,7 @@ test('selects only the current plugin or catalog and toggles the panel', async (
 });
 
 test('restores the previously selected sidebar when a collapsible component closes', async () => {
-  for (const previousSidebar of ['catalog', 'themes']) {
+  for (const previousSidebar of ['catalog', 'legend']) {
     const env = setup();
     const component = {
       id: 'qplotly', collapsible: true, open: false,

@@ -11,11 +11,11 @@
 
     <!-- BOOKMARS LIST -->
     <li v-if = "is_staff" class = "content-bookmarks" style = "display: flex; justify-content: space-between; background: transparent; border-radius: 0;cursor: unset;">
-      <span :hidden = "is_mobile">{{ $t('Project Bookmarks') }}</span>
+      <span>{{ $t('Project Bookmarks') }}</span>
       <a
-        :hidden         = "is_mobile"
         :href           = "`https://docs.qgis.org/3.34/${lang}/docs/user_manual/map_views/map_view.html#bookmarking-extents-on-the-map`"
         target          = "_blank"
+        :aria-label     = "$t('QGIS Docs')"
         data-i18n-title = "QGIS Docs"
         data-placement  = "right"
         style           = "padding: 5px 0;"
@@ -31,7 +31,8 @@
           <ul style = "margin-left: 10px;">
             <li v-for = "node in bookmark.nodes"
               @click.stop         = "gotoSpatialBookmark(node)"
-              @keydown.enter.stop = "gotoSpatialBookmark(node)"
+              @keydown.enter.self.stop = "gotoSpatialBookmark(node)"
+              @keydown.space.self.prevent.stop = "gotoSpatialBookmark(node)"
               class               = "spatial-bookmark"
               role                = "button"
               tabindex            = "0"
@@ -42,9 +43,10 @@
                 type           = "button"
                 @click.stop    = "shareBookmark(node)" 
                 title          = "Share via link"
+                :aria-label    = "$t('Share via link')"
                 data-placement = "top"
                 style          = "margin-left: auto; padding: 5px;"
-                class          = "sidebar-button"
+                class          = "map-theme-action"
               >
                 <i aria-hidden="true" class = "fa fa-share-alt"></i>
               </button>
@@ -54,7 +56,8 @@
       </li>
       <li v-else
         @click.stop         = "gotoSpatialBookmark(bookmark)"
-        @keydown.enter.stop = "gotoSpatialBookmark(bookmark)"
+        @keydown.enter.self.stop = "gotoSpatialBookmark(bookmark)"
+        @keydown.space.self.prevent.stop = "gotoSpatialBookmark(bookmark)"
         class               = "spatial-bookmark"
         role                = "button"
         tabindex            = "0"
@@ -65,8 +68,9 @@
           type           = "button"
           @click.stop    = "shareBookmark(bookmark)" 
           title          = "Share via link"
+          :aria-label    = "$t('Share via link')"
           data-placement = "top"
-          class          = "sidebar-button"
+          class          = "map-theme-action"
           style          = "margin-left: auto; padding: 5px;"
         >
           <i aria-hidden="true" class = "fa fa-share-alt"></i>
@@ -78,30 +82,31 @@
       class = "content-bookmarks"
       style = "display: flex; justify-content: space-between; align-items: center; margin-top: 10px;background: transparent; border-radius: 0;cursor: unset;"
     >
-      <span :hidden = "is_mobile">{{ $t('User Bookmarks') }}</span>
+      <span>{{ $t('User Bookmarks') }}</span>
       <button
         type        = "button"
-        :hidden     = "is_mobile"
         title       = "add"
+        :aria-label = "$t('add')"
         @click.stop = "showAddForm"
-        class       = "sidebar-button"
+        class       = "map-theme-add"
         style       = "padding: 5px; font-size: 1.2em;"
       >
         <i aria-hidden="true" class = "fas fa-plus-square"></i>
       </button>
       <!-- ADD NEW BOOKMARK (FORM) -->
-      <dialog ref = "add_bookmark" @beforetoggle = "onBeforetoggle">
+      <dialog ref = "add_bookmark" data-tool-dialog :aria-label = "$t('Name of new spatial bookmark')" @beforetoggle = "onBeforetoggle" @close = "onAddBookmarkClose">
         <div style = "display: flex; justify-content: end">
           <button
             type        = "button"
             title       = "close"
+            :aria-label = "$t('close')"
             @click.stop = "showaddform = false"
             class       = "fas fa-times"
             style       = "border: medium;line-height: 1;font-weight: 700;font-size: 15px;background: none;width: 40px;height: 40px;"
           ></button>
         </div>
         <form @submit.prevent = "addBookMark">
-          <label for = "add-bokmark">{{ $t('Name of new spatial bookmark') }} *</label>
+          <label for = "add-bookmark">{{ $t('Name of new spatial bookmark') }} *</label>
           <input id = "add-bookmark" type = "text" required class = "form-control" ref="add_bookmark_input" v-model = "addbookmarkinput" />
           <button type = "submit" class = "btn btn-block btn-success" style = "margin-top: 20px;">{{ $t('add') }}</button>
         </form>
@@ -112,7 +117,8 @@
     <li
       v-for               = "bookmark in user_bookmarks"
       @click.stop         = "gotoSpatialBookmark(bookmark)"
-      @keydown.enter.stop = "gotoSpatialBookmark(bookmark)"
+      @keydown.enter.self.stop = "gotoSpatialBookmark(bookmark)"
+      @keydown.space.self.prevent.stop = "gotoSpatialBookmark(bookmark)"
       class               = "spatial-bookmark"
       role                = "button"
       tabindex            = "0"
@@ -123,19 +129,22 @@
         type           = "button"
         @click.stop    = "shareBookmark(bookmark)"
         title          = "Share via link"
+        :aria-label    = "$t('Share via link')"
         data-placement = "top"
         style          = "margin-left: auto; margin-right: 5px; padding: 5px;"
-        class          = "sidebar-button"
+        class          = "map-theme-action"
       >
         <i aria-hidden="true" class = "fa fa-share-alt"></i>
       </button>
 
       <button
+        type            = "button"
         @click.stop     = "removeBookMark(bookmark.id)" 
         title           = "Delete"
+        :aria-label     = "$t('delete')"
         data-placement  = "top"
-        class           = "sidebar-button"
-        style           = "color: red; padding: 5px;"
+        class           = "map-theme-action map-theme-delete"
+        style           = "padding: 5px;"
       >
         <i aria-hidden="true" class = "fas fa-trash"></i>
       </button>
@@ -199,18 +208,13 @@
         return ApplicationState.language;
       },
 
-      /** @since 4.0.0 */
-      is_mobile() {
-        return window.innerWidth < 767;
-      }
-
     },
 
     watch: {
       async showaddform(bool) {
         // remove all "col-sm-12" classes so input is adapted to 100% width
         if (bool) {
-          this.$refs.add_bookmark.showModal();
+          GUI.showToolDialog(this.$refs.add_bookmark);
         } else {
           this.$refs.add_bookmark.close();
         }
@@ -258,6 +262,7 @@
       },
 
       async gotoSpatialBookmark({ extent, crs }) {
+        this.$el.closest('.bookmarks-dialog')?.close();
         // automatically hide sidebar on mobile
         if (window.innerWidth < 767) {
           GUI.hideSidebar();
@@ -279,6 +284,14 @@
         }
       },
 
+      onAddBookmarkClose(event) {
+        const dialog = this.$el.closest('.bookmarks-dialog');
+        if (dialog && 'replace' !== event.target.returnValue) {
+          GUI.showToolDialog(dialog);
+          GUI.getComponent('spatialbookmarks').setOpen(true);
+        }
+      },
+
     },
 
     created() {
@@ -291,21 +304,36 @@
 <style>
   .content-bookmarks {
     font-weight: bold;
-    color: #ffffff;
+    color: inherit;
     padding: 5px;
-    border-bottom: 1px solid #fff;
+    border-bottom: 1px solid #52636b;
     margin-bottom: 2px;
+  }
+
+  .bookmarks-dialog #g3w-spatial-bookmarks,
+  .bookmarks-dialog #g3w-spatial-bookmarks ul {
+    display: block;
+    padding: 0;
+    margin: 0;
+    list-style: none;
   }
 
   .spatial-bookmark {
     display: flex;
-    align-items: baseline;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
     justify-content: space-between;
     padding: 5px !important;
   }
 
   .spatial-bookmark:hover {
-    background-color: var(--bgcolor) !important;
+    background-color: #f0f4f5;
+  }
+
+  .spatial-bookmark:focus-visible {
+    outline: 2px solid #245b67;
+    outline-offset: 2px;
   }
 
   #add-bookmark:user-invalid {
