@@ -350,8 +350,6 @@ export default new (class GUI extends Emitter {
       /** @since 4.1.0 */
       'removeFeatureFromResult',
       /** @since 4.1.0 */
-      'addHideMap',
-      /** @since 4.1.0 */
       'setHidden',
       /** @since 4.1.0 */
       'controlClick',
@@ -1818,7 +1816,6 @@ export default new (class GUI extends Emitter {
     // resize "map"
     if (this.#map && W > 0 && H > 0) {
       this.getMap().updateSize();
-      this.state.hidemaps.forEach(h => h.map.updateSize());
       this.state.bbox       = this.getMapBBOX();
       this.state.resolution = this.#map.getView().getResolution();
       this.state.center     = this.#map.getView().getCenter();
@@ -3290,23 +3287,9 @@ export default new (class GUI extends Emitter {
   /**
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    * 
-   * Used by the following plugins: "cdu"
+   * Used by the following plugins: "archiweb"
    * 
-   * @since 4.1.0
-   */
-  removeHideMap(id) {
-    const i = (this.state.hidemaps || []).findIndex(m => id === m.id);
-    if (-1 !== i) {
-      this.state.hidemaps.splice(i, 1);
-    }
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * Used by the following plugins: "cdu", "archiweb"
-   * 
-   * @since 4.1.0
+   * @deprecated since 4.2.0
    */
   createMapImage({ map } = {}) {
     return new Promise((resolve) => {
@@ -3479,25 +3462,6 @@ export default new (class GUI extends Emitter {
       }
     }
     return features;
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * Used by the following plugins: "cdu"
-   * 
-   * @since 4.1.0
-   */
-  getQueryLayerByCoordinates({ layer, coordinates } = {}) {
-    return new Promise((resolve, reject) => {
-      layer.query({
-        coordinates,
-        mapProjection: this.getProjection(),
-        resolution:    this.getResolution(),
-      })
-      .then((response) => resolve(response))
-      .catch(e => { console.warn(e); reject(e); })
-    })
   }
 
   //setup controls
@@ -3786,37 +3750,6 @@ export default new (class GUI extends Emitter {
   /**
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    * 
-   * Used by the following plugins: "cdu"
-   * 
-   * @since 4.1.0
-   */
-  addHideMap({ layers=[] } = {}) {
-    const MAP = {
-      id: `hidemap_${Date.now()}`,
-      map: null,
-    };
-    this.state.hidemaps.push(MAP);
-    // create Map
-    Vue.nextTick().then(async () => {
-      MAP.map = new ol.Map({
-        controls:            ol.control.defaults({ attribution: false, zoom: false }),
-        interactions:        ol.interaction.defaults(),
-        view:                new ol.View({
-          projection: this.getMap().getView().getProjection(),
-          center:     this.getMap().getView().getCenter(),
-          resolution: this.getMap().getView().getResolution()
-        }),
-        keyboardEventTarget: document,
-        target:              MAP.id,
-      });
-      layers.forEach(l => MAP.map.addLayer(l));
-    });
-    return MAP;
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
    * @since 4.1.0
    */
   setHidden(bool) {
@@ -3883,25 +3816,6 @@ export default new (class GUI extends Emitter {
     layer.setZIndex(zindex);
     this.emit('set-layer-zindex', { layer, zindex });
     return zindex;
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * Used by the following plugins: "cdu"
-   * 
-   * @since 4.1.0
-   */
-  createMapLayer(layer) {
-    let mapLayer = layer;
-
-    // Raster Layer
-    if (layer.isRaster()) {
-      mapLayer = this.#layers.g3w.find(l => layer.id === l.id) || new g3w.Layer(layer);
-    }
-
-    mapLayer.addLayer(layer);
-    return mapLayer;
   }
 
   /**
