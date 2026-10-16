@@ -350,8 +350,6 @@ export default new (class GUI extends Emitter {
       /** @since 4.1.0 */
       'removeFeatureFromResult',
       /** @since 4.1.0 */
-      'addHideMap',
-      /** @since 4.1.0 */
       'setHidden',
       /** @since 4.1.0 */
       'controlClick',
@@ -3290,20 +3288,6 @@ export default new (class GUI extends Emitter {
   /**
    * ORIGINAL SOURCE: src/services/map.js@v4.0.0
    * 
-   * Used by the following plugins: "cdu"
-   * 
-   * @since 4.1.0
-   */
-  removeHideMap(id) {
-    const i = (this.state.hidemaps || []).findIndex(m => id === m.id);
-    if (-1 !== i) {
-      this.state.hidemaps.splice(i, 1);
-    }
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
    * Used by the following plugins: "cdu", "archiweb"
    * 
    * @since 4.1.0
@@ -3781,36 +3765,6 @@ export default new (class GUI extends Emitter {
    */
   getMapUnits() {
     return this.state.mapUnits;
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/map.js@v4.0.0
-   * 
-   * Used by the following plugins: "cdu"
-   * 
-   * @since 4.1.0
-   */
-  async addHideMap({ layers=[] } = {}) {
-    const MAP = {
-      id: `hidemap_${Date.now()}`,
-      map: null,
-    };
-    this.state.hidemaps.push(MAP);
-    // create Map
-    await Vue.nextTick();
-    MAP.map = new ol.Map({
-      controls:            ol.control.defaults({ attribution: false, zoom: false }),
-      interactions:        ol.interaction.defaults(),
-      view:                new ol.View({
-        projection: this.getMap().getView().getProjection(),
-        center:     this.getMap().getView().getCenter(),
-        resolution: this.getMap().getView().getResolution()
-      }),
-      keyboardEventTarget: document,
-      target:              MAP.id,
-    });
-    layers.forEach(l => MAP.map.addLayer(l));
-    return MAP;
   }
 
   /**
