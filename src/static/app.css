@@ -440,6 +440,9 @@ fieldset[disabled] .btn-warning:is(:hover, :focus, .focus)           { backgroun
  **************************************************************************************/
 
 .navbar                                                      { position: relative; min-height: 50px; margin-bottom: 20px; border: 1px solid transparent; transition: margin-left .3s ease-in-out; margin-bottom: 0; margin-left: 0; border: none; min-height: 50px; border-radius: 0;}
+.navbar-logo                                                 { display: flex; flex: 0 0 auto; align-items: center; justify-content: center; height: 50px; max-width: 120px; padding: 6px 10px; }
+.navbar-logo img                                             { display: block; width: auto; height: auto; max-width: 100%; max-height: 38px; object-fit: contain; }
+.navbar-logo:focus-visible                                   { outline: 2px solid #fff; outline-offset: -3px; }
 
 .nav-links li                                                { font-weight: bold; border-right: 1px solid rgba(255,255,255,0.2); letter-spacing: 0.5px; }
 .nav-links li:last-child                                     { border: 0; }
@@ -1487,10 +1490,14 @@ body.is-mobile .tree-item input[type="checkbox"]    { accent-color: var(--skin-c
 .map-theme-add:focus-visible,
 .map-theme-action:focus-visible,
 .map-theme-choice input:focus-visible  { outline: 2px solid #245b67; outline-offset: 3px; }
-.project_title                         { display: inline-flex; flex-direction: column; justify-content: center; height: 100%; font-weight: bold; color: white; max-height: 50px; overflow: hidden; max-width: calc(100% - 150px); }
-.project_title > *                     { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; margin: 0; }
-.project_title .h2                     { font-size: 1.5em; }
-.project_title h1                      { font-size: 1.2em; padding-bottom: 5px; }
+.project_title                         { display: flex; flex: 1 1 0%; min-width: 0; flex-direction: column; justify-content: center; gap: 2px; height: 100%; color: #fff; padding: 4px 12px; overflow: hidden; }
+.project_title > *                     { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; letter-spacing: 0; }
+.project_title .h2                     { font-size: 1.6rem; font-weight: 700; line-height: 1.25; }
+.project_title h1                      { font-size: 1.3rem; font-weight: 400; line-height: 1.35; padding: 0; }
+@media (max-width: 767px) {
+  .navbar-logo { max-width: 72px; padding-inline: 6px; }
+  .project_title { margin-right: 90px; padding-inline: 8px; }
+}
 
 .content_breadcrumb                                            { container-type: inline-size; }
 
@@ -1606,7 +1613,7 @@ i.triangle                             { border-color: currentColor transparent 
 }
 
 @media (max-width: 767px) {
-  .navbar:not(.mobile-menu-open) .navbar-toggler ~ *,
+  .navbar:not(.mobile-menu-open) .mobile-navbar-dialog,
   .nav-user > .dropdown-toggle,
   .user-header                        { display: none !important; }
   .navbar-nav                         { flex-direction: column; }

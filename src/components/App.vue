@@ -22,10 +22,10 @@
         v-if       = "logo_url"
         :href      = "initConfig.header_logo_link || urls.frontendurl || '#'"
         :target    = "initConfig.header_logo_link ? '_blank' : ''"
-        style      = "padding: 4px; display: inline-block; height: 50px;"
+        class      = "navbar-logo"
         aria-label = "logo"
       >
-        <img style="height: 100%;" alt = "" :src = "logo_url" />
+        <img alt = "" :src = "logo_url" />
       </a>
 
       <button type="button" class="navbar-toggler" hidden="" @click="toggleMobileNavbar">
@@ -34,8 +34,8 @@
       </button>
 
       <hgroup class  = "project_title">
-        <p class = "h2">{{ main_title }}</p>
-        <h1>{{ project_title }}</h1>
+        <p class = "h2" :title = "main_title">{{ main_title }}</p>
+        <h1 :title = "project_title">{{ project_title }}</h1>
       </hgroup>
 
       <!-- Share one navigation list between the desktop navbar and mobile modal. -->
@@ -1005,7 +1005,11 @@ export default {
     },
 
     logo_url() {
-      return ApplicationState.project.state.thumbnail || `${this.initConfig.mediaurl}${window.initConfig.header_logo_img}`;
+      const logo = ApplicationState.project.state.thumbnail || this.initConfig.header_logo_img;
+      if (!logo) {
+        return null;
+      }
+      return new URL(logo, new URL(this.initConfig.mediaurl || '/', window.location.origin)).href;
     },
 
     project_title() {
