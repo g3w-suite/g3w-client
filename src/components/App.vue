@@ -34,8 +34,8 @@
       </button>
 
       <hgroup class  = "project_title">
-        <p class = "h2" :title = "main_title">{{ main_title }}</p>
-        <h1 :title = "project_title">{{ project_title }}</h1>
+        <p class = "h2">{{ main_title }}</p>
+        <h1>{{ project_title }}</h1>
       </hgroup>
 
       <!-- Share one navigation list between the desktop navbar and mobile modal. -->
@@ -661,7 +661,6 @@
       <div
         v-if  = "(showtitle && contentTitle) || previousTitle || state.content.closable"
         class = "close-panel-block"
-        style = "display: flex; justify-content: space-between"
       >
         <button
           v-if        = "previousTitle"
@@ -681,7 +680,6 @@
         </div>
         <div
           class = "g3-content-header-action-tools"
-          style = "display: flex; align-items: center; gap: .5ch; padding: 0 .5ch;"
         >
           <!-- Reopen the active tool's options without closing its content. -->
           <button
@@ -702,15 +700,15 @@
             :class         = "$fa(`resize-${state.split}`)"
             title          = "Enlarge / Reduce"
             data-placement = "bottom"
-            style          = "margin-right: 3px;"
             class          = "action-button action-button-resize skin-color-dark"
+            :aria-label    = "$t('Enlarge / Reduce')"
             @click         = "resizeFull"
           ></button>
           <button
             type             = "button"
-            style            = "scale:.9;"
             :style           = "{ transform: 'h' === state.split ? 'rotate(134deg)' : 'rotate(44deg)'}"
             :data-i18n-title = "'h' === state.split ? 'Dock to Bottom' : 'Dock to Right'"
+            :aria-label     = "$t('h' === state.split ? 'Dock to Bottom' : 'Dock to Right')"
             data-placement   = "bottom"
             class            = "action-button action-button-dock skin-color-dark fa fa-external-link-alt"
             @click           = "splitContent"
@@ -720,6 +718,7 @@
             type           = "button"
             @click         = "closeContent"
             title          = "close"
+            :aria-label    = "$t('close')"
             data-placement = "bottom"
             class          = "action-button action-button-close skin-color-dark fas fa-times"
           ></button>
@@ -896,7 +895,6 @@
     <modal-changemap />
     <modal-metadata />
     <modal-accessibility />
-
   </div>
 </template>
 

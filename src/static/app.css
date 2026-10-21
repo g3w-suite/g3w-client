@@ -913,7 +913,6 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .ol-control > button > *                                               { position: relative; font-size: 20px; }
 .ol-control[class*="ol-"] button::before                              { background-size: 22px 22px; }
 .ol-control.ol-query button::before                                   { background-size: 32px 32px; }
-.ol-control button::before                                             { filter: grayscale(1) brightness(.32); transition: filter .16s ease; }
 .ol-control button:is(.ol-zoom-in, .ol-zoom-out)::before               { background: currentColor; content: ''; position: absolute; inset: 0; width: 22px; height: 3px; margin: auto; color: currentColor; filter: none; }
 .ol-control button.ol-zoom-in::before                                  { width: 22px; height: 22px; background: linear-gradient(currentColor 0 0) center / 100% 3px no-repeat, linear-gradient(currentColor 0 0) center / 3px 100% no-repeat; }
 .ol-control button > i                                                 { color: currentColor; }
@@ -966,12 +965,10 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 
 .is-iframe :is(.g3w-map-controls-left-bottom, .ol-scale-line)          { bottom: 38px; }
 
-.ol-control button:hover,
-.ol-control button.g3w-ol-toggled                                       { background-color: var(--skin-color); border-color: var(--skin-color); color: #fff; transform: translateY(-1px); }
-.ol-control button:hover::before,
-.ol-control button.g3w-ol-toggled::before                              { filter: brightness(0) invert(1); }
+.ol-control button:hover                                                { background-color: var(--skin-color); border-color: var(--skin-color); color: #fff; transform: translateY(-1px); }
 .ol-control button:focus                                               { background-color: #e5e5e5; outline: none; }
 .ol-control button:focus-visible                                       { outline: 3px solid var(--skin-focus); outline-offset: 4px; }
+.ol-control button.g3w-ol-toggled                                       { background-color: var(--skin-color); border-color: var(--skin-color); color: #fff; transform: translateY(-1px); }
 
 
 .ol-box                                                                { border: 3px solid rgb(3, 169, 244); background-color: rgba(255, 255, 255, 0.50); }
@@ -982,7 +979,6 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .mtooltip-static:before                                                { border-top-color: #ffcc33; }
 .controls-toggle                                                       { background-color: var(--skin-color); border-bottom: 1px solid var(--skin-color); }
 .tool_mapcontrol_button                                                { background-color: var(--skin-color); }
-.g3w-ol-toggled                                                        { background-color: var(--skin-color) !important; }
 
 .ol-attribution li a                                                   { color: hsl(from var(--skin-color) h s calc(l - 20)); }
 
@@ -1490,21 +1486,24 @@ body.is-mobile .tree-item input[type="checkbox"]    { accent-color: var(--skin-c
 .map-theme-add:focus-visible,
 .map-theme-action:focus-visible,
 .map-theme-choice input:focus-visible  { outline: 2px solid #245b67; outline-offset: 3px; }
-.project_title                         { display: flex; flex: 1 1 0%; min-width: 0; flex-direction: column; justify-content: center; gap: 2px; height: 100%; color: #fff; padding: 4px 12px; overflow: hidden; }
+.project_title                         { display: flex; flex: 1 1 0%; min-width: 0; flex-direction: column; justify-content: center; gap: 1px; height: 100%; color: #fff; padding: 4px 12px; overflow: hidden; }
 .project_title > *                     { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; letter-spacing: 0; }
-.project_title .h2                     { font-size: 1.6rem; font-weight: 700; line-height: 1.25; }
-.project_title h1                      { font-size: 1.3rem; font-weight: 400; line-height: 1.35; padding: 0; }
+.project_title .h2                     { font-size: 2rem; font-weight: 700; line-height: 1.05; }
+.project_title h1                      { font-size: 1.6rem; font-weight: 500; line-height: 1.1; padding: 0; }
 @media (max-width: 767px) {
   .navbar-logo { max-width: 72px; padding-inline: 6px; }
   .project_title { margin-right: 90px; padding-inline: 8px; }
 }
 
-.content_breadcrumb                                            { container-type: inline-size; }
+.content_breadcrumb                                            { container-type: inline-size; padding: 6px 10px; border-bottom: 1px solid #d6dddf; background: #fff; }
 
-.content_breadcrumb ul                                         { font-size: 1.2em; padding: 0 3px; margin: 0; list-style-type: none; display: flex; align-items: center; justify-content: start; flex-wrap: wrap; gap: 5px; color: hsl(from var(--skin-color) h s calc(l - 20)); font-weight: bold; }
-.content_breadcrumb ul > li:not(:first-of-type):before         { content: " / "; }
+.content_breadcrumb ul                                         { font-size: 1.3rem; padding: 0; margin: 0; list-style-type: none; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; color: hsl(from var(--skin-color) h s calc(l - 20)); font-weight: 600; }
+.content_breadcrumb ul > li:not(:first-of-type):before         { content: "\203A"; padding: 0 4px; color: #718084; }
 .content_breadcrumb ul > li:last-of-type                       { font-weight: normal; pointer-events: none; }
-.content_breadcrumb button                                     { background: none; border: none; padding: 0; }
+.content_breadcrumb button                                     { padding: 4px 6px; border: 0; border-radius: 4px; color: inherit; background: transparent; font: inherit; cursor: pointer; }
+.content_breadcrumb button:hover                               { color: hsl(from var(--skin-color) h s calc(l - 20)); background: hsl(from var(--skin-color) h s calc(l + 45)); }
+.content_breadcrumb button[aria-current="page"]               { color: #263238; font-weight: 700; cursor: default; }
+.content_breadcrumb button:focus-visible                       { outline: 2px solid var(--skin-focus); outline-offset: 2px; }
 
 /** stack breadcrumbs vertically (small panel) */
 @container g3w-content (width < 350px) { .content_breadcrumb ul { display: block; } }
@@ -1513,7 +1512,18 @@ body.is-mobile .tree-item input[type="checkbox"]    { accent-color: var(--skin-c
 #g3w-content:has(.g3wform_content) .content_breadcrumb { pointer-events: none; }
 
 
-.close-panel-block                     { overflow: hidden; margin-top: 2px; margin-bottom: 2px; font-size: 1.4em; align-items: center; flex-shrink: 0; }
+.close-panel-block                     { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; overflow: hidden; margin: 2px 0; padding: 6px 8px; border-bottom: 1px solid #d6dddf; font-size: 1.4em; align-items: center; flex-shrink: 0; }
+.g3-content-header-action-tools         { display: flex; align-items: center; gap: 6px; padding: 0; }
+.g3w-content .close-panel-block .action-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 36px; min-height: 36px; padding: 0 9px; border: 0; border-radius: 3px; color: #39484d; background: transparent; transition: color .16s ease, background-color .16s ease; }
+.g3w-content .close-panel-block .action-button:hover { color: hsl(from var(--skin-color) h s calc(l - 20)); background: hsl(from var(--skin-color) h s calc(l + 45)); }
+.g3w-content .close-panel-block .action-button-back { color: hsl(from var(--skin-color) h s calc(l - 20)); }
+.g3w-content .close-panel-block .action-button-back:hover { text-decoration: underline; }
+.g3w-content .close-panel-block .action-button-close:hover { color: #a32121; background: #fff1f0; }
+.g3w-content .close-panel-block .action-button:focus-visible { outline: 3px solid var(--skin-focus); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .g3w-content .close-panel-block .action-button { transition: none; }
+}
 
 .user-header                           { padding: 10px; text-align: center; border-bottom: 1px solid rgba(0,0,0,.3); }
 .user-footer                           { padding: 8px; display: flex; justify-content: space-between; flex-direction: column; gap: 8px; }
