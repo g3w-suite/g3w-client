@@ -1285,12 +1285,68 @@ input[type="range"]                                                       { acce
 [class^="usermessage-"] > form > header > i,
 .map-themes-header > i                   { padding: 10px 0 0 5px; font-weight: bold; font-size: 1.3em; }
 
-.usermessage-tool                       { color: #FFF; line-height: normal; padding: 3px; min-width: 250px; border: unset; inset: unset; margin: unset; background-color: #FFF; color: #222d32; cursor: move; border: thin solid #ccc; width: 325px;  margin-left: calc(var(--ml) + 40px) !important; margin-top: 3px; animation: unset; }
+.usermessage-tool {
+  box-sizing: border-box;
+  inset: unset;
+  margin: 8px 0 0;
+  margin-left: calc(var(--ml, 0px) + 40px) !important;
+  width: 325px;
+  max-width: calc(100vw - 24px);
+  min-width: 0;
+  max-height: calc(100dvh - 72px);
+  padding: 0;
+  color: #263238;
+  background: #fff;
+  border: 1px solid #d7dde0;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgb(22 34 38 / 18%);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  overflow-y: auto;
+  animation: none;
+}
+.usermessage-tool > form { padding: 0; }
+.usermessage-tool > form > header {
+  gap: 10px;
+  padding: 10px 12px;
+  background: #f4f6f7;
+  border-bottom: 1px solid #d7dde0;
+  cursor: move;
+}
+.usermessage-tool > form > header > i {
+  flex: 0 0 auto;
+  padding: 0;
+  color: #4b5960;
+  font-size: 1.8rem;
+}
+.usermessage-tool > form > header > div { flex: 1; min-width: 0; }
+.usermessage-tool h4 { margin: 0; color: #263238; font-size: 1.6rem; line-height: 1.4; }
+.usermessage-tool h5 { margin: 4px 0 0; color: #4b5960; font-size: 1.3rem; line-height: 1.4; }
+.usermessage-tool > form > header > button {
+  flex: 0 0 40px;
+  color: #4b5960;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.usermessage-tool > form > header > button:hover { background: #e3e8eb !important; }
+.usermessage-tool :is(header, button, input, select, x-select):focus-visible { outline: 3px solid var(--skin-focus, #005fcc); outline-offset: -3px; }
+.usermessage-tool > form > div:not(:empty),
+.usermessage-tool > :not(form) { padding: 12px; }
+.usermessage-tool > form > div:empty { display: none; }
+.usermessage-tool label { margin-bottom: 6px; font-size: 1.3rem; }
+.usermessage-tool ul { margin: 10px 0 0; padding-left: 20px; color: #4b5960; }
+.usermessage-tool li + li { margin-top: 4px; }
+.usermessage-tool .clear-selected-layer { margin-top: 12px; border-radius: 4px; }
 .usermessage-tool::backdrop             { display: none; }
-.usermessage-tool:not([style*="left"])  { transition: margin-left .3s ease-in-out; }
+@media (prefers-reduced-motion: no-preference) {
+  .usermessage-tool:not([style*="left"]) { transition: margin-left .3s ease-in-out; }
+}
 body.sidebar-collapse .usermessage-tool { margin-left: calc(var(--ml) + 5px) !important; }
 @media (min-width: 768px) {
   body .usermessage-tool:not([style*="left"]) { margin-left: calc(var(--ml, 0px) + 58px) !important; }
+}
+@media (max-width: 767px) {
+  body .usermessage-tool:not([style*="left"]) { margin-left: 12px !important; left: 0; }
 }
 :root .usermessage-tool[style*="left"]  { margin-left: unset !important; }
 @supports (position-area: top left) {

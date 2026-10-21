@@ -955,7 +955,10 @@ export default new (class GUI extends Emitter {
   #makeDraggable(el, handle = el) {
     let x2 = 0, y2 = 0, x1 = 0, y1 = 0;
 
-    const move = (left, top) => Object.assign(el.style, { margin: '0', inset: 'auto', left: `${left}px`, top: `${top}px` });
+    const move = (left, top) => {
+      el.style.setProperty('margin', '0', 'important');
+      Object.assign(el.style, { transition: 'none', inset: 'auto', left: `${left}px`, top: `${top}px` });
+    };
     if (handle !== el) {
       handle.tabIndex = 0;
       handle.addEventListener('keydown', event => {
@@ -974,10 +977,6 @@ export default new (class GUI extends Emitter {
         return;
       }
       e.preventDefault();
-
-      // Freeze the centered dialog's position before moving it in viewport coordinates.
-      const rect = el.getBoundingClientRect();
-      move(rect.left, rect.top);
 
       x1 = e.clientX;
       y1 = e.clientY;
@@ -1000,7 +999,10 @@ export default new (class GUI extends Emitter {
       x1 = e.clientX;
       y1 = e.clientY;
 
-      move(parseFloat(el.style.left) - x2, parseFloat(el.style.top) - y2);
+      if (x2 || y2) {
+        const rect = el.getBoundingClientRect();
+        move(rect.left - x2, rect.top - y2);
+      }
     }
   }
 
@@ -1082,7 +1084,7 @@ export default new (class GUI extends Emitter {
     }
 
     if (draggable || 'tool' === type) {
-      this.#makeDraggable(dialog, modal ? dialog.querySelector('header') : dialog);
+      this.#makeDraggable(dialog, modal || 'tool' === type ? dialog.querySelector('header') : dialog);
     }
 
     const close = () => modal ? dialog.close() : dialog.hidePopover();
