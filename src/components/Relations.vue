@@ -9,21 +9,24 @@
     v-if  = "relations"
     class = "layer-relations"
   >
-    <div class = "header skin-background-color lighten">
-      <span style = "font-size: 1.1em;">{{ $t('List of relations of feature') }} <b>{{ parent_layer.getName() }}</b></span>
-      <ul style = "padding: 0 0 0 25px; list-style: square;">
-        <li v-for = "({ label, value }) in feature_info()"><b>{{ label }}</b>: {{ value }}</li>
+    <div class = "relation-context skin-background-color lighten">
+      <div class = "relation-context__title">
+        <span>{{ $t('List of relations of feature') }}</span>
+        <h2>{{ parent_layer.getName() }}</h2>
+      </div>
+      <ul class = "relation-context__details">
+        <li v-for = "({ label, value }) in feature_info()" :key = "label"><b>{{ label }}</b><span>{{ value }}</span></li>
       </ul>
     </div>
-    <div style = "display: grid; grid-template-columns: repeat(2, auto); grid-column-gap: 5px;grid-row-gap: 5px;">
+    <div class = "relation-grid">
       <button
         v-for       = "relation in relations"
         type        = "button"
-        class       = "skin-border-color grid-item"
+        class       = "relation-card"
         @click.stop = "showRelation(relation)"
       >
-        <i aria-hidden = "true" class = "fas fa-sitemap" style = "padding: 6px;"></i>
-        <b style = "padding: 5px; overflow: hidden; white-space: normal; overflow-wrap: break-word;">{{ relation.name }}</b>
+        <b class = "relation-card__label">{{ relation.name }}</b>
+        <i aria-hidden = "true" class = "fas fa-chevron-right relation-card__arrow"></i>
       </button>
     </div>
   </div>
@@ -34,10 +37,17 @@
     class     = "layer-relation"
   >
 
-    <div class = "header skin-background-color lighten">
-      <span style = "font-size: 1.1em;"><b>{{ relation.name }}</b> {{ $t('associated with the element') }} <b>{{ parent_layer.getName() }}</b></span>
-      <ul style = "padding: 0 0 0 25px; list-style: square;">
-        <li v-for = "({ label, value }) in feature_info()"><b>{{ label }}</b>: {{ value }}</li>
+    <div class = "relation-context skin-background-color lighten">
+      <div class = "relation-context__title">
+        <h2>{{ relation.name }}</h2>
+        <span class = "relation-context__association">
+          <i class = "fas fa-link" aria-hidden = "true"></i>
+          {{ $t('associated with the element') }}
+          <b>{{ parent_layer.getName() }}</b>
+        </span>
+      </div>
+      <ul class = "relation-context__details">
+        <li v-for = "({ label, value }) in feature_info()" :key = "label"><b>{{ label }}</b><span>{{ value }}</span></li>
       </ul>
     </div>
 
@@ -813,26 +823,137 @@
 </script>
 
 <style scoped>
-  .grid-item {
-    min-height: 80px;
-    border: 2px solid;
-    border-radius: 4px;
-    background-color: #fff;
-    display: flex;
-    align-items: center;
-  }
-
-  .grid-item:hover {
-    background-color: transparent;
-  }
-
   .layer-relations {
     overflow-y: auto;
   }
 
-  .header {
-    margin: 5px 0 10px 0;
-    padding: 5px;
+  .relation-context {
+    display: grid;
+    gap: 8px;
+    margin: 5px 0 10px;
+    padding: 10px 16px;
+    border-radius: 6px;
+    color: #263238;
+  }
+
+  .relation-context__title {
+    display: grid;
+    gap: 2px;
+  }
+
+  .relation-context__title > span {
+    color: #263238;
+    font-size: 1.3rem;
+    font-weight: 600;
+  }
+
+  .relation-context__title h2 {
+    margin: 0;
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .relation-context__association {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    color: #44545a;
+    font-size: 1.3rem;
+  }
+
+  .relation-context__association > i {
+    color: var(--skin-color);
+  }
+
+  .relation-context__association > b {
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: #263238;
+    background: rgba(255, 255, 255, .65);
+  }
+
+  .relation-context__details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .relation-context__details li {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, .72);
+  }
+
+  .relation-context__details li > b {
+    color: #39484d;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  .relation-context__details li > span {
+    color: #263238;
+    font-size: 1.5rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+
+  .relation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    gap: 10px;
+  }
+
+  .relation-card {
+    display: flex;
+    min-width: 0;
+    min-height: 60px;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 1px solid #cfd8da;
+    border-radius: 4px;
+    color: #39484d;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(38, 50, 56, .08);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease, color .16s ease;
+  }
+
+  .relation-card:hover {
+    border-color: var(--skin-color);
+    background: hsl(from var(--skin-color) h s calc(l + 48));
+    box-shadow: 0 2px 6px rgba(38, 50, 56, .12);
+  }
+
+  .relation-card:focus-visible {
+    outline: 3px solid var(--skin-focus);
+    outline-offset: 2px;
+  }
+
+  .relation-card__label {
+    min-width: 0;
+    font-size: 1.6rem;
+    overflow-wrap: anywhere;
+  }
+
+  .relation-card__arrow {
+    margin-left: auto;
+    color: #8a9699;
+    font-size: 1.2rem;
+  }
+
+  .relation-card:hover .relation-card__arrow {
+    color: var(--skin-color);
   }
 
   .layer-relation:not([style*="display: none"]) {
@@ -841,15 +962,13 @@
   }
 
   .sub-header {
-    margin-top: 5px;
-    margin-bottom: 5px;
-    padding: 3px;
+    margin: 10px 0 6px;
+    padding: 8px 2px;
     display: flex;
-    justify-content:
-    space-between;
+    justify-content: space-between;
     align-items: center;
     width: 100%;
-    margin: 0 !important;
+    border-bottom: 1px solid #d6dddf;
   }
 
   .sub-header > .g3w-long-text {
@@ -864,6 +983,13 @@
 
   .table-tools > .action-button {
     padding: 5px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .relation-card {
+      transition: none;
+      box-shadow: none;
+    }
   }
 
   .header-component {

@@ -45,6 +45,8 @@ export default {
   'Toggle sidebar': 'Activar/desactivar barra lateral',
   show: 'Mostrar',
   hide: 'Ocultar',
+  'Show options': 'Mostrar opciones',
+  'Hide side panel': 'Ocultar panel lateral',
   copy_form_data: 'Copiar datos del formulario',
   paste_form_data: 'Pegar',
   copy_form_data_from_feature: 'Copiar datos desde el mapa',

@@ -7,94 +7,78 @@
   <dialog
     id            = "modal-changemap"
     @beforetoggle = "onBeforetoggle"
-    style         = "width: 80vw;"
-    :aria-label   = "$t('changemap')"
+    class         = "change-map-dialog"
+    :aria-labelledby = "'change-map-title'"
   >
-    <form method="dialog">
-
-      <div style="height: 80vh;">
-
-        <!-- CHILD NODE -->
-        <div
-          v-if  = "'root' !== this.current"
-          style = "
-            display: flex;
-            align-items: center;
-            color: #fff
-          "
-          class = "skin-background-color"
+    <form method = "dialog" class = "change-map-form">
+      <header class = "change-map-header">
+        <button
+          v-if       = "'root' !== current"
+          type       = "button"
+          class      = "change-map-back"
+          :aria-label = "$t('back')"
+          :disabled  = "loading"
+          @click.stop = "back"
         >
-          <span
-            title          = "Change Session"
-            data-placement = "bottom"
-            v-disabled     = "loading"
-            @click.stop    = "back"
-            style          = "
-              font-size: 2em;
-              margin: 5px;
-              cursor: pointer;
-              padding: 3px;
-              border: 2px solid #fff;
-              border-radius: 3px;
-            "
-          >
-            <i style  = "color: #FFF" class = "fas fa-reply" aria-hidden = "true"></i>
-          </span>
+          <i class = "fas fa-arrow-left" aria-hidden = "true"></i>
+        </button>
+        <div class = "change-map-heading">
+          <span v-t = "'changemap'"></span>
+          <h1 id = "change-map-title">{{ 'root' === current ? $t('changemap') : (parent && (parent.title || parent.name)) || $t('changemap') }}</h1>
+        </div>
+      </header>
 
-            <div v-if = "parent" style = "margin: auto">
-              <h3 style = "font-weight: bold">{{ parent.title || parent.name }}</h3>
-            </div>
-          </div>
-
-        <div
-          v-if  = "items.length"
-          class = "g3w-change-map-menu-container"
-        >
-          <div
-            v-for = "item in items"
-            :key  = "item.name"
-            class = "menu-item"
-          >
-
-          <!-- ITEM IMAGE -->
-            <div
-              class       = "menu-item-image"
+      <div class = "change-map-content" :aria-busy = "loading">
+        <div v-if = "items.length" class = "g3w-change-map-menu-container">
+          <article v-for = "item in items" :key = "item.name" class = "menu-item">
+            <button
+              type       = "button"
+              class      = "menu-item-open"
+              :disabled  = "loading"
               @click.stop = "trigger(item)"
             >
-              <img
-                :src   = "item.thumbnail || item.header_logo_img || item.logo_img"
-                @error = "setItemImageSrc({ item, type: 'net_error' })"
-                alt    = "logo"
-                class  = "img-responsive"
-              />
-            </div>
-
-            <!-- ITEM CONTENT -->
-            <div class = "menu-item-content">
-              <div class = "menu-item-text">
-                <h4 class = "menu-item-title">{{ item.title }}</h4>
-                <div v-html = "item.description"></div>
-              </div>
-            </div>
-
-          </div>
+              <span class = "menu-item-image">
+                <img
+                  :src   = "item.thumbnail || item.header_logo_img || item.logo_img"
+                  @error = "setItemImageSrc({ item, type: 'net_error' })"
+                  alt    = ""
+                  loading = "lazy"
+                />
+              </span>
+              <span class = "menu-item-title">
+                <span>{{ item.title || item.name }}</span>
+                <i v-if = "'projects' === current" class = "fas fa-map" aria-hidden = "true"></i>
+                <i v-else class = "fas fa-chevron-right" aria-hidden = "true"></i>
+              </span>
+            </button>
+            <div v-if = "item.description" class = "menu-item-description" v-html = "item.description"></div>
+          </article>
         </div>
 
-        <h3 v-else
-          style = "font-weight: bold"
-          v-t   = "`No other ${current}`">
-        </h3>
-
+        <section v-else class = "change-map-empty" role = "status">
+          <span class = "change-map-empty-icon" aria-hidden = "true">
+            <i class = "fas fa-map-marked-alt"></i>
+          </span>
+          <h2 v-t = "`No other ${current}`"></h2>
+          <button
+            v-if       = "'root' !== current"
+            type       = "button"
+            class      = "change-map-empty-back"
+            :disabled  = "loading"
+            @click.stop = "back"
+          >
+            <i class = "fas fa-arrow-left" aria-hidden = "true"></i>
+            {{ $t('back') }}
+          </button>
+        </section>
       </div>
 
-      <menu style = "display: flex; justify-content: end;">
+      <menu class = "change-map-footer">
         <button
-          v-t          = "'close'"
-          type         = "cancel"
-          class        = "btn btn-secondary"
-        ></button>
+          type  = "submit"
+          class = "btn btn-secondary"
+        >{{ $t('close') }}</button>
       </menu>
-
     </form>
   </dialog>
 </template>
@@ -376,53 +360,250 @@ export default {
 </script>
 
 <style scoped>
-  .g3w-change-map-menu-container {
+  .change-map-dialog {
+    width: min(980px, calc(100vw - 32px));
+    min-width: 0;
+    max-width: none;
+    height: min(740px, calc(100dvh - 32px));
+    max-height: calc(100dvh - 24px);
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid #cbd4d5;
+    border-radius: 12px;
+    color: #263238;
+    background: #f4f7f5;
+    box-shadow: 0 24px 70px rgb(10 25 30 / 30%);
+  }
+
+  .change-map-form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
     height: 100%;
+    min-height: 0;
+    padding: 0 !important;
+  }
+
+  .change-map-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 76px;
+    padding: 14px 22px;
+    color: #fff;
+    background: #202d31;
+    border-bottom: 3px solid var(--skin-color);
+  }
+
+  .change-map-back {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(30%, 1fr));
-    grid-gap: 1em;
+    place-items: center;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgb(255 255 255 / 55%);
+    border-radius: 6px;
+    color: #fff;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .change-map-back:hover:not(:disabled) {
+    background: rgb(255 255 255 / 12%);
+  }
+
+  .change-map-back:focus-visible,
+  .menu-item-open:focus-visible,
+  .change-map-empty-back:focus-visible {
+    outline: 3px solid var(--skin-focus);
+    outline-offset: 2px;
+  }
+
+  .change-map-back:disabled,
+  .menu-item-open:disabled,
+  .change-map-empty-back:disabled {
+    cursor: wait;
+  }
+
+  .change-map-heading {
+    min-width: 0;
+  }
+
+  .change-map-heading > span {
+    display: block;
+    margin-bottom: 3px;
+    color: #cbd6d7;
+    font-size: 1.2rem;
+  }
+
+  .change-map-heading h1 {
+    margin: 0;
+    color: #fff;
+    font-size: 2.2rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .change-map-content {
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
+    padding: 20px 22px;
+  }
+
+  .g3w-change-map-menu-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+    gap: 16px;
   }
 
   .menu-item {
-    margin-bottom: 20px;
-    margin-top:20px;
+    overflow: hidden;
+    border: 1px solid #d8e0de;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 2px 5px rgb(25 45 40 / 6%);
+  }
+
+  .menu-item-open {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    color: inherit;
+    text-align: left;
+    background: transparent;
+    cursor: pointer;
   }
 
   .menu-item-image {
-    cursor: pointer;
-    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 7;
     overflow: hidden;
-    padding-bottom: 50%;
-    opacity: 0.7;
-  }
-
-  .menu-item-image:hover {
-    opacity: 1;
+    background: linear-gradient(135deg, #e7eeeb, #f5f7f6);
   }
 
   .menu-item-image img {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: auto
-  }
-  .menu-item-content {
-    padding: 15px;
-    background: rgba(255,255,255,0.3);
-  }
-  .menu-item-text {
-    position: relative;
-    overflow: hidden;
+    width: 100%;
     height: 100%;
-    text-align: justify;
+    padding: 12px;
+    object-fit: contain;
   }
+
   .menu-item-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 52px;
+    padding: 12px 15px;
+    font-size: 1.6rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .menu-item-title i {
+    flex: 0 0 auto;
+    color: var(--skin-color);
+  }
+
+  .menu-item-description {
+    padding: 0 15px 15px;
+    color: #536267;
+    font-size: 1.4rem;
+    line-height: 1.5;
+  }
+
+  .change-map-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+    padding: 28px;
     text-align: center;
-    font-weight: bold;
-    background: rgba(255,255,255,0.5);
-    padding: 5px;
+    background: linear-gradient(135deg, #eef3f0, #fbfcfb 70%);
+    border: 1px solid #e0e7e3;
+    border-radius: 8px;
+  }
+
+  .change-map-empty-icon {
+    display: grid;
+    place-items: center;
+    width: 68px;
+    height: 68px;
+    border-radius: 18px;
+    color: #355a4b;
+    background: #dce9e1;
+    font-size: 3rem;
+  }
+
+  .change-map-empty h2 {
+    margin: 16px 0 0;
+    color: #263238;
+    font-size: 2rem;
+    font-weight: 700;
+  }
+
+  .change-map-empty-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    margin-top: 18px;
+    padding: 8px 14px;
+    border: 1px solid #aab9b1;
+    border-radius: 6px;
+    color: #263d33;
+    background: #fff;
+    cursor: pointer;
+  }
+
+  .change-map-dialog > .change-map-form > .change-map-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0;
+    padding: 12px 22px 18px;
+    border-top: 1px solid #e0e5e3;
+    background: #fff;
+  }
+
+  @media (max-width: 600px) {
+    .change-map-dialog {
+      width: calc(100vw - 20px);
+      height: calc(100dvh - 20px);
+      max-height: calc(100dvh - 20px);
+      border-radius: 8px;
+    }
+
+    .change-map-header {
+      min-height: 68px;
+      padding: 12px 14px;
+    }
+
+    .change-map-heading h1 {
+      font-size: 1.9rem;
+    }
+
+    .change-map-content {
+      padding: 14px;
+    }
+
+    .change-map-dialog > .change-map-form > .change-map-footer {
+      padding: 10px 14px 14px;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .menu-item {
+      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+
+    .menu-item:has(.menu-item-open:hover) {
+      transform: translateY(-2px);
+      border-color: #a9bbb2;
+      box-shadow: 0 8px 20px rgb(25 45 40 / 12%);
+    }
   }
 </style>

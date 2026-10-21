@@ -388,7 +388,7 @@ class GeocodingControl extends ol.control.Control {
           ${update_on_move && item.__selected ? 'hidden' : '' }
         >
           <!-- GEOCODING PROVIDER (eg. "Nominatim OSM") -->
-          ${item.__heading ? `<b style = "padding: 5px; color: #FFF;">${ item.label }</b>` : ''}
+          ${item.__heading ? `<b class = "gcd-provider-label">${ item.label }</b>` : ''}
             
           <!-- NO RESULTS -->
           ${!item.__heading && item.__no_results ? `<span>${_('No results')}</span>` : ''}
@@ -397,8 +397,8 @@ class GeocodingControl extends ol.control.Control {
           ${!item.__heading && !item.__no_results ? /* html */`
             <input type = "checkbox" style = "pointer-events: none; margin: 0;" ${item.__selected ? 'checked' : ''} />
             <img class = "gcd-icon" src = "/static/client/images/pushpin.svg" width = "24" height = "24" ${['poi', 'point'].includes(item.__icon) ? '' : 'hidden'}/>
-            <i class = "fa fa-${item.__icon}" style = "color: black"   ${!['poi', 'point'].includes(item.__icon) && undefined !== item.__icon ? '' : 'hidden'}></i>
-            <span style = "display: flex; flex-direction: column; padding: 3px 5px; color: #000;">
+            <i class = "fa fa-${item.__icon} gcd-provider-icon" ${!['poi', 'point'].includes(item.__icon) && undefined !== item.__icon ? '' : 'hidden'}></i>
+            <span class = "gcd-result-details">
               <span class = "gcd-type">${item.type ?? ''}</span>
               <span class = "gcd-name">${(item.name ?? '').replace(new RegExp(`(${q})`, 'gi'), '<b>$1</b>')}</span>
               <span class = "gcd-road">${item.address_name ?? ''}</span>
@@ -604,36 +604,50 @@ document.head.insertAdjacentHTML(
   /* css */`
 <style>
   .ol-geocoder                                                         { width: 300px; margin-top: 3px; margin-left: calc(var(--ml) + 5px) !important; --skin-color: #374146; }
-  body:not(.sidebar-collapse) .ol-geocoder,
-  body.sidebar-open .ol-geocoder,
-  body.is-iframe:not(.sidebar-mini).sidebar-collapse .ol-geocoder      { margin-left: calc(var(--ml) + 40px) !important; }
-  .ol-geocoder > ul                                                    { max-height: 400px; overflow-x: hidden; overflow-y: auto; transition: max-height 300ms ease-in; padding: 0; margin:unset; inset:unset; background: #fff;border: 1px solid #ccc; width: 300px; min-width: 215px; }
+  @media (max-width: 767px) {
+    body:not(.sidebar-collapse) .ol-geocoder,
+    body.sidebar-open .ol-geocoder,
+    body.is-iframe:not(.sidebar-mini).sidebar-collapse .ol-geocoder    { margin-left: calc(var(--ml) + 40px) !important; }
+  }
+  @media (min-width: 768px) {
+    .ol-geocoder { margin-left: calc(var(--ml, 0px) + 58px) !important; }
+  }
+  .ol-geocoder > ul                                                    { max-height: 400px; overflow-x: hidden; overflow-y: auto; transition: max-height 300ms ease-in; padding: 0; margin: unset; inset: unset; background: #fff; border: 1px solid #d7dde0; border-radius: 12px; width: min(300px, calc(100vw - 16px)); min-width: min(215px, calc(100vw - 16px)); box-shadow: 0 8px 24px rgb(20 35 45 / 18%); }
   .ol-geocoder > ul:not([style*="left"])                               { position-anchor: --ol-geocoder-form; position-area: bottom; }
-  .ol-geocoder > ul > li                                               { width: 100%; overflow: hidden; padding: 0; min-height: 30px; padding-left: 3px; border-bottom: 2px solid var(--skin-color); min-height: 20px; padding: 10px; }
-  .ol-geocoder > ul > li:hover                                         { background-color: #eee; }
+  .ol-geocoder > ul > li                                               { width: 100%; overflow: hidden; min-height: 40px; padding: 10px 12px; border-bottom: 1px solid #e2e8ea; }
+  .ol-geocoder > ul > li:hover                                         { background-color: #f2f6f7; }
   .ol-geocoder > ul > li:last-child                                    { border-bottom: 0 !important; }
   .ol-geocoder li:not(.skin-background-color, [hidden])                { display: flex; align-items: center; gap: 10px; }
   .ol-geocoder li.gcd-icon-road :is(.gcd-name, .gcd-type, .gcd-icon),
   .ol-geocoder li.gcd-icon-poi :is(.gcd-road, .gcd-city, .gcd-country) { display: none; }
-  .ol-geocoder .btn                                                    { border-radius: 0 !important; color: #FFF; border-left: 1px solid #fff; }
+  .ol-geocoder .btn                                                    { border-radius: 0 !important; color: #FFF; border-left: 1px solid rgb(255 255 255 / 30%); }
+  .ol-geocoder button[value="search"]                                 { flex: 0 0 44px; width: 44px; min-width: 44px; height: 44px; align-self: center; padding: 0; border-radius: 0 11px 11px 0 !important; font-size: 20px; }
   .ol-geocoder input[type="search"]                                    { border: 0; width: 100%; height: 100%;  text-indent: 6px; }
   .ol-geocoder button[type="reset"]::after                             { content: "\\d7"; display: inline-block; font-weight: bold; font-size: 2em; cursor: pointer; color: var(--skin-color); }
   .ol-geocoder button[type="reset"]:not([hidden])                      { width: 2.5em; height: 100%; line-height: 100%; border: none; background-color: transparent; display: inline-block; vertical-align: middle; outline: 0; cursor: pointer; }
   .ol-geocoder input[type="search"]:focus                              { outline: none; }
   .ol-geocoder input[type="search"]                                    { border: 0; width: 100%; height: 100%; padding: 5px 5px 5px 5px; text-indent: 6px; background-color: transparent; font-family: inherit; font-size: 1em; }
   .ol-geocoder input[type="search"]::-webkit-search-cancel-button      { display: none; }
-  .ol-geocoder form                                                    { display: flex; justify-content: flex-end; height: 40px; background-color: #fff; overflow: hidden; width: 100%; border: 1px solid var(--skin-color); border-radius: 0 3px 3px 0; anchor-name: --ol-geocoder-form; }
-  .ol-geocoder .gcd-road                                               { font-size: 0.875em; font-weight: 500; }
-  .ol-geocoder .gcd-city                                               { font-size: 1em; font-weight: bold; }
-  .ol-geocoder .gcd-country                                            { font-size: 0.75em; }
+  .ol-geocoder form                                                    { display: flex; align-items: center; justify-content: flex-end; height: 46px; background-color: #fff; overflow: hidden; width: 100%; border: 1px solid #cbd5d8; border-radius: 12px; box-shadow: 0 2px 8px rgb(20 35 45 / 14%); anchor-name: --ol-geocoder-form; }
+  .ol-geocoder .gcd-road                                               { color: #485b62; font-size: .9em; line-height: 1.35; font-weight: 500; }
+  .ol-geocoder .gcd-city                                               { color: #263238; font-size: .92em; font-weight: 700; }
+  .ol-geocoder .gcd-country                                            { color: #607279; font-size: .82em; }
+  .ol-geocoder .gcd-provider-label                                     { padding: 0 !important; color: inherit !important; font-size: 1.05em; line-height: 1.3; }
+  .ol-geocoder .gcd-result-details                                     { display: flex !important; flex: 1; flex-direction: column; min-width: 0; gap: 2px; padding: 0 2px !important; color: #263238 !important; }
+  .ol-geocoder .gcd-type                                               { color: #607279; font-size: .82em; font-weight: 600; }
+  .ol-geocoder .gcd-name                                               { color: #263238; font-size: 1em; font-weight: 600; line-height: 1.35; }
+  .ol-geocoder .gcd-provider-icon                                      { flex: 0 0 auto; color: var(--skin-color) !important; }
   .ol-geocoder .gcd-spin                                               { animation: ol-geocoder-spin .7s linear infinite; }
   .ol-geocoder .gcd-hidden                                             { display: none !important; }
-  .ol-geocoder li.skin-background-color                                { position: sticky; top: 0; }
-  .ol-geocoder li:has(input[type="checkbox"]:checked)                  { background-color: #f7fabf !important; }
+  .ol-geocoder li.skin-background-color                                { position: sticky; top: 0; padding: 11px 14px; color: #fff; background: #263238; border: 0; border-radius: 11px 11px 0 0; }
+  .ol-geocoder li.skin-background-color > b                            { padding: 0 !important; color: inherit !important; }
+  .ol-geocoder li:has(input[type="checkbox"]:checked)                  { background-color: #e8f3f7 !important; border-left: 3px solid var(--skin-color); padding-left: 9px; }
   .ol-geocoder li.gcd-noresult:hover                                   { background-color: transparent !important; }
   .ol-geocoder li.gcd-noresult                                         { font-weight: bold; color: #384247; margin: 10px; border-bottom: 0 !important; }
   .ol-geocoder [hidden]                                                { display: none; }
   .ol-geocoder .btn                                                    { font-weight: 900; background-color: var(--skin-color); }
+  .ol-geocoder input[type="search"]:focus-visible                    { outline: 2px solid var(--skin-focus); outline-offset: -3px; border-radius: 8px; }
+  .ol-geocoder .btn:focus-visible                                      { outline: 2px solid var(--skin-focus); outline-offset: -3px; }
   .ol-geocoder ul:not(:has(li)) + *                                    { display: none; }
 
   @keyframes ol-geocoder-spin {

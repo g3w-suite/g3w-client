@@ -29,6 +29,8 @@ export default {
   'Find Address': 'Caută Adresă',
   show: 'Arată',
   hide: 'Ascunde',
+  'Show options': 'Arată opțiunile',
+  'Hide side panel': 'Ascunde panoul lateral',
   copy_form_data: 'Copiază data',
   paste_form_data: 'Lipește',
   copy_form_data_from_feature: 'Copiază data din hartă',

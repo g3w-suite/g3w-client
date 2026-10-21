@@ -17,16 +17,29 @@
   >
 
     <!-- CUSTOM ITEMS -->
-    <li v-for = "(item, i) in items" :key = "i"  @click.prevent.stop = "item.cbk && item.cbk($event)" :style="{ order: item.position }">
-      <i v-if = "item.children" class = "fas fa-chevron-right" style  = "position: absolute; right: 0; margin-top: 3px"></i>
-      <i v-if = "item.icon" :class = "$fa(item.icon)"></i> {{ $t(item.label) }}
+    <li
+      v-for                     = "(item, i) in items"
+      :key                      = "i"
+      :role                     = "item.children ? null : 'button'"
+      tabindex                  = "0"
+      @click.prevent.stop       = "item.cbk && item.cbk($event)"
+      @keydown.enter.prevent.stop = "item.cbk && item.cbk($event)"
+      @keydown.space.prevent.stop = "item.cbk && item.cbk($event)"
+      :style                    = "{ order: item.position }"
+    >
+      <i v-if = "item.children" class = "fas fa-chevron-right" style  = "position: absolute; right: 0; margin-top: 3px" aria-hidden="true"></i>
+      <i v-if = "item.icon" :class = "$fa(item.icon)" aria-hidden="true"></i> {{ $t(item.label) }}
       <!--SUB MENU-->
       <ul v-if = "item.children" class = "sub-contex-menu">
         <li
-          v-for       = "(child, j) in item.children"
-          @click.stop = "child.cbk"
-          :key        = "j"
-          style       = "display: list-item;"
+          v-for                     = "(child, j) in item.children"
+          role                      = "button"
+          tabindex                  = "0"
+          @click.stop               = "child.cbk"
+          @keydown.enter.prevent.stop = "child.cbk"
+          @keydown.space.prevent.stop = "child.cbk"
+          :key                      = "j"
+          style                     = "display: list-item;"
         >
           <span style = "font-weight: bold">{{ $t(child.label) }}</span>
         </li>
@@ -546,15 +559,9 @@
 
         const rect = this.$refs.menu.getBoundingClientRect();
 
-        // prevent right overflow (page) 
-        if (rect.right > window.innerWidth) {
-          this.left = window.innerWidth - rect.width;
-        }
-
-        // prevent bottom overflow (page) 
-        if (rect.bottom > window.innerHeight) {
-          this.top = window.innerHeight - rect.height;
-        }
+        const viewportMargin = 8;
+        this.left = Math.max(viewportMargin, Math.min(this.left, window.innerWidth - rect.width - viewportMargin));
+        this.top  = Math.max(viewportMargin, Math.min(this.top, window.innerHeight - rect.height - viewportMargin));
       },
 
       showDownloadMenu(layer) {
@@ -829,21 +836,25 @@
         const li = e.target.closest('li');
         const ul = li && li.querySelector('ul');
         if (ul) {
-          const overflowY    = (ul.offsetHeight + ul.getBoundingClientRect().top) >= (this.$refs.menu.offsetHeight + this.$refs.menu.getBoundingClientRect().top);
-          ul.style.top       = ul.offsetHeight > this.$refs.menu.offsetHeight ? 0 : undefined;
-          ul.style.left      = this.$refs.menu.offsetWidth -2 + 'px';
+          const menuRect = this.$refs.menu.getBoundingClientRect();
+          const itemRect = li.getBoundingClientRect();
+          const maxHeight = window.innerHeight - 16;
+          const colorSubmenu = ul.classList.contains('g3w-color-submenu');
+          ul.style.position = 'fixed';
+          ul.style.maxHeight = colorSubmenu ? 'none' : `${maxHeight}px`;
+          ul.style.left = `${menuRect.right - 2}px`;
+          if (menuRect.right + ul.offsetWidth > window.innerWidth - 8) {
+            ul.style.left = `${menuRect.left - ul.offsetWidth + 2}px`;
+          }
+          ul.style.top = `${Math.max(8, Math.min(itemRect.top, window.innerHeight - ul.offsetHeight - 8))}px`;
+          ul.style.bottom = 'auto';
+          ul.style.marginTop = '-5px';
 
-          if (ul.classList.contains('g3w-color-submenu')) {
-            ul.style.maxHeight = 'none';
-            ul.style.bottom    = 'auto';
-            ul.style.marginTop = '-5px';
+          if (colorSubmenu) {
             ul.style.overflowY = 'visible';
             return;
           }
 
-          ul.style.maxHeight = this.$refs.menu.offsetHeight + 'px';
-          ul.style.bottom    = overflowY ? 0         : undefined;
-          ul.style.marginTop = overflowY ? undefined : '-5px';
           ul.style.overflowY = 'auto';
         }
       },
