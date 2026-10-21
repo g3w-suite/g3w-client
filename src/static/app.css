@@ -903,9 +903,15 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .ol-control.ol-annotation         button::before                       { background: url(./images/mActionCreateAnnotationLayer.svg) no-repeat center; content: ''; position: absolute; inset: 0; }
 
 .ol-control                                                            { background-color: transparent; border-radius: 0; padding: 0; }
-.ol-control button                                                     { display: block; margin: 0; padding: 2px 6px; text-decoration: none; text-align: center; height: 39px; width: 39px; line-height: 1.42857143; border-radius: 3px; font-size: 25px; font-weight: 300; float:left; background-color: #fff; color: #222d32; border: 1px solid rgba(0,0,0,0.5); background-clip: padding-box; box-shadow: none !important; border-radius: 3px; }
+.ol-control button                                                     { display: block; margin: 0; padding: 2px 6px; text-decoration: none; text-align: center; height: 44px; width: 44px; line-height: 1.42857143; border-radius: 12px; font-size: 25px; font-weight: 300; float:left; background-color: rgba(255, 255, 255, .96); color: #263238; border: 1px solid #cbd5d8; background-clip: padding-box; box-shadow: 0 2px 8px rgb(20 35 45 / 14%) !important; transition: background-color .16s ease, border-color .16s ease, color .16s ease, transform .16s ease; }
 .ol-control > button                                                   { position: relative; font-size: 0; }
-.ol-control > button > *                                               { position: relative; font-size: 25px; }
+.ol-control > button > *                                               { position: relative; font-size: 20px; }
+.ol-control[class*="ol-"] button::before                              { background-size: 22px 22px; }
+.ol-control.ol-query button::before                                   { background-size: 32px 32px; }
+.ol-control button::before                                             { filter: grayscale(1) brightness(.32); transition: filter .16s ease; }
+.ol-control button:is(.ol-zoom-in, .ol-zoom-out)::before               { background: currentColor; content: ''; position: absolute; inset: 0; width: 22px; height: 3px; margin: auto; color: currentColor; filter: none; }
+.ol-control button.ol-zoom-in::before                                  { width: 22px; height: 22px; background: linear-gradient(currentColor 0 0) center / 100% 3px no-repeat, linear-gradient(currentColor 0 0) center / 3px 100% no-repeat; }
+.ol-control button > i                                                 { color: currentColor; }
 .ol-mouse-position                                                     { position: relative !important; font-weight: 700; font-size: .9em; margin-top: -2px; }
 .ol-overviewmap:not(.ol-collapsed)                                     { border: 1px solid rgba(0,0,0,.5); border-radius: 3px; }
 .ol-overviewmap:not(.ol-collapsed) button                              { scale: .7; }
@@ -917,7 +923,7 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 .ol-control-bl                                                         { bottom: 40px; left: 7px; }
 .ol-control-tr                                                         { top: 7px;     right: 7px; }
 .ol-control-br                                                         { bottom: 7px;  right: 7px; min-height: 20px; }
-.ol-zoom :is(.ol-zoom-in, .ol-zoom-out)                                { border-radius: 3px; display: block; }
+.ol-zoom :is(.ol-zoom-in, .ol-zoom-out)                                { border-radius: 12px; display: block; }
 .ol-scale-control                                                      { bottom: 15px; }
 .ol-scale-line                                                         { left: auto; font-weight: bold; bottom: 85px; }
 #scale-control .x-select-trigger                                       { border: none; font-weight: bold; background-color: transparent; min-height: 30px; line-height: 1; }
@@ -955,8 +961,11 @@ ul.g3w-tools .tool:hover              { background-color: #374850; }
 
 .is-iframe :is(.g3w-map-controls-left-bottom, .ol-scale-line)          { bottom: 38px; }
 
-.ol-control button:hover                                               { background-color:var(--skin-color); }
-.ol-control button:focus                                               { background-color:#e5e5e5; outline: none; }
+.ol-control button:hover,
+.ol-control button.g3w-ol-toggled                                       { background-color: var(--skin-color); border-color: var(--skin-color); color: #fff; transform: translateY(-1px); }
+.ol-control button:hover::before,
+.ol-control button.g3w-ol-toggled::before                              { filter: brightness(0) invert(1); }
+.ol-control button:focus                                               { background-color: #e5e5e5; outline: none; }
 .ol-control button:focus-visible                                       { outline: 3px solid var(--skin-focus); outline-offset: 4px; }
 
 
@@ -1444,6 +1453,88 @@ body.is-mobile .tree-item input[type="checkbox"]    { accent-color: var(--skin-c
 .user-footer .btn-default              { color: rgba(0,0,0,.75); border-color: currentColor; display: flex; flex-direction: row-reverse; justify-content: left; align-items: center; gap: 8px; }
 .user-footer .btn-default:not(:hover)  { background-color: transparent; }
 .nav-user > .dropdown-menu             { padding: 1px 0 0 0; border: 1px solid #aaaaaa; border-top-width: 0; border-radius: 0; margin-top: 0 }
+
+@media (min-width: 768px) {
+  .navbar .nav-user > .dropdown-menu {
+    right: 0;
+    left: auto;
+    width: min(240px, calc(100vw - 24px));
+    padding: 8px;
+    margin-top: 8px;
+    border: 1px solid #d7dde0;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgb(20 35 45 / 18%);
+  }
+  .navbar .user-header {
+    padding: 12px;
+    color: #263238;
+    background: #f2f6f7;
+    border: 0;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  .navbar .user-footer { gap: 6px; padding: 8px 0 0; }
+  .navbar .user-footer > a.btn-default {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 40px;
+    padding: 8px 12px;
+    color: #263238 !important;
+    background: #fff !important;
+    border: 1px solid #d7dde0;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background-color .16s ease, border-color .16s ease;
+  }
+  .navbar .user-footer > a.btn-default > i { color: var(--skin-color); }
+  .navbar .user-footer > a.btn-default:hover,
+  .navbar .user-footer > a.btn-default:focus-visible {
+    background: #f2f6f7 !important;
+    border-color: var(--skin-color);
+  }
+  .navbar .user-footer > a.btn-default:focus-visible { outline: 2px solid var(--skin-focus); outline-offset: 2px; }
+}
+
+#g3w-nav-language > button {
+  gap: 8px !important;
+  height: 50px;
+  padding: 0 15px !important;
+  border: 0 !important;
+  border-radius: 0;
+  background: transparent;
+  transition: background-color .16s ease;
+}
+#g3w-nav-language > button:hover { background: rgb(0 0 0 / 10%); }
+#g3w-nav-language > button:focus-visible { outline: 2px solid #fff; outline-offset: -3px; }
+#g3w-nav-language > button img { border-radius: 2px; }
+#nav-lang-dialog {
+  width: min(380px, calc(100vw - 24px));
+  min-width: 0;
+  padding: 12px;
+  color: #263238;
+  background: #fff;
+  border: 1px solid #d7dde0;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgb(20 35 45 / 18%);
+}
+#nav-lang-dialog form { gap: 8px !important; }
+#nav-lang-dialog label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid #e0e6e8;
+  border-radius: 8px;
+  color: #263238;
+  transition: background-color .16s ease, border-color .16s ease;
+}
+#nav-lang-dialog label:hover,
+#nav-lang-dialog label:has(input:checked) { background: #f2f6f7; border-color: var(--skin-color); }
+#nav-lang-dialog label:focus-within { outline: 2px solid var(--skin-focus); outline-offset: 2px; }
 
 i.triangle                             { border-color: currentColor transparent transparent transparent; border-style: solid; border-width: 5px 4px 0 4px; display: inline-block; margin: 3px; }
 .open i.triangle                       { border-color: transparent transparent currentColor transparent; border-width: 0 4px 5px 4px; }

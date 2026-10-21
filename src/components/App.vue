@@ -170,7 +170,7 @@
                 @click = "openChangeMapMenu"
                 class  = "nav-changemap btn btn-default btn-flat"
               >
-                <b>{{ $t('changemap') }}</b><i class = "fas fa-sync-alt" aria-hidden = "true"></i>
+                <b>{{ $t('changemap') }}</b><i class = "fas fa-map-marked-alt" aria-hidden = "true"></i>
               </a>
 
               <!-- ADD LAYER -->
@@ -179,7 +179,7 @@
                 @click = "showaddLayerModal"
                 class  = "nav-addlayer btn btn-default btn-flat"
               >
-                <b>{{ $t('Add Layer') }}</b><i class="fas fa-layer-group" aria-hidden = "true"></i>
+                <b>{{ $t('Add Layer') }}</b><i class="fas fa-cloud-download-alt" aria-hidden = "true"></i>
               </a>
 
             </li>
@@ -195,7 +195,6 @@
           <button type = "button" commandfor = "nav-lang-dialog" command = "show-modal" style = "display: flex; gap:5px; align-items: center;">
             <img :src = "urls.staticurl +'img/flags/' + language.toLowerCase() + '.png'" width = "24" height = "16" alt = "" />
             <span class="nav-lang-label">{{ languages.find(l => l[0] === language).at(1) }}</span>
-            <i class = "triangle" aria-hidden="true" style = "margin-top: 8px;"></i>
           </button>
           <dialog 
             id     = "nav-lang-dialog" 
@@ -347,7 +346,7 @@
           :data-i18n-title = "ApplicationState.sidebar.open ? '' : 'legend'"
           data-placement   = "right"
         >
-          <i aria-hidden="true" class = "fas fa-list" style = "color: #fff;"></i>
+          <i aria-hidden="true" class = "fas fa-list-alt" style = "color: #fff;"></i>
           <span class = "treeview-label">{{ $t('legend') }}</span>
         </a>
       </li>
@@ -975,7 +974,7 @@ export default {
 
     sidebarControls() {
       return [
-        { id: 'legend', title: 'legend', icon: 'fas fa-list' },
+        { id: 'legend', title: 'legend', icon: 'fas fa-list-alt' },
         { id: 'metadata', title: 'Metadata', icon: 'fas fa-file-code' },
         ...ApplicationState.sidebar.components.filter(component => component.visible).map(component => ({
           id: component.id,
@@ -986,9 +985,9 @@ export default {
           open: component.getOpen(),
         })),
         ...(ApplicationState.project.state.layerstree[0].nodes.length ? [{ id: 'themes', title: 'THEME', icon: 'far fa-eye' }] : []),
-        { id: 'catalog', title: 'Layers', icon: 'far fa-map', iconColor: 'rgb(1, 154, 76)' },
-        { id: 'add-layer', title: 'Add Layer', icon: 'fas fa-layer-group' },
-        ...(this.has_related_maps && !ApplicationState.iframe ? [{ id: 'change-map', title: 'changemap', icon: 'fas fa-sync-alt' }] : []),
+        { id: 'catalog', title: 'Layers', icon: 'fas fa-layer-group', iconColor: 'rgb(1, 154, 76)' },
+        { id: 'add-layer', title: 'Add Layer', icon: 'fas fa-cloud-download-alt' },
+        ...(this.has_related_maps && !ApplicationState.iframe ? [{ id: 'change-map', title: 'changemap', icon: 'fas fa-map-marked-alt' }] : []),
       ];
     },
 

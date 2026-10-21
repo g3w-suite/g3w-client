@@ -620,14 +620,15 @@ document.head.insertAdjacentHTML(
   .ol-geocoder li:not(.skin-background-color, [hidden])                { display: flex; align-items: center; gap: 10px; }
   .ol-geocoder li.gcd-icon-road :is(.gcd-name, .gcd-type, .gcd-icon),
   .ol-geocoder li.gcd-icon-poi :is(.gcd-road, .gcd-city, .gcd-country) { display: none; }
-  .ol-geocoder .btn                                                    { border-radius: 0 !important; color: #FFF; border-left: 1px solid #fff; }
+  .ol-geocoder .btn                                                    { border-radius: 0 !important; color: #FFF; border-left: 1px solid rgb(255 255 255 / 30%); }
+  .ol-geocoder button[value="search"]                                 { width: 44px; min-width: 44px; height: 100%; padding: 0; border-radius: 0 11px 11px 0 !important; font-size: 18px; }
   .ol-geocoder input[type="search"]                                    { border: 0; width: 100%; height: 100%;  text-indent: 6px; }
   .ol-geocoder button[type="reset"]::after                             { content: "\\d7"; display: inline-block; font-weight: bold; font-size: 2em; cursor: pointer; color: var(--skin-color); }
   .ol-geocoder button[type="reset"]:not([hidden])                      { width: 2.5em; height: 100%; line-height: 100%; border: none; background-color: transparent; display: inline-block; vertical-align: middle; outline: 0; cursor: pointer; }
   .ol-geocoder input[type="search"]:focus                              { outline: none; }
   .ol-geocoder input[type="search"]                                    { border: 0; width: 100%; height: 100%; padding: 5px 5px 5px 5px; text-indent: 6px; background-color: transparent; font-family: inherit; font-size: 1em; }
   .ol-geocoder input[type="search"]::-webkit-search-cancel-button      { display: none; }
-  .ol-geocoder form                                                    { display: flex; justify-content: flex-end; height: 40px; background-color: #fff; overflow: hidden; width: 100%; border: 1px solid var(--skin-color); border-radius: 0 3px 3px 0; anchor-name: --ol-geocoder-form; }
+  .ol-geocoder form                                                    { display: flex; justify-content: flex-end; height: 44px; background-color: #fff; overflow: hidden; width: 100%; border: 1px solid #cbd5d8; border-radius: 12px; box-shadow: 0 2px 8px rgb(20 35 45 / 14%); anchor-name: --ol-geocoder-form; }
   .ol-geocoder .gcd-road                                               { font-size: 0.875em; font-weight: 500; }
   .ol-geocoder .gcd-city                                               { font-size: 1em; font-weight: bold; }
   .ol-geocoder .gcd-country                                            { font-size: 0.75em; }
@@ -639,6 +640,8 @@ document.head.insertAdjacentHTML(
   .ol-geocoder li.gcd-noresult                                         { font-weight: bold; color: #384247; margin: 10px; border-bottom: 0 !important; }
   .ol-geocoder [hidden]                                                { display: none; }
   .ol-geocoder .btn                                                    { font-weight: 900; background-color: var(--skin-color); }
+  .ol-geocoder input[type="search"]:focus-visible                    { outline: 2px solid var(--skin-focus); outline-offset: -3px; border-radius: 8px; }
+  .ol-geocoder .btn:focus-visible                                      { outline: 2px solid var(--skin-focus); outline-offset: -3px; }
   .ol-geocoder ul:not(:has(li)) + *                                    { display: none; }
 
   @keyframes ol-geocoder-spin {
