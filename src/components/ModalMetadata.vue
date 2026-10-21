@@ -7,13 +7,18 @@
   <dialog
     id            = "modal-metadata"
     @beforetoggle = "onBeforetoggle"
-    style         = "width: 80vw;"
+    class         = "metadata-dialog"
     :aria-label    = "$t('Metadata')"
   >
-    <form method = "dialog">
+    <form method = "dialog" class = "metadata-form">
+
+      <header class = "metadata-header">
+        <i class = "fas fa-info-circle" aria-hidden = "true"></i>
+        <h1>{{ $t('Metadata') }}</h1>
+      </header>
 
       <!-- METADATA TABS -->
-      <ul role = "tablist" class = "nav nav-tabs">
+      <ul role = "tablist" class = "metadata-tabs nav nav-tabs">
         <li class = "active">
           <a data-toggle = "tab" href="#metadata_general" class = "metadata-item-tab general" style="color: var(--skin-primary);">
             <i class = "fas fa-info-circle" aria-hidden = "true"></i>
@@ -40,7 +45,7 @@
         </li>
       </ul>
 
-      <div style="min-height: 65vh; max-height: 70vh; padding: 15px;overflow: auto;">
+      <div class = "metadata-scroll">
 
         <div class = "tab-content">
 
@@ -246,7 +251,7 @@
           <div id = "metadata_layers" class = "tab-pane">
             <details v-for = "layer in layers" :hidden="layer.isBaseLayer()">
               <summary>
-                <i :class ="('NoGeometry' === layer.getGeometryType() ? 'fas fa-table' : 'fas fa-draw-polygon')" style="margin-right: 10px; color: #999;" aria-hidden = "true"></i>
+                <i :class = "['metadata-layer-icon', 'NoGeometry' === layer.getGeometryType() ? 'fas fa-table' : 'fas fa-draw-polygon']" aria-hidden = "true"></i>
                 <b>{{ layer.getName() }}</b>
               </summary>
 
@@ -366,29 +371,29 @@
                       <tr>
                         <td class = "col-md-2 col-sm-12 label">{{ $t('CAPABILITIES') }}</td>
                         <td class = "col-sm-10 value">
-                          <span class="fa-stack" style="vertical-align: top;" :title="$t('VISIBILITY RANGE') + ': ' + layer.config.maxscale + ' ÷ ' + layer.config.minscale">
+                          <span class="fa-stack metadata-capability" :title="$t('VISIBILITY RANGE') + ': ' + layer.config.maxscale + ' ÷ ' + layer.config.minscale">
                             <i class="fas fa-eye fa-stack-1x" :aria-label="layer.state.geolayer"></i>
-                            <i v-if="!layer.state.geolayer" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: rgba(255, 99, 71, .7);"></i>
+                            <i v-if="!layer.state.geolayer" aria-hidden="true" class="fas fa-ban fa-stack-2x"></i>
                           </span>
-                          <span class="fa-stack" style="vertical-align: top;" :title="$t('EDITABLE')">
+                          <span class="fa-stack metadata-capability" :title="$t('EDITABLE')">
                             <i class="fas fa-pencil-alt fa-stack-1x" :aria-label="layer.isEditable()"></i>
-                            <i v-if="!layer.isEditable()" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: rgba(255, 99, 71, .7);"></i>
+                            <i v-if="!layer.isEditable()" aria-hidden="true" class="fas fa-ban fa-stack-2x"></i>
                           </span>
-                          <span class="fa-stack" style="vertical-align: top;" :title="$t('FILTERABLE')">
+                          <span class="fa-stack metadata-capability" :title="$t('FILTERABLE')">
                             <i class="fas fa-filter fa-stack-1x" :aria-label="layer.isFilterable()"></i>
-                            <i v-if="!layer.isFilterable()" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: rgba(255, 99, 71, .7);"></i>
+                            <i v-if="!layer.isFilterable()" aria-hidden="true" class="fas fa-ban fa-stack-2x"></i>
                           </span>
-                          <span class="fa-stack" style="vertical-align: top;" :title="$t('QUERYABLE')">
+                          <span class="fa-stack metadata-capability" :title="$t('QUERYABLE')">
                             <i class="fas fa-info fa-stack-1x" :aria-label="layer.isQueryable()"></i>
-                            <i v-if="!layer.isQueryable()" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: rgba(255, 99, 71, .7);"></i>
+                            <i v-if="!layer.isQueryable()" aria-hidden="true" class="fas fa-ban fa-stack-2x"></i>
                           </span>
-                          <span class="fa-stack" style="vertical-align: top;" :title="$t('STYLES') + ': ' + (layer.config.styles || []).map(s => s.name).join(', ')">
+                          <span class="fa-stack metadata-capability" :title="$t('STYLES') + ': ' + (layer.config.styles || []).map(s => s.name).join(', ')">
                             <i class="fas fa-paint-brush fa-stack-1x" :aria-label="layer.config.styles && layer.config.styles.length > 1"></i>
-                            <i v-if="!(layer.config.styles && layer.config.styles.length > 1)" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: rgba(255, 99, 71, .7);"></i>
+                            <i v-if="!(layer.config.styles && layer.config.styles.length > 1)" aria-hidden="true" class="fas fa-ban fa-stack-2x"></i>
                           </span>
-                          <span class="fa-stack" style="vertical-align: top;" :title="$t('DOWNLOAD FORMATS') + ': ' + layer.getDownloadFormats().join(', ')">
+                          <span class="fa-stack metadata-capability" :title="$t('DOWNLOAD FORMATS') + ': ' + layer.getDownloadFormats().join(', ')">
                             <i class="fas fa-download fa-stack-1x" :aria-label="layer.getDownloadFormats().length > 0"></i>
-                            <i v-if="!layer.getDownloadFormats().length" aria-hidden="true" class="fas fa-ban fa-stack-2x" style="color: rgba(255, 99, 71, .7);"></i>
+                            <i v-if="!layer.getDownloadFormats().length" aria-hidden="true" class="fas fa-ban fa-stack-2x"></i>
                           </span>
                           <p style="margin-top: 1em;"><b style="color: rgba(255, 99, 71, 1);">{{ $t('Restrictions applied to user') }}:</b> <span>{{ username }}</span></p>
                         </td>
@@ -534,7 +539,7 @@
 
       </div>
 
-      <menu style = "display: flex; justify-content: end;">
+      <menu class = "metadata-footer">
         <button
           v-t          = "'close'"
           type         = "cancel"
@@ -718,49 +723,128 @@
 </script>
 
 <style scoped>
-  .nav[role="tablist"] {
+  .metadata-dialog {
+    width: min(1200px, 80vw);
+    min-width: 0;
+    max-width: calc(100vw - 24px);
+    height: min(82vh, 820px);
+    max-height: calc(100vh - 24px);
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid #d7dde0;
+    border-radius: 8px;
+    color: #263238;
+    background: #fff;
+    box-shadow: 0 8px 24px rgb(20 35 45 / 18%);
+  }
+
+  .metadata-form {
     display: flex;
-    gap: 1px;
-    justify-content: space-between;
-  }
-
-  .nav[role="tablist"] li {
-    background-color: #e4e4e4;
+    flex-direction: column;
     width: 100%;
-  }
-
-  .nav[role="tablist"] li.active {
-    background-color: #FFF;
-  }
-
-  .nav[role="tablist"] li.active a.metadata-item-tab {
-    border-bottom-color: var(--bgcolor) !important;
-    border-bottom-width: 4px;
-    background-color: transparent !important;
-    color: #2c3b41 !important;
-  }
-
-  .nav[role="tablist"] li a.metadata-item-tab {
     height: 100%;
-    margin:0;
-    font-size: 1.1em;
-    border-top: 0;
-    border-right: 0;
-    border-left: 0;
-    border-bottom: 4px solid #e2e2e2;
+    min-height: 0;
+    padding: 0 !important;
   }
 
-  .nav[role="tablist"] li a {
+  .metadata-header {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 52px;
+    padding: 8px 18px;
+    border-bottom: 1px solid #e1e6e7;
+    background: #fff;
+  }
+
+  .metadata-header > i {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    color: #2c3b41;
+    background: #edf1f2;
+    font-size: 1.5rem;
+  }
+
+  .metadata-header h1 { margin: 0; color: #2c3b41; font-size: 1.9rem; font-weight: 700; }
+
+  .metadata-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    margin: 0;
+    padding: 8px 14px 0;
+    overflow-x: auto;
+    border-bottom: 1px solid #d7dde0;
+    background: #f4f5f5;
+    scrollbar-width: thin;
+  }
+
+  .metadata-tabs > li {
+    width: auto;
+    margin: 0;
+    overflow: hidden;
+    border-radius: 6px 6px 0 0;
+    background: transparent;
+  }
+
+  .metadata-tabs > li.active { background: #fff; }
+
+  .metadata-tabs > li > a.metadata-item-tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 50px;
+    margin: 0;
+    padding: 8px 10px;
+    border: 1px solid transparent;
+    border-bottom: 3px solid transparent;
+    border-radius: 6px 6px 0 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.3;
     text-align: center;
+    white-space: nowrap;
   }
 
-  .nav[role="tablist"] li a i {
-    margin-right: 5px;
+  .metadata-tabs > li > a.metadata-item-tab > i {
+    display: grid;
+    place-items: center;
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: color-mix(in srgb, currentColor 12%, #fff);
+    font-size: 1.3rem;
   }
 
-  .metadata-item-tab {
-    margin-right: 10px;
-    margin-bottom: 10px;
+  .metadata-tabs > li > a.metadata-item-tab:hover { background: rgb(255 255 255 / 75%); }
+
+  .metadata-tabs > li.active > a.metadata-item-tab,
+  .metadata-tabs > li.active > a.metadata-item-tab:hover,
+  .metadata-tabs > li.active > a.metadata-item-tab:focus {
+    border-bottom-color: currentColor;
+    border-left-color: #e1e6e7;
+    border-right-color: #e1e6e7;
+    background: #fff;
+    cursor: default;
+  }
+
+  .metadata-tabs > li > a.metadata-item-tab:focus-visible,
+  .layer-nav-tabs > li > a:focus-visible {
+    outline: 2px solid var(--skin-focus);
+    outline-offset: -3px;
+  }
+
+  .metadata-scroll {
+    flex: 1;
+    min-height: 0;
+    padding: 10px 18px 16px;
+    overflow: auto;
+    background: #fff;
   }
 
   .tab-title {
@@ -769,36 +853,19 @@
     right: auto;
   }
 
-  .tab-pane > table > tbody > tr {
-    margin: 0 !important;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
-  }
+  #metadata_general table { width: 100%; border-collapse: collapse; }
+  #metadata_general table td { padding: 10px 8px; border-bottom: 1px solid #e8eceb; line-height: 1.5; }
+  #metadata_general td.label { color: #536267; font-size: 1.2rem; font-weight: 700; text-align: left; }
+  #metadata_general td.value { color: #263238; font-size: 1.4rem; overflow-wrap: anywhere; }
 
-  .nav-tabs {
-    border-bottom: 0 none;
-  }
-
-  .label {
-    font-weight: bold;
-    font-size: 1.1em;
-    color: unset;
-    text-align: unset;
-    line-height: unset;
-    padding: unset;
-    white-space: unset;
-  }
-
-  #metadata_layers > details > summary              { border-bottom: 1px solid #eee; }
-  #metadata_layers > details > summary              { cursor: pointer; font-size: 18px; position: relative; padding: 20px 0; }
+  #metadata_layers > details { margin-bottom: 8px; overflow: hidden; border: 1px solid #dfe5e3; border-radius: 6px; background: #fff; }
+  #metadata_layers > details > summary { display: flex; align-items: center; gap: 10px; min-height: 54px; cursor: pointer; font-size: 1.5rem; position: relative; padding: 10px 14px; background: #f7f8f8; }
+  .metadata-layer-icon { display: inline-grid; place-items: center; flex: 0 0 30px; width: 30px; height: 30px; margin-right: 2px; border-radius: 6px; color: var(--skin-color); background: hsl(from var(--skin-color) h s calc(l + 44)); font-size: 1.4rem; }
   #metadata_layers > details > summary::marker      { content: ""; }
-  #metadata_layers > details > summary::after       { content: '+'; float: right; font-weight: bold; font-size: 25px; margin-top: -4px; }
+  #metadata_layers > details > summary::after       { content: '+'; margin-left: auto; color: var(--skin-color); font-weight: bold; font-size: 2rem; }
   #metadata_layers > details[open] > summary::after { content: '-' }
 
-  .layer-nav-tabs {
-    border-bottom: 0 solid #ddd;
-  }
+  .layer-nav-tabs { gap: 6px; margin-top: 8px; border-bottom: 1px solid #e1e6e7; }
 
   .layer-nav-tabs > li.active > a,
   .layer-nav-tabs > li.active > a:focus,
@@ -807,8 +874,11 @@
   }
 
   .layer-nav-tabs > li > a {
-    border: none;
+    position: relative;
+    padding: 7px 10px;
+    border: 0;
     color: #aeaeae;
+    font-weight: 700;
   }
 
   .layer-nav-tabs > li.active > a,
@@ -818,14 +888,15 @@
   }
 
   .layer-nav-tabs > li > a::after {
-    content: "";
-    height: 2px;
     position: absolute;
-    width: 100%;
-    left: 0px;
+    right: 0;
     bottom: -1px;
-    transition: all 250ms ease 0s;
-    transform: scale(0);
+    left: 0;
+    height: 2px;
+    background: var(--skin-color);
+    content: "";
+    transform: scaleX(0);
+    transition: transform .16s ease;
   }
 
   .layer-nav-tabs > li.active > a::after,
@@ -847,8 +918,20 @@
     color: var(--skin-color) !important;
   }
   
-  .layer-nav-tabs > li > a::after {
-    background: var(--skin-color);
+  .layer-tab-content { margin-top: 8px; overflow: auto; }
+  .metadata-capability { position: relative; display: inline-block; width: 34px; height: 34px; margin: 0 6px 6px 0; border: 1px solid #d7dde0; border-radius: 50%; color: var(--skin-color); background: #f4f6f5; font-size: 1.4rem; line-height: 32px; text-align: center; vertical-align: middle; }
+  .metadata-capability .fa-stack-1x,
+  .metadata-capability .fa-stack-2x { line-height: 32px; }
+  .metadata-capability .fa-ban { color: var(--skin-danger) !important; }
+  #metadata_legend img { max-width: 100%; height: auto; }
+
+  .metadata-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0;
+    padding: 10px 18px;
+    border-top: 1px solid #e1e6e7;
+    background: #f7f8f8;
   }
 
   .credit-title-logo {
@@ -876,8 +959,21 @@
   #metadata_general :is(dt, dd) { margin: 0; padding: .5em; }
 
   @media (max-width: 767px) {
-    #modal-metadata > form > .nav-tabs {
-      display: none;
+    .metadata-dialog {
+      width: calc(100vw - 16px);
+      height: calc(100vh - 16px);
+      max-height: calc(100vh - 16px);
+      border-radius: 6px;
     }
+
+    .metadata-header { min-height: 48px; padding: 7px 14px; }
+    .metadata-tabs { grid-template-columns: repeat(4, max-content); padding: 0 8px; }
+    .metadata-scroll { padding: 8px 14px 12px; }
+    #metadata_general table td { padding: 8px 5px; }
+    .metadata-footer { padding: 8px 14px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .layer-nav-tabs > li > a::after { transition: none; }
   }
 </style>
