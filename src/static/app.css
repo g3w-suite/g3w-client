@@ -1525,6 +1525,7 @@ body.is-mobile .tree-item input[type="checkbox"]    { accent-color: var(--skin-c
   box-shadow: 0 8px 24px rgb(20 35 45 / 18%);
 }
 #nav-lang-dialog form { gap: 8px !important; }
+#nav-lang-dialog input[type="radio"] { flex: 0 0 18px; width: 18px; height: 18px; margin-top: 0; }
 #nav-lang-dialog label {
   display: flex;
   align-items: center;

@@ -211,7 +211,7 @@
                   :value  = "lang[0]" 
                   v-model = "language" 
                   @click  = "$event.target.closest('dialog').close()" 
-                  style   = "pointer-events:none;margin-right: 8px;"
+                  style   = "pointer-events:none;"
                 >
                 <img 
                   :src   = "urls.staticurl +'img/flags/' + lang[0].toLowerCase() + '.png'" 
