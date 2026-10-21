@@ -47,7 +47,8 @@
               </span>
               <span class = "menu-item-title">
                 <span>{{ item.title || item.name }}</span>
-                <i class = "fas fa-chevron-right" aria-hidden = "true"></i>
+                <i v-if = "'projects' === current" class = "fas fa-map" aria-hidden = "true"></i>
+                <i v-else class = "fas fa-chevron-right" aria-hidden = "true"></i>
               </span>
             </button>
             <div v-if = "item.description" class = "menu-item-description" v-html = "item.description"></div>
