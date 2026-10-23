@@ -50,23 +50,18 @@
       <div
         class = "table-tools"
       >
-        <!-- DOWNLOAD BUTTON -->
         <button
+          v-for          = "action in relation_actions"
+          :key           = "action.id"
           type           = "button"
-          v-disabled     = "!table.hasfeatures && (!download_formats.length || ApplicationState.download)"
-          class          = "action-button fas fa-download"
-          @click.stop    = "showDownloadModal"
-          title          = "Downloads"
-          data-placement = "left"
-        ></button>
-
-        <!-- CHART BUTTON -->
-        <button
-          v-disabled     = "!table.hasfeatures && !has_charts"
-          class          = "action-button fas fa-chart-bar"
-          :class         = "[ chart.toggled ? 'toggled-white' : '',]"
-          @click.stop    = "toggleChart"
-          title          = "Show Chart"
+          v-disabled     = "!!action.state?.disabled"
+          class          = "action-button"
+          :class         = "[action.class, { 'toggled-white': action.state?.toggled }]"
+          :style         = "action.style"
+          @click.stop    = "runRelationAction(action)"
+          :title         = "$t(action.hint)"
+          :aria-label    = "$t(action.hint)"
+          :aria-pressed  = "action.state?.toggled"
           data-placement = "bottom"
         ></button>
 
@@ -80,7 +75,8 @@
       <div
         ref    = "content"
         :style = "{
-          width:         chart.toggled ? '70%' : '100%',
+          flex:          '1',
+          minWidth:      '0',
           display:       'flex',
           flexDirection: 'column',
         }"
@@ -171,20 +167,27 @@
         </div>
       </div>
 
-      <!-- QPLOTLY CHART -->
+      <!-- Plugins mount their content here; Relations owns all panel resizing. -->
       <div
-        id       = "chart_content"
-        ref      = "chart"
-        :style   = "{
-          width:    chart.toggled ? '30%' : '0',
-          display:  chart.toggled ? 'flex' : 'none',
-        }"
+        v-for  = "panel in panels" :key = "panel.id"
+        class  = "relation-panel"
+        :style = "{ '--panel-width': `${panel.width}%` }"
       >
-        <!-- VERTICAL RESIZE -->
         <div
-          style           = "border-inline: 1px solid hsl(from var(--skin-color) h s calc(l + 30)); min-width: 5px; background-color: #ddd; cursor: col-resize;margin:0 8px; user-select: none;"
-          @mousedown.stop = "onChartResize"
+          class               = "relation-panel-divider"
+          role                = "separator"
+          tabindex            = "0"
+          :aria-label         = "$t(panel.label)"
+          aria-orientation    = "vertical"
+          aria-valuemin       = "10"
+          :aria-valuemax      = "getPanelMaxWidth(panel)"
+          :aria-valuenow      = "panel.width"
+          @pointerdown.stop   = "$event.button === 0 && $event.currentTarget.setPointerCapture($event.pointerId)"
+          @pointermove        = "resizePanel(panel, $event)"
+          @lostpointercapture = "resizePanel(panel, $event)"
+          @keydown            = "resizePanel(panel, $event)"
         ></div>
+        <div :ref = "`relation-panel-${panel.id}`" class = "relation-panel-content"></div>
       </div>
 
     </div>
@@ -228,11 +231,10 @@
         ApplicationState,
 
         /**
-         * @since 4.0.0 chart state (action button)
+         * @since 4.2.0
          */
-        chart: {
-          toggled: false,
-        },
+        relation_actions: [], //relation actions buttons
+        panels          : [], //relations panel (table etc..)
 
         /**
          * @since 3.11.2 table state
@@ -340,24 +342,6 @@
       /**
        * @since 4.1.0
        */
-      charts() {
-        if (this.relation) {
-          return GUI.plotLayerIds.find(pid => this.relation.referencingLayer == pid) ? [this.relation.referencingLayer] : [];
-        } else {
-          return this.relations.map(r => GUI.plotLayerIds.find(id => r.referencingLayer === id)).filter(Boolean);
-        }
-      },
-
-      /**
-       * @since 4.1.0
-       */
-      has_charts() {
-        return !!this.charts.find(id => this.relation?.referencingLayer === id);
-      },
-
-      /**
-       * @since 4.1.0
-       */
       parent_layer() {
         return getCatalogLayerById(this.$options.layerId);
       }
@@ -374,6 +358,67 @@
     },
 
     methods: {
+      /** Create a plugin mount point; Vue must render the panel before its ref is available. */
+      async addPanel({ id, label, width = 30 }) {
+        const panel     = { id, label, width: 0 };
+        const maxWidth  = this.getPanelMaxWidth(panel);
+        if (maxWidth < 10) {
+          throw new Error('Not enough space for another relation panel');
+        }
+        panel.width = Math.min(maxWidth, Math.max(10, width));
+        this.panels.push(panel);
+        await this.$nextTick();
+        return this.$refs[`relation-panel-${id}`][0];
+      },
+
+      /** Plugins unmount their content before removing the enclosing panel. */
+      removePanel(id) {
+        this.panels = this.panels.filter(panel => panel.id !== id);
+      },
+
+      /** Reserve at least 10% for the table without resizing other panels. */
+      getPanelMaxWidth(panel) {
+        return this.panels.reduce((available, other) => available - (other.id === panel.id ? 0 : other.width), 90);
+      },
+
+      /** Handle divider interaction here: calculate the width, clamp it, then notify plugins. */
+      resizePanel(panel, event) {
+        if ('lostpointercapture' === event.type) {
+          this.$nextTick(() => GUI.emit('resize'));
+          return;
+        }
+
+        const maxWidth = this.getPanelMaxWidth(panel);
+        let width;
+        if ('pointermove' === event.type) {
+          if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
+            return;
+          }
+          // Keep the right edge fixed so dragging does not move the other panels.
+          const right = event.currentTarget.parentElement.getBoundingClientRect().right;
+          width = (right - event.clientX) * 100 / this.$refs.wrapper.clientWidth;
+        } else if ('keydown' === event.type) {
+          width = {
+            ArrowLeft:  panel.width + 5,
+            ArrowRight: panel.width - 5,
+            Home:       10,
+            End:        maxWidth,
+          }[event.key];
+          if (undefined === width) {
+            return;
+          }
+          event.preventDefault();
+        } else {
+          return;
+        }
+
+        panel.width = Math.min(maxWidth, Math.max(10, width));
+        // A drag notifies on release; a keyboard change is complete immediately.
+        if ('keydown' === event.type) {
+          this.$nextTick(() => GUI.emit('resize'));
+        }
+      },
+
       getFieldType(field) {
         let type = field.type;
         if ('vue' !== type) {
@@ -412,6 +457,11 @@
        */
       runAction(action, i) {
         action?.cbk?.(this.layer.state, this.table.features[i], action);
+      },
+
+      /**@since 4.2.0 */
+      async runRelationAction(action) {
+        return action.cbk?.(this.layer.state, this.feature, action, this.$refs.wrapper);
       },
 
       /**
@@ -613,21 +663,6 @@
         });
       },
 
-      onChartResize() {
-        const move = e => {
-          const perc                     =  (Math.abs(e.x - window.innerWidth) * 100 / this.$refs.wrapper.clientWidth); // percentage
-          this.$refs.content.style.width = `${100 - perc}%`;
-          this.$refs.chart.style.width   = `${perc}%`;
-        };
-        const el = document.querySelector('#g3w-content');
-        el.addEventListener('mousemove', move);
-        el.addEventListener('mouseup', async () => { 
-          el.removeEventListener('mousemove', move); 
-          await this.$nextTick();
-          GUI.emit('resize') 
-        }, { once: true });
-      },
-
       /**
        * @since 4.1.0
        */
@@ -732,20 +767,6 @@
         dialog.showModal();
       },
 
-      /**
-       * @since 4.1.0
-       */
-      async toggleChart() {
-        this.chart.toggled = !this.chart.toggled;
-        await this.$nextTick();
-        this.chart.container = this.chart.container || document.querySelector('#chart_content');
-        if (this.chart.toggled) {
-          GUI.showChart([this.relation.referencingLayer], this.chart.container, { relations: [this.relation], fid: this.featureId });
-        } else {
-          GUI.hideChart(this.chart.container);
-        }
-      },
-
     },
 
     async mounted() {
@@ -756,6 +777,8 @@
       });
       // autoload selected relation
       if (this.relation) {
+        const component = this;
+
         this.actions[this.table.layerId].push(...[
           {
             id :   "zoomgeometry",
@@ -772,12 +795,41 @@
             condition: () => this.form_structure,
           }   
         ]);
-        //call setters
+        // Let plugins extend the actions attached to individual related records.
         GUI.addActionsForLayers(this.actions, [ {
           id:       this.table.layerId,
-          features: this.state.features,
+          features: this.table.features,
         }]);
-        
+
+        // Register built-in toolbar actions before plugins append their own.
+        this.relation_actions.push({
+          id:    'download',
+          class: 'fas fa-download',
+          hint:  'Downloads',
+          cbk:   () => this.showDownloadModal(),
+          state: {
+            // Keep the action in sync with feature availability and active downloads.
+            get disabled() {
+              return !component.table.hasfeatures && (!component.download_formats.length || ApplicationState.download);
+            },
+          },
+        });
+
+        // Plugins append toolbar actions; each action can expose clear() for cleanup.
+        GUI.addActionsForRelation(this.relation_actions, {
+          // Layer containing the related records, and the relation being displayed.
+          layer:       this.layer,
+          relation:    this.relation,
+          // Parent feature and its ID, used to filter content to this relation.
+          feature:     this.feature,
+          fid:         this.featureId,
+          // Local wrapper for this view, not a global container shared by all relations.
+          container:   this.$refs.wrapper,
+          // Relations owns panel layout/resizing; plugins mount into the returned DOM node.
+          addPanel:    this.addPanel,
+          // Plugins must unmount their content before removing the enclosing panel.
+          removePanel: this.removePanel,
+        });
 
         this.relation.title = this.relation.name;
         if ('ONE' !== this.relation.type) {
@@ -788,18 +840,9 @@
       }
     },
 
-    /**
-     * @fires hide-chart
-     */
     async beforeDestroy() {
-      // hide opened chart
-      if (this.chart.toggled) {
-         GUI.hideChart(this.chart.container);
-      }
-      if (this.chart.container) {
-        this.$emit('hide-chart', this.chart.container);
-        this.chart.container = null;
-      }
+      // Release plugin content; one failed cleanup must not prevent the others.
+      await Promise.allSettled(this.relation_actions.map(async action => action.clear?.()));
       // reset columns search
       this.columns.forEach(c => delete c.search); 
       if (1 === this.relations.length) {
@@ -813,6 +856,33 @@
 </script>
 
 <style scoped>
+  .relation-panel {
+    display: flex;
+    flex: 0 0 var(--panel-width);
+    min-width: 0;
+  }
+
+  .relation-panel-content {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .relation-panel-divider {
+    border-inline: 1px solid var(--skin-color);
+    flex: 0 0 5px;
+    background-color: #ddd;
+    cursor: col-resize;
+    margin: 0 8px;
+    user-select: none;
+    touch-action: none;
+  }
+
+  .relation-panel-divider:focus-visible {
+    outline: 2px solid #005fcc;
+    outline-offset: 2px;
+  }
+
   .grid-item {
     min-height: 80px;
     border: 2px solid;
