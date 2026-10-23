@@ -461,7 +461,7 @@
 
       /**@since 4.2.0 */
       async runRelationAction(action) {
-        action.cbk?.(this.layer.state, this.feature, action, this.$refs.wrapper);
+        return action.cbk?.(this.layer.state, this.feature, action, this.$refs.wrapper);
       },
 
       /**
