@@ -842,7 +842,7 @@
 
     async beforeDestroy() {
       // Release plugin content; one failed cleanup must not prevent the others.
-      await Promise.allSettled(this.relation_actions.map(action => action.clear?.()));
+      await Promise.allSettled(this.relation_actions.map(async action => action.clear?.()));
       // reset columns search
       this.columns.forEach(c => delete c.search); 
       if (1 === this.relations.length) {
