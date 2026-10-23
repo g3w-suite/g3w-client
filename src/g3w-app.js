@@ -98,11 +98,6 @@ export default new (class GUI extends Emitter {
 
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   */
-  plotLayerIds = [];
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
    * 
    * <Array> where are store vector layer add on runtime
    */
@@ -345,6 +340,8 @@ export default new (class GUI extends Emitter {
       'setQueryResponse',
       /** @since 4.1.0 */
       'addActionsForLayers',
+      /** @since 4.2.0 */
+      'addActionsForRelation',
       /** @since 4.1.0 */
       'postRender',
       /** @since 4.1.0 */
@@ -2156,6 +2153,13 @@ export default new (class GUI extends Emitter {
   addActionsForLayers(actions, layers) {}
 
   /**
+   * @param { Array } actions relation toolbar actions (id, class, hint, state, cbk, clear)
+   * @param { Object } context relation, parent feature/fid, related layer and local DOM container
+   * @since 4.2.0
+   */
+  addActionsForRelation(actions, context) {}
+
+  /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
    * 
    * Used by the following plugins: "law", "innovapuglia"
@@ -2178,19 +2182,6 @@ export default new (class GUI extends Emitter {
    */
   removeFeatureFromResult(layer, feature) {
     this.updateLayerResultFeatures({ id: layer.id, external: layer.external, features: [feature] });
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   * 
-   * used by the following plugins: "qplotly"
-   *
-   * @param {string[]} ids queried layer ids to be used for plot rendering
-   * 
-   * @since 4.1.0
-   */
-  addLayersPlotIds(ids = []) {
-    this.plotLayerIds = ids;
   }
 
   /**
@@ -2883,30 +2874,6 @@ export default new (class GUI extends Emitter {
       features,
       layer
     };
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   *
-   * @param ids
-   * @param container
-   * @param relationData
-   * 
-   * @since 4.1.0
-   */
-  showChart(ids, container, relationData) {
-    this.emit('show-chart', ids, container, relationData);
-  }
-
-  /**
-   * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
-   * 
-   * @param container DOM element
-   * 
-   * @since 4.1.0
-   */
-  hideChart(container) {
-    this.emit('hide-chart', container);
   }
 
   /**
