@@ -184,7 +184,6 @@
   import { getCatalogLayerById }           from 'utils/getCatalogLayerById';
   import { createRelationsUrl }            from 'utils/createRelationsUrl';
   import { getAlphanumericProps }          from 'utils/getAlphanumericProps';
-  import { saveBlob }                      from 'utils/saveBlob';
 
   export default {
 
@@ -284,13 +283,6 @@
        */
       nmRelation() {
         return ApplicationState.project.getRelationById(this?.relation?.nmRelationId);
-      },
-
-      /**
-       * @since 4.1.0
-       */
-      download_formats() {
-        return this.layer.getDownloadFormats().filter(f => 'pdf' !== f); // exclude pdf because already includes all features
       },
 
       /**
@@ -561,110 +553,6 @@
         });
       },
 
-      /**
-       * @since 4.1.0
-       */
-      async showDownloadModal() {
-        const _   = g3w.gettext;
-
-        let layer = getCatalogLayerById(this.nmRelation?.referencedLayer || this.relation?.referencingLayer || this.layerId);
-        layer     = layer.state;
-
-        if (!layer) {
-          throw 'no layer';
-        }
-
-        const catalog_layer  = getCatalogLayerById(layer.id);
-
-        const dialog = Object.assign(document.createElement('template'), {
-          innerHTML: /* html */`
-            <dialog>
-              <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31"><i class="fas fa-download" style="margin-right: .5ch;"></i> ${ _('Export features') }</h4>
-              <form method="dialog">
-
-                <div class="form-group">
-                  <label>${ _('Layer') }</label>
-                  <select name="layer" class="form-control" disabled>
-                    <option value="${layer.id}" selected>${ layer.name || layer.title } (${ this.layerId })</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label>${ _('Data Format') }</label>
-                  <select name="format" class="form-control">
-                    ${[
-                        catalog_layer?.isGeoTIFFDownloadable?.() ? /* html */`<option value="GeoTiff">${ _('GeoTiff') }</option>` : '',
-                        catalog_layer?.isShpDownloadable?.()     ? /* html */`<option value="Shp">${ _('Shapefile') }</option>` : '',
-                        catalog_layer?.isGpxDownloadable?.()     ? /* html */`<option value="Gpx">${ _('GPX') }</option>` : '',
-                        catalog_layer?.isGpkgDownloadable?.()    ? /* html */`<option value="Gpkg">${ _('GeoPackage') }</option>` : '',
-                        catalog_layer?.isCsvDownloadable?.()     ? /* html */`<option value="Csv">${ _('CSV') }</option>` : '',
-                        catalog_layer?.isXlsDownloadable?.()     ? /* html */`<option value="Xls">${ _('Excel') }</option>` : '',
-                      ].filter(Boolean).join('')
-                    }
-                  </select>
-                </div>
-
-                <menu style="display: flex; justify-content: space-between;">
-                  <button id="confirm_button" type="submit" value="confirm" class="btn btn-block btn-success">Download</button>
-                </menu>
-              </form>
-
-            </dialog>
-          `.trim()
-        }).content.firstChild;
-
-        dialog.addEventListener("click", e => {
-          if (e.target === dialog) {
-            dialog.close();
-          }
-        });
-
-        dialog.addEventListener('close', async () => {
-          if ('confirm' === dialog.returnValue) {
-
-            ApplicationState.download = true;
-            try {
-              const format   = dialog.querySelector('[name="format"]').value.toLowerCase();
-
-              const response = await fetch(createRelationsUrl({
-                  layerId:  this.layerId,
-                  fid:      this.featureId,
-                  relation: this.relation,
-                  type:     format
-                }), {
-                method:  'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Access-Control-Expose-Headers': 'Content-Disposition', // get filename from server
-                },
-                body: JSON.stringify({ formatter: 1 }),
-                signal: AbortSignal.timeout(TIMEOUT),
-              });
-
-              if (!response?.ok) {
-                throw (await response.json()).message;
-              }
-
-              saveBlob(await response.blob(), response.headers.get('content-disposition').split('filename=').at(-1));
-
-            } catch(e) {
-              console.warn(e);
-              GUI.showUserMessage({
-                type:     'alert',
-                message:  e ?? 'server_error',
-                closable: true,
-              });
-            }
-
-            ApplicationState.download = false;
-          }
-          dialog.remove();
-        });
-
-        document.body.appendChild(dialog);
-        dialog.showModal();
-      },
-
     },
 
     async mounted() {
@@ -675,8 +563,6 @@
       });
       // autoload selected relation
       if (this.relation) {
-        const component = this;
-
         this.actions[this.table.layerId].push(...[
           {
             id :   "zoomgeometry",
@@ -699,24 +585,11 @@
           features: this.table.features,
         }]);
 
-        // Register built-in toolbar actions before plugins append their own.
-        this.relation_actions.push({
-          id:    'download',
-          class: 'fas fa-download',
-          hint:  'Downloads',
-          cbk:   () => this.showDownloadModal(),
-          state: {
-            // Keep the action in sync with feature availability and active downloads.
-            get disabled() {
-              return !component.table.hasfeatures && (!component.download_formats.length || ApplicationState.download);
-            },
-          },
-        });
-
         // Plugins append toolbar actions; each action can expose clear() for cleanup.
         GUI.addActionsForRelation(this.relation_actions, {
           // Layer containing the related records, and the relation being displayed.
           layer:       this.layer,
+          layerId:     this.layerId,
           relation:    this.relation,
           // Parent feature and its ID, used to filter content to this relation.
           feature:     this.feature,

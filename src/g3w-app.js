@@ -9,7 +9,7 @@
  * @since 4.1.0
  */
 
-import { G3W_FID, QUERY_POINT_TOLERANCE }       from 'g3w-constants';
+import { G3W_FID, QUERY_POINT_TOLERANCE, TIMEOUT } from 'g3w-constants';
 import Emitter                                  from 'g3w-emitter';
 import Component                                from 'g3w-component';
 import Panel                                    from 'g3w-panel';
@@ -22,6 +22,7 @@ import { getUniqueDomId }                       from 'utils/getUniqueDomId';
 import { toRawType }                            from 'utils/toRawType';
 import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
 import { getAlphanumericProps }                 from 'utils/getAlphanumericProps';
+import { createRelationsUrl }                   from 'utils/createRelationsUrl';
 import { intersects }                           from 'utils/intersects';
 import { within }                               from 'utils/within';
 import { saveBlob }                             from 'utils/saveBlob';
@@ -37,6 +38,7 @@ import { idb }                                  from 'utils/idb';
 import { waitFor }                              from 'utils/waitFor';
 import { debounce }                             from 'utils/debounce';
 import { groupBy }                              from 'utils/groupBy';
+import { toShapefile }                          from 'utils/toShapefile';
 
 import PickCoordinatesInteraction               from 'interactions/pick-coordinates';
 
@@ -385,6 +387,64 @@ export default new (class GUI extends Emitter {
       // return previous percentage
       return perc;
     };
+
+    this.onafter('addActionsForLayers', (actions, layers) => {
+      layers.filter(layer => layer?.downloads?.length > 0).forEach(layer => {
+        actions[layer.id].push({
+          id: 'downloads',
+          download: true,
+          class: 'fas fa-download',
+          state: { toggled: layer.features.reduce((state, _, index) => Object.assign(state, { [index]: null }), {}) },
+          toggleable: true,
+          hint: 'Downloads',
+          change({ features }) {
+            this.state.toggled = Object.assign({}, this.state.toggled, ...features.map((_, index) => ({ [index]: false })));
+          },
+          cbk: (layer, feature, action, index) => {
+            action.state.toggled[index] = !action.state.toggled[index];
+            this.downloadFeatures({
+              layer,
+              features: [feature],
+              action,
+              index,
+              down_with_polygon: 'polygon' === this.state.query.type && `${this.state.query.fid}`,
+            });
+          },
+        });
+      });
+    });
+
+    this.onafter('addActionsForRelation', (actions, { layer, layerId, relation, fid }) => {
+      const formatMap = { geotiff: 'GeoTiff', shapefile: 'Shp', gpkg: 'Gpkg', gpx: 'Gpx', csv: 'Csv', xls: 'Xls' };
+      const formats = layer.getDownloadFormats().filter(format => 'pdf' !== format).map(format => formatMap[format]).filter(Boolean);
+      if (!formats.length) {
+        return;
+      }
+      actions.push({
+        id: 'download',
+        class: 'fas fa-download',
+        hint: 'Downloads',
+        state: { get disabled() { return ApplicationState.download; } },
+        cbk: () => this.downloadFeatures({
+          layer: layer.state,
+          formats,
+          http_request: format => fetch(createRelationsUrl({
+            layerId,
+            fid,
+            relation,
+            type: format.toLowerCase(),
+          }), {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Expose-Headers': 'Content-Disposition',
+            },
+            body: JSON.stringify({ formatter: 1 }),
+            signal: AbortSignal.timeout(TIMEOUT),
+          }),
+        }),
+      });
+    });
   }
 
   /**
@@ -2154,7 +2214,7 @@ export default new (class GUI extends Emitter {
 
   /**
    * @param { Array } actions relation toolbar actions (id, class, hint, state, cbk, clear)
-   * @param { Object } context relation, parent feature/fid, related layer and local DOM container
+   * @param { Object } context relation, parent feature/fid, related layer and parent layer ID
    * @since 4.2.0
    */
   addActionsForRelation(actions, context) {}
@@ -5080,6 +5140,183 @@ export default new (class GUI extends Emitter {
    */
   getSelectedLayer() {
     return this.#selectedLayer;
+  }
+
+  /**
+   * @since 4.3.0 
+   */
+  downloadFeatures({
+    layer,
+    features = [],
+    action,
+    index,
+    down_with_polygon = false,
+    filter,
+    formats,
+    http_request,
+  } = {}) {
+    if (!layer) {
+      throw new Error('no layer');
+    }
+
+    this.downloadFeatures.dialog?.close?.();
+    this.downloadFeatures.dialog?.remove?.();
+
+    features = Array.isArray(features) ? features : [features];
+    const catalogLayer = getCatalogLayerById(layer.id);
+    const externalLayer = !catalogLayer && layer;
+    const dialog = this.downloadFeatures.dialog = Object.assign(document.createElement('template'), {
+      innerHTML: /* html */`
+        <dialog aria-label="${_('Export features')}">
+          <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31">
+            <i class="fas fa-download" style="margin-right: .5ch;"></i> ${_('Export features')}
+          </h4>
+          <form method="dialog">
+            <div class="form-group">
+              <label>${_('Layer')}</label>
+              <select name="layer" class="form-control" disabled>
+                <option value="${layer.id}">${layer.name || layer.title}${features.length ? ` (${features.length})` : ''}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>${_('Data Format')}</label>
+              <select name="format" class="form-control">
+                ${[
+                    [catalogLayer?.isGeoTIFFDownloadable?.(), 'GeoTiff', _('GeoTiff')],
+                    [catalogLayer?.isGeoTIFFDownloadable?.(), 'GeoTiff-at-map-extent', _('GeoTiff (current view)')],
+                    [catalogLayer?.isShpDownloadable?.(), 'Shp', _('Shapefile')],
+                    [catalogLayer?.isGpxDownloadable?.(), 'Gpx', _('GPX')],
+                    [catalogLayer?.isGpkgDownloadable?.(), 'Gpkg', _('GeoPackage')],
+                    [catalogLayer?.isCsvDownloadable?.(), 'Csv', _('CSV')],
+                    [catalogLayer?.isXlsDownloadable?.(), 'Xls', _('Excel')],
+                    [1 === features.length && catalogLayer?.state?.download_pdf, 'Pdf', _('PDF')],
+                    [externalLayer && 'wms' !== externalLayer._type && externalLayer.downloadUrl, 'external-url', 'External URL'],
+                    [externalLayer && 'wms' !== externalLayer._type && !externalLayer.downloadUrl, 'external-shp', _('Shapefile')],
+                  ]
+                  .filter(([enabled, value]) => enabled && (!formats || formats.includes(value)))
+                  .map(([, value, label]) => `<option value="${value}">${label}</option>`).join('')
+                }
+              </select>
+            </div>
+            ${!http_request && catalogLayer?.hasDowloadableRelations?.() ? /* html */`
+              <div class="form-group">
+                <label>${_('Include relations in exported file?')}</label>
+                <select name="down_with_relations" class="form-control">
+                  <option value="1">${_('yes')}</option>
+                  <option value="0">${_('no')}</option>
+                </select>
+              </div>
+            ` : ''}
+            ${down_with_polygon ? /* html */`
+              <div class="form-group">
+                <label>${_('Attributes download')}</label>
+                <select name="down_with_polygon" class="form-control">
+                  <option value="0">${_('Features only')}</option>
+                  <option value="1">${_('Features+Query Polygon')}</option>
+                </select>
+              </div>
+            ` : ''}
+            <menu style="display: flex; justify-content: space-between;">
+              <button type="submit" value="confirm" class="btn btn-block btn-success">${_('Download')}</button>
+            </menu>
+          </form>
+        </dialog>
+      `.trim(),
+    }).content.firstChild;
+
+    dialog.querySelector('form').addEventListener('input', event => {
+      if ('format' === event.target.name && !http_request && catalogLayer?.hasDowloadableRelations?.()) {
+        const select = dialog.querySelector('[name="down_with_relations"]');
+        select.value = Number('Pdf' !== event.target.value);
+        select.disabled = 'Pdf' === event.target.value;
+      }
+    });
+
+    dialog.addEventListener('click', event => {
+      if (event.target === dialog) {
+        dialog.close();
+      }
+    });
+    dialog.addEventListener('close', async () => {
+      if ('confirm' !== dialog.returnValue) {
+        if (action) {
+          action.state.toggled[index] = false;
+        }
+        dialog.remove();
+        return;
+      }
+
+      ApplicationState.download = true;
+      try {
+        const format = dialog.querySelector('[name="format"]').value;
+        const downWithRelations = Number(dialog.querySelector('[name="down_with_relations"]')?.value || 0);
+        const down_with_polygon = dialog.querySelector('[name="down_with_polygon"]')?.value;
+        let blob, filename, response, url;
+
+        if (http_request) {
+          response = await http_request(format);
+          if (!response?.ok) {
+            throw (await response.json()).message;
+          }
+          blob = await response.blob();
+          filename = response.headers.get('content-disposition') || 'filename=g3w_file';
+        } else if ('external-url' === format) {
+          response = externalLayer.downloadUrl && await fetch(externalLayer.downloadUrl, {
+            headers: { 'Access-Control-Expose-Headers': 'Content-Disposition' },
+            signal: AbortSignal.timeout(TIMEOUT),
+          });
+          if (!response?.ok) {
+            throw (await response.json()).message;
+          }
+          blob = await response.blob();
+          filename = (response.headers.get('content-disposition') || 'filename=g3w_download_file').split('filename=').at(-1);
+        } else if ('external-shp' === format) {
+          filename = layer.name.split(`.${externalLayer.type}`)[0];
+          blob = await toShapefile(
+            (new ol.format.GeoJSON()).writeFeaturesObject(
+              this.getLayerByName(externalLayer.name).getSource().getFeatures(),
+              { dataProjection: externalLayer.crs, featureProjection: this.getEpsg() || externalLayer.crs }
+            ),
+            { prj: externalLayer.crs, folder: filename },
+          );
+        } else {
+          const data = {
+            down_with_relations: 1 * Boolean(catalogLayer?.hasDowloadableRelations?.()) * downWithRelations,
+            ...(down_with_polygon ? { sbp_qgs_layer_id: layer.id, sbp_fid: down_with_polygon } : {}),
+            ...(!filter ? { fids: features.map(feature => feature.attributes[G3W_FID]).join(',') } : {}),
+            ...(catalogLayer.getToken() ? { filtertoken: catalogLayer.getToken() } : {}),
+            ...(filter || {}),
+            ...('GeoTiff-at-map-extent' === format ? { map_extent: this.getMapExtent().toString() } : {}),
+            ...('Pdf' === format ? { html: document.querySelector(`[feature-html-content="${layer.id}_${index}"]`).innerHTML } : {}),
+          };
+          url = catalogLayer.getUrl(format.replace('-at-map-extent', '').toLowerCase());
+          response = url && await fetch(url, {
+            body: Object.keys(data).reduce((form, key) => { form.append(key, data[key]); return form; }, new FormData()),
+            method: 'POST',
+            headers: { 'Access-Control-Expose-Headers': 'Content-Disposition' },
+            signal: AbortSignal.timeout(TIMEOUT),
+          });
+          if (!response?.ok) {
+            throw (await response.json()).message;
+          }
+          blob = await response.blob();
+          filename = response.headers.get('content-disposition');
+        }
+
+        saveBlob(blob, filename);
+      } catch (error) {
+        this.showUserMessage({ type: 'alert', message: error.message || error });
+      } finally {
+        ApplicationState.download = false;
+        if (action) {
+          action.state.toggled[index] = false;
+        }
+        dialog.remove();
+      }
+    });
+
+    document.body.append(dialog);
+    dialog.showModal();
   }
 
   /**

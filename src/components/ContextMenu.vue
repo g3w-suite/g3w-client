@@ -352,7 +352,6 @@
   import { colorFromHsv }        from 'utils/colorFromHsv';
   import { colorToHsv }          from 'utils/colorToHsv';
   import { getCatalogLayerById } from 'utils/getCatalogLayerById';
-  import { downloadFeatures }    from 'utils/downloadFeatures';
   import { copyUrl }             from 'utils/copyUrl';
   import { gettext as _ }        from 'g3w-i18n';
 
@@ -558,7 +557,7 @@
       },
 
       showDownloadMenu(layer) {
-        downloadFeatures({ layer });
+        GUI.downloadFeatures({ layer });
         this.closeMenu();
       },
 
