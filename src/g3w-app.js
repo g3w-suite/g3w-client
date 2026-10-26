@@ -5143,7 +5143,21 @@ export default new (class GUI extends Emitter {
   }
 
   /**
-   * @since 4.3.0 
+   * Opens the native download dialog and downloads the selected format.
+   *
+   * @param {Object} options
+   * @param {Object} options.layer                             Catalog or external layer to export.
+   * @param {Object|Object[]} [options.features=[]]            Features to export.
+   * @param {Object} [options.action]                          Feature action whose toggle is reset when the dialog closes.
+   * @param {number} [options.index]                           Feature index used by the action and PDF export.
+   * @param {boolean|string} [options.down_with_polygon=false] Enables the query-polygon export option.
+   * @param {Object} [options.filter]                          Additional filters for the catalog-layer request.
+   * @param {string[]} [options.formats]                       Restricts the formats offered in the dialog.
+   * @param {Function} [options.http_request]                  Custom request factory, called with the selected format.
+   * 
+   * @throws {Error}                                           If no layer is provided.
+   * 
+   * @since 4.3.0
    */
   downloadFeatures({
     layer,
