@@ -19,7 +19,6 @@ import { IframeApp }                            from 'g3w-iframe';
 import MapControl                               from 'g3w-control';
 
 import { getUniqueDomId }                       from 'utils/getUniqueDomId';
-import { toRawType }                            from 'utils/toRawType';
 import { getCatalogLayerById }                  from 'utils/getCatalogLayerById';
 import { getAlphanumericProps }                 from 'utils/getAlphanumericProps';
 import { intersects }                           from 'utils/intersects';
@@ -1851,23 +1850,21 @@ export default new (class GUI extends Emitter {
    * @returns {string}
    */
   #errorToMessage(error) {
-    const type = toRawType(error);
-
-    if ('Error' === type) {
+    if (error instanceof Error) {
       return `CLIENT - ${error.message}`;
     }
 
-    if ('Object' === type && error.responseJSON && false === error.responseJSON.result) {
+    if (Array.isArray(error)) {
+      return error.map(error => this.#errorToMessage(error)).join(' ');
+    }
+
+    if (false === error?.responseJSON?.result) {
       const e = error.responseJSON.error;
       return `${(e.code || '').toUpperCase()} ${e.data || ''} ${e.message || '' }`;
     }
 
-    if ('Object' === type && error.responseText) {
+    if (error?.responseText) {
       return error.responseText;
-    }
-
-    if ('Array' === type) {
-      return error.map(e => this.#errorToMessage(e)).join(' ');
     }
 
     return error || 'server_error';
