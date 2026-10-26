@@ -173,17 +173,16 @@
 
 <script>
 
-  import { G3W_FID, PAGELENGTHS, TIMEOUT } from 'g3w-constants';
-  import ApplicationState                  from 'g3w-state';
-  import Component                         from 'g3w-component';
-  import G3WField                          from 'components/G3WField.vue';
-  import G3WTabs                           from 'components/G3WTabs.vue';
-  import { toRawType }                     from 'utils/toRawType';
-  import GUI                               from 'g3w-app';
-  import { debounce }                      from 'utils/debounce';
-  import { getCatalogLayerById }           from 'utils/getCatalogLayerById';
-  import { createRelationsUrl }            from 'utils/createRelationsUrl';
-  import { getAlphanumericProps }          from 'utils/getAlphanumericProps';
+  import { G3W_FID, PAGELENGTHS } from 'g3w-constants';
+  import ApplicationState         from 'g3w-state';
+  import Component                from 'g3w-component';
+  import G3WField                 from 'components/G3WField.vue';
+  import G3WTabs                  from 'components/G3WTabs.vue';
+  import GUI                      from 'g3w-app';
+  import { debounce }             from 'utils/debounce';
+  import { getCatalogLayerById }  from 'utils/getCatalogLayerById';
+  import { createRelationsUrl }   from 'utils/createRelationsUrl';
+  import { getAlphanumericProps } from 'utils/getAlphanumericProps';
 
   export default {
 
@@ -325,33 +324,20 @@
     },
 
     methods: {
-      getFieldType(field) {
-        const value = field.value && 'Object' === toRawType(field.value) && !field.value.coordinates && !field.value.vue ? field.value.value : field.value;
-        if ('vue' === field.type) {
-          return `${field.type}_field`;
-        }
-        if (!value) {
-          return 'simple_field';
-        }
-        if (Array.isArray(value)) {
-          return `${value.length && value[0]?.photo ? 'photo' : 'simple'}_field`;
-        }
-        if ('object' === typeof value && value.coordinates) {
-          return 'geo_field';
-        }
-        if ('object' === typeof value && value.vue) {
+      getFieldType({ type, value }) {
+        if ('vue' === type || value?.vue) {
           return 'vue_field';
         }
-        if ('object' !== typeof value && value.toString().toLowerCase().match(/^(https?:\/\/[^\s]+)\.(png|jpg|jpeg|gif)$/g)) {
+        if (value?.[0]?.photo || /^(https?:\/\/[^\s]+)\.(png|jpg|jpeg|gif)$/i.test(value)) {
           return 'photo_field';
         }
-        if ('object' !== typeof value && value.toString().match(/^(https?:\/\/[^\s]+)/g)) {
+        if (/^https?:\/\/[^\s]+/.test(value)) {
           return 'link_field';
         }
-        if ('object' !== typeof value) {
-          return 'simple_field';
+        if (value?.coordinates) {
+          return 'geo_field';
         }
-        return `${field.type}_field`;
+        return value && 'object' === typeof value ? `${type}_field` : 'simple_field';
       },
 
       /**
