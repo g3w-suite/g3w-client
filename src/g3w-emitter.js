@@ -31,16 +31,38 @@ export default class Emitter {
       value = value.reduce((setters, i) => Object.assign(setters, { [i]: this[i] }), {});
     }
 
-    this.___setters = value || {};
+    const setters = value || {};
+    const entries = Object.entries(setters).filter(([evt, listener]) => {
+      if ('function' !== typeof listener) {
+        console.warn(`[G3W-CLIENT] Setter "${evt}" is not a function and was skipped`);
+        return false;
+      }
+      return true;
+    });
 
     // register and handle setters (before/after)
-    Object.entries(this.___setters).forEach(([evt, listener]) => {
+    this.___setters = Object.fromEntries(entries);
+
+    entries.forEach(([evt, listener]) => {
       this[evt] = new Proxy(listener, {
         apply: (target, ctx, args) => {
-          this.trigger(`onbefore:${evt}`, args);  // call "onbefore" listeners
-          const result = target.apply(ctx, args); // execute setter function
-          this.trigger(`onafter:${evt}`, args);   // call "onafter" listeners
-          return result;
+          // Continue immediately for sync values and wait only for thenables.
+          const continueWith = (result, next) => {
+            if (result && 'function' === typeof result.then) {
+              return Promise.resolve(result).then(next);
+            }
+            return next(result);
+          };
+
+          // Run after-hooks only after the setter succeeds, preserving its result.
+          const runSetter = () => {
+            return continueWith(Reflect.apply(target, ctx, args), value =>
+              continueWith(this.trigger(`onafter:${evt}`, args), () => value)
+            );
+          };
+
+          // Complete before-hooks before invoking the setter.
+          return continueWith(this.trigger(`onbefore:${evt}`, args), runSetter);
         }
       });
     });
@@ -133,18 +155,39 @@ export default class Emitter {
    */
   trigger(evt, args) {
     this.___events[evt] = this.___events[evt] || [];
-    let listener, listeners = this.___events[evt].slice(0);
-    for (let i = 0; i < listeners.length; i++) {
-      listener = listeners[i];
-      if (true === listener.once) {
-        this.off(evt, listener.listener);
+    // Use a snapshot so listener changes affect only later emissions.
+    const listeners     = this.___events[evt].slice(0);
+    // Keep the synchronous return value unless a listener returns a thenable.
+    const runListeners = startAt => {
+      for (let index = startAt; index < listeners.length; index++) {
+        const { listener, once } = listeners[index];
+        if (once) {
+          // Remove before invocation to prevent reentrant or concurrent calls.
+          this.off(evt, listener);
+        }
+
+        const removeIfRequested = result => {
+          // Returning true removes regular listeners after they run.
+          if (true === result && !once) {
+            this.off(evt, listener);
+          }
+        };
+
+        const value = Reflect.apply(listener, this, args || []);
+        if (value && 'function' === typeof value.then) {
+          // Resume at the next listener only after this one has completed.
+          return Promise.resolve(value).then(result => {
+            removeIfRequested(result);
+            return runListeners(index + 1);
+          });
+        }
+        removeIfRequested(value);
       }
-      // remove listener when it returns true
-      if (true === listener.listener.apply(this, args || [])) {
-          this.off(evt, listener.listener);
-      }
-    }
-    return this;
+      return this;
+    };
+
+    // Sync errors throw; async errors reject this promise and stop later listeners.
+    return runListeners(0);
   }
 
   /**
