@@ -58,7 +58,7 @@
           class          = "action-button"
           :class         = "[action.class, { 'toggled-white': action.state?.toggled }]"
           :style         = "action.style"
-          @click.stop    = "runRelationAction(action)"
+          @click.stop    = "action.cbk?.(layer.state, feature, action)"
           :title         = "$t(action.hint)"
           :aria-label    = "$t(action.hint)"
           :aria-pressed  = "action.state?.toggled"
@@ -127,7 +127,7 @@
                 class = "table-tools"
               >
                 <span v-for = "action in getFeatureActions(table.features[i])" :key = "action.id"
-                  @click.stop    = "runAction(action, i)"
+                  @click.stop    = "action?.cbk?.(layer.state, table.features[i], action)"
                   :title         = "action.hint"
                   data-placement = "right"
                   class          = "action-button row-form skin-color"
@@ -334,48 +334,32 @@
 
     methods: {
       getFieldType(field) {
-        let type = field.type;
-        if ('vue' !== type) {
-          const fieldValue = field.value;
-          const value = fieldValue && 'Object' === toRawType(fieldValue) && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
-          if (!value) {
-            type = 'simple';
-          } else if (value && 'object' === typeof value) {
-            if (value.coordinates) {
-              type = 'geo';
-            } else if (value.vue) {
-              type = 'vue';
-            }
-          } else if (value && Array.isArray(value)) {
-            if (value.length && value[0].photo) {
-              type = 'photo';
-            } else {
-              type = 'simple'
-            }
-          } else if (value.toString().toLowerCase().match(/^(https?:\/\/[^\s]+)\.(png|jpg|jpeg|gif)$/g)) {
-            type = 'photo';
-          } else if (value.toString().match(/^(https?:\/\/[^\s]+)/g)) {
-            type = 'link';
-          } else {
-            type = 'simple';
-          }
+        const value = field.value && 'Object' === toRawType(field.value) && !field.value.coordinates && !field.value.vue ? field.value.value : field.value;
+        if ('vue' === field.type) {
+          return `${field.type}_field`;
         }
-        return `${type}_field`;
-      },
-
-      /**
-       * @since 4.2.0
-       * @param action the action to run
-       * @param feature the feature on which the action is run
-       * @param i the index of the action in the list
-       */
-      runAction(action, i) {
-        action?.cbk?.(this.layer.state, this.table.features[i], action);
-      },
-
-      /**@since 4.2.0 */
-      async runRelationAction(action) {
-        return action.cbk?.(this.layer.state, this.feature, action, this.$refs.wrapper);
+        if (!value) {
+          return 'simple_field';
+        }
+        if (Array.isArray(value)) {
+          return `${value.length && value[0].photo ? 'photo' : 'simple'}_field`;
+        }
+        if ('object' === typeof value && value.coordinates) {
+          return 'geo_field';
+        }
+        if ('object' === typeof value && value.vue) {
+          return 'vue_field';
+        }
+        if ('object' !== typeof value && value.toString().toLowerCase().match(/^(https?:\/\/[^\s]+)\.(png|jpg|jpeg|gif)$/g)) {
+          return 'photo_field';
+        }
+        if ('object' !== typeof value && value.toString().match(/^(https?:\/\/[^\s]+)/g)) {
+          return 'link_field';
+        }
+        if ('object' !== typeof value) {
+          return 'simple_field';
+        }
+        return `${field.type}_field`;
       },
 
       /**
@@ -737,8 +721,6 @@
           // Parent feature and its ID, used to filter content to this relation.
           feature:     this.feature,
           fid:         this.featureId,
-          // Local wrapper for this view, not a global container shared by all relations.
-          container:   this.$refs.wrapper,
         });
 
         this.relation.title = this.relation.name;
