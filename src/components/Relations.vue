@@ -325,19 +325,20 @@
 
     methods: {
       getFieldType({ type, value }) {
-        if ('vue' === type || value?.vue) {
+        const fieldValue = value && 'object' === typeof value && !value.coordinates && !value.vue ? value.value : value;
+        if ('vue' === type || fieldValue?.vue) {
           return 'vue_field';
         }
-        if (value?.[0]?.photo || /^(https?:\/\/[^\s]+)\.(png|jpg|jpeg|gif)$/i.test(value)) {
+        if (fieldValue?.[0]?.photo || /^(https?:\/\/[^\s]+)\.(png|jpg|jpeg|gif)$/i.test(fieldValue)) {
           return 'photo_field';
         }
-        if (/^https?:\/\/[^\s]+/.test(value)) {
+        if (/^https?:\/\/[^\s]+/.test(fieldValue)) {
           return 'link_field';
         }
-        if (value?.coordinates) {
+        if (fieldValue?.coordinates) {
           return 'geo_field';
         }
-        return value && 'object' === typeof value ? `${type}_field` : 'simple_field';
+        return fieldValue && 'object' === typeof fieldValue ? `${type}_field` : 'simple_field';
       },
 
       /**
@@ -574,7 +575,7 @@
         // Plugins append toolbar actions; each action can expose clear() for cleanup.
         GUI.addActionsForRelation(this.relation_actions, {
           // Layer containing the related records, and the relation being displayed.
-          layer:       this.layer,
+          layer:       this.nmRelation ? getCatalogLayerById(this.nmRelation.referencedLayer) : this.layer,
           layerId:     this.layerId,
           relation:    this.relation,
           // Parent feature and its ID, used to filter content to this relation.
