@@ -342,7 +342,7 @@
           return 'simple_field';
         }
         if (Array.isArray(value)) {
-          return `${value.length && value[0].photo ? 'photo' : 'simple'}_field`;
+          return `${value.length && value[0]?.photo ? 'photo' : 'simple'}_field`;
         }
         if ('object' === typeof value && value.coordinates) {
           return 'geo_field';
@@ -732,9 +732,9 @@
       }
     },
 
-    async beforeDestroy() {
+    beforeDestroy() {
       // Release plugin content; one failed cleanup must not prevent the others.
-      await Promise.allSettled(this.relation_actions.map(async action => action.clear?.()));
+      Promise.allSettled(this.relation_actions.map(async action => action.clear?.()));
       // reset columns search
       this.columns.forEach(c => delete c.search); 
       if (1 === this.relations.length) {
