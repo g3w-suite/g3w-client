@@ -167,29 +167,6 @@
         </div>
       </div>
 
-      <!-- Plugins mount their content here; Relations owns all panel resizing. -->
-      <div
-        v-for  = "panel in panels" :key = "panel.id"
-        class  = "relation-panel"
-        :style = "{ '--panel-width': `${panel.width}%` }"
-      >
-        <div
-          class               = "relation-panel-divider"
-          role                = "separator"
-          tabindex            = "0"
-          :aria-label         = "$t(panel.label)"
-          aria-orientation    = "vertical"
-          aria-valuemin       = "10"
-          :aria-valuemax      = "getPanelMaxWidth(panel)"
-          :aria-valuenow      = "panel.width"
-          @pointerdown.stop   = "$event.button === 0 && $event.currentTarget.setPointerCapture($event.pointerId)"
-          @pointermove        = "resizePanel(panel, $event)"
-          @lostpointercapture = "resizePanel(panel, $event)"
-          @keydown            = "resizePanel(panel, $event)"
-        ></div>
-        <div :ref = "`relation-panel-${panel.id}`" class = "relation-panel-content"></div>
-      </div>
-
     </div>
   </div>
 </template>
@@ -234,8 +211,6 @@
          * @since 4.2.0
          */
         relation_actions: [], //relation actions buttons
-        panels          : [], //relations panel (table etc..)
-
         /**
          * @since 3.11.2 table state
          */
@@ -358,67 +333,6 @@
     },
 
     methods: {
-      /** Create a plugin mount point; Vue must render the panel before its ref is available. */
-      async addPanel({ id, label, width = 30 }) {
-        const panel     = { id, label, width: 0 };
-        const maxWidth  = this.getPanelMaxWidth(panel);
-        if (maxWidth < 10) {
-          throw new Error('Not enough space for another relation panel');
-        }
-        panel.width = Math.min(maxWidth, Math.max(10, width));
-        this.panels.push(panel);
-        await this.$nextTick();
-        return this.$refs[`relation-panel-${id}`][0];
-      },
-
-      /** Plugins unmount their content before removing the enclosing panel. */
-      removePanel(id) {
-        this.panels = this.panels.filter(panel => panel.id !== id);
-      },
-
-      /** Reserve at least 10% for the table without resizing other panels. */
-      getPanelMaxWidth(panel) {
-        return this.panels.reduce((available, other) => available - (other.id === panel.id ? 0 : other.width), 90);
-      },
-
-      /** Handle divider interaction here: calculate the width, clamp it, then notify plugins. */
-      resizePanel(panel, event) {
-        if ('lostpointercapture' === event.type) {
-          this.$nextTick(() => GUI.emit('resize'));
-          return;
-        }
-
-        const maxWidth = this.getPanelMaxWidth(panel);
-        let width;
-        if ('pointermove' === event.type) {
-          if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
-            return;
-          }
-          // Keep the right edge fixed so dragging does not move the other panels.
-          const right = event.currentTarget.parentElement.getBoundingClientRect().right;
-          width = (right - event.clientX) * 100 / this.$refs.wrapper.clientWidth;
-        } else if ('keydown' === event.type) {
-          width = {
-            ArrowLeft:  panel.width + 5,
-            ArrowRight: panel.width - 5,
-            Home:       10,
-            End:        maxWidth,
-          }[event.key];
-          if (undefined === width) {
-            return;
-          }
-          event.preventDefault();
-        } else {
-          return;
-        }
-
-        panel.width = Math.min(maxWidth, Math.max(10, width));
-        // A drag notifies on release; a keyboard change is complete immediately.
-        if ('keydown' === event.type) {
-          this.$nextTick(() => GUI.emit('resize'));
-        }
-      },
-
       getFieldType(field) {
         let type = field.type;
         if ('vue' !== type) {
@@ -825,10 +739,6 @@
           fid:         this.featureId,
           // Local wrapper for this view, not a global container shared by all relations.
           container:   this.$refs.wrapper,
-          // Relations owns panel layout/resizing; plugins mount into the returned DOM node.
-          addPanel:    this.addPanel,
-          // Plugins must unmount their content before removing the enclosing panel.
-          removePanel: this.removePanel,
         });
 
         this.relation.title = this.relation.name;
@@ -856,33 +766,6 @@
 </script>
 
 <style scoped>
-  .relation-panel {
-    display: flex;
-    flex: 0 0 var(--panel-width);
-    min-width: 0;
-  }
-
-  .relation-panel-content {
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-  }
-
-  .relation-panel-divider {
-    border-inline: 1px solid var(--skin-color);
-    flex: 0 0 5px;
-    background-color: #ddd;
-    cursor: col-resize;
-    margin: 0 8px;
-    user-select: none;
-    touch-action: none;
-  }
-
-  .relation-panel-divider:focus-visible {
-    outline: 2px solid #005fcc;
-    outline-offset: 2px;
-  }
-
   .grid-item {
     min-height: 80px;
     border: 2px solid;
