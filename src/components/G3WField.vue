@@ -532,7 +532,6 @@
   import { QUERY_POINT_TOLERANCE }                   from 'g3w-constants';
   import { getUniqueDomId }                          from 'utils/getUniqueDomId';
   import { gettext as _ }                            from 'g3w-i18n';
-  import { toRawType }                               from 'utils/toRawType';
   import { throttle }                                from 'utils/throttle';
   import { convertQGISDateTimeFormatToMoment }        from 'utils/convertQGISDateTimeFormatToMoment';
   import PickCoordinatesInteraction                  from 'interactions/pick-coordinates';
@@ -895,10 +894,10 @@
         this.validate();
         let currentValue  = this.state.value;
         let originalValue = this.state._value;
-        if ('media' === this.state.input.type && 'Object' === toRawType(this.state.value)) {
+        if ('media' === this.state.input.type && Object.prototype.toString.call(currentValue) === '[object Object]') {
           currentValue = this.state.value.value;
         }
-        if ('media' === this.state.input.type && 'Object' === toRawType(this.state._value)) {
+        if ('media' === this.state.input.type && Object.prototype.toString.call(originalValue) === '[object Object]') {
           originalValue = this.state._value.value;
         }
         if ('media' === this.state.input.type) {

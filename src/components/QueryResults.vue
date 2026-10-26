@@ -533,7 +533,6 @@
 
 <script>
   import ApplicationState         from 'g3w-state';
-  import { toRawType }            from 'utils/toRawType';
   import G3WField                 from 'components/G3WField.vue';
   import G3WTabs                  from 'components/G3WTabs.vue';
   import { throttle }             from 'utils/throttle';
@@ -648,7 +647,7 @@
         let type = field.type;
         if ('vue' !== type) {
           const fieldValue = field.value;
-          const value = fieldValue && 'Object' === toRawType(fieldValue) && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
+          const value = Object.prototype.toString.call(fieldValue) === '[object Object]' && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
           if (!value) {
             type = 'simple';
           } else if (value && 'object' === typeof value) {
@@ -981,7 +980,7 @@
        * @since 3.9.0
        */
        isJSON(field) {
-        return !this.isVue(field) && this.isSimple(field) && 'Object' === toRawType(field.value);
+        return !this.isVue(field) && this.isSimple(field) && Object.prototype.toString.call(field.value) === '[object Object]';
       },
 
       /**

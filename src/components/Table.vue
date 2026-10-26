@@ -192,7 +192,6 @@ import { PAGELENGTHS }         from 'g3w-constants';
 import Component               from 'g3w-component';
 import ApplicationState        from 'g3w-state';
 import G3WField                from 'components/G3WField.vue';
-import { toRawType }           from 'utils/toRawType';
 import GUI                     from 'g3w-app';
 import { debounce }            from 'utils/debounce';
 import { getCatalogLayerById } from 'utils/getCatalogLayerById';
@@ -277,7 +276,7 @@ export default {
       let type = field.type;
       if ('vue' !== type) {
         const fieldValue = field.value;
-        const value = fieldValue && 'Object' === toRawType(fieldValue) && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
+        const value = Object.prototype.toString.call(fieldValue) === '[object Object]' && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
         if (!value) {
           type = 'simple';
         } else if (value && 'object' === typeof value) {

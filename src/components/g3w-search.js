@@ -12,7 +12,6 @@ import Panel                          from 'g3w-panel';
 import ApplicationState               from 'g3w-state'
 import GUI                            from 'g3w-app';
 import { getUniqueDomId }             from 'utils/getUniqueDomId';
-import { toRawType }                  from 'utils/toRawType';
 import { getDataForSearchInput }      from 'utils/getDataForSearchInput';
 import { debounce }                   from 'utils/debounce';
 import { getCatalogLayerById }        from 'utils/getCatalogLayerById';
@@ -118,7 +117,7 @@ export function SearchPanel(opts = {}, show = false) {
           ...(has_value && is_cadastre ? input.options.values : []),                                           // ref: https://github.com/g3w-suite/g3w-client/pull/834
           ...(has_value && !is_cadastre ? await getDataForSearchInput({ state, layerid: input.alternativeuniquelayer, field: input.attribute }) : []) // get values from server
           ]
-        ).map(value => 'Object' === toRawType(value) ? value : ({ key: value, value })) : [];
+        ).map(value => Object.prototype.toString.call(value) === '[object Object]' ? value : ({ key: value, value })) : [];
 
       //In case of search with autofilter that return no data, need to setup select input to all
       if (1 === input.values.length && SEARCH_ALLVALUE === input.values[0].value && ['selectfield', 'autocompletefield'].includes(input.type)) {
