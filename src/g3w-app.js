@@ -869,6 +869,8 @@ export default new (class GUI extends Emitter {
   }
 
   async showPanel(content) {
+    //open sidebar every time is show a panel
+    this.showSidebar();
     //set null to reactivity
     ApplicationState.sidebar.title  = null;
     ApplicationState.sidebar.parent = '#sidebar-panel-placeholder'
