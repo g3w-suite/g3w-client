@@ -1223,6 +1223,12 @@ export default {
      */
     rememberSidebarItem(e) {
       const item = e.target.closest('.sidebar-item');
+      if (this.panels.length && document.body.classList.contains('sidebar-collapse') && item?.classList.contains('panel-active')) {
+        e.preventDefault();
+        e.stopPropagation();
+        GUI.showSidebar();
+        return;
+      }
       if (0 === this.panels.length && item) {
         e.currentTarget.dataset.panelOwner = item.id;
       }
