@@ -25,7 +25,7 @@
 
     <!-- NODE REMOVE -->
     <button 
-      v-if        = "!isTable && !isGroup && layerstree.external && layerstree.removable"
+      v-if        = "!isGroup && layerstree.external && layerstree.removable"
       type        = "button"
       @click.stop = "removeExternalLayer(layerstree.name, layerstree._type)"
       title       = "Remove"
@@ -287,7 +287,7 @@ export default {
     },
 
     has_legend() {
-      return !this.isGroup && !this.layerstree.exclude_from_legend && this.layerstree.geolayer;
+      return !this.isGroup && !this.layerstree.external && !this.layerstree.exclude_from_legend && this.layerstree.geolayer;
     },
 
     isGroup() {
@@ -295,7 +295,7 @@ export default {
     },
 
     isTable() {
-      return !this.isGroup && !this.layerstree.geolayer && !this.layerstree.external;
+      return !this.isGroup && (this.layerstree.external ? false === this.layerstree.geolayer : !this.layerstree.geolayer);
     },
 
     legend_position() {

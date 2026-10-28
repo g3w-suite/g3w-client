@@ -773,7 +773,7 @@ function _getAvailableLayers(type) {
 
     // POLYGONS
     ...GUI.getExternalLayers('vector')
-        .map(l => l._externalLayer).filter(l => 'querybypolygon' === type ? POLYGON_TYPES.includes(l.getGeometryType()) : true),
+        .map(l => l._externalLayer).filter(l => 'NoGeometry' !== l.getGeometryType() && ('querybypolygon' === type ? POLYGON_TYPES.includes(l.getGeometryType()) : true)),
 
     // SELECTED POLYGONS
     ...('querybypolygon' === type ? ApplicationState.project.getLayers({ GEOLAYER: true, QUERYABLE: true, SELECTED_OR_ALL: true }, {}).filter(l => l.state?.geometrytype) : []),
