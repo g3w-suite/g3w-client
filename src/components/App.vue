@@ -242,12 +242,12 @@
             ></i>
           </button>
           <button
-            type           = "button"
-            @click         = "ApplicationState.sidebar.btn_close && closeAllPanels()"
-            :title         = "ApplicationState.sidebar.tooltip_close || 'close'"
+            type             = "button"
+            @click           = "ApplicationState.sidebar.btn_close && closeAllPanels()"
+            :title           = "ApplicationState.sidebar.tooltip_close || 'close'"
             :data-i18n-title = "ApplicationState.sidebar.tooltip_close || 'close'"
-            data-placement = "right"
-            class          = "btn btn-outline"
+            data-placement   = "right"
+            class            = "btn btn-outline"
           >
             <i
               :style      = "{ opacity: ApplicationState.sidebar.btn_close ? '1' : '0.7', cursor: ApplicationState.sidebar.btn_close ? 'pointer' : 'not-allowed' }"
@@ -264,12 +264,15 @@
       </div>
 
       <ul
-        id       = "g3w-menu"
-        :hidden  = "!showmainpanel"
-        class    = "sidebar-menu"
-        @click   = "toggleSidebarItem"
-        role     = "menu"
-        tabindex = "0"
+        id             = "g3w-menu"
+        :hidden        = "!showmainpanel"
+        class          = "sidebar-menu"
+        :class         = "{ 'has-panel': panels.length > 0 }"
+        @click.capture         = "rememberSidebarItem"
+        @keydown.enter.capture = "rememberSidebarItem"
+        @click         = "toggleSidebarItem"
+        role           = "menu"
+        tabindex       = "0"
       >
 
       <li id = "legend" class = "sidebar-item">
@@ -573,14 +576,6 @@
     <!-- MAIN (content) -->
     <div v-if = "state.content.loading && 0 === state.contentsdata.length" class = "bar-loader" style = "border: 0; position: absolute; z-index: 1;"></div>
     
-    <!-- ORIGINAL SOURCE: src/components/Map.vue -->
-    <div
-      v-for = "hidemap in ApplicationState.hidemaps"
-      :key  = "hidemap.id"
-      :id   = "hidemap.id"
-      class = "g3w-map hidemap"
-    ></div>
-
     <div id = "map" class = "g3w-map" @drop.prevent = "onDrop" @dragenter.prevent = "onDrop" @dragleave.prevent = "onDrop" @dragover.prevent>
 
       <div class = "drop-area" hidden>
@@ -997,7 +992,8 @@ export default {
     },
 
     showmainpanel() {
-      return ApplicationState.sidebar.components.length > 0 && !this.panels.length;
+      // An open panel replaces the expanded menu, but keeps its collapsed icons available.
+      return ApplicationState.sidebar.components.length > 0 && (!this.panels.length || !ApplicationState.sidebar.open);
     },
 
     componentname() {
@@ -1223,6 +1219,22 @@ export default {
     },
 
     /**
+     * Capture the panel owner before child click handlers run, preserving it for nested panels.
+     */
+    rememberSidebarItem(e) {
+      const item = e.target.closest('.sidebar-item');
+      if (this.panels.length && document.body.classList.contains('sidebar-collapse') && item?.classList.contains('panel-active')) {
+        e.preventDefault();
+        e.stopPropagation();
+        GUI.showSidebar();
+        return;
+      }
+      if (0 === this.panels.length && item) {
+        e.currentTarget.dataset.panelOwner = item.id;
+      }
+    },
+
+    /**
      * Toggle sidebar tree items on click
      * 
      * @since 3.11.0
@@ -1237,6 +1249,11 @@ export default {
       const collapsed = document.body.classList.contains('sidebar-collapse');
 
       const li        = e.target.closest('.sidebar-item');
+      // Reveal the existing panel without triggering the owning plugin again (e.g. editing).
+      if (collapsed && this.panels.length && li.classList.contains('panel-active')) {
+        GUI.showSidebar();
+        return;
+      }
       const component = ApplicationState.sidebar.components.find(comp => li.id === comp.id);
 
       // open sidebar only in case of mini/collapsed sidebar and has a component that has a li id collapsible
@@ -1664,6 +1681,37 @@ export default {
   },
 
   watch: {
+
+    /**
+     * Keep only the panel owner's icon interactive until the entire panel stack is closed.
+     */
+    'panels.length': {
+      async handler(length) {
+        // Wait for Vue and dynamically mounted sidebar items to update the menu DOM.
+        await this.$nextTick();
+        const menu = this.$el.querySelector('#g3w-menu');
+        if (!menu) {
+          return;
+        }
+        // Panels opened outside the menu need an owner fallback; the legend can also open from the catalog.
+        if (length && 'legend-panel' === this.panels[0].content.getId()) {
+          menu.dataset.panelOwner = 'legend';
+        } else if (length && !menu.dataset.panelOwner) {
+          menu.dataset.panelOwner = ApplicationState.sidebar.components.find(component => component.getOpen())?.id || '';
+        }
+        menu.querySelectorAll(':scope > li').forEach(item => {
+          const active = length > 0 && item.id === menu.dataset.panelOwner;
+          const disabled = length > 0 && !active;
+          // Block both pointer and keyboard interaction, including controls added by plugins.
+          item.inert = disabled;
+          item.classList.toggle('panel-active', active);
+          item.setAttribute('aria-disabled', String(disabled));
+        });
+        if (!length) {
+          delete menu.dataset.panelOwner;
+        }
+      },
+    },
 
     language: {
       immediate: true,

@@ -95,9 +95,6 @@ const STATE = {
   bbox:       [],
 
   /** @since 4.1.0 */
-  hidemaps:   [],
-
-  /** @since 4.1.0 */
   resolution: null,
 
   /** @since 4.1.0 */
