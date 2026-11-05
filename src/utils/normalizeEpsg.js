@@ -15,8 +15,8 @@ export function normalizeEpsg(crs, toString = true) {
     return `EPSG:${crs}`;
   }
 
-  if (toString) {
-    crs = crs.replace(/[^\d\.\-]/g, "");
+  if (toString && 'string' === typeof crs) {
+    return crs;
   }
 
   if (toString && '' !== crs) {
@@ -24,7 +24,7 @@ export function normalizeEpsg(crs, toString = true) {
   }
 
   // invalid conversion: EPSG (eg. 0) → CRS object 
-  if (!toString && ([undefined, null].includes(crs) || (crs && !(crs.epsg ?? crs.authid)))) {
+  if (!toString && ([undefined, null].includes(crs) || (!(crs?.epsg || crs?.authid)))) {
     return null;
   }
 
