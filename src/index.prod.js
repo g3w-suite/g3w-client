@@ -508,7 +508,7 @@ $.ajaxSetup({
     layers:       [], //store instance of Layer class
     config: {
       id:         CONFIG.gid,
-      projection: ApplicationState.projections.get(normalizeEpsg(CONFIG.crs, false)),
+      projection: ApplicationState.projections.get(CONFIG.crs),
       extent:     CONFIG.extent,
       initextent: CONFIG.initextent,
       wmsUrl:     CONFIG.WMSUrl,

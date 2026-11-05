@@ -293,9 +293,9 @@ const STATE = {
   /** @since 4.1.0 */
   projections: {
     get(crs = {}) {
-      let p = ol.proj.get(normalizeEpsg(crs.epsg));
+      let p = ol.proj.get(normalizeEpsg(crs));
       const proj = !p && {
-        code:            crs.epsg,
+        code:            crs.epsg ?? crs.authid,
         extent:          crs.extent,
         axisOrientation: crs.axisinverted ? 'neu' : 'enu',
         units:           crs.geographic ? 'degrees' : 'm'
@@ -309,7 +309,7 @@ const STATE = {
 
       // crs is a proj4 object
       if (proj && crs.proj4) {
-        proj4.defs(crs.epsg, crs.proj4);
+        proj4.defs(crs.epsg ?? crs.authid, crs.proj4);
         ol.proj.proj4.register(proj4);
       }
 

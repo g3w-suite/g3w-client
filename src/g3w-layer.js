@@ -3106,8 +3106,8 @@ export class Layer extends Emitter {
       let resolutions, projection = this.state.projection;
 
       if (!projection) {
-        this.state.crs.epsg = this.state.crs.epsg ? this.state.crs.epsg : 'EPSG:3857';
-        projection = ApplicationState.projections.get(this.state.crs.epsg);
+        projection = ApplicationState.projections.get(this.state.crs.epsg ?? this.state.crs.authid ? this.state.crs : 'EPSG:3857');
+        this.state.crs.epsg = projection.getCode();
       }
 
       // mapproxy

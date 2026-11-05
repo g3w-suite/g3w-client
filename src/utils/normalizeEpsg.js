@@ -1,31 +1,35 @@
 /**
- * @param { number | string | null | undefined} epsg or crs object
+ * @param { number | string | null | undefined} crs or crs object
  * @param {boolean} [toString] whether to return EPSG data as string or CRS object
  * 
  * @returns { string | undefined | { { epsg: string, proj4: string, axisinverted: boolean, geographic: boolean } | null | undefined } }
  */
-export function normalizeEpsg(epsg, toString = true) {
-  if (toString && 'number' === typeof epsg) {
-    return `EPSG:${epsg}`;
+export function normalizeEpsg(crs, toString = true) {
+
+  // Preserve the authority identifier when the CRS object already provides one.
+  if (!Number.isInteger(crs) && crs.authid) {
+    return crs.authid;
+  }
+  
+  if (toString && Number.isInteger(crs)) {
+    return `EPSG:${crs}`;
   }
 
   if (toString) {
-    epsg = epsg.replace(/[^\d\.\-]/g, "");
+    crs = crs.replace(/[^\d\.\-]/g, "");
   }
 
-  if (toString && '' !== epsg) {
-    return `EPSG:${parseInt(epsg)}`;
+  if (toString && '' !== crs) {
+    return `EPSG:${parseInt(crs)}`;
   }
-
-  const crs = epsg
 
   // invalid conversion: EPSG (eg. 0) → CRS object 
-  if (!toString && ([undefined, null].includes(crs) || (crs && !crs.epsg))) {
+  if (!toString && ([undefined, null].includes(crs) || (crs && !(crs.epsg ?? crs.authid)))) {
     return null;
   }
 
-  if (!toString && crs.epsg) {
-    crs.epsg = normalizeEpsg(crs.epsg, true);
+  if (!toString && (crs.epsg ?? crs.authid)) {
+    crs.epsg = normalizeEpsg(crs.epsg ?? crs.authid, true);
     return crs;
   }
 
