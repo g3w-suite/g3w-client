@@ -295,11 +295,12 @@ const STATE = {
     get(crs = {}) {
       let p = ol.proj.get(normalizeEpsg(crs));
       const proj = !p && {
-        code:            crs.epsg ?? crs.authid,
+        code:            normalizeEpsg(crs),
         extent:          crs.extent,
         axisOrientation: crs.axisinverted ? 'neu' : 'enu',
         units:           crs.geographic ? 'degrees' : 'm'
       };
+      console.log(proj)
 
       // crs not yet registered
       if (!p) {
