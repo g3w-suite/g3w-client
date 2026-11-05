@@ -300,7 +300,6 @@ const STATE = {
         axisOrientation: crs.axisinverted ? 'neu' : 'enu',
         units:           crs.geographic ? 'degrees' : 'm'
       };
-      console.log(proj)
 
       // crs not yet registered
       if (!p) {
