@@ -293,12 +293,13 @@ const STATE = {
   /** @since 4.1.0 */
   projections: {
     get(crs = {}) {
-      let p = ol.proj.get(normalizeEpsg(crs));
+      const code = normalizeEpsg(crs);
+      let p      = ol.proj.get(code);
       const proj = !p && {
-        code:            normalizeEpsg(crs),
+        code,
         extent:          crs.extent,
         axisOrientation: crs.axisinverted ? 'neu' : 'enu',
-        units:           crs.geographic ? 'degrees' : 'm'
+        units:           crs.geographic   ? 'degrees' : 'm'
       };
 
       // crs not yet registered
@@ -309,7 +310,7 @@ const STATE = {
 
       // crs is a proj4 object
       if (proj && crs.proj4) {
-        proj4.defs(crs.epsg ?? crs.authid, crs.proj4);
+        proj4.defs(code, crs.proj4);
         ol.proj.proj4.register(proj4);
       }
 
@@ -324,23 +325,25 @@ const STATE = {
     /**
      * Check and register epsg
      * 
-     * @param epsg : "EPSG:<CODE>" Ex. "EPSG:4326"
+     * @param epsg : "EPSG:<CODE> or "AUTHID:<CODE>" Ex. "EPSG:4326"
      * 
      * @returns { Promise<ol.proj.Projection> }
      * 
      * @since v3.8
      */
-    async set(epsg) {
-      let p = ol.proj.get(epsg) || undefined;
+    async set(crs) {
+      const code = normalizeEpsg(crs);
+      let p      = ol.proj.get(code) || undefined;
 
       // check if already registered
       if (!p) {
-        const { result, data } = await (await fetch(`/crs/${epsg.split(':')[1]}/`)).json();
-        if (result)  {
-          data.epsg  = normalizeEpsg(data.epsg);
-          p = this.get(data);
+        const [register, id]   = code.split(':');
+        //use /crs/<id>/ for EPSG codes, otherwise use /crs/?=authid=<code>/
+        const { result, data } = await (await fetch(`/crs/${'EPSG' === register ? id : '?=authid=' + code}/`)).json();
+        if (result) {
+          data.epsg  = code;
           ol.proj.proj4.register(proj4);
-          return p;
+          return this.get(data);
         }
       }
 

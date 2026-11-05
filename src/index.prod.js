@@ -502,7 +502,6 @@ $.ajaxSetup({
       }
     }
   })(config.layerstree);
-  
   //set project to aplication state
   const project = ApplicationState.project = Object.assign(new Emitter, {
     layers:       [], //store instance of Layer class
