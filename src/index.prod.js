@@ -537,7 +537,7 @@ $.ajaxSetup({
       toc_layers_init_status: CONFIG.toc_layers_init_status || 'not_collapsed',
       toc_themes_init_status: CONFIG.toc_themes_init_status || 'collapsed',
       query_point_tolerance:  CONFIG.query_point_tolerance  || QUERY_POINT_TOLERANCE,
-      crs:                    normalizeEpsg(CONFIG.crs, false),
+      crs:                    CONFIG.crs,
       baselayers:             CONFIG.baselayers
         // Remove bing base layer when no vendor API Key is provided
         .filter(l => ('Bing' === l.servertype ? ApplicationState.vendorkeys.bing : true))
@@ -681,7 +681,7 @@ $.ajaxSetup({
   // Layer factory: instance each layer and add to project.layers array
   project.addLayers(project.state.layers.concat(project.state.baselayers).map(l => {
     const config = Object.assign({}, l, {
-      crs:               normalizeEpsg(l.crs || project.state.crs, false), // @v4.0 Fix In case of missing layer crs, set project crs
+      crs:               l.crs || project.state.crs, // @v4.0 Fix In case of missing layer crs, set project crs
       projection:        l.crs ? ApplicationState.projections.get(l.crs) : project.config.projection,
       ows_method:        project.state.ows_method,
       wms_use_layer_ids: project.state.wms_use_layer_ids,
@@ -715,7 +715,7 @@ $.ajaxSetup({
           const bbox = Object.assign({}, nodes[index].bbox);
           // Set bounding box info for each group based on its children layers and groups
           // translate bbox epsg to project epsg code (when they differ)
-          if ((nodes[index].epsg !== project.config.projection.getCode())) {
+          if ((normalizeEpsg(nodes[index]?.crs?.epsg || nodes[index]?.crs?.authid) !== project.config.projection.getCode())) {
             [ bbox.minx, bbox.miny, bbox.maxx, bbox.maxy ] = ol.proj.transformExtent([ nodes[index].bbox.minx, nodes[index].bbox.miny, nodes[index].bbox.maxx, nodes[index].bbox.maxy ], nodes[index].epsg, project.config.projection.getCode());
           }
           // get current bbox or compute bbox from an ol extent

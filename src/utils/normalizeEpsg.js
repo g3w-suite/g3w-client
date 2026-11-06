@@ -4,41 +4,26 @@
  * 
  * @returns { string | undefined | { { epsg: string, proj4: string, axisinverted: boolean, geographic: boolean } | null | undefined } }
  */
-export function normalizeEpsg(crs, toString = true) {
+export function normalizeEpsg(crs) {
+  if (undefined === crs) {
+    return null;
+  }
 
   // Preserve the authority identifier when the CRS object already provides one.
   if (!Number.isInteger(crs) && crs.authid) {
     return crs.authid;
   }
   
-  if (toString && Number.isInteger(crs)) {
+  if (Number.isInteger(Number(crs))) {
     return `EPSG:${crs}`;
   }
 
-  if (toString && 'string' === typeof crs) {
+  if ('string' === typeof crs) {
     return crs;
-  }
-
-  if (toString && '' !== crs) {
-    return `EPSG:${parseInt(crs)}`;
   }
 
   // invalid conversion: EPSG (eg. 0) → CRS object 
-  if (!toString && ([undefined, null].includes(crs) || (!(crs?.epsg || crs?.authid)))) {
+  if ((!(crs?.epsg || crs?.authid))) {
     return null;
-  }
-
-  if (!toString && (crs.epsg ?? crs.authid)) {
-    crs.epsg = normalizeEpsg(crs.epsg ?? crs.authid, true);
-    return crs;
-  }
-
-  if (!toString && !crs.epsg) {
-    return {
-      epsg:         normalizeEpsg(crs, true),
-      proj4:        "",
-      axisinverted: false,
-      geographic:   false
-    };
   }
 }
