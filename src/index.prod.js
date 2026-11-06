@@ -715,8 +715,9 @@ $.ajaxSetup({
           const bbox = Object.assign({}, nodes[index].bbox);
           // Set bounding box info for each group based on its children layers and groups
           // translate bbox epsg to project epsg code (when they differ)
-          if ((normalizeEpsg(nodes[index]?.crs?.epsg || nodes[index]?.crs?.authid) !== project.config.projection.getCode())) {
-            [ bbox.minx, bbox.miny, bbox.maxx, bbox.maxy ] = ol.proj.transformExtent([ nodes[index].bbox.minx, nodes[index].bbox.miny, nodes[index].bbox.maxx, nodes[index].bbox.maxy ], nodes[index].epsg, project.config.projection.getCode());
+          const code = normalizeEpsg(nodes[index]?.crs?.epsg || nodes[index]?.crs?.authid);
+          if (code !== project.config.projection.getCode()) {
+            [ bbox.minx, bbox.miny, bbox.maxx, bbox.maxy ] = ol.proj.transformExtent([ nodes[index].bbox.minx, nodes[index].bbox.miny, nodes[index].bbox.maxx, nodes[index].bbox.maxy ], code, project.config.projection.getCode());
           }
           // get current bbox or compute bbox from an ol extent
           if (undefined === parentGroup.bbox) {
