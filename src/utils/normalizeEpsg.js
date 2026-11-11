@@ -1,29 +1,25 @@
-/**
- * @param { number | string | null | undefined} crs or crs object
- * @param {boolean} [toString] whether to return EPSG data as string or CRS object
- * 
- * @returns { string | undefined | { { epsg: string, proj4: string, axisinverted: boolean, geographic: boolean } | null | undefined } }
- */
+/** @param {number|string|object|null|undefined} crs @returns {string|null} */
 export function normalizeEpsg(crs) {
-  if (undefined === crs) {
+  if (null == crs) {
     return null;
   }
 
-  // Preserve the authority identifier when the CRS object already provides one.
-  if (!Number.isInteger(crs) && crs.authid) {
+  // Keep the full identifier for custom authorities, not just EPSG codes.
+  if (crs?.authid) {
     return crs.authid;
   }
-  
-  if (Number.isInteger(Number(crs))) {
-    return `EPSG:${crs}`;
+
+  const epsg = crs?.epsg ?? crs;
+  const code = Number(epsg);
+
+  // Leave already-formatted or custom string identifiers unchanged.
+  if (Number.isInteger(code) && code !== 0) {
+    return `EPSG:${code}`;
   }
 
-  if ('string' === typeof crs) {
+  if (typeof crs === 'string') {
     return crs;
   }
 
-  // invalid conversion: EPSG (eg. 0) → CRS object 
-  if ((!(crs?.epsg || crs?.authid))) {
-    return null;
-  }
+  return null;
 }
