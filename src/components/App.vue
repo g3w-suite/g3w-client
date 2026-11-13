@@ -1034,10 +1034,13 @@ export default {
      */
     async logout(url) {
       try {
-        await fetch(url, {
+        const response = await fetch(url, {
           method:  'POST',
           headers: { 'X-CSRFToken': GUI.getCookie('csrftoken') },
         });
+        if (!response.ok) {
+          throw new Error(`Logout request failed: HTTP ${response.status}`);
+        }
         window.location.reload();
       } catch(e) {
         console.error('Logout failed:', e);
