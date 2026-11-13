@@ -33,6 +33,7 @@ import { is3DGeometry }           from 'utils/is3DGeometry';
 import { removeZValue }           from 'utils/removeZValue';
 import { sanitizeFidFeature }     from 'utils/sanitizeFidFeature'
 import { getUniqueDomId }         from 'utils/getUniqueDomId';
+import { normalizeEpsg }          from 'utils/normalizeEpsg';
 
 /**
  * Stringify a query URL param (eg. `&WIDTH=700`)
@@ -271,7 +272,7 @@ export class Layer extends Emitter {
 
       map_crs:            project.getProjection()?.getCode(),
       multilayerid:       config.multilayer, //it used to check if a layer can be grouped with other layers (get map tiles, get feature info)
-      projection:         config.projection && config?.projection?.getCode() === config?.crs?.epsg ? config.projection : (config.crs ? ApplicationState.projections.get(config.crs) : undefined),
+      projection:         config.projection && config?.projection?.getCode() === normalizeEpsg(config?.crs?.epsg || config?.crs?.authid) ? config.projection : (config.crs ? ApplicationState.projections.get(config.crs) : undefined),
       attributions:       config.attributions,
       selected:           config.selected ?? false,
       disabled:           config.disabled ?? false,
@@ -349,6 +350,10 @@ export class Layer extends Emitter {
 
       /** @since 4.0.0 */
       epsg: config.crs?.epsg,
+
+      /** @since 4.3.0 */
+
+      crs: config.crs,
 
       /** @since 4.0.0 */
       hidden: config.hidden ?? false,
@@ -2624,6 +2629,14 @@ export class Layer extends Emitter {
   }
 
   /**
+   * @since 4.3.0
+   * 
+   */
+  getAuthId() {
+    return this.state.crs.authid;
+  }
+
+  /**
    * ORIGINAL SOURCE: src/map/layers/geo-mixin.js@v3.11.8
    *
    * @since 4.0.0
@@ -3106,8 +3119,8 @@ export class Layer extends Emitter {
       let resolutions, projection = this.state.projection;
 
       if (!projection) {
-        this.state.crs.epsg = this.state.crs.epsg ? this.state.crs.epsg : 'EPSG:3857';
-        projection = ApplicationState.projections.get(this.state.crs.epsg);
+        projection = ApplicationState.projections.get(this.state.crs.epsg ?? this.state.crs.authid ? this.state.crs : 'EPSG:3857');
+        this.state.crs.epsg = projection.getCode();
       }
 
       // mapproxy

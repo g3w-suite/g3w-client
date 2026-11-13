@@ -1336,8 +1336,10 @@ export default {
         }
         this.name  = config.title + suffix;
 
-        // register projections
-        config.layers.forEach(({ crss }) => crss.forEach(crs => ApplicationState.projections.set(crs.epsg)));
+        // register advertised projections before the WMS layer is added
+        await Promise.all(config.layers.flatMap(({ crss = [] }) =>
+          crss.map(crs => ApplicationState.projections.set(crs))
+        ));
 
         /** Layers of wms */
         this.layers = config.layers;

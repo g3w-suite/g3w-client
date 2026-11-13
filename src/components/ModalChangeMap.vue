@@ -272,15 +272,17 @@ export default {
     async changeMapProject(item) {
       let url;
       const base_url = window.initConfig.urls.baseurl;
-      const epsg     = this.parent.srid ? `EPSG:${this.parent.srid}` : this.parent.crs.epsg;
-      await ApplicationState.projections.set(epsg);
+      const crsCode = this.parent.srid
+        ? `EPSG:${this.parent.srid}`
+        : this.parent.crs.authid ?? this.parent.crs.epsg;
+      await ApplicationState.projections.set(crsCode);
       try {
         new URL(base_url);
         url = `${base_url}${item.url || item.map_url.replace(/^\//, "")}`;
       } catch(e) {
         url = `${location.origin}${base_url}${item.url || item.map_url.replace(/^\//, "")}`;
       }
-      url = await GUI.addMapExtentUrlParameterToUrl(url, epsg);
+      url = await GUI.addMapExtentUrlParameterToUrl(url, crsCode);
       history.replaceState(null, null, url);
       location.replace(url);
     },
