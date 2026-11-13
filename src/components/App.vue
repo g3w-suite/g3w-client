@@ -120,7 +120,8 @@
               <!-- LOGOUT URL -->
               <a
                 v-if                = "user && user.logout_url"
-                @click.prevent.stop = logout(user.logout_url) 
+                href                = "#"
+                @click.prevent.stop = "logout(user.logout_url)"
                 class               = "nav-logout btn btn-default btn-flat skin-color"
               >
                 <b>{{ $t('Logout') }}</b><i class = "fas fa-sign-out-alt" aria-hidden = "true"></i>
