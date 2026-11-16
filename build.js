@@ -455,7 +455,7 @@ async function start_proxy_server() {
       let localPath;
       // Prefer local build output for client and bundled static plugins.
       // Include installed plugin directories and symlinks, mapping admin plugins to their URL names.
-      const plugins = corePlugins.map(plugin => ({ name: plugin, folder: null }))
+      const plugins = ['client', ...corePlugins].map(plugin => ({ name: plugin, folder: null }))
           .concat(fs.readdirSync(g3w.pluginsFolder)
           .filter(plugin => fs.existsSync(path.join(g3w.pluginsFolder, plugin)) && fs.statSync(path.join(g3w.pluginsFolder, plugin)).isDirectory())
           .map(plugin => ({
