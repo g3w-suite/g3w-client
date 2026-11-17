@@ -76,6 +76,7 @@ Before({ tags: '@context-menu-workflows' }, async function () {
     g3w.app.getLayerByName = () => menuVector;
     measureMap.addLayer(menuVector);
     measureMap.addLayer(menuImage);
+    g3w.app.layersCount = measureMap.getLayers().getLength();
     window.menuCatalogLayer = createFixtureLayer({
       id: 'roads', name: 'roads', title: 'Road network', geometrytype: 'LineString', capabilities: 7,
       crs: { epsg: 'EPSG:3857' }, bbox: { minx: 10, miny: 20, maxx: 100, maxy: 120 },
@@ -264,6 +265,11 @@ Then('external image context actions update their map layer and fit its extent',
   assert.equal(await this.corePage.evaluate(() => menuImage.get('position')), 'top');
   assert.equal(await this.corePage.evaluate(() => menuImage.getZIndex()), await this.corePage.evaluate(() => g3w.app.layersCount));
   await this.corePage.evaluate(async () => { await openCatalogMenu(menuImageNode); });
+  await position.hover();
+  await position.locator('li').last().click();
+  await this.corePage.waitForFunction(() => !menuView.context);
+  assert.deepEqual(await this.corePage.evaluate(() => [menuImage.get('position'), menuImage.getZIndex()]), ['bottom', 0]);
+  await this.corePage.evaluate(async () => { await openCatalogMenu(menuImageNode); });
   await clickMenu(this.corePage, 'fa-search');
   const extent = await this.corePage.evaluate(() => measureMap.getView().calculateExtent(measureMap.getSize()));
   assert.ok(extent[0] <= 111.32 && extent[1] <= 111.32 && extent[2] >= 333.95 && extent[3] >= 445.27);
@@ -289,6 +295,7 @@ Then('the context color picker updates the actual vector style and preserves alp
   await plane.focus();
   await this.corePage.keyboard.press('ArrowLeft');
   await this.corePage.keyboard.press('ArrowDown');
+  assert.equal(await this.corePage.evaluate(() => menuVectorNode.color.hex), '#fa0505');
   await this.corePage.keyboard.press('ArrowUp');
   await this.corePage.keyboard.press('ArrowRight');
   await this.corePage.keyboard.press('a');
@@ -339,6 +346,33 @@ Then('catalog metadata opens and expands the selected layer and handles missing 
     await this.corePage.evaluate(() => { document.querySelector('#modal-metadata').close(); });
   }
   assert.deepEqual(await this.corePage.evaluate(() => menuMetadataTabs), ['#metadata_layers', '#metadata_layers', '#metadata_general']);
+});
+
+Then('exporting an external layer opens the real download dialog and saves its response', async function () {
+  const contents = JSON.stringify({
+    type: 'FeatureCollection',
+    features: [{ type: 'Feature', properties: { name: 'Track' }, geometry: { type: 'Point', coordinates: [10, 20] } }],
+  });
+  await this.corePage.route('**/fixture/context-download', route => route.fulfill({
+    contentType: 'application/geo+json', headers: { 'content-disposition': 'attachment; filename=tracks.geojson' },
+    body: contents,
+  }));
+  await this.corePage.evaluate(async () => {
+    await openCatalogMenu({
+      id: 'tracks', name: 'Imported tracks', title: 'Imported tracks', _type: 'vector',
+      color: '#ff0000', position: 'top', downloadUrl: '/fixture/context-download',
+    });
+  });
+  await clickMenu(this.corePage, 'fa-download');
+  const dialog = this.corePage.locator('dialog[open]');
+  assert.equal(await dialog.locator('[name="layer"]').inputValue(), 'tracks');
+  assert.equal(await dialog.locator('[name="format"]').inputValue(), 'external-url');
+  const pending = this.corePage.waitForEvent('download');
+  await dialog.locator('#confirm_button').click();
+  const download = await pending;
+  assert.equal(download.suggestedFilename(), 'tracks.geojson');
+  assert.equal(fs.readFileSync(await download.path(), 'utf8'), contents);
+  await this.corePage.waitForFunction(() => !g3w.state.download && !document.querySelector('dialog[open]'));
 });
 
 Then('the catalog context menu opens and mounts its layer attribute table', async function () {

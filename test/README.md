@@ -40,7 +40,7 @@ No additional npm commands are required.
 | `geocoding.feature` | Dynamically loaded providers, projected coordinates, bounded local searches, synchronized map/query selection, lazy geometry, saved searches and draggable popovers |
 | `notifications.feature` | Sequential alerts, persisted read preferences, manager toggles, unread badges, native popover dragging and keyboard dismissal |
 | `map-controls.feature` | Real line/polygon drawing, point correction, measurement overlays, scale validation/synchronization and locally fulfilled Street View workflows |
-| `menus.feature` | Mounted map/catalog menus, coordinate copying and querying, navigation, plugin entries, dragging/mobile dismissal, layer styles/filters, external layer colors/opacity/order, metadata and attribute tables |
+| `menus.feature` | Mounted map/catalog menus, coordinate copying and querying, navigation, plugin entries, dragging/mobile dismissal, layer styles/filters, external layer colors/opacity/order, downloaded file contents, metadata and attribute tables |
 | `static.feature` | Localized labels, fixture-based geocoding, decoded/rendered images and fonts, stylesheet effects |
 | `coverage.feature` | Source integrity, scenario-to-file associations and a 100% runtime function gate |
 | `dev.g3wsuite.it.feature` | Remote project smoke tests (`@smoke`, requires the proxy) |
@@ -98,8 +98,8 @@ prove that every branch was taken or that every function result was asserted.
 ### Known source issues deferred to future PRs (after #1010 has been merged)
 
 Source files remain unchanged. The following issues were verified while adding
-the behavioral tests and are **not** hidden by exclusions or artificial hits:
-source links are immutable permalinks to the published source snapshot
+the behavioral tests and are **not** hidden by exclusions or artificial hits.
+Source links below are immutable permalinks to the published source snapshot
 `76f170d9088de58d91a5215a34d199adbd42c73c`, which matches the tested source tree.
 
 | Source | Reproduction / consequence |
@@ -139,6 +139,13 @@ interactions and DOM selections. Local HTTP responses provide options, relation
 data, uploads and metadata; map/service fixtures supply only the dependencies
 needed by each workflow. Both browser errors and Vue lifecycle/watcher errors
 fail the scenario.
+
+The `@context-menu-workflows` scenarios reuse real map events, layer models,
+stylesheets and font assets. Native pointer/keyboard input drives the menus and
+color picker; local HTTP responses supply styles, filter tokens and downloads.
+The copy event is intercepted to verify the selected text without overwriting
+the system clipboard. Map-tool hosts and metadata tabs are controlled boundaries;
+attribute tables open through the real layer method and mount the real component.
 
 The `@query-results` scenarios reuse these mounted-component fixtures and real
 layer models. The actual GUI normalizes responses, creates actions and clears
