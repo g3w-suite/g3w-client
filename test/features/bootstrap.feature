@@ -7,6 +7,43 @@ Feature: Offline production application
   Scenario: A configured project starts the complete application offline
     Then the production application displays its project catalog and a ready map
 
+  @header-workflows @logout-workflows @covers:src/components/App.vue
+  Scenario Outline: Account logout uses its rendered Vue click handler
+    Then the account logout sends a CSRF-protected POST and handles a "<response>" response
+
+    Examples:
+      | response   |
+      | successful |
+      | rejected   |
+
+  @header-workflows @covers:src/components/App.vue @covers:src/components/ModalAccessibility.vue
+  Scenario: Account preferences use the mounted accessibility dialog
+    Then the account accessibility action updates preferences through native controls
+
+  @header-workflows @covers:src/components/App.vue
+  Scenario: Custom header modals clean up after mouse dismissal
+    Then a custom header link opens its modal and removes it on native dismissal
+
+  @header-workflows @covers:src/components/App.vue @covers:src/static/locales/it.js
+  Scenario: Native language selection triggers Vue model and translation watchers
+    Then the language picker updates Vue state and translations through its radio input
+
+  @vue-state-workflows @map-theme-workflows @covers:src/components/App.vue
+  Scenario: Project theme configuration activates the Vue radio watcher
+    Then a project theme radio lazily applies nested visibility and layer styles
+
+  @vue-state-workflows @map-theme-workflows @covers:src/components/App.vue
+  Scenario: Authenticated state enables custom map theme management
+    Then an authenticated user creates updates and deletes a map theme through Vue controls
+
+  @vue-state-workflows @covers:src/components/App.vue @covers:src/g3w-app.js
+  Scenario: Sidebar panel state activates ownership watchers and stack controls
+    Then sidebar panel ownership reacts to nested panels and native back and close actions
+
+  @vue-state-workflows @external-layer-workflows @covers:src/components/App.vue
+  Scenario: Imported layers enable external group actions
+    Then external catalog group controls react to imported layers and remove them together
+
   @covers:src/index.prod.js @covers:src/g3w-layer.js
   Scenario: Project queries combine layer filters and selection
     Then the production registry filters real spatial and nonspatial layers

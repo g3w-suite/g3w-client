@@ -180,6 +180,38 @@ These are documented limitations, **not coverage exclusions**. They remain in
 the denominator and retain their actual zero counters. Other zero-hit functions
 must not be called unreachable without an equivalent source-level explanation.
 
+In particular, zero-hit Vue event handlers, watchers and lifecycle hooks are
+**untested, not proven unreachable**. They require appropriate component props,
+configuration, mounting and native UI events. For example,
+[`App.logout`](https://github.com/g3w-suite/g3w-client/blob/76f170d9088de58d91a5215a34d199adbd42c73c/src/components/App.vue#L1035)
+is reachable through the account link once `initConfig.user.logout_url` is
+provided; it was previously uncovered, not dead code.
+`@header-workflows` exercises
+the rendered account/logout and accessibility actions, custom modal dismissal,
+and the language radio's `v-model` / translation watcher without calling those
+methods directly. Logout checks both successful POST/reload and rejected POST
+without reload, including the CSRF header and exact expected error diagnostics.
+Coverage is collected before successful navigation discards the original page;
+the logged-out response is then asserted and its uninstrumented page closed.
+
+#### Reachable handlers activated by Vue application state
+
+The `@vue-state-workflows` scenarios verify these additional cases through the
+running production App. They are **reachable**, not source-code limitations:
+
+| Required state | Native interaction and verified behavior | Source |
+| --- | --- | --- |
+| `map_themes.project` contains a theme and matching layer styles/tree | Selecting its radio triggers the active-theme watcher, lazily fetches configuration, changes the layer style, hides the configured layer and collapses its group. | [`getThemeConfig` / `changeTheme`](https://github.com/g3w-suite/g3w-client/blob/76f170d9088de58d91a5215a34d199adbd42c73c/src/components/App.vue#L1403) |
+| A user ID makes `ApplicationState.logged` true | The custom-theme controls become available. Form submission rejects duplicate names, saves a new theme, updates its expansion state, then cancels or confirms deletion. Dialog opening/closing and theme selection exercise the actual Vue watchers. | [`saveTheme` / `updateTheme` / `deleteTheme`](https://github.com/g3w-suite/g3w-client/blob/76f170d9088de58d91a5215a34d199adbd42c73c/src/components/App.vue#L1589), [watchers](https://github.com/g3w-suite/g3w-client/blob/76f170d9088de58d91a5215a34d199adbd42c73c/src/components/App.vue#L1801) |
+| Sidebar panels exist, including a nested plugin-style panel | Opening the legend activates the ownership watcher and disables unrelated menu items. Clicking its collapsed owner reveals the existing panel without duplicating it; native back/close controls unmount the stack and restore menu interaction. | [`panels.length` watcher](https://github.com/g3w-suite/g3w-client/blob/76f170d9088de58d91a5215a34d199adbd42c73c/src/components/App.vue#L1708), [panel controls](https://github.com/g3w-suite/g3w-client/blob/76f170d9088de58d91a5215a34d199adbd42c73c/src/components/App.vue#L1214) |
+| The external catalog contains imported layers | The group appears after two actual file imports. Mouse/keyboard controls collapse/expand it, toggle both real map layers and remove them together. | [External group handlers](https://github.com/g3w-suite/g3w-client/blob/76f170d9088de58d91a5215a34d199adbd42c73c/src/components/App.vue#L1359) |
+
+Theme updates are enabled only for the currently selected theme. Changing
+layer visibility clears that selection; the update scenario therefore changes
+group expansion, which preserves the selected theme, rather than force-clicking
+a disabled control. Theme HTTP responses match the real project tree structure;
+only server data is supplied, not replacement App methods.
+
 Shared test loaders and browser fixtures live in `support/`; source modules are
 executed without changing the production module format or writing test bundles
 into the source tree. Runtime dependencies are replaced only where the tested

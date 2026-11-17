@@ -5,7 +5,7 @@ const { parse } = require('@vue/compiler-sfc');
 const { strToU8, zipSync } = require('fflate');
 const { After, Before, Then } = require('@cucumber/cucumber');
 const { openCorePage } = require('../support/core-browser');
-const { closeCoreContext, instrumentSource } = require('../support/function-coverage');
+const { closeCoreContext, collectCoverage, instrumentSource } = require('../support/function-coverage');
 
 Before({ tags: '@application-bootstrap', timeout: 60_000 }, async function ({ pickle }) {
   await closeCoreContext(this.coreContext);
@@ -15,6 +15,8 @@ Before({ tags: '@application-bootstrap', timeout: 60_000 }, async function ({ pi
   const withPlugin = pickle.tags.some(tag => tag.name === '@startup-plugin');
   const withExternalLayers = pickle.tags.some(tag => tag.name === '@external-layer-workflows');
   const withAnnotations = pickle.tags.some(tag => tag.name === '@annotation-workflows');
+  const withHeader = pickle.tags.some(tag => tag.name === '@header-workflows');
+  const withThemes = pickle.tags.some(tag => tag.name === '@map-theme-workflows');
   const crs = { epsg: 'EPSG:3857', proj4: '', axisinverted: false, geographic: false };
   this.startupConfig = {
     id: 1, gid: 'qdjango:1', type: 'qdjango', name: 'Offline project',
@@ -32,6 +34,10 @@ Before({ tags: '@application-bootstrap', timeout: 60_000 }, async function ({ pi
     }],
     layerstree: [{ name: 'Transport', expanded: true, checked: true, nodes: [{ id: 'roads', toc: true, checked: true }] }],
   };
+  if (withThemes) {
+    this.startupConfig.map_themes.project.push({ theme: 'Quiet', styles: { roads: 'night' } });
+    this.startupConfig.layers[0].styles.push({ name: 'night', current: false });
+  }
   const { context, page } = await openCorePage(this.coreBrowser, 'index.prod.js', async page => {
     page.on('console', message => {
       if (['warning', 'error'].includes(message.type())) this.startupErrors.push(message.text());
@@ -55,6 +61,34 @@ Before({ tags: '@application-bootstrap', timeout: 60_000 }, async function ({ pi
       assert.ok(filename.startsWith(root + path.sep));
       return route.fulfill({ path: filename });
     });
+    if (withHeader) {
+      await page.route('http://core.test/static/img/flags/*.png', route => route.fulfill({
+        contentType: 'image/svg+xml',
+        body: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="16"><rect width="24" height="16" fill="grey"/></svg>',
+      }));
+    }
+    if (withThemes) {
+      this.themeRequests = [];
+      const themes = new Map([['Quiet', [{
+        name: 'Transport', checked: true, expanded: false,
+        nodes: [{ id: 'roads', name: 'roads', visible: false, expanded: true }],
+      }]]]);
+      await page.route('**/qdjango/api/prjtheme/1/**', route => {
+        const request = route.request();
+        const theme = decodeURIComponent(new URL(request.url()).pathname.split('/').filter(Boolean).at(-1));
+        const method = request.method();
+        const data = method === 'POST' ? request.postDataJSON() : undefined;
+        this.themeRequests.push({ method, theme, data });
+        if (method === 'POST') themes.set(theme, data.layerstree);
+        if (method === 'DELETE') themes.delete(theme);
+        assert.ok(['GET', 'POST', 'DELETE'].includes(method));
+        if (method === 'GET') assert.ok(themes.has(theme), `Unknown theme requested: ${theme}`);
+        return route.fulfill({ json: { result: true, ...(method === 'GET' ? { data: themes.get(theme) } : {}) } });
+      });
+      await page.route('**/vector/editorformstructure/qdjango/1/roads/', route => route.fulfill({
+        json: { result: true, data: {} },
+      }));
+    }
     await page.route('https://unpkg.com/platform@1.3.6/platform.js', route => route.fulfill({
       contentType: 'text/javascript',
       body: 'window.platform = { name: "Chromium", version: "offline", os: { toString() { return "Test OS"; } } };',
@@ -96,11 +130,18 @@ Before({ tags: '@application-bootstrap', timeout: 60_000 }, async function ({ pi
         ],
       } });
     });
-    await page.evaluate(({ crs, extent, initextent, withPlugin, withExternalLayers, withAnnotations }) => {
+    await page.evaluate(({ crs, extent, initextent, withPlugin, withExternalLayers, withAnnotations, withHeader, withThemes }) => {
       Object.assign(initConfig, {
         id: 1, initproject: 'qdjango:1', crs, extent, initextent,
         projects: [{ id: 1, gid: 'qdjango:1', type: 'qdjango', name: 'Offline project', modified: 1, crs, extent, initextent }],
-        user: { i18n: 'en', username: 'offline', is_staff: false },
+        user: { i18n: 'en', username: 'offline', is_staff: false, logout_url: '/fixture/logout/', ...(withThemes ? { id: 7 } : {}) },
+        ...(withHeader ? {
+          i18n: [['en', 'English'], ['it', 'Italiano']],
+          header_custom_links: [{
+            id: 'offline-help', type: 'modal', title: 'Offline help', text: 'Offline help',
+            content: '<p>Local help content</p><button type="button" data-dismiss="modal">Close help</button>',
+          }],
+        } : {}),
         title: 'Offline maps', main_map_title: 'Local catalog', header_logo_img: 'g3wsuite_logo.png',
         mediaurl: '/static/client/images/', frontendurl: '/', version: 'v4.2.0',
         groups: [], macrogroups: [],
@@ -113,7 +154,7 @@ Before({ tags: '@application-bootstrap', timeout: 60_000 }, async function ({ pi
         interfaceowsurl: '/fixture/wms-config/',
       });
       document.querySelector('#app').outerHTML = '<app id="app"></app>';
-    }, { ...this.startupConfig, withPlugin, withExternalLayers, withAnnotations });
+    }, { ...this.startupConfig, withPlugin, withExternalLayers, withAnnotations, withHeader, withThemes });
     await page.addStyleTag({ url: 'http://core.test/static/client/app.css' });
     const component = parse({
       source: fs.readFileSync(path.resolve('src', 'components', 'ModalAddLayer.vue'), 'utf8'),
@@ -151,6 +192,112 @@ Then('the production application displays its project catalog and a ready map', 
   assert.equal(result.map, true);
   assert.equal(result.epsg, 'EPSG:3857');
   assert.equal(result.spinner, false);
+});
+
+Then('the account logout sends a CSRF-protected POST and handles a {string} response', async function (outcome) {
+  const page = this.corePage;
+  await page.locator('.cookie-button').click();
+  await page.evaluate(() => { document.cookie = 'csrftoken=logout-token; path=/'; });
+  const requests = [];
+  await page.route('**/fixture/logout/', async route => {
+    const request = route.request();
+    requests.push({ method: request.method(), csrf: request.headers()['x-csrftoken'], body: request.postData() });
+    if (outcome === 'successful') {
+      collectCoverage(await page.evaluate(() => globalThis.__coverage__));
+    }
+    return route.fulfill({ status: outcome === 'successful' ? 200 : 503, body: '' });
+  });
+  await page.locator('#g3w-nav-account > a').click();
+  const previousUrl = page.url();
+  const reloadUrl = new URL(previousUrl);
+  reloadUrl.hash = '';
+  const reloads = [];
+  await page.route(reloadUrl.href, route => {
+    assert.equal(route.request().isNavigationRequest(), true);
+    reloads.push(route.request().method());
+    return route.fulfill({
+      contentType: 'text/html',
+      body: '<!doctype html><html><body><h1>Session ended</h1></body></html>',
+    });
+  });
+  if (outcome === 'successful') {
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'load' }),
+      page.locator('.nav-logout').click(),
+    ]);
+    assert.equal(await page.locator('h1').textContent(), 'Session ended');
+    assert.deepEqual(reloads, ['GET']);
+    await page.close();
+  } else {
+    const [error] = await Promise.all([
+      page.waitForEvent('console', { predicate: message => message.text().startsWith('Logout failed:') }),
+      page.locator('.nav-logout').click(),
+    ]);
+    assert.match(error.text(), /^Logout failed: Error: Logout request failed: HTTP 503\b/);
+    assert.deepEqual(this.startupErrors.slice().sort(), [
+      error.text(),
+      'Failed to load resource: the server responded with a status of 503 (Service Unavailable)',
+    ].sort(), 'only the expected rejected-logout diagnostics are allowed');
+    this.startupErrors.length = 0;
+    assert.equal(page.url(), previousUrl);
+    assert.deepEqual(reloads, []);
+    assert.equal(await page.locator('.nav-logout').isVisible(), true);
+  }
+  assert.deepEqual(requests, [{ method: 'POST', csrf: 'logout-token', body: null }]);
+});
+
+Then('the account accessibility action updates preferences through native controls', async function () {
+  const page = this.corePage;
+  await page.locator('.cookie-button').click();
+  await page.locator('#g3w-nav-account > a').click();
+  await page.locator('.nav-map-settings').click();
+  const dialog = page.locator('#modal-accessibility');
+  await dialog.waitFor({ state: 'visible' });
+  await dialog.getByLabel('High contrast', { exact: true }).check();
+  await dialog.getByLabel('Reduce animations', { exact: true }).check();
+  assert.deepEqual(await page.evaluate(() => ({
+    contrast: localStorage.getItem('map:accessibility:high_contrast'),
+    motion: localStorage.getItem('map:accessibility:reduced_motion'),
+    color: document.body.style.getPropertyValue('--skin-color'),
+  })), { contrast: 'true', motion: 'true', color: '#212c31' });
+  await dialog.getByRole('button', { name: 'Restore defaults', exact: true }).click();
+  assert.deepEqual(await page.evaluate(() => ({
+    contrast: localStorage.getItem('map:accessibility:high_contrast'),
+    motion: localStorage.getItem('map:accessibility:reduced_motion'),
+  })), { contrast: null, motion: null });
+  await dialog.locator('.a11y-close').click();
+  assert.equal(await dialog.evaluate(element => element.open), false);
+});
+
+Then('a custom header link opens its modal and removes it on native dismissal', async function () {
+  const page = this.corePage;
+  await page.locator('.cookie-button').click();
+  const link = page.locator('#g3w-nav-custom-links-offline-help a');
+  await link.click();
+  assert.equal(await page.locator('#custom_modal p').textContent(), 'Local help content');
+  assert.equal(await page.locator('#custom_modal').isVisible(), true);
+  await page.getByRole('button', { name: 'Close help', exact: true }).click();
+  await page.locator('#custom_modal').waitFor({ state: 'detached' });
+  await link.click();
+  assert.equal(await page.locator('#custom_modal').count(), 1);
+  await page.getByRole('button', { name: 'Close help', exact: true }).click();
+  await page.locator('#custom_modal').waitFor({ state: 'detached' });
+});
+
+Then('the language picker updates Vue state and translations through its radio input', async function () {
+  const page = this.corePage;
+  await page.locator('.cookie-button').click();
+  await page.locator('#g3w-nav-language > button').click();
+  const dialog = page.locator('#nav-lang-dialog');
+  await dialog.waitFor({ state: 'visible' });
+  await dialog.locator('label').filter({ hasText: 'Italiano' }).click();
+  await page.waitForFunction(() => g3w.state.language === 'it');
+  assert.equal(await dialog.evaluate(element => element.open), false);
+  assert.equal(await dialog.locator('input[value="it"]').isChecked(), true);
+  assert.match(await page.locator('#g3w-nav-language > button').textContent(), /Italiano/);
+  assert.equal(new URL(page.url()).pathname, '/it');
+  await page.locator('#g3w-nav-account > a').click();
+  assert.match(await page.locator('.nav-map-settings').textContent(), /Accessibilit\u00e0/);
 });
 
 Then('the production registry filters real spatial and nonspatial layers', async function () {
@@ -347,6 +494,101 @@ Then('the production application reacts to browser offline and online events', a
   assert.deepEqual(result, { offline: false, online: true });
 });
 
+Then('a project theme radio lazily applies nested visibility and layer styles', async function () {
+  const page = this.corePage;
+  await page.locator('.cookie-button').click();
+  await page.locator('#themes > a').click();
+  await page.getByLabel('Quiet', { exact: true }).check();
+  await page.waitForFunction(() => g3w.state.map_theme.theme === 'Quiet' &&
+    !g3w.state.map_theme.change && g3w.state.project.getLayerById('roads').getCurrentStyle().name === 'night');
+  assert.deepEqual(await page.evaluate(() => {
+    const group = g3w.state.project.state.layerstree[0].nodes[0];
+    return {
+      theme: g3w.state.map_theme.theme, group: group.name, checked: group.checked, expanded: group.expanded,
+      visible: g3w.state.project.getLayerById('roads').isVisible(),
+    };
+  }), { theme: 'Quiet', group: 'Transport', checked: true, expanded: false, visible: false });
+  assert.deepEqual(this.themeRequests.map(({ method, theme }) => ({ method, theme })), [{ method: 'GET', theme: 'Quiet' }]);
+});
+
+Then('an authenticated user creates updates and deletes a map theme through Vue controls', async function () {
+  const page = this.corePage;
+  await page.locator('.cookie-button').click();
+  await page.locator('#themes > a').click();
+  const add = page.locator('#g3w-themes-user button');
+  await add.click();
+  const dialog = page.locator('#themes dialog');
+  await dialog.waitFor({ state: 'visible' });
+  await dialog.locator('#add-theme').fill('Quiet');
+  await dialog.locator('button[type="submit"]').click();
+  assert.equal(await dialog.locator('.error-input-message').isVisible(), true);
+  assert.equal(this.themeRequests.length, 0, 'a duplicate name must not be sent to the server');
+  await dialog.locator('#add-theme').fill('Personal view');
+  await dialog.locator('button[type="submit"]').click();
+  await page.waitForFunction(() => g3w.state.map_theme.theme === 'Personal view' && !g3w.state.map_theme.change);
+  assert.equal(await dialog.evaluate(element => element.open), false);
+  const row = page.locator('#g3w-themes-user label').filter({ hasText: 'Personal view' }).locator('../..');
+  assert.equal(await row.locator('input').isChecked(), true);
+  const group = page.locator('.tree-node-title').filter({ hasText: 'Transport' }).locator('..');
+  await group.locator(':scope > .tree-toggler').click();
+  assert.equal(await page.evaluate(() => g3w.state.project.state.layerstree[0].nodes[0].expanded), false,
+    'the catalog group must be collapsed before updating its saved theme');
+  await Promise.all([
+    page.waitForResponse(response => response.request().method() === 'POST' && response.url().includes('/prjtheme/')),
+    row.locator('.sidebar-button').first().click(),
+  ]);
+  await page.waitForFunction(() => !!g3w.state.project.state.map_themes.custom[0].layerstree);
+  const posts = this.themeRequests.filter(request => request.method === 'POST');
+  assert.equal(posts.length, 2);
+  assert.ok(posts.every(request => request.theme === 'Personal view'));
+  assert.deepEqual(posts.map(request => request.data.styles), [{ roads: 'default' }, { roads: 'default' }]);
+  assert.deepEqual(posts.map(request => request.data.layerstree[0].expanded), [true, false]);
+  assert.ok(posts.every(request => request.data.layerstree[0].nodes[0].visible));
+  await row.locator('.sidebar-button').last().click();
+  await page.locator('dialog[open] button[value="no"]').click();
+  assert.equal(await row.count(), 1);
+  assert.equal(this.themeRequests.filter(request => request.method === 'DELETE').length, 0);
+  await row.locator('.sidebar-button').last().click();
+  await page.locator('dialog[open] button[value="yes"]').click();
+  await page.waitForFunction(() => g3w.state.project.state.map_themes.custom.length === 0 && g3w.state.map_theme.theme === null);
+  assert.equal(await row.count(), 0);
+  assert.equal(this.themeRequests.filter(request => request.method === 'DELETE').length, 1);
+  await add.click();
+  assert.equal(await dialog.locator('#add-theme').inputValue(), '');
+  await dialog.locator('button[type="button"]').click();
+  assert.equal(await dialog.evaluate(element => element.open), false);
+});
+
+Then('sidebar panel ownership reacts to nested panels and native back and close actions', async function () {
+  const page = this.corePage;
+  await page.locator('.cookie-button').click();
+  await page.locator('#legend > a').click();
+  await page.locator('#legend-panel').waitFor({ state: 'visible' });
+  await page.waitForFunction(() => document.querySelector('#legend').classList.contains('panel-active') &&
+    document.querySelector('#metadata').inert);
+  await page.locator('.sidebar-aside-toggle').click();
+  await page.locator('#legend > a').click();
+  assert.equal(await page.evaluate(() => g3w.state.sidebar.contentsdata.length), 1);
+  assert.equal(await page.evaluate(() => g3w.app.isSidebarVisible()), true);
+  await page.evaluate(async () => {
+    await g3w.app.showPanel(new g3w.Panel({
+      id: 'nested-details', title: 'Details',
+      vueComponentObject: { template: '<section id="nested-details">Nested details</section>' },
+    }));
+  });
+  assert.equal(await page.locator('#nested-details').isVisible(), true);
+  assert.equal(await page.locator('#legend-panel').isVisible(), false);
+  await page.locator('.sidebar-panel button:is([title="back"], [data-i18n-title="back"])').click();
+  await page.waitForFunction(() => g3w.state.sidebar.contentsdata.length === 1);
+  assert.equal(await page.locator('#nested-details').count(), 0);
+  assert.equal(await page.locator('#legend-panel').isVisible(), true);
+  await page.locator('.sidebar-panel button[data-i18n-title="close"]').click();
+  await page.waitForFunction(() => g3w.state.sidebar.contentsdata.length === 0 &&
+    Array.from(document.querySelectorAll('#g3w-menu > li')).every(item => !item.inert));
+  assert.equal(await page.locator('#legend-panel').count(), 0);
+  assert.equal(await page.locator('#g3w-menu').getAttribute('data-panel-owner'), null);
+});
+
 Then('the production loader initializes a local plugin after its dependency', async function () {
   const result = await this.corePage.evaluate(async () => {
     const plugin = g3w.app.getPlugin('offline-plugin');
@@ -378,6 +620,37 @@ async function submitLayer(page, name) {
   await page.locator('#modal-addlayer menu .btn-success').click();
   await page.waitForFunction(name => g3w.app.getLayerByName(name) && !document.querySelector('#modal-addlayer').open, name);
 }
+
+Then('external catalog group controls react to imported layers and remove them together', async function () {
+  const page = this.corePage;
+  await page.locator('.cookie-button').click();
+  for (const name of ['first.geojson', 'second.geojson']) {
+    await openLayerDialog(page, 'file');
+    await uploadLayer(page, name, JSON.stringify({
+      type: 'FeatureCollection', features: [{
+        type: 'Feature', properties: { name }, geometry: { type: 'Point', coordinates: [10, 20] },
+      }],
+    }));
+    await submitLayer(page, name);
+  }
+  const group = page.locator('#catalog > ul.tree-root').last().locator(':scope > li');
+  const first = group.locator('.tree-node-title').filter({ hasText: 'first.geojson' });
+  await group.locator(':scope > .tree-toggler').click();
+  assert.equal(await first.isVisible(), false);
+  await group.press('Enter');
+  assert.equal(await first.isVisible(), true);
+  const checkbox = group.locator(':scope > input[type="checkbox"]');
+  await checkbox.click();
+  await page.waitForFunction(() => g3w.state.catalog.external.vector.every(layer => !layer.checked) &&
+    ['first.geojson', 'second.geojson'].every(name => !g3w.app.getLayerByName(name).getVisible()));
+  await checkbox.click();
+  await page.waitForFunction(() => g3w.state.catalog.external.vector.every(layer => layer.checked) &&
+    ['first.geojson', 'second.geojson'].every(name => g3w.app.getLayerByName(name).getVisible()));
+  await group.locator(':scope > button:not(.tree-toggler)').click();
+  await page.waitForFunction(() => g3w.state.catalog.external.vector.length === 0);
+  assert.deepEqual(await page.evaluate(() => ['first.geojson', 'second.geojson'].map(name =>
+    !!g3w.app.getLayerByName(name))), [false, false]);
+});
 
 Then('the production add-layer dialog imports styles and removes a GeoJSON layer', async function () {
   const page = this.corePage;
