@@ -5,6 +5,7 @@ const vm = require('node:vm');
 const { Before, After, AfterAll, Then } = require('@cucumber/cucumber');
 const { chromium } = require('playwright');
 const esbuild = require('esbuild');
+const { collectCoverage, coveragePlugin, instrumentSource } = require('../support/function-coverage');
 
 const root = path.resolve(__dirname, '../..');
 const staticDir = path.join(root, 'src', 'static');
@@ -13,6 +14,7 @@ const plain = value => JSON.parse(JSON.stringify(value));
 let browser;
 
 Before({ tags: '@static-resources' }, function ({ pickle }) {
+  this.vmCoverages = [];
   this.assignedFiles = pickle.tags.map(tag => tag.name)
     .filter(tag => tag.startsWith('@covers:src/static/'))
     .map(tag => tag.slice('@covers:src/static/'.length));
@@ -26,7 +28,10 @@ Before({ tags: '@static-resources and @static-browser' }, async function () {
   await this.page.setContent('<!doctype html><html><body></body></html>');
 });
 
-After({ tags: '@static-resources and @static-browser' }, async function () {
+After({ tags: '@static-resources' }, async function () {
+  for (const coverage of this.vmCoverages) {
+    collectCoverage(coverage);
+  }
   if (this.context) await this.context.close();
 });
 
@@ -35,13 +40,16 @@ AfterAll(async function () {
   browser = undefined;
 });
 
-Then('each registered locale provides its expected sign-in and confirmation labels', function () {
-  const bundle = esbuild.buildSync({
+Then('each registered locale provides its expected sign-in and confirmation labels', async function () {
+  const bundle = (await esbuild.build({
     entryPoints: [path.join(staticDir, 'locales', 'index.js')],
-    bundle: true, platform: 'node', format: 'cjs', write: false, logLevel: 'silent'
-  }).outputFiles[0].text;
+    bundle: true, platform: 'node', format: 'cjs', write: false, logLevel: 'silent',
+    plugins: [coveragePlugin],
+  })).outputFiles[0].text;
   const module = { exports: {} };
-  vm.runInNewContext(bundle, { module, exports: module.exports });
+  const sandbox = { module, exports: module.exports };
+  vm.runInNewContext(bundle, sandbox);
+  this.vmCoverages.push(sandbox.__coverage__);
   const locales = module.exports.default;
   const expected = {
     bg: ['Потвърждаване', 'Вход'], de: ['Bestätigen', 'Anmelden'],
@@ -89,7 +97,8 @@ Then('the {string} provider handles an offline search', async function (name) {
     },
     ol: { extent: { containsXY: ([minX, minY, maxX, maxY], x, y) => x >= minX && x <= maxX && y >= minY && y <= maxY } }
   };
-  vm.runInNewContext(read('geocoding-providers', `${name}.js`), sandbox, { filename: `${name}.js` });
+  vm.runInNewContext(instrumentSource(path.join(staticDir, 'geocoding-providers', `${name}.js`)), sandbox, { filename: `${name}.js` });
+  this.vmCoverages.push(sandbox.__coverage__);
   const provider = config.mapcontrols.geocoding.providers[name];
   assert.equal(typeof provider.fetch, 'function');
   const opts = { url: 'https://example.test/search?key=url-key', query: 'Rome', extent: [10, 40, 20, 50], lang: 'it', limit: 3, icon: 'custom' };

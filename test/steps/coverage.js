@@ -2,27 +2,128 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { compileStyle, compileTemplate, parse } = require('@vue/compiler-sfc');
-const { transform } = require('esbuild');
-const { Then, When } = require('@cucumber/cucumber');
-const { getCoverageTargets, getSourceCoverageTags } = require('../support/source-coverage');
+const { build, transform } = require('esbuild');
+const vm = require('node:vm');
+const { createCoverageMap } = require('istanbul-lib-coverage');
+const { AfterAll, Then, When } = require('@cucumber/cucumber');
+const { getCoverageTargets, getSourceCoverageTags, listSourceFiles } = require('../support/source-coverage');
+const { instrumentCode, isSourceModule, summarizeFunctions, writeFunctionCoverageReport } = require('../support/function-coverage');
 
 const projectRoot = path.resolve(__dirname, '../..');
 const sourceRoot = path.join(projectRoot, 'src');
 const featureRoot = path.join(projectRoot, 'test', 'features');
 const unsupportedVoidTagError = /^tag <(?:area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)\b.*has no matching end tag\.$/;
 
-function listSourceFiles(directory) {
-  return fs.readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
-    if (directory === sourceRoot && entry.name === 'plugins') {
-      return [];
+let enforceFunctionCoverage = false;
+
+AfterAll({ timeout: 60_000 }, function () {
+  if (!enforceFunctionCoverage) return;
+  const { report, reportPath } = writeFunctionCoverageReport();
+  const missing = report.files.flatMap(file => file.functions
+    .filter(fn => fn.hits === 0)
+    .map(fn => `${file.file}:${fn.line}:${fn.column}: ${fn.name}`));
+  assert.equal(report.uncovered, 0,
+    `Function coverage: ${report.covered}/${report.total} (${report.percent}%). ` +
+    `${report.uncovered} functions were never executed.\n` +
+    `${missing.slice(0, 20).join('\n')}\nFull report: ${reportPath}`);
+});
+
+Then('all source functions must be executed by the end of the suite', function () {
+  enforceFunctionCoverage = true;
+});
+
+Then('runtime coverage distinguishes uncalled functions from executed callbacks and private methods', function () {
+  const filename = path.join(projectRoot, 'test', 'fixtures', 'coverage-example.js');
+  const { code, coverage } = instrumentCode(`
+    class Example {
+      #increment(value) { return value + 1; }
+      run() { return [1, 2].map(value => this.#increment(value)); }
     }
-    const file = path.join(directory, entry.name);
-    if (entry.isDirectory()) {
-      return listSourceFiles(file);
+    function neverCalled() { return 0; }
+    globalThis.example = new Example();
+  `, filename);
+  const sandbox = {};
+  vm.runInNewContext(code, sandbox);
+  const loaded = createCoverageMap({ [filename]: coverage });
+  loaded.merge(sandbox.__coverage__);
+  assert.equal(summarizeFunctions(loaded).covered, 0, 'loading a module must not cover its functions');
+  assert.deepEqual(Array.from(sandbox.example.run()), [2, 3]);
+  const executed = createCoverageMap({ [filename]: coverage });
+  executed.merge(sandbox.__coverage__);
+  const report = summarizeFunctions(executed);
+  assert.equal(report.total, 4);
+  assert.equal(report.covered, 3);
+  assert.equal(report.uncovered, 1);
+  assert.ok(report.files[0].functions.some(fn => fn.name === '#increment' && fn.hits === 2));
+  assert.deepEqual(report.files[0].functions.filter(fn => fn.hits === 0).map(fn => fn.name), ['neverCalled']);
+  const secondRuntime = {};
+  vm.runInNewContext(`${code}\nneverCalled();`, secondRuntime);
+  executed.merge(secondRuntime.__coverage__);
+  assert.equal(summarizeFunctions(executed).uncovered, 0, 'coverage must merge across isolated runtimes');
+  const unloaded = path.join(projectRoot, 'test', 'fixtures', 'never-loaded.js');
+  executed.addFileCoverage(instrumentCode('function unloaded() {}', unloaded).coverage);
+  assert.equal(summarizeFunctions(executed).uncovered, 1, 'files that never execute must remain uncovered');
+  assert.equal(isSourceModule(path.join(sourceRoot, 'plugins', 'example.js')), false);
+  assert.equal(isSourceModule(path.join(projectRoot, 'node_modules', 'example.js')), false);
+  assert.equal(isSourceModule(path.join(projectRoot, 'src-other', 'example.js')), false);
+});
+
+Then('instrumented functions preserve inheritance accessors generators and asynchronous results', async function () {
+  const filename = path.join(projectRoot, 'test', 'fixtures', 'function-semantics.js');
+  const { code, coverage } = instrumentCode(`
+    class Parent {
+      constructor(value) { this.value = value; }
+      read() { return this.value; }
     }
-    return entry.isFile() ? [file] : [];
+    class Child extends Parent {
+      #factor = 2;
+      constructor(...args) { super(...args); }
+      get total() { return super.read() * this.#factor; }
+      set factor(value) { this.#factor = value; }
+      async update() { await Promise.resolve(); return this.total; }
+      *sequence() { yield this.total; }
+    }
+    function strict() { 'use strict'; return this === undefined; }
+    function defaults(factory = () => 3) { return factory(); }
+    globalThis.strictResult = strict();
+    globalThis.child = new Child(defaults());
+  `, filename);
+  const sandbox = {};
+  vm.runInNewContext(code, sandbox);
+  assert.equal(sandbox.strictResult, true);
+  assert.equal(sandbox.child.total, 6);
+  sandbox.child.factor = 3;
+  assert.equal(await sandbox.child.update(), 9);
+  assert.deepEqual(Array.from(sandbox.child.sequence()), [9]);
+  const result = createCoverageMap({ [filename]: coverage });
+  result.merge(sandbox.__coverage__);
+  assert.equal(summarizeFunctions(result).uncovered, 0);
+});
+
+Then('instrumented circular imports can call a function before its module initializes', async function () {
+  const sources = {
+    a: "import { result } from './b'; export function read() { return 42; } export { result };",
+    b: "import { read } from './a'; export const result = read();",
+  };
+  const result = await build({
+    entryPoints: ['a'], bundle: true, write: false, format: 'cjs',
+    plugins: [{
+      name: 'circular-coverage-fixture',
+      setup(builder) {
+        builder.onResolve({ filter: /^(a|\.\/[ab])$/ }, ({ path: name }) => ({
+          path: name.replace('./', ''), namespace: 'coverage-fixture',
+        }));
+        builder.onLoad({ filter: /.*/, namespace: 'coverage-fixture' }, ({ path: name }) => ({
+          contents: instrumentCode(sources[name], path.join(projectRoot, 'test', 'fixtures', `${name}.js`)).code,
+        }));
+      },
+    }],
   });
-}
+  const sandbox = { module: { exports: {} } };
+  vm.runInNewContext(result.outputFiles[0].text, sandbox);
+  assert.equal(sandbox.module.exports.result, 42);
+  assert.equal(summarizeFunctions(createCoverageMap(sandbox.__coverage__)).uncovered, 0);
+});
 
 function listFeatureFiles(directory) {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap(entry => {

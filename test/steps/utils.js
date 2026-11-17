@@ -3,7 +3,7 @@ const { After, Before, Then, When } = require('@cucumber/cucumber');
 const { getOl, loadUtility, resetUtilityEnvironment } = require('../support/utility-modules');
 
 When('I flatten nested profile data', async function () {
-  const { flattenObject } = await import('../../src/utils/flattenObject.js');
+  const { flattenObject } = await loadUtility('flattenObject.js');
   this.result = flattenObject({
     user: {
       name: 'Ada',
@@ -23,7 +23,7 @@ Then('nested property paths are preserved', function () {
 });
 
 When('I group map layers by geometry type', async function () {
-  const { groupBy } = await import('../../src/utils/groupBy.js');
+  const { groupBy } = await loadUtility('groupBy.js');
   this.result = groupBy([
     { id: 'roads', geometry: 'LineString' },
     { id: 'buildings', geometry: 'Polygon' },

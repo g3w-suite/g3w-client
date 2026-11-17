@@ -38,9 +38,11 @@
     "vue": "2.7.16"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.13",
     "@cucumber/cucumber": "^12.9.0",
     "@vue/compiler-sfc": "2.7.16",
     "esbuild": "^0.28.2",
+    "istanbul-lib-coverage": "^3.2.2",
     "playwright": "^1.55.0"
   },
   "engines": {

@@ -1,8 +1,7 @@
-const fs = require('node:fs');
 const path = require('node:path');
 const Module = require('node:module');
-const { parse } = require('@vue/compiler-sfc');
 const { transform } = require('esbuild');
+const { instrumentSource } = require('./function-coverage');
 
 const projectRoot = path.resolve(__dirname, '../..');
 
@@ -12,12 +11,7 @@ const emptyModule = new Proxy({}, {
 
 async function loadSource(relativePath, imports = {}) {
   const filename = path.resolve(projectRoot, 'src', relativePath);
-  let source = fs.readFileSync(filename, 'utf8');
-
-  if (filename.endsWith('.vue')) {
-    const descriptor = parse({ source, filename });
-    source = descriptor.script.content;
-  }
+  const source = instrumentSource(filename);
 
   const { code } = await transform(source, {
     loader: 'js',

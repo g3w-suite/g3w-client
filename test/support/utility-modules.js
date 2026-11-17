@@ -2,6 +2,7 @@ const Module = require('node:module');
 const fs = require('node:fs');
 const path = require('node:path');
 const esbuild = require('esbuild');
+const { coveragePlugin } = require('./function-coverage');
 
 const projectRoot = path.resolve(__dirname, '../..');
 const utilityRoot = path.join(projectRoot, 'src', 'utils');
@@ -46,7 +47,7 @@ async function loadUtility(filename) {
       platform: 'node',
       write: false,
       alias: { utils: utilityRoot, 'g3w-constants': path.join(projectRoot, 'src', 'g3w-constants.js') },
-      plugins: [{
+      plugins: [coveragePlugin, {
         name: 'utility-test-app-modules',
         setup(build) {
           build.onResolve({ filter: /^g3w-(state|app|i18n)$/ }, args => ({

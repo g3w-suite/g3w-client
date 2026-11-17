@@ -2,6 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { build } = require('esbuild');
 const { parse, rewriteDefault, compileTemplate } = require('@vue/compiler-sfc');
+const { coveragePlugin, instrumentSource } = require('./function-coverage');
 
 const root = path.resolve(__dirname, '../..');
 const bundles = new Map();
@@ -26,7 +27,7 @@ function bundleCore(entry) {
       ].map(name => [name, path.join(root, 'src', name)])),
       define: { 'process.env.g3w_client_rev': '"bdd-offline"' },
       loader: { '.css': 'empty' },
-      plugins: [{
+      plugins: [coveragePlugin, {
         name: 'core-browser-fixtures',
         setup(builder) {
           builder.onResolve({ filter: /^\.\.\/config$/ }, () => ({
@@ -45,7 +46,7 @@ function bundleCore(entry) {
           builder.onLoad({ filter: /\.vue$/ }, async ({ path: filename }) => {
             const descriptor = parse({ source: await fs.promises.readFile(filename, 'utf8'), filename });
             const script = descriptor.script
-              ? rewriteDefault(descriptor.script.content, '__component__')
+              ? rewriteDefault(instrumentSource(filename), '__component__')
               : 'const __component__ = {};';
             const template = descriptor.template && compileTemplate({
               source: descriptor.template.content,
@@ -88,7 +89,7 @@ async function openCorePage(browser, entry = 'g3w-globals.js') {
     if (url.pathname === '/static/client/locales/en.js') {
       return route.fulfill({
         contentType: 'text/javascript',
-        body: fs.readFileSync(path.join(root, 'src', 'static', 'locales', 'en.js'), 'utf8'),
+        body: instrumentSource(path.join(root, 'src', 'static', 'locales', 'en.js')),
       });
     }
     if (url.pathname.startsWith('/en/about/api/')) {

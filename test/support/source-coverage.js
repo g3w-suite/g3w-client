@@ -6,6 +6,19 @@ const cucumberRequire = createRequire(require.resolve('@cucumber/cucumber'));
 const { Parser, AstBuilder, GherkinClassicTokenMatcher } = cucumberRequire('@cucumber/gherkin');
 const { IdGenerator } = cucumberRequire('@cucumber/messages');
 
+function listSourceFiles(sourceRoot, directory = sourceRoot) {
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
+    if (directory === sourceRoot && entry.name === 'plugins') {
+      return [];
+    }
+    const file = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      return listSourceFiles(sourceRoot, file);
+    }
+    return entry.isFile() ? [file] : [];
+  });
+}
+
 function getCoverageTargets(source, uri) {
   const parser = new Parser(new AstBuilder(IdGenerator.incrementing()), new GherkinClassicTokenMatcher());
   const document = parser.parse(source);
@@ -61,4 +74,4 @@ function getSourceCoverageTags(featureFiles, projectRoot, sourceRoot) {
   return { coveredFiles, invalidTags };
 }
 
-module.exports = { getCoverageTargets, getSourceCoverageTags };
+module.exports = { getCoverageTargets, getSourceCoverageTags, listSourceFiles };

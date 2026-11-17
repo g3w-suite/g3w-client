@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const { Before, After, AfterAll, Then, When } = require('@cucumber/cucumber');
 const { chromium } = require('playwright');
 const { openCorePage } = require('../support/core-browser');
+const { closeCoreContext } = require('../support/function-coverage');
 
 let browser;
 
@@ -15,7 +16,7 @@ Before({ tags: '@core-runtime', timeout: 60_000 }, async function () {
 
 After({ tags: '@core-runtime' }, async function () {
   if (this.coreContext) {
-    await this.coreContext.close();
+    await closeCoreContext(this.coreContext);
   }
 });
 
@@ -322,7 +323,8 @@ Then('the date-time facade formats values and emits change events', async functi
 });
 
 async function startEntry(world, entry) {
-  await world.coreContext.close();
+  await closeCoreContext(world.coreContext);
+  world.coreContext = undefined;
   const { context, page } = await openCorePage(world.coreBrowser, entry);
   world.coreContext = context;
   world.corePage = page;
