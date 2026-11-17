@@ -4,6 +4,7 @@ const path = require('node:path');
 const { compileStyle, compileTemplate, parse } = require('@vue/compiler-sfc');
 const { transform } = require('esbuild');
 const { Then, When } = require('@cucumber/cucumber');
+const { getCoverageTargets, getSourceCoverageTags } = require('../support/source-coverage');
 
 const projectRoot = path.resolve(__dirname, '../..');
 const sourceRoot = path.join(projectRoot, 'src');
@@ -31,46 +32,6 @@ function listFeatureFiles(directory) {
     }
     return entry.isFile() && path.extname(file) === '.feature' ? [file] : [];
   });
-}
-
-function getSourceCoverageTags() {
-  const coveredFiles = new Set();
-  const invalidTags = [];
-
-  for (const featureFile of listFeatureFiles(featureRoot)) {
-    const lines = fs.readFileSync(featureFile, 'utf8').split(/\r?\n/);
-    for (let index = 0; index < lines.length; index++) {
-      for (const [, target] of lines[index].matchAll(/@covers:([^\s]+)/g)) {
-        let nextLine = index + 1;
-        while (nextLine < lines.length && !lines[nextLine].trim()) {
-          nextLine++;
-        }
-        if (!/^Scenario(?: Outline| Template)?:/.test((lines[nextLine] || '').trim())) {
-          invalidTags.push(`${path.relative(projectRoot, featureFile)}: @covers must tag a scenario`);
-          continue;
-        }
-
-        const absoluteTarget = path.resolve(projectRoot, target);
-        const relativeTarget = path.relative(sourceRoot, absoluteTarget);
-        if (
-          !relativeTarget ||
-          relativeTarget.startsWith(`..${path.sep}`) ||
-          path.isAbsolute(relativeTarget) ||
-          relativeTarget === 'plugins' ||
-          relativeTarget.startsWith(`plugins${path.sep}`) ||
-          !fs.existsSync(absoluteTarget) ||
-          !fs.statSync(absoluteTarget).isFile()
-        ) {
-          invalidTags.push(`${path.relative(projectRoot, featureFile)}: invalid @covers target ${target}`);
-          continue;
-        }
-
-        coveredFiles.add(relativeTarget.split(path.sep).join('/'));
-      }
-    }
-  }
-
-  return { coveredFiles, invalidTags };
 }
 
 async function validateVueFile(filename, source) {
@@ -162,16 +123,33 @@ Then('each discovered source file passes its check', function () {
 When('I compare source files with Cucumber coverage tags', function () {
   const sourceFiles = listSourceFiles(sourceRoot)
     .map(filename => path.relative(sourceRoot, filename).split(path.sep).join('/'));
-  const { coveredFiles, invalidTags } = getSourceCoverageTags();
+  const { coveredFiles, invalidTags } = getSourceCoverageTags(listFeatureFiles(featureRoot), projectRoot, sourceRoot);
   this.invalidCoverageTags = invalidTags;
   this.uncoveredSourceFiles = sourceFiles.filter(filename => !coveredFiles.has(filename));
 });
 
 Then('no source files are missing a Cucumber test', function () {
   assert.deepEqual(this.invalidCoverageTags, [], this.invalidCoverageTags.join('\n'));
-  assert.deepEqual(
-    this.uncoveredSourceFiles,
-    [],
+  assert.equal(
+    this.uncoveredSourceFiles.length,
+    0,
     `Missing Cucumber scenarios for ${this.uncoveredSourceFiles.length} source files:\n${this.uncoveredSourceFiles.join('\n')}`
   );
+});
+
+Then('coverage tags in comments and descriptions do not count as scenarios', function () {
+  const source = [
+    'Feature: Coverage parser',
+    '  Mentioning @covers:src/not-covered.js here does not cover it.',
+    '  # @covers:src/also-not-covered.js',
+    '  @covers:src/first.js',
+    '  @covers:src/second.js',
+    '  Scenario: Real behavior',
+    '    Then something observable happens',
+  ].join('\n');
+  assert.deepEqual(getCoverageTargets(source, 'fixture.feature'), ['src/first.js', 'src/second.js']);
+  assert.throws(() => getCoverageTargets(
+    'Feature: Invalid coverage\n  @covers:src/empty.js\n  Scenario: No assertions\n',
+    'empty.feature'
+  ), /coverage scenario must contain steps/);
 });
