@@ -11,6 +11,8 @@ const esbuild     = require('esbuild');
 const crypto      = require('crypto');
 const fs          = require('fs');
 const path        = require('path');
+const projectRoot = path.resolve(__dirname, '..');
+process.chdir(projectRoot);
 const execSync    = require('child_process').execSync;
 const {
   compileStyle,
@@ -19,9 +21,9 @@ const {
   rewriteDefault,
 }                 = require('@vue/compiler-sfc');
 
-const packageJSON = require('./package.json');
-const packageLock = require('./package-lock.json');
-const g3w         = require('./config');
+const packageJSON = require('../package.json');
+const packageLock = require('../package-lock.json');
+const g3w         = require('../config');
 
 // TODO: make use of "process.env" instead of setting local variables
 let production   = false;
@@ -117,7 +119,7 @@ const task = args[0];
 
     case 'help':
     default:
-      console.log(`\nUsage: node build.js <task>\n`);
+      console.log(`\nUsage: node build/build.js <task>\n`);
       console.log(`Tasks:`);
       console.log(`  build         production build`);
       console.log(`  dev           development mode`);
@@ -351,8 +353,8 @@ export default function __vue_create_injector__() {
 function get_version() {
   // delete cache of require otherwise no package.json version rests the old (cache) one
   try {
-    delete require.cache[require.resolve('./package.json')];
-    return require('./package.json').version;
+    delete require.cache[require.resolve('../package.json')];
+    return require('../package.json').version;
   } catch (error) {
     return packageJSON.version;
   }
@@ -450,38 +452,36 @@ async function start_proxy_server() {
       '.xml': 'application/xml'
     };
 
+    const plugins = [
+      { name: 'client', folder: g3w.admin_overrides_folder },
+      ...fs.readdirSync(g3w.pluginsFolder)
+        .filter(plugin => {
+          const folder = path.join(g3w.pluginsFolder, plugin);
+          return fs.existsSync(folder) && fs.statSync(folder).isDirectory();
+        })
+        .map(plugin => ({
+          name: plugin.replace(/^g3w-admin-/, ''),
+          folder: path.join(g3w.pluginsFolder, plugin)
+        }))
+    ];
+
     const server = http.createServer((req, res) => {
       const url = new URL(req.url, `http://${req.headers.host}`);
-      let localPath;
-      // Prefer local build output for client and bundled static plugins.
-      // Include installed plugin directories and symlinks, mapping admin plugins to their URL names.
-      const plugins = ['client', ...corePlugins].map(plugin => ({ name: plugin, folder: null }))
-          .concat(fs.readdirSync(g3w.pluginsFolder)
-          .filter(plugin => fs.existsSync(path.join(g3w.pluginsFolder, plugin)) && fs.statSync(path.join(g3w.pluginsFolder, plugin)).isDirectory())
-          .map(plugin => ({
-            name: plugin.replace(/^g3w-admin-/, ''),
-            folder: path.join(g3w.pluginsFolder, plugin)
-          }))
-        );
-      for (const { name: pluginName, folder: pluginFolder } of plugins) {
-        const pluginPath = `/static/${pluginName}`;
-        if (url.pathname !== pluginPath && !url.pathname.startsWith(`${pluginPath}/`)) {
-          continue;
+      const plugin = plugins.find(({ name }) => {
+        const pluginPath = `/static/${name}`;
+        return url.pathname === pluginPath || url.pathname.startsWith(`${pluginPath}/`);
+      });
+
+      if (plugin) {
+        let localPath = path.join(plugin.folder, url.pathname);
+        // Also support plugins that keep static assets one directory below their root.
+        if ('client' !== plugin.name && !fs.existsSync(localPath)) {
+          localPath = fs.readdirSync(plugin.folder, { withFileTypes: true })
+            .filter(entry => entry.isDirectory())
+            .map(entry => path.join(plugin.folder, entry.name, url.pathname))
+            .find(candidate => fs.existsSync(candidate) && fs.statSync(candidate).isFile());
         }
-        // The client build lives in the overrides folder; plugins use their own folders.
-        if ('client' === pluginName) {
-          localPath = path.join(g3w.admin_overrides_folder, url.pathname)
-        } else if (pluginFolder) {
-          localPath = path.join(pluginFolder, url.pathname);
-          // Also support plugins that keep static assets one directory below their root.
-          if (!fs.existsSync(localPath)) {
-            localPath = fs.readdirSync(pluginFolder, { withFileTypes: true })
-              .filter(entry => entry.isDirectory())
-              .map(entry => path.join(pluginFolder, entry.name, url.pathname))
-              .find(candidate => fs.existsSync(candidate) && fs.statSync(candidate).isFile());
-          }
-        }
-        // Serve locally only when the URL belongs to this asset group and the file exists.
+        // Serve locally only when the requested asset exists.
         if (localPath && fs.existsSync(localPath) && fs.statSync(localPath).isFile()) {
           console.log(true, '→', localPath);
           res.setHeader('Content-Type', contentTypes[path.extname(localPath).toLowerCase()] || 'application/octet-stream'); // Set appropriate Content-Type header
