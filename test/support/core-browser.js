@@ -21,6 +21,7 @@ function bundleCore(entry) {
           import QueryBuilder from './src/components/QueryBuilder.vue';
           import QueryResults from './src/components/QueryResults.vue';
           import Table from './src/components/Table.vue';
+          import ContextMenu from './src/components/ContextMenu.vue';
           import { SearchPanel as createSearchPanel } from './src/components/g3w-search.js';
           import Accessibility from './src/components/ModalAccessibility.vue';
           import ChangeMap from './src/components/ModalChangeMap.vue';
@@ -30,7 +31,7 @@ function bundleCore(entry) {
           import disabled from './src/directives/v-disabled.js';
           import translate from './src/directives/v-t.js';
           window.coreTestExports = {
-            IframeApp, waitFor, QueryBuilder, QueryResults, Table, createSearchPanel, Accessibility, ChangeMap, Metadata,
+            IframeApp, waitFor, QueryBuilder, QueryResults, Table, ContextMenu, createSearchPanel, Accessibility, ChangeMap, Metadata,
             Bookmarks, Tabs, disabled, translate,
           };
         `,
