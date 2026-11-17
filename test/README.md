@@ -33,6 +33,7 @@ No additional npm commands are required.
 | `utils.feature` | Data manipulation, geometry, filters, exports, requests, storage and async helpers |
 | `ui.feature` | Component methods/computed state, directives, interactions and control callbacks |
 | `forms.feature` | Mounted Vue fields, validation, autocomplete, relation filters, uploads, map picking, rich text, saved queries, bookmarks and dialogs |
+| `query-results.feature` | Mounted query results, spatial summaries, nested forms and relations, action lifecycle, local pagination, sandboxed text/HTML and WMS info-format changes |
 | `static.feature` | Localized labels, fixture-based geocoding, decoded/rendered images and fonts, stylesheet effects |
 | `coverage.feature` | Source integrity, scenario-to-file associations and a 100% runtime function gate |
 | `dev.g3wsuite.it.feature` | Remote project smoke tests (`@smoke`, requires the proxy) |
@@ -98,6 +99,7 @@ the behavioral tests and are **not** hidden by exclusions or artificial hits:
 | [`splitFeature`, polygon results](../src/utils/splitFeature.js#L134) | The Polygonizer returns individual Polygons, which the parser writes as single geometries. Valid polygon splits therefore cannot execute the multi-geometry callback in this branch. |
 | [Date/time picker limit getters](../src/shims/datetimepicker.js#L431) | After clearing limits with `minDate(false)` / `maxDate(false)`, the corresponding getters can throw: `false?.clone()` still attempts to call the missing `clone` method. |
 | [Date/time picker `today` / `clear` callbacks](../src/shims/datetimepicker.js#L314) | These callbacks have no corresponding widget actions, so the real widget cannot invoke them. They remain uncovered rather than being called artificially. |
+| [Query results JSON info-format changes](../src/components/QueryResults.vue#L1157) | Changing a raw-text result to `application/json`, using a local proxy returning a valid GeoJSON FeatureCollection, logs `TypeError: Cannot read properties of undefined (reading 'layer')` and leaves the original raw text and empty feature list. `changeInfoFormat` omits `projections`, which the [JSON parser](../src/g3w-layer.js#L3442) dereferences. The successful format-switch scenario uses the supported text/GML path; it does not treat the JSON failure as desired behavior. |
 
 These are not an exhaustive list of uncovered functions. The current report
 also includes reachable behavior for which scenarios still need to be written.
@@ -116,6 +118,14 @@ interactions and DOM selections. Local HTTP responses provide options, relation
 data, uploads and metadata; map/service fixtures supply only the dependencies
 needed by each workflow. Both browser errors and Vue lifecycle/watcher errors
 fail the scenario.
+
+The `@query-results` scenarios reuse these mounted-component fixtures and real
+layer models. The actual GUI normalizes responses, creates actions and clears
+query state; only map outputs and external service boundaries are controlled.
+Local HTTP fixtures exercise pagination and WMS proxy requests. Related-feature
+boxes are checked independently, including resetting their state for a new
+response. Iframe checks verify plain-text escaping, content-driven sizing and
+confirmation before opening HTML links.
 
 Add project examples to `features/dev.g3wsuite.it.feature` and their step
 definitions to `steps/dev.g3wsuite.it.js`.

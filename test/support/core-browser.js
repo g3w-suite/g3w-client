@@ -18,6 +18,7 @@ function bundleCore(entry) {
           import { IframeApp } from './src/g3w-iframe.js';
           import { waitFor } from './src/utils/waitFor.js';
           import QueryBuilder from './src/components/QueryBuilder.vue';
+          import QueryResults from './src/components/QueryResults.vue';
           import Accessibility from './src/components/ModalAccessibility.vue';
           import ChangeMap from './src/components/ModalChangeMap.vue';
           import Metadata from './src/components/ModalMetadata.vue';
@@ -26,7 +27,7 @@ function bundleCore(entry) {
           import disabled from './src/directives/v-disabled.js';
           import translate from './src/directives/v-t.js';
           window.coreTestExports = {
-            IframeApp, waitFor, QueryBuilder, Accessibility, ChangeMap, Metadata,
+            IframeApp, waitFor, QueryBuilder, QueryResults, Accessibility, ChangeMap, Metadata,
             Bookmarks, Tabs, disabled, translate,
           };
         `,
