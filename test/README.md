@@ -36,6 +36,8 @@ No additional npm commands are required.
 | `query-results.feature` | Mounted query results, spatial summaries, nested forms and relations, action lifecycle, local pagination, sandboxed text/HTML and WMS info-format changes |
 | `search.feature` | Configured search forms, cascading and cached choices, autocomplete ordering/cancellation, encoded filters, local search requests, related searches, follow-up forms and mobile dates/focus |
 | `tables.feature` | Mounted attribute tables, local sorting/search/pagination, selection across pages, plugin actions, relations, map bounds, cleanup and HTTP-error recovery |
+| `relations.feature` | Real relation menus and tables, parent previews, sorting/filtering/pagination, plugin actions, mounted forms, chart resizing/cleanup and export/error recovery |
+| `geocoding.feature` | Dynamically loaded providers, projected coordinates, bounded local searches, synchronized map/query selection, lazy geometry, saved searches and draggable popovers |
 | `notifications.feature` | Sequential alerts, persisted read preferences, manager toggles, unread badges, native popover dragging and keyboard dismissal |
 | `map-controls.feature` | Real line/polygon drawing, point correction, measurement overlays, scale validation/synchronization and locally fulfilled Street View workflows |
 | `static.feature` | Localized labels, fixture-based geocoding, decoded/rendered images and fonts, stylesheet effects |
@@ -64,6 +66,9 @@ public methods and private methods. The function-only Babel visitor is
 intentional: Istanbul's default instrumenter omits private class methods.
 Istanbul's coverage library combines counters from Node, VM fixtures and each
 Chromium context. Vue script locations retain their original file line numbers.
+Counter helpers have file-specific names so dynamically loaded classic scripts
+cannot redirect existing functions into another file's counters. A regression
+scenario checks delayed calls after a second script has loaded.
 Instrumentation applies only to tests, not development or production builds.
 
 The `@function-coverage` scenario enables an `AfterAll` check, so the threshold
@@ -110,6 +115,9 @@ the behavioral tests and are **not** hidden by exclusions or artificial hits:
 | [Table relation highlighting](../src/components/Table.vue#L406) | A feature without geometry returns immediately; one with geometry either highlights directly or returns at the next guard. Consequently the relation-query callbacks starting at line 430 are unreachable for ordinary feature objects. No fixture changes geometry between reads to bypass these guards. |
 | [Table post-destruction placeholder](../src/components/Table.vue#L705) | Full-size cleanup assigns an empty `async_highlight` closure after destroying the component. Normal live-component interaction cannot invoke this replacement; the cleanup scenarios verify its observable map effects without calling dead placeholders. |
 | [Table search ordering](../src/components/Table.vue#L535) | Sort the second column, then use global search. `getData({ search })` defaults its ordering index to zero, so the request sorts the first column while `ordering` and the highlighted header still indicate the second. The successful combined sorting/search scenario explicitly selects the first column before searching. |
+| [Geocoding clear selection](../src/static/map-controls/geocoding.js#L221) | Submit the trash action after selecting a result. It clears the vector source, then throws `TypeError: Cannot read properties of undefined (reading 'find')`: `GUI.getState().layers` does not exist (`queried_layers` is the current store). `clearing` remains `true`; the following result-cleanup callbacks are not reached. |
+| [Geocoding automatic updates](../src/static/map-controls/geocoding.js#L439) | The update-on-move checkbox is inside an always-hidden list item, so users cannot enable retained-selection/deduplication behavior. The view listener also subscribes to generic `change`, whereas normal center/resolution updates emit property-specific events. Tests verify normal map movement does not send extra requests; they do not expose hidden controls or call the listener artificially. |
+| [Many-to-many relation results](../src/components/Relations.vue#L517) | A relation request can return valid link records and the referenced-layer request can return two valid features, yet the table stays empty. In `await GUI.getData(...)?.data?.[0]?.features`, property access applies to the Promise before it is awaited, so the resolved features and their mapping callbacks are never used. The tests do not replace the real async API with a synchronous fixture to bypass this defect. |
 
 These are not an exhaustive list of uncovered functions. The current report
 also includes reachable behavior for which scenarios still need to be written.
@@ -167,6 +175,22 @@ heading changes and rejects unavailable panoramas. Tests check public URLs,
 marker coordinates/rotation, recentering, warning propagation and cleanup.
 Map registration/lookup and vendor/GUI presentation boundaries are controlled;
 production control methods and private state are not replaced.
+
+The `@geocoding-workflows` scenarios reuse the rendered map fixture. The control
+dynamically loads the original Nominatim provider from a locally fulfilled
+script; local HTTP responses exercise geographic bounds and address metadata.
+A custom provider fixture supplies lazy polygon geometry, missing geometry and
+network failures through real requests. The real GUI normalizes selected
+features and propagates query-result removal back to the marker layer.
+Saved-search actions and the content/map presentation are host boundaries.
+
+The `@relation-workflows` scenarios enter through the real `GUI.showRelations`
+and `Component` wrapper rather than supplying invented component state. The
+content host mounts the actual relation views and generated attribute forms.
+Real layer methods construct relation/export URLs; HTTP fixtures implement
+sorting, filters and pagination. Downloads assert the CSV filename and bytes,
+including an HTTP-error retry. External chart rendering is controlled, while
+native resize events and component destruction exercise chart cleanup.
 
 Add project examples to `features/dev.g3wsuite.it.feature` and their step
 definitions to `steps/dev.g3wsuite.it.js`.

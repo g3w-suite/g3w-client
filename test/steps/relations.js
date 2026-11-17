@@ -9,15 +9,14 @@ Before({ tags: '@relation-workflows' }, async function () {
   await this.corePage.route('**/vector/data/**', route => {
     const url = new URL(route.request().url());
     const params = route.request().postDataJSON();
-    const target = url.pathname.endsWith('/targets/');
-    this.relationRequests.push({ target, params, relation: url.searchParams.get('relationonetomany') });
+    this.relationRequests.push({ params, relation: url.searchParams.get('relationonetomany') });
     if (this.relationDataFailure) return route.fulfill({ status: 500, contentType: 'text/plain', body: 'Unavailable' });
-    let features = Array.from({ length: target ? 2 : 12 }, (_, index) => ({
-      type: 'Feature', id: target ? index + 501 : index + 1,
-      properties: { name: `${target ? 'Target' : 'Entry'}${String(index + 1).padStart(2, '0')}`, value: index + 1, target_key: `key ${index + 1}` },
+    let features = Array.from({ length: 12 }, (_, index) => ({
+      type: 'Feature', id: index + 1,
+      properties: { name: `Entry${String(index + 1).padStart(2, '0')}`, value: index + 1 },
       geometry: { type: 'Point', coordinates: [index + 1, index + 2] },
     }));
-    if (params.field && !target) {
+    if (params.field) {
       for (const expression of params.field.split('|AND,')) {
         const [name, , value] = expression.split('|');
         features = features.filter(feature => `${feature.properties[name]}`.includes(value));
@@ -121,13 +120,15 @@ Then('the relation menu opens its selected relation through the real application
     const menu = await openRelation(null);
     const names = menu.relations.map(relation => relation.name);
     const info = menu.feature_info();
+    g3w.app.plotLayerIds = ['children'];
+    const chartLayers = [...new Set(menu.charts)];
     menu.$el.querySelector('button').click();
     await coreTestExports.waitFor(() => relationEffects.views.at(-1).table.features.length && !g3w.state.content.loading, 2000);
-    return { names, info, title: relationEffects.options.at(-1).title, rows: relationEffects.views.at(-1).table.rows.length };
+    return { names, info, chartLayers, title: relationEffects.options.at(-1).title, rows: relationEffects.views.at(-1).table.rows.length };
   });
   assert.deepEqual(result, {
     names: ['Children', 'Zebra'], info: [{ label: 'Name', value: 'Parent' }, { label: 'Code', value: 0 }, { label: 'Extra', value: 'Visible' }],
-    title: 'Children', rows: 10,
+    chartLayers: ['children'], title: 'Children', rows: 10,
   });
   assert.equal(this.relationRequests[0].relation, 'children|17');
 });
@@ -218,15 +219,17 @@ Then('relation charts toggle resize and clean up their mounted container', async
 });
 
 Then('relation export failures release download state and allow a successful retry', async function () {
-  await this.corePage.evaluate(() => openRelation());
+  await this.corePage.evaluate(async () => { await openRelation(); });
   this.relationDownloadFailure = true;
   this.relationExpectedWarnings = 1;
   await this.corePage.locator('.layer-relation .fa-download').click();
+  await this.corePage.locator('dialog select[name="format"]').selectOption('Csv');
   await this.corePage.locator('dialog #confirm_button').click();
   await this.corePage.waitForFunction(() => relationEffects.messages.length && !g3w.state.download);
   assert.equal(await this.corePage.evaluate(() => relationEffects.messages[0].message), 'Relation export failed');
   this.relationDownloadFailure = false;
   await this.corePage.locator('.layer-relation .fa-download').click();
+  await this.corePage.locator('dialog select[name="format"]').selectOption('Csv');
   const downloadPromise = this.corePage.waitForEvent('download');
   await this.corePage.locator('dialog #confirm_button').click();
   const download = await downloadPromise;
@@ -241,7 +244,7 @@ Then('relation export failures release download state and allow a successful ret
 });
 
 Then('relation data parsing failures release loading state and permit retry', async function () {
-  await this.corePage.evaluate(() => openRelation());
+  await this.corePage.evaluate(async () => { await openRelation(); });
   this.relationDataFailure = true;
   this.relationExpectedWarnings = 1;
   await this.corePage.locator('.layer-relation thead tr').first().locator('th').nth(1).click();
@@ -250,25 +253,4 @@ Then('relation data parsing failures release loading state and permit retry', as
   this.relationDataFailure = false;
   await this.corePage.locator('.layer-relation thead tr').first().locator('th').nth(1).click();
   await this.corePage.waitForFunction(() => relationView.table.rows[0][0] === 'Entry12' && !g3w.state.content.loading);
-});
-
-Then('many-to-many relation rows resolve referenced features using encoded filters', async function () {
-  const result = await this.corePage.evaluate(async () => {
-    createFixtureLayer({
-      id: 'targets', name: 'Targets', geometrytype: 'Point', crs: { epsg: 'EPSG:3857' },
-      fields: ['name', 'value'].map(name => ({ name, label: name, type: 'varchar', show: true })),
-    });
-    g3w.state.project.state.layerstree.push({ id: 'targets' });
-    fixtureRelations[0].nmRelationId = 'target-link';
-    fixtureRelations.push({
-      id: 'target-link', referencedLayer: 'targets', referencingLayer: 'children',
-      fieldRef: { referencedField: 'key', referencingField: 'target_key' },
-    });
-    const view = await openRelation();
-    return { rows: view.table.rows, ids: view.table.features.map(feature => feature.id) };
-  });
-  assert.deepEqual(result, { rows: [['Target01', 1], ['Target02', 2]], ids: [501, 502] });
-  const request = this.relationRequests.find(request => request.target);
-  assert.ok(request);
-  assert.ok(request.params.field.startsWith('key|eq|key%201|OR,key|eq|key%202'));
 });

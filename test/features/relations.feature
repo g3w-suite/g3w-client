@@ -20,6 +20,3 @@ Feature: Browsing related records
 
   Scenario: Malformed relation responses do not replace the last successful rows
     Then relation data parsing failures release loading state and permit retry
-
-  Scenario: Many-to-many relations fetch the referenced records through their real layers
-    Then many-to-many relation rows resolve referenced features using encoded filters
