@@ -119,7 +119,7 @@ function bundleCore(entry) {
   return bundles.get(entry);
 }
 
-async function openCorePage(browser, entry = 'g3w-globals.js') {
+async function openCorePage(browser, entry = 'g3w-globals.js', setup) {
   const context = await browser.newContext();
   const page = await context.newPage();
   const errors = [];
@@ -170,6 +170,7 @@ async function openCorePage(browser, entry = 'g3w-globals.js') {
     });
   }
   try {
+    if (setup) await setup(page);
     await page.addScriptTag({ content: await bundleCore(entry) });
     if (errors.length) {
       throw new Error(errors.join('\n'));

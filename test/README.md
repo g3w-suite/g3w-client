@@ -27,6 +27,7 @@ No additional npm commands are required.
 
 | Feature | Behavior checked |
 | --- | --- |
+| `bootstrap.feature` | Complete offline production startup with real project models, Vue and OpenLayers; registry filters/selection, catalog visibility and zoom, content navigation/docking/resizing, network events, plugin dependencies, GeoJSON/CSV/KMZ imports and persisted WMS/TMS connections |
 | `core.feature` | Events, lifecycle, dialogs, galleries, localization, projections, plugins, selections, controls, SDK and startup failure handling |
 | `layers.feature` | Layer metadata, relations, scale-dependent visibility, local data requests, styles, GeoJSON/GML parsing and permalinks |
 | `shims.feature` | Browser behavior for jQuery, Moment, Select2 and the date/time picker |
@@ -92,9 +93,11 @@ select the relevant feature, or use `--tags "not @smoke and not @function-covera
 that diagnostic run does **not** certify full function coverage. Coverage
 aggregation currently expects Cucumber's default serial execution.
 
-Do not add tags or lower the threshold to resolve uncovered functions: add
-behavioral scenarios that exercise them. Function execution coverage does not
-prove that every branch was taken or that every function result was asserted.
+Do not add tags, fabricate hits or exclude functions to resolve coverage gaps:
+add behavioral scenarios that exercise them. Any threshold reduction must be
+explicitly documented; it does not make the remaining functions tested or
+unreachable. Function execution coverage does not prove that every branch was
+taken or that every function result was asserted.
 
 ### Shared Vue options contract
 
@@ -145,6 +148,24 @@ The full runtime gate remains at 100% and is expected to fail until all gaps
 and blocking source defects are addressed. Do not patch source methods in a
 test fixture merely to execute an otherwise unreachable callback.
 
+#### Identifying unreachable functions
+
+The following inventory distinguishes specific inaccessible callbacks from
+entire methods that can still be entered. Locations use the original source
+and anonymous names are those emitted by the function-coverage report.
+
+| Classification | Functions | Evidence |
+| --- | --- | --- |
+| Unused local code | `observe` (`anonymous_0`, 12:17) and proxy `set` (13:3) | [`observe`](https://github.com/g3w-suite/g3w-client/blob/76f170d9088de58d91a5215a34d199adbd42c73c/src/g3w-state.js#L12) is neither called nor exported; only that helper can construct the proxy containing [`set`](https://github.com/g3w-suite/g3w-client/blob/76f170d9088de58d91a5215a34d199adbd42c73c/src/g3w-state.js#L13). |
+| Blocked by an earlier exception | Relation lookup callback (`anonymous_65`, 672:33) | [`getRelationAttributes`](https://github.com/g3w-suite/g3w-client/blob/76f170d9088de58d91a5215a34d199adbd42c73c/src/g3w-layer.js#L672) calls nonexistent `.find` on its private object store. The method itself is **not** classified as unreachable. |
+| Contradictory guards | Six Table relation callbacks (`anonymous_21` through `anonymous_26`) | The [guard](https://github.com/g3w-suite/g3w-client/blob/76f170d9088de58d91a5215a34d199adbd42c73c/src/components/Table.vue#L406) returns for both geometry cases before callbacks at [430](https://github.com/g3w-suite/g3w-client/blob/76f170d9088de58d91a5215a34d199adbd42c73c/src/components/Table.vue#L430), [431](https://github.com/g3w-suite/g3w-client/blob/76f170d9088de58d91a5215a34d199adbd42c73c/src/components/Table.vue#L431), [438](https://github.com/g3w-suite/g3w-client/blob/76f170d9088de58d91a5215a34d199adbd42c73c/src/components/Table.vue#L438), [444](https://github.com/g3w-suite/g3w-client/blob/76f170d9088de58d91a5215a34d199adbd42c73c/src/components/Table.vue#L444), [459](https://github.com/g3w-suite/g3w-client/blob/76f170d9088de58d91a5215a34d199adbd42c73c/src/components/Table.vue#L459), and [460](https://github.com/g3w-suite/g3w-client/blob/76f170d9088de58d91a5215a34d199adbd42c73c/src/components/Table.vue#L460) for ordinary stable feature objects. |
+| No widget action | Date-picker `today` / `clear` (`anonymous_42`, 314:27; `anonymous_43`, 315:27) | The [callbacks](https://github.com/g3w-suite/g3w-client/blob/76f170d9088de58d91a5215a34d199adbd42c73c/src/shims/datetimepicker.js#L314) have no rendered action; ordinary widget interaction cannot dispatch them. |
+| Incompatible upstream result / parsing failure | Polygon multi-geometry callback (`anonymous_9`, 134:51); Z restoration (`anonymous_11`, 226:31) | The [polygon result branch](https://github.com/g3w-suite/g3w-client/blob/76f170d9088de58d91a5215a34d199adbd42c73c/src/utils/splitFeature.js#L134) receives individual polygons; the [Z callback](https://github.com/g3w-suite/g3w-client/blob/76f170d9088de58d91a5215a34d199adbd42c73c/src/utils/splitFeature.js#L226) follows the failing 3D WKT parse described above. |
+
+These are documented limitations, **not coverage exclusions**. They remain in
+the denominator and retain their actual zero counters. Other zero-hit functions
+must not be called unreachable without an equivalent source-level explanation.
+
 Shared test loaders and browser fixtures live in `support/`; source modules are
 executed without changing the production module format or writing test bundles
 into the source tree. Runtime dependencies are replaced only where the tested
@@ -156,6 +177,15 @@ interactions and DOM selections. Local HTTP responses provide options, relation
 data, uploads and metadata; map/service fixtures supply only the dependencies
 needed by each workflow. Both browser errors and Vue lifecycle/watcher errors
 fail the scenario.
+
+The `@application-bootstrap` scenarios execute `index.prod.js` after registering
+offline server configuration and local asset routes. Project methods, GUI
+services, the root App, catalog, dialogs and the OpenLayers map are the actual
+implementations, not replacement methods. Native pointer/keyboard events drive
+the catalog, content controls and add-layer dialog; local responses provide WMS
+configuration, map images and a third-party plugin with a script dependency.
+File uploads use real browser `File` objects and a real compressed KML archive.
+Unexpected warnings, request errors and Vue/browser errors fail each scenario.
 
 The `@context-menu-workflows` scenarios reuse real map events, layer models,
 stylesheets and font assets. Native pointer/keyboard input drives the menus and
