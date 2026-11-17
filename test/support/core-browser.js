@@ -12,7 +12,7 @@ function bundleCore(entry) {
     bundles.set(entry, build({
       absWorkingDir: root,
       stdin: {
-        contents: `import './src/g3w-vendors.js'; import './src/${entry}'; import { IframeApp } from './src/g3w-iframe.js'; window.coreTestExports = { IframeApp };`,
+        contents: `import './src/g3w-vendors.js'; import './src/${entry}'; import { IframeApp } from './src/g3w-iframe.js'; import { waitFor } from './src/utils/waitFor.js'; window.coreTestExports = { IframeApp, waitFor };`,
         resolveDir: root,
       },
       bundle: true,

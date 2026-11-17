@@ -27,7 +27,9 @@ No additional npm commands are required.
 
 | Feature | Behavior checked |
 | --- | --- |
-| `core.feature` | Events, lifecycle, localization, projections, plugins, selections, controls, SDK, shims and startup failure handling |
+| `core.feature` | Events, lifecycle, dialogs, galleries, localization, projections, plugins, selections, controls, SDK and startup failure handling |
+| `layers.feature` | Layer metadata, relations, scale-dependent visibility, local data requests, styles, GeoJSON/GML parsing and permalinks |
+| `shims.feature` | Browser behavior for jQuery, Moment, Select2 and the date/time picker |
 | `utils.feature` | Data manipulation, geometry, filters, exports, requests, storage and async helpers |
 | `ui.feature` | Component methods/computed state, directives, interactions and control callbacks |
 | `static.feature` | Localized labels, fixture-based geocoding, decoded/rendered images and fonts, stylesheet effects |
@@ -80,6 +82,27 @@ aggregation currently expects Cucumber's default serial execution.
 Do not add tags or lower the threshold to resolve uncovered functions: add
 behavioral scenarios that exercise them. Function execution coverage does not
 prove that every branch was taken or that every function result was asserted.
+
+### Known source issues deferred to future PRs (after #1010 has been merged)
+
+Source files remain unchanged. The following issues were verified while adding
+the behavioral tests and are **not** hidden by exclusions or artificial hits:
+
+| Source | Reproduction / consequence |
+| --- | --- |
+| [`g3w-state.js`](../src/g3w-state.js#L12), local `observe` helper | The helper and its proxy setter are declared but never used or exported. Normal application execution cannot exercise them. The code is retained. |
+| [`Layer.getRelationAttributes`](../src/g3w-layer.js#L671) | Calling `layer.getRelationAttributes('missing')` throws `TypeError: this[#relations].find is not a function`. The private relation store is an object, not an array; the lookup callback never executes. |
+| [`PluginService.unsubscribeEvent`](../src/g3w-plugin.js#L524) | Subscribe an event with `subscribeEvent({ name: 'updated', owner: 'subscriber', listener() {} })`, then unsubscribe it. This throws `TypeError: this.removeEvent is not a function`; the inherited emitter provides `off`, not `removeEvent`. `unsubscribeAllEvents` and `clearAllEvents` also use this broken cleanup path when subscriptions exist. |
+| [`splitFeature`, 3D lines](../src/utils/splitFeature.js#L168) | Splitting `LineString([[0, 0, 8], [10, 0, 9]])` with `LineString([[5, -1], [5, 1]])` fails while parsing `LINESTRING(0 0 8,10 0 9)`: removing the WKT `Z` marker leaves the third ordinates behind. Execution never reaches the Z-restoration callback at line 226. |
+| [`splitFeature`, polygon results](../src/utils/splitFeature.js#L134) | The Polygonizer returns individual Polygons, which the parser writes as single geometries. Valid polygon splits therefore cannot execute the multi-geometry callback in this branch. |
+| [Date/time picker limit getters](../src/shims/datetimepicker.js#L431) | After clearing limits with `minDate(false)` / `maxDate(false)`, the corresponding getters can throw: `false?.clone()` still attempts to call the missing `clone` method. |
+| [Date/time picker `today` / `clear` callbacks](../src/shims/datetimepicker.js#L314) | These callbacks have no corresponding widget actions, so the real widget cannot invoke them. They remain uncovered rather than being called artificially. |
+
+These are not an exhaustive list of uncovered functions. The current report
+also includes reachable behavior for which scenarios still need to be written.
+The full runtime gate remains at 100% and is expected to fail until all gaps
+and blocking source defects are addressed. Do not patch source methods in a
+test fixture merely to execute an otherwise unreachable callback.
 
 Shared test loaders and browser fixtures live in `support/`; source modules are
 executed without changing the production module format or writing test bundles

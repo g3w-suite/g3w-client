@@ -23,6 +23,30 @@ Feature: Utility module behavior
     When I exercise browser utilities
     Then local browser interactions produce the expected results
 
+  @offline @covers:src/utils/createVectorLayerFromFile.js @covers:src/utils/toShapefile.js @covers:src/utils/toGeoJSON.js
+  @utility-behaviors
+  Scenario: File utilities round-trip supported formats and geometry families
+    When I exercise file import and export formats
+    Then imported features and shapefile geometries retain their data
+
+  @offline @covers:src/utils/addZValue.js @covers:src/utils/removeZValue.js @covers:src/utils/splitFeature.js
+  @utility-behaviors
+  Scenario: Dimensional geometry helpers handle nested coordinates and splits
+    When I exercise dimensional and splitting utilities
+    Then real OpenLayers geometries retain their dimensions and split results
+
+  @offline @covers:src/utils/downloadFeatures.js
+  @utility-behaviors
+  Scenario: Download actions submit catalog exports from the dialog
+    When I exercise registered download actions
+    Then catalog export requests and action state are preserved
+
+  @offline @covers:src/utils/idb.js @covers:src/utils/XHR.js
+  @utility-behaviors
+  Scenario: Storage and request errors are handled by their callbacks
+    When I exercise storage and request error paths
+    Then unavailable storage and plain-text responses resolve as expected
+
   @offline @covers:src/utils/debounce.js @covers:src/utils/idb.js @covers:src/utils/throttle.js @covers:src/utils/toGeoJSON.js @covers:src/utils/toShapefile.js @covers:src/utils/waitFor.js @covers:src/utils/XHR.js
   @utility-behaviors
   Scenario: Timers storage requests and conversions run offline

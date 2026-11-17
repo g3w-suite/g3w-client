@@ -65,3 +65,47 @@ Feature: Core client behavior without a server
   Scenario: Development startup applies local overrides before bootstrapping
     When the development entry delegates to the production bootstrap
     Then development overrides and diagnostics are enabled
+
+  @core-expansion @covers:src/g3w-emitter.js
+  Scenario: Setter observers can be prioritized and removed by their registration key
+    Then setter observers preserve priority one-shot delivery and keyed removal
+
+  @core-expansion @covers:src/g3w-component.js
+  Scenario: Component configuration remains consistent while its service and content change
+    Then component configuration survives service replacement and mounting
+
+  @core-expansion @covers:src/g3w-panel.js @covers:src/g3w-app.js
+  Scenario: Stacked panels restore their predecessor and release services when closed
+    Then sidebar panels restore their predecessor and release their services
+
+  @core-expansion @covers:src/g3w-plugin.js
+  Scenario: Plugin services share configuration translations and dependency APIs
+    Then plugin services exchange events configuration translations and dependency APIs
+
+  @core-expansion @covers:src/g3w-plugin.js
+  Scenario: Failed plugin initialization stops displaying the loading indicator
+    Then only the timed-out plugin loses its loading indicator and layout
+
+  @core-expansion @covers:src/g3w-plugin.js
+  Scenario: Lazy plugin translations follow the application language
+    Then lazy plugin translations switch language using local responses
+
+  @core-expansion @covers:src/g3w-control.js
+  Scenario: Map controls coordinate interactions event handlers and button availability
+    Then map controls coordinate interactions and restore their event handlers
+
+  @core-expansion @covers:src/g3w-control.js @covers:src/g3w-app.js
+  Scenario: Spatial control tools keep their selected method and dialog lifecycle in sync
+    Then spatial tools synchronize their method and close their message dialog
+
+  @core-expansion @covers:src/g3w-iframe.js
+  Scenario: Iframe messages publish readiness and acknowledge successful and rejected commands
+    Then iframe messages publish readiness and command outcomes
+
+  @core-expansion @covers:src/g3w-app.js
+  Scenario: Confirmation prompts and choice dialogs return the user selection
+    Then application dialogs resolve accepted values and reject cancellation
+
+  @core-expansion @covers:src/g3w-app.js
+  Scenario: Galleries and loading indicators clean up their DOM elements
+    Then galleries navigate images and loading indicators are removed

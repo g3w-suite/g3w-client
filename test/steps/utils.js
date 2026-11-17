@@ -1,6 +1,10 @@
 const assert = require('node:assert/strict');
 const { After, Before, Then, When } = require('@cucumber/cucumber');
-const { getOl, loadUtility, resetUtilityEnvironment } = require('../support/utility-modules');
+const { strToU8, zipSync } = require('fflate');
+const {
+  closeUtilityBrowser, createDialogFixture, getOl, importVectorLayerInBrowser, loadUtility,
+  resetUtilityEnvironment,
+} = require('../support/utility-modules');
 
 When('I flatten nested profile data', async function () {
   const { flattenObject } = await loadUtility('flattenObject.js');
@@ -42,7 +46,7 @@ Then('layers with the same geometry type are grouped together', function () {
 });
 
 const utilityGlobals = [
-  'ol', 'document', 'window', 'location', 'jsts', '__utilityState', '__utilityGui', 'fetch',
+  'ol', 'document', 'window', 'location', 'jsts', 'Vue', 'GUI', '__utilityState', '__utilityGui', 'fetch',
 ];
 
 Before({ tags: '@utility-behaviors' }, async function () {
@@ -106,6 +110,14 @@ Before({ tags: '@utility-behaviors' }, async function () {
       },
     },
     createElement(tag) {
+      if ('template' === tag) {
+        return {
+          set innerHTML(value) {
+            this.content = { firstChild: createDialogFixture(value) };
+            document.lastDialog = this.content.firstChild;
+          },
+        };
+      }
       const element = {
         tagName: tag.toUpperCase(),
         style: {},
@@ -130,7 +142,7 @@ Before({ tags: '@utility-behaviors' }, async function () {
   };
 });
 
-After({ tags: '@utility-behaviors' }, function () {
+After({ tags: '@utility-behaviors' }, async function () {
   for (const [name, descriptor] of this.utilityGlobalDescriptors) {
     if (descriptor) {
       Object.defineProperty(globalThis, name, descriptor);
@@ -145,6 +157,7 @@ After({ tags: '@utility-behaviors' }, function () {
       delete URL[name];
     }
   }
+  await closeUtilityBrowser();
 });
 
 When('I exercise core value utilities', async function () {
@@ -177,6 +190,12 @@ When('I exercise core value utilities', async function () {
   original.self = original;
   const shared = original.nested;
   original.also = shared;
+  const mapValue = new Map([['shared', shared]]);
+  mapValue.set(shared, mapValue);
+  const setValue = new Set([shared]);
+  setValue.add(setValue);
+  original.map = mapValue;
+  original.set = setValue;
   const cloned = cloneDeep(original);
   const red = colorFromHsv(360, 1, 1, 0.5);
   const parent = function Parent(value) { this.parentValue = value; };
@@ -207,6 +226,9 @@ When('I exercise core value utilities', async function () {
       coordinates: point.getGeometry().getCoordinates(),
       clone: cloned,
       cloneIndependent: cloned !== original && cloned.nested !== shared && cloned.nested === cloned.also && cloned.self === cloned,
+      cloneCollections: cloned.map !== mapValue && cloned.map.get('shared') === cloned.nested &&
+        cloned.map.get(cloned.nested) === cloned.map && cloned.set !== setValue &&
+        cloned.set.has(cloned.nested) && cloned.set.has(cloned.set),
       color: red,
       hsv: colorToHsv(red),
       date: convertQGISDateTimeFormatToMoment('yyyy-MM-dd'),
@@ -228,6 +250,7 @@ When('I exercise core value utilities', async function () {
 Then('their values and inheritance behavior are preserved', function () {
   assert.deepEqual(this.core.coordinates, [2, 3, 0]);
   assert.equal(this.core.cloneIndependent, true);
+  assert.equal(this.core.cloneCollections, true);
   assert.deepEqual(this.core.clone.nested, { value: 1 });
   assert.deepEqual(this.core.color, { hex: '#ff0000', rgba: { r: 255, g: 0, b: 0, a: 0.5 }, a: 0.5 });
   assert.deepEqual(this.core.hsv, { hue: 0, saturation: 1, brightness: 1 });
@@ -416,6 +439,16 @@ When('I exercise browser utilities', async function () {
     removeOverlay(overlay) { this.removedOverlay = overlay; overlay.map = null; },
   };
   const measure = createMeasureTooltip({ map, feature });
+  const multiLine = new this.ol.MultiLineString([[[0, 0], [3, 4]], [[0, 0], [0, 2]]]);
+  const multiMap = {
+    addOverlay(overlay) { overlay.map = this; this.overlay = overlay; },
+    removeOverlay(overlay) { overlay.map = null; },
+  };
+  const multiMeasure = createMeasureTooltip({
+    map: multiMap,
+    feature: new this.ol.Feature({ geometry: multiLine }),
+  });
+  multiLine.setCoordinates([[[0, 0], [3, 4]], [[0, 0], [0, 2]]]);
   polygon.setCoordinates([[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]]);
   const downloaded = [];
   const createObjectURL = URL.createObjectURL;
@@ -431,6 +464,9 @@ When('I exercise browser utilities', async function () {
       inputSelected: copiedInput.tagName === 'INPUT' && copiedInput.selected,
       area: get_formatted_area(polygon),
       length: get_formatted_length(line),
+      multiLineLength: get_formatted_length(multiLine),
+      multiLineTooltip: multiMeasure.tooltip.options.element.innerHTML,
+      multiLinePosition: multiMeasure.tooltip.position,
       angle: get_formatted_angle([0, 0], [1, 0]),
       radius: get_formatted_radius(circle),
       tooltipText: document.elements.find(element => element.className === 'mtooltip mtooltip-measure').innerHTML,
@@ -440,6 +476,7 @@ When('I exercise browser utilities', async function () {
       downloaded,
     };
     measure.remove();
+    multiMeasure.remove();
     this.browser.overlayRemoved = map.removedOverlay === measure.tooltip;
     this.imported = await createVectorLayerFromFile({
       name: 'points',
@@ -460,6 +497,9 @@ Then('local browser interactions produce the expected results', function () {
   assert.equal(this.browser.inputSelected, true);
   assert.equal(this.browser.area, '100.00 m²');
   assert.equal(this.browser.length, '5.00 m');
+  assert.equal(this.browser.multiLineLength, '7.00 m');
+  assert.equal(this.browser.multiLineTooltip, '7.00 m');
+  assert.deepEqual(this.browser.multiLinePosition, [0, 2]);
   assert.equal(this.browser.angle, '-90°');
   assert.equal(this.browser.radius, '1.50 km');
   assert.match(this.browser.tooltipText, /Area: 100\.00 m²/);
@@ -595,4 +635,382 @@ Then('timers storage requests and file conversions return expected results', fun
     geometry: { type: 'Point', coordinates: [12.5, 41.9] },
     properties: { label: 'Rome', count: 3 },
   }]);
+});
+
+When('I exercise file import and export formats', { timeout: 120000 }, async function () {
+  const [{ createVectorLayerFromFile }, { toGeoJSON }, { toShapefile }] = await Promise.all([
+    'createVectorLayerFromFile.js', 'toGeoJSON.js', 'toShapefile.js',
+  ].map(loadUtility));
+  const geometries = [
+    { type: 'Point', coordinates: [1, 2, 50] },
+    { type: 'MultiPoint', coordinates: [[3, 4], [5, 6]] },
+    { type: 'LineString', coordinates: [[0, 0], [1, 1]] },
+    { type: 'MultiLineString', coordinates: [[[0, 0], [1, 1]], [[2, 2], [3, 3]]] },
+    { type: 'Polygon', coordinates: [[[0, 0], [4, 0], [4, 4], [0, 4], [0, 0]]] },
+    { type: 'MultiPolygon', coordinates: [[[[5, 5], [9, 5], [9, 9], [5, 9], [5, 5]]]] },
+  ];
+  const input = {
+    type: 'FeatureCollection',
+    features: geometries.map((geometry, index) => ({
+      type: 'Feature',
+      geometry,
+      properties: {
+        label: `feature ${index}`,
+        value: index + 0.25,
+        enabled: index % 2 === 0,
+        ignored: null,
+        nested: { ignored: true },
+      },
+    })),
+  };
+  const archive = await toShapefile(input, { folder: 'formats' });
+  const decoded = await toGeoJSON(archive);
+  const imported = await createVectorLayerFromFile({
+    name: 'all-geometries',
+    type: 'zip',
+    crs: 'EPSG:4326',
+    mapCrs: 'EPSG:4326',
+    data: archive,
+  });
+  const noKml = new Blob([zipSync({ 'folder/readme.txt': strToU8('not a KML file') })]);
+  const malformedKmz = new Blob([Uint8Array.of(1, 2, 3)]);
+  const missingKml = await createVectorLayerFromFile({ type: 'kmz', data: noKml })
+    .then(() => null, error => error.message);
+  const invalidKmz = await createVectorLayerFromFile({ type: 'kmz', data: malformedKmz })
+    .then(() => null, error => error.message);
+  const kml = '<kml xmlns="http://www.opengis.net/kml/2.2"><Document><Placemark><name>Rome</name><styleUrl>#road</styleUrl><Point><coordinates>12.5,41.9,0</coordinates></Point></Placemark></Document></kml>';
+  const importedKml = await importVectorLayerInBrowser({ type: 'kml', data: kml });
+  const importedKmz = await importVectorLayerInBrowser({
+    type: 'kmz',
+    data: zipSync({ 'nested/places.kml': strToU8(kml) }),
+  });
+  const emptyCsv = await createVectorLayerFromFile({
+    type: 'csv',
+    crs: 'EPSG:4326',
+    mapCrs: 'EPSG:4326',
+    data: { headers: ['x', 'y'], values: ['bad,3,extra'], separator: ',', x: 'x', y: 'y' },
+  }).then(() => 'unexpected layer', error => error);
+
+  this.fileFormats = {
+    decodedTypes: decoded.features.map(feature => feature.geometry.type).sort(),
+    importedTypes: imported.getSource().getFeatures().map(feature => feature.getGeometry().getType()).sort(),
+    importedLabels: imported.getSource().getFeatures().map(feature => feature.get('label')).sort(),
+    importedFields: imported.get('_fields'),
+    missingKml,
+    invalidKmz,
+    importedKml,
+    importedKmz,
+    emptyCsv,
+    messages: globalThis.__utilityGui.messages.slice(),
+  };
+});
+
+Then('imported features and shapefile geometries retain their data', function () {
+  assert.deepEqual(this.fileFormats.decodedTypes, [
+    'LineString', 'MultiLineString', 'MultiPoint', 'Point', 'Polygon', 'Polygon',
+  ]);
+  assert.deepEqual(this.fileFormats.importedTypes, this.fileFormats.decodedTypes);
+  assert.deepEqual(this.fileFormats.importedLabels, [
+    'feature 0', 'feature 1', 'feature 2', 'feature 3', 'feature 4', 'feature 5',
+  ]);
+  assert.ok(this.fileFormats.importedFields.includes('label'));
+  assert.equal(this.fileFormats.missingKml, 'KMZ archive does not contain a KML file');
+  assert.match(this.fileFormats.invalidKmz, /zip|data/i);
+  assert.equal(this.fileFormats.emptyCsv, undefined);
+  assert.equal(this.fileFormats.messages.length, 1);
+  assert.deepEqual(this.fileFormats.messages[0].hooks.footer.data().errors, [
+    { row: 1, value: 'bad,3,extra' },
+  ]);
+  assert.equal(this.fileFormats.importedKml[0].properties.name, 'Rome');
+  assert.equal(Object.hasOwn(this.fileFormats.importedKml[0].properties, 'styleUrl'), false);
+  assert.deepEqual(this.fileFormats.importedKml[0].coordinates, [12.5, 41.9, 0]);
+  assert.equal(this.fileFormats.importedKmz[0].properties.name, 'Rome');
+  assert.equal(Object.hasOwn(this.fileFormats.importedKmz[0].properties, 'styleUrl'), false);
+});
+
+When('I exercise dimensional and splitting utilities', async function () {
+  const [{ addZValue }, { removeZValue }, { splitFeature }] = await Promise.all([
+    'addZValue.js', 'removeZValue.js', 'splitFeature.js',
+  ].map(loadUtility));
+  const dimensional = [
+    [this.ol.Point, [1, 2]],
+    [this.ol.MultiPoint, [[1, 2], [3, 4]]],
+    [this.ol.LineString, [[0, 0], [1, 1]]],
+    [this.ol.MultiLineString, [[[0, 0], [1, 1]], [[2, 2], [3, 3]]]],
+    [this.ol.Polygon, [[[0, 0], [4, 0], [4, 4], [0, 4], [0, 0]]]],
+    [this.ol.MultiPolygon, [[[[0, 0], [4, 0], [4, 4], [0, 4], [0, 0]]]]],
+  ].map(([Geometry, coordinates]) => new this.ol.Feature({ geometry: new Geometry(coordinates) }));
+  const withZ = dimensional.map(feature => {
+    addZValue({ feature, geometryType: `${feature.getGeometry().getType()}Z` });
+    return feature.getGeometry().getCoordinates();
+  });
+  const removedZ = dimensional.map(feature => {
+    removeZValue({ feature });
+    return feature.getGeometry().getCoordinates();
+  });
+  const line = new this.ol.Feature({ geometry: new this.ol.LineString([[0, 0], [10, 0]]) });
+  const splitter = new this.ol.Feature({ geometry: new this.ol.LineString([[5, -1], [5, 1]]) });
+  const linePieces = splitFeature({ feature: line, splitfeature: splitter });
+  const multiLine = new this.ol.Feature({
+    geometry: new this.ol.MultiLineString([[[0, 0], [10, 0]], [[0, 5], [10, 5]]]),
+  });
+  const multiLinePieces = splitFeature({ feature: multiLine, splitfeature: splitter });
+  const outer = [[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]];
+  const hole = [[2, 2], [2, 4], [4, 4], [4, 2], [2, 2]];
+  const polygonPieces = splitFeature({
+    feature: new this.ol.Feature({ geometry: new this.ol.Polygon([outer, hole]) }),
+    splitfeature: new this.ol.Feature({ geometry: new this.ol.LineString([[5, -1], [5, 11]]) }),
+  });
+  const zPolygonPieces = splitFeature({
+    feature: new this.ol.Feature({
+      geometry: new this.ol.Polygon([[[0, 0, 1], [10, 0, 2], [10, 10, 3], [0, 10, 4], [0, 0, 1]]]),
+    }),
+    splitfeature: new this.ol.Feature({ geometry: new this.ol.LineString([[5, -1], [5, 11]]) }),
+  });
+  const multiPolygon = new this.ol.Feature({
+    geometry: new this.ol.MultiPolygon([
+      [[[0, 0], [4, 0], [4, 4], [0, 4], [0, 0]]],
+      [[[6, 0], [10, 0], [10, 4], [6, 4], [6, 0]]],
+    ]),
+  });
+  const multiPolygonPieces = splitFeature({
+    feature: multiPolygon,
+    splitfeature: new this.ol.Feature({ geometry: new this.ol.LineString([[2, -1], [2, 5]]) }),
+  });
+  this.dimensional = {
+    withZ,
+    removedZ,
+    linePieces: linePieces.map(geometry => geometry.getCoordinates()),
+    multiLinePieces: multiLinePieces.map(geometry => geometry.getType()),
+    polygonPieces: polygonPieces.map(geometry => geometry.getType()),
+    zPolygonPieces: zPolygonPieces.map(geometry => geometry.getCoordinates()),
+    multiPolygonPieces: multiPolygonPieces.map(geometry => geometry.getType()),
+  };
+});
+
+Then('real OpenLayers geometries retain their dimensions and split results', function () {
+  assert.deepEqual(this.dimensional.withZ, [
+    [1, 2, 0],
+    [[1, 2, 0], [3, 4, 0]],
+    [[0, 0, 0], [1, 1, 0]],
+    [[[0, 0, 0], [1, 1, 0]], [[2, 2, 0], [3, 3, 0]]],
+    [[[0, 0, 0], [4, 0, 0], [4, 4, 0], [0, 4, 0], [0, 0, 0]]],
+    [[[[0, 0, 0], [4, 0, 0], [4, 4, 0], [0, 4, 0], [0, 0, 0]]]],
+  ]);
+  assert.deepEqual(this.dimensional.removedZ, [
+    [1, 2],
+    [[1, 2], [3, 4]],
+    [[0, 0], [1, 1]],
+    [[[0, 0], [1, 1]], [[2, 2], [3, 3]]],
+    [[[0, 0], [4, 0], [4, 4], [0, 4], [0, 0]]],
+    [[[[0, 0], [4, 0], [4, 4], [0, 4], [0, 0]]]],
+  ]);
+  assert.equal(this.dimensional.linePieces.length, 2);
+  assert.deepEqual(this.dimensional.linePieces.map(line => line[0]), [[0, 0], [5, 0]]);
+  assert.ok(this.dimensional.multiLinePieces.length >= 2);
+  assert.equal(this.dimensional.polygonPieces.length, 2);
+  assert.equal(this.dimensional.zPolygonPieces.length, 2);
+  assert.ok(this.dimensional.zPolygonPieces.flat(2).every(coordinate => coordinate.length === 3));
+  assert.ok(this.dimensional.multiPolygonPieces.length >= 2);
+});
+
+When('I exercise registered download actions', async function () {
+  const { downloadFeatures } = await loadUtility('downloadFeatures.js', { fresh: true });
+  const feature = { attributes: { g3w_fid: 17 } };
+  const catalogLayer = {
+    id: 'roads',
+    getId() { return this.id; },
+    getName() { return 'Roads'; },
+    getUrl(format) { return `/download/${format}`; },
+    getToken() { return 'catalog-token'; },
+    isGeoTIFFDownloadable() { return true; },
+    isShpDownloadable() { return true; },
+    isGpxDownloadable() { return false; },
+    isGpkgDownloadable() { return false; },
+    isCsvDownloadable() { return false; },
+    isXlsDownloadable() { return false; },
+    hasDowloadableRelations() { return true; },
+  };
+  const otherLayer = {
+    id: 'railways',
+    getId() { return this.id; },
+    getName() { return 'Railways'; },
+  };
+  this.state.project = {
+    getLayerById: id => id === catalogLayer.id ? catalogLayer : null,
+    getLayers: () => [otherLayer],
+  };
+  globalThis.__utilityGui.state.query = { type: 'polygon', fid: 17 };
+  globalThis.__utilityGui.getMapExtent = () => ({ toString: () => '0,0,10,10' });
+  const requestCalls = [];
+  globalThis.fetch = async (url, options) => {
+    requestCalls.push({ url, fields: Object.fromEntries(options.body.entries()) });
+    return {
+      ok: true,
+      blob: async () => new Blob(['exported']),
+      headers: { get: () => 'attachment; filename=roads.zip' },
+    };
+  };
+  URL.createObjectURL = () => 'blob:roads';
+  URL.revokeObjectURL = () => {};
+  const actions = { roads: [] };
+  const layers = [
+    { id: 'no-downloads' },
+    { id: 'roads', downloads: ['Shp'], features: [feature] },
+  ];
+  globalThis.__utilityGui.hooks.addActionsForLayers(actions, layers);
+  const [action] = actions.roads;
+  action.change({ features: [feature] });
+  delete action.state.toggled[0];
+  action.change({ features: [feature] });
+  action.cbk(layers[1], feature, action, 0);
+  const dialog = document.lastDialog;
+  await dialog.input('format', 'Pdf');
+  const relationForPdf = {
+    value: dialog.fields.down_with_relations.value,
+    disabled: dialog.fields.down_with_relations.disabled,
+  };
+  dialog.fields.format.value = 'GeoTiff-at-map-extent';
+  dialog.fields.down_with_relations.value = '1';
+  await dialog.emit('click', { target: dialog });
+  dialog.returnValue = 'confirm';
+  await dialog.emit('close');
+  this.download = {
+    actionState: action.state.toggled[0],
+    relationForPdf,
+    offersOtherLayer: dialog.innerHTML.includes('<option value="railways">Railways</option>'),
+    dialog: { open: dialog.open, closed: dialog.closed, removed: dialog.removed },
+    request: requestCalls,
+    link: { href: document.lastElement.href, filename: document.lastElement.download, clicked: document.lastElement.clicked },
+    downloadReset: this.state.download,
+  };
+  assert.equal(typeof downloadFeatures, 'function');
+});
+
+Then('catalog export requests and action state are preserved', function () {
+  assert.equal(this.download.actionState, false);
+  assert.deepEqual(this.download.relationForPdf, { value: 0, disabled: true });
+  assert.equal(this.download.offersOtherLayer, true);
+  assert.deepEqual(this.download.dialog, { open: true, closed: true, removed: true });
+  assert.equal(this.download.request.length, 1);
+  assert.equal(this.download.request[0].url, '/download/geotiff');
+  assert.deepEqual(this.download.request[0].fields, {
+    down_with_relations: '1',
+    sbp_qgs_layer_id: 'roads',
+    sbp_fid: '1',
+    fids: '17',
+    filtertoken: 'catalog-token',
+    map_extent: '0,0,10,10',
+  });
+  assert.deepEqual(this.download.link, { href: 'blob:roads', filename: 'roads.zip', clicked: true });
+  assert.equal(this.download.downloadReset, false);
+});
+
+When('I exercise storage and request error paths', async function () {
+  const [{ idb }, { waitFor }, { XHR }] = await Promise.all(['idb.js', 'waitFor.js', 'XHR.js'].map(loadUtility));
+  const originalError = console.error;
+  const loggedErrors = [];
+  console.error = (...args) => loggedErrors.push(args);
+  try {
+    globalThis.window.indexedDB = {
+      open: () => {
+        const request = { result: undefined };
+        setTimeout(() => request.onerror?.('database unavailable'), 0);
+        return request;
+      },
+    };
+    const unavailable = await idb.getItem('offline');
+    let indexes = 0;
+    let requestMode = 'read-error';
+    const store = {
+      get() {
+        const request = {};
+        setTimeout(() => {
+          if ('read-error' === requestMode) {
+            request.onerror?.('read failed');
+          } else {
+            request.result = 'write-error' === requestMode ? { value: 'old' } : undefined;
+            request.onsuccess?.();
+          }
+        }, 0);
+        return request;
+      },
+      add() {
+        const request = {};
+        setTimeout(() => request.onerror?.('write failed'), 0);
+        return request;
+      },
+      put() {
+        const request = {};
+        setTimeout(() => request.onerror?.('write failed'), 0);
+        return request;
+      },
+    };
+    let storeCreated = false;
+    const database = {
+      objectStoreNames: { contains: () => storeCreated },
+      createObjectStore() {
+        storeCreated = true;
+        return { createIndex() { indexes++; } };
+      },
+      transaction: () => ({ objectStore: () => store }),
+    };
+    globalThis.window.indexedDB.open = () => {
+      const request = { result: database };
+      setTimeout(() => {
+        request.onupgradeneeded?.();
+        request.onsuccess?.();
+      }, 0);
+      return request;
+    };
+    await idb.open();
+    const readFailure = await idb.setItem('offline', { value: 1 });
+    requestMode = 'write-error';
+    const writeFailure = await idb.setItem('offline', { value: 2 });
+    requestMode = 'read-error';
+    const getFailure = await idb.getItem('offline');
+    const requestCalls = [];
+    globalThis.fetch = async url => {
+      requestCalls.push(url);
+      return { text: async () => 'plain response' };
+    };
+    const putText = await XHR.put({ url: '/put-plain' });
+    const postText = await XHR.post({ url: '/post-plain' });
+    const putForm = await XHR.put({ url: '/put-form', formdata: true, data: { place: 'Rome' } });
+    const postForm = await XHR.post({ url: '/post-form', formdata: true, data: { place: 'Milan' } });
+    const timeout = await waitFor(() => false, 1).then(() => null, error => error);
+    this.errorPaths = {
+      unavailable,
+      indexes,
+      readFailure,
+      writeFailure,
+      getFailure,
+      putText,
+      postText,
+      putForm,
+      postForm,
+      timeout,
+      requestCalls,
+      loggedErrors: loggedErrors.length,
+    };
+  } finally {
+    console.error = originalError;
+  }
+});
+
+Then('unavailable storage and plain-text responses resolve as expected', function () {
+  assert.equal(this.errorPaths.unavailable, undefined);
+  assert.equal(this.errorPaths.indexes, 1);
+  assert.equal(this.errorPaths.readFailure, 'read failed');
+  assert.equal(this.errorPaths.writeFailure, 'write failed');
+  assert.equal(this.errorPaths.getFailure, undefined);
+  assert.equal(this.errorPaths.putText, 'plain response');
+  assert.equal(this.errorPaths.postText, 'plain response');
+  assert.equal(this.errorPaths.putForm, 'plain response');
+  assert.equal(this.errorPaths.postForm, 'plain response');
+  assert.equal(this.errorPaths.timeout, 'timeout');
+  assert.deepEqual(this.errorPaths.requestCalls, [
+    '/put-plain', '/post-plain', '/put-form', '/post-form',
+  ]);
+  assert.equal(this.errorPaths.loggedErrors, 4);
 });

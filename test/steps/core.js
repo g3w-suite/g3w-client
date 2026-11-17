@@ -369,3 +369,476 @@ Then('development overrides and diagnostics are enabled', async function () {
   assert.equal(result.customLinks, true);
   assert.deepEqual(result.bootstrapOrder, { configured: true, pageLength: 2 });
 });
+
+Then('setter observers preserve priority one-shot delivery and keyed removal', async function () {
+  const result = await this.corePage.evaluate(() => {
+    class Settings extends g3w.Emitter {
+      constructor() { super({ setters: ['write'] }); }
+      write(value) { this.value = value; return value; }
+    }
+    const settings = new Settings();
+    const calls = [];
+    const removable = settings.onbefore('write', () => { calls.push('removed'); }, 5);
+    settings.un('write', removable);
+    settings.oncebefore('write', () => { calls.push('first-before'); }, 3);
+    settings.onbefore('write', () => { calls.push('before'); }, 1);
+    settings.onceafter('write', () => { calls.push('first-after'); });
+    settings.onafter('write', () => { calls.push('after'); });
+    settings.write(2);
+    settings.write(3);
+    settings.set('label', 'Settings');
+    const values = [settings.get('value'), settings.get('label'), settings.get('write')];
+    const key = settings.on('temporary', () => { calls.push('temporary'); }, 0, false, true);
+    settings.off('temporary', key);
+    settings.emit('temporary');
+    const warnings = [];
+    const warn = console.warn;
+    try {
+      console.warn = message => warnings.push(message);
+      new g3w.Emitter().removeAllListeners();
+    } finally {
+      console.warn = warn;
+    }
+    return { calls, values, deprecated: warnings.some(message => message.includes('removeAllListeners') && message.includes('off()')) };
+  });
+  assert.deepEqual(result, {
+    calls: ['first-before', 'before', 'first-after', 'after', 'before', 'after'],
+    values: [3, 'Settings', null],
+    deprecated: true,
+  });
+});
+
+Then('component configuration survives service replacement and mounting', async function () {
+  const result = await this.corePage.evaluate(async () => {
+    const component = new g3w.Component({
+      id: 'initial', title: 'Initial', visible: true,
+      service: { state: { label: 'Original' } },
+      vueComponentObject: { template: '<article>Configured content</article>' },
+    });
+    component.setId('configured');
+    component.setTitle('Configured');
+    component.setVisible(false);
+    component.setLoading(true);
+    component.setDisabled(true);
+    component.setOpen(true);
+    component.setService({ state: { label: 'Replacement' } });
+    const configured = {
+      id: component.getId(), title: component.getTitle(), visible: component.getVisible(),
+      open: component.getOpen(), loading: component.loading, disabled: component.disabled,
+      service: component.getService().state.label, stateAlias: component.state === component,
+    };
+    const internal = component.getInternalComponent();
+    const mounted = await component.mount('#fixture');
+    const text = internal.$el.textContent;
+    component.setLoading();
+    component.setDisabled();
+    await component.unmount();
+    await component.unmount();
+    return {
+      configured, mounted, text, released: component.getInternalComponent() === null,
+      loading: component.loading, disabled: component.disabled, open: component.getOpen(),
+    };
+  });
+  assert.deepEqual(result, {
+    configured: {
+      id: 'configured', title: 'Configured', visible: false, open: true,
+      loading: true, disabled: true, service: 'Replacement', stateAlias: true,
+    },
+    mounted: true, text: 'Configured content', released: true,
+    loading: false, disabled: false, open: false,
+  });
+});
+
+Then('sidebar panels restore their predecessor and release their services', async function () {
+  const result = await this.corePage.evaluate(async () => {
+    document.querySelector('#fixture').innerHTML = '<div id="sidebar-panel-placeholder"></div>';
+    const cleared = [];
+    const events = [];
+    const first = new g3w.Panel({
+      id: 'first', title: 'First panel', service: { clear() { cleared.push('first'); } },
+      vueComponentObject: {
+        template: '<article>First body</article>',
+        methods: { onShow() { events.push('show'); }, onClose() { events.push('close'); } },
+      },
+    });
+    const second = new g3w.Panel({ id: 'second', title: 'Second panel' });
+    second.setService({ clear() { cleared.push('second'); } });
+    second.setInternalPanel(new Vue({ template: '<aside>Second body</aside>' }));
+    const firstInternal = first.getInternalPanel();
+    first.show();
+    await coreTestExports.waitFor(() => g3w.state.sidebar.contentsdata.length === 1, 1000);
+    second.show();
+    await coreTestExports.waitFor(() => g3w.state.sidebar.contentsdata.length === 2, 1000);
+    const stacked = [g3w.state.sidebar.title, firstInternal.$el.style.display];
+    const metadata = [first.getId(), first.getTitle(), typeof second.getService().clear];
+    second.close();
+    await coreTestExports.waitFor(() => g3w.state.sidebar.contentsdata.length === 1, 1000);
+    const restored = [g3w.state.sidebar.title, firstInternal.$el.style.display];
+    first.close();
+    await coreTestExports.waitFor(() => g3w.state.sidebar.contentsdata.length === 0, 1000);
+    return {
+      metadata, stacked, restored, cleared, events,
+      released: first.getInternalPanel() === null && second.getInternalPanel() === null,
+      sidebarOpen: document.body.classList.contains('sidebar-open'),
+    };
+  });
+  assert.deepEqual(result, {
+    metadata: ['first', 'First panel', 'function'], stacked: ['Second panel', 'none'],
+    restored: ['First panel', 'block'], cleared: ['second', 'first'],
+    events: ['show', 'close'], released: true, sidebarOpen: true,
+  });
+});
+
+Then('plugin services exchange events configuration translations and dependency APIs', async function () {
+  const result = await this.corePage.evaluate(async () => {
+    const fonts = {};
+    Vue.prototype.g3wtemplate = { addFontClass({ name, className }) { fonts[name] = className; } };
+    g3w.state.project.getGid = () => 'qdjango:1';
+    g3w.state.layout.app = { rightpanel: { width: 40, height: 60 } };
+    initConfig.plugins.dependency = {};
+    const service = new g3wsdk.core.plugin.PluginService();
+    const dependency = new g3w.Plugin({ name: 'dependency', config: {}, api: { version: 7 } });
+    const plugin = new g3w.Plugin({
+      name: 'extension', config: { gid: 'qdjango:1' }, service,
+      fontClasses: [{ name: 'extension-icon', className: 'fas fa-map' }],
+      i18n: { en: { title: 'Extension' } },
+    });
+    try {
+      g3w.app.registerPlugin(dependency);
+      dependency.setReady(true);
+      plugin.addDependency('dependency');
+      const dependencies = await plugin.getDependencyPluginsObject();
+      plugin.registerLocale('en', { shared: { label: 'Shared label' } });
+      service.init({ gid: 'qdjango:1' });
+      service.setConfig({ gid: 'qdjango:2' });
+      service.setApi({ api: { name: 'own' } });
+      service.setApi({ dependency: 'dependency', api: dependencies.dependency });
+      service.initEvents(['updated', 'once']);
+      const events = [];
+      service.subscribeEvent({ name: 'updated', owner: 'subscriber', listener: value => events.push(value.value) });
+      service.subscribeEvent({ name: 'once', owner: 'subscriber', once: true, listener: () => events.push('once') });
+      service.triggerEvent({ name: 'updated', params: { value: 'updated' } });
+      service.triggerEvent({ name: 'once' });
+      service.triggerEvent({ name: 'once' });
+      service.name = 'extension';
+      g3w.state.layout.__current = 'other';
+      await Vue.nextTick();
+      plugin.setCurrentLayout();
+      await Vue.nextTick();
+      service.resetCurrentLayout();
+      const layout = g3w.state.layout.__current;
+      const metadata = {
+        name: plugin.getName(), gid: plugin.getConfig().gid, sameService: plugin.getService() === service,
+        sameOwner: service.getPlugin() === plugin,
+        project: plugin.getProject() === service.getCurrentProject(),
+        serviceGid: service.getGid(), serviceConfig: service.getConfig(),
+        ownApi: service.getApi(), dependencyApi: service.getApi({ dependency: 'dependency' }).version,
+        iframe: service.isIframe(), load: service.loadPlugin(),
+        title: g3w.gettext('plugins.extension.title'), shared: g3w.gettext('shared.label'),
+      };
+      plugin.setHookLoading();
+      service.clear();
+      return { metadata, fonts, events, layout };
+    } finally {
+      service.unwatch();
+      service.vm.$destroy();
+      clearTimeout(plugin._timeout);
+      clearTimeout(dependency._timeout);
+    }
+  });
+  assert.deepEqual(result, {
+    metadata: {
+      name: 'extension', gid: 'qdjango:1', sameService: true, sameOwner: true, project: true,
+      serviceGid: '2', serviceConfig: { gid: 'qdjango:2' }, ownApi: { name: 'own' },
+      dependencyApi: 7, iframe: false, load: true,
+      title: 'Extension', shared: 'Shared label',
+    },
+    fonts: { 'extension-icon': 'fas fa-map' }, events: ['updated', 'once'], layout: 'other',
+  });
+});
+
+Then('only the timed-out plugin loses its loading indicator and layout', async function () {
+  await this.corePage.clock.install();
+  const before = await this.corePage.evaluate(() => {
+    g3w.state.plugins = ['failed', 'still-loading'];
+    g3w.state.layout.failed = { rightpanel: { width: 20 } };
+    window.failedPlugin = new g3w.Plugin({ name: 'failed', config: {} });
+    return g3w.state.plugins.slice();
+  });
+  await this.corePage.clock.fastForward(10_001);
+  const after = await this.corePage.evaluate(() => ({
+    loading: g3w.state.plugins.slice(), layoutRemoved: !('failed' in g3w.state.layout),
+  }));
+  assert.deepEqual(before, ['failed', 'still-loading']);
+  assert.deepEqual(after, { loading: ['still-loading'], layoutRemoved: true });
+});
+
+Then('lazy plugin translations switch language using local responses', async function () {
+  await this.corePage.route('http://core.test/fixture-locales/*.js', route => route.fulfill({
+    contentType: 'text/javascript',
+    body: `export default ${JSON.stringify({ title: route.request().url().endsWith('/it.js') ? 'Titolo' : 'Title' })};`,
+  }));
+  const result = await this.corePage.evaluate(async () => {
+    const plugin = new g3w.Plugin({ name: 'lazy', config: {} });
+    try {
+      await plugin.setI18n('http://core.test/fixture-locales/');
+      const english = g3w.gettext('plugins.lazy.title');
+      g3w.state.language = 'it';
+      await Vue.nextTick();
+      await coreTestExports.waitFor(() => g3w.gettext('plugins.lazy.title') === 'Titolo', 1000);
+      return { english, italian: g3w.gettext('plugins.lazy.title') };
+    } finally {
+      clearTimeout(plugin._timeout);
+    }
+  });
+  assert.deepEqual(result, { english: 'Title', italian: 'Titolo' });
+});
+
+Then('map controls coordinate interactions and restore their event handlers', async function () {
+  const result = await this.corePage.evaluate(async () => {
+    const map = new ol.Map({
+      target: 'fixture', layers: [], controls: [], interactions: [],
+      view: new ol.View({ center: [0, 0], zoom: 2 }),
+    });
+    const calls = [];
+    let release;
+    const completion = new Promise(resolve => { release = resolve; });
+    const control = new g3w.Control({
+      name: 'Selection', position: 'br', clickmap: true, cursorClass: 'selection-cursor',
+      interactionClass: ol.interaction.Interaction,
+      interactionClassOptions: { handleEvent: () => true },
+      spatialMethod: 'intersects', geometryTypes: ['Point'],
+      onclick: async () => { calls.push('click'); await completion; },
+      onSetMap: ({ setter }) => calls.push(setter),
+      onToggled: value => calls.push(`toggled:${value}`),
+    });
+    const other = new g3w.Control({ name: 'Other', enabled: true });
+    try {
+      map.addControl(control);
+      map.addControl(other);
+      control.setLayers([{ id: 'roads' }]);
+      control.setGeometryTypes(['Polygon']);
+      const eventKey = control.on('test-event', () => calls.push('original'));
+      control.setEventKey({ eventType: 'test-event', eventKey });
+      control.overwriteEventHandler({ eventType: 'test-event', handler: () => calls.push('replacement') });
+      control.dispatchEvent('test-event');
+      control.resetOriginalHandlerEvent('test-event');
+      control.dispatchEvent('test-event');
+      control.element.querySelector('button').click();
+      const loading = control.element.querySelector('button').classList.contains('g3w-ol-disabled');
+      release();
+      await completion;
+      await Promise.resolve();
+      const active = control.getInteraction().getActive();
+      const cursor = map.getViewport().classList.contains('selection-cursor');
+      other.toggle(true);
+      control.disable();
+      const disabled = control.element.classList.contains('g3w-disabled');
+      control.enable();
+      control.setVisible(false);
+      control.showHide();
+      const state = {
+        clickmap: control.isClickMap(), active, cursor, toggled: control.isToggled(),
+        other: other.isToggled(), disabled, reenabled: !control.element.classList.contains('g3w-disabled'),
+        visible: control.isVisible(), display: control.element.style.display,
+        position: control.getPosition(), geometries: control.getGeometryTypes(), layers: control.layers,
+        spatialMethod: control.getSpatialMethod(), loading,
+        loaded: !control.element.querySelector('button').classList.contains('g3w-ol-disabled'),
+      };
+      const native = new ol.control.Control({ element: document.createElement('div') });
+      const wrapped = new g3w.Control({ ol: native, position: 'bl' });
+      map.addControl(wrapped);
+      const wrappedControl = wrapped.getOlControl() === native;
+      return { state, calls: calls.slice(), wrappedControl };
+    } finally {
+      map.getControls().clear();
+      map.setTarget(null);
+    }
+  });
+  assert.deepEqual(result.state, {
+    clickmap: true, active: true, cursor: true, toggled: false, other: true,
+    disabled: true, reenabled: true, visible: false, display: 'block',
+    position: { top: false, left: false, bottom: true, right: true },
+    geometries: ['Polygon'], layers: [{ id: 'roads' }], spatialMethod: 'intersects',
+    loading: true, loaded: true,
+  });
+  assert.deepEqual(result.calls, ['before', 'after', 'replacement', 'original', 'toggled:true', 'click', 'toggled:false']);
+  assert.equal(result.wrappedControl, true);
+});
+
+Then('spatial tools synchronize their method and close their message dialog', async function () {
+  const result = await this.corePage.evaluate(async () => {
+    const control = new g3w.Control({ name: 'Spatial', enabled: true });
+    control.initInteraction({ spatialMethod: 'intersects' });
+    control.createControlTool({ type: 'spatialMethod' });
+    control.showToggledTool();
+    const dialog = document.querySelector('.usermessage-tool');
+    const instance = Array.from(dialog.children).find(element => element.__vue__)?.__vue__;
+    const initial = instance.method;
+    instance.method = 'within';
+    await Vue.nextTick();
+    const changed = control.getSpatialMethod();
+    control.showToggledTool(false);
+    return { initial, changed, removed: !document.querySelector('.usermessage-tool') };
+  });
+  assert.deepEqual(result, { initial: 'intersects', changed: 'within', removed: true });
+});
+
+Then('iframe messages publish readiness and command outcomes', async function () {
+  const result = await this.corePage.evaluate(async () => {
+    const messages = [];
+    const { IframeApp } = window.coreTestExports;
+    const originalPost = window.postMessage;
+    const originalReady = g3w.app.isMapReady;
+    const originalGetMap = g3w.app.getMap;
+    const originalGetEpsg = g3w.app.getEpsg;
+    const originalGetControl = g3w.app.getMapControl;
+    const view = new ol.View({ center: [12, 45], projection: 'EPSG:4326', zoom: 3 });
+    let capture;
+    let reset = false;
+    window.postMessage = message => messages.push(message);
+    g3w.app.isMapReady = async () => {};
+    g3w.app.getMap = () => ({ getView: () => view, getSize: () => [256, 256] });
+    g3w.app.getEpsg = () => 'EPSG:4326';
+    g3w.app.getMapControl = name => {
+      if (name !== 'screenshot') throw new Error(`Unexpected control: ${name}`);
+      return {
+        overwriteOnClickEvent(callback) { capture = callback; },
+        resetOriginalOnClickEvent() { reset = true; },
+      };
+    };
+    g3w.state.plugins = [];
+    g3w.state.project.layers = [{ getId: () => 'roads', getName: () => 'Roads' }];
+    g3w.state.project.state = { extent: [-180, -90, 180, 90] };
+    try {
+      const iframe = new IframeApp();
+      await coreTestExports.waitFor(() => messages.some(message => message.action === 'app:ready'), 1000);
+      window.dispatchEvent(new MessageEvent('message', {
+        data: { id: 'ok', action: 'app:zoomtocoordinates', data: { coordinates: [10, 20] } },
+      }));
+      window.dispatchEvent(new MessageEvent('message', {
+        data: { id: 'invalid', action: 'app:zoomtocoordinates', data: { coordinates: [10] } },
+      }));
+      await coreTestExports.waitFor(() => messages.length === 3, 1000);
+      await iframe['app:results']({ capture: false });
+      const captureResults = g3w.app.showData.iframe;
+      await iframe['app:screenshot']();
+      capture('captured-image');
+      await iframe['app:screenshot']({ capture: false });
+      const center = await iframe['app:getcenter']();
+      const transformed = await iframe['app:getcenter']({ epsg: 3857 });
+      const extent = await iframe['app:getextent']();
+      const projectedExtent = await iframe['app:getextent']({ epsg: 3857 });
+      const zoomed = await iframe['app:zoomtoextent']({ extent: [-5, -5, 5, 5] });
+      return { messages, captureResults, reset, center, transformed, extent, projectedExtent, zoomed };
+    } finally {
+      window.postMessage = originalPost;
+      g3w.app.isMapReady = originalReady;
+      g3w.app.getMap = originalGetMap;
+      g3w.app.getEpsg = originalGetEpsg;
+      g3w.app.getMapControl = originalGetControl;
+    }
+  });
+  assert.deepEqual(result.messages.map(message => [message.id, message.action, message.response.result]), [
+    [null, 'app:ready', true], ['ok', 'app:zoomtocoordinates', true],
+    ['invalid', 'app:zoomtocoordinates', false], [null, 'app:screenshot', true],
+  ]);
+  assert.deepEqual(result.messages[0].response.data.layers, [{ id: 'roads', name: 'Roads' }]);
+  assert.deepEqual(result.messages[3].response.data, 'captured-image');
+  assert.equal(result.captureResults, false);
+  assert.equal(result.reset, true);
+  assert.deepEqual(result.center, [10, 20]);
+  assert.ok(Math.abs(result.transformed[0] - 1113194.9079327357) < 0.001);
+  assert.equal(result.extent.length, 4);
+  assert.equal(result.projectedExtent.length, 4);
+  assert.deepEqual(result.zoomed, [-5, -5, 5, 5]);
+});
+
+Then('application dialogs resolve accepted values and reject cancellation', async function () {
+  const result = await this.corePage.evaluate(async () => {
+    const accepted = g3w.app.confirm('Apply the change?');
+    document.querySelector('dialog button[value="yes"]').click();
+    const confirmed = await accepted;
+    const declined = g3w.app.confirm('Apply another change?');
+    document.querySelector('dialog button[value="no"]').click();
+    const rejected = await declined;
+    const text = g3w.app.prompt('Layer name', 'Roads');
+    let dialog = document.querySelector('dialog');
+    let input = dialog.querySelector('input');
+    input.value = '';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    const emptyDisabled = dialog.querySelector('button[value="yes"]').disabled;
+    input.value = 'Buildings';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    dialog.querySelector('button[value="yes"]').click();
+    const value = await text;
+    const choices = g3w.app.prompt('Choose a layer', [
+      { value: 'roads', label: 'Roads' }, { value: 'buildings', label: 'Buildings' },
+    ]);
+    dialog = document.querySelector('dialog');
+    input = dialog.querySelector('input[value="roads"]');
+    input.checked = true;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    dialog.querySelector('button[value="yes"]').click();
+    const choice = await choices;
+    const cancelled = g3w.app.prompt('Cancelled name', 'Original').then(
+      () => false,
+      error => error === undefined,
+    );
+    document.querySelector('dialog button[value="no"]').click();
+    const cancelRejected = await cancelled;
+    const callbacks = [];
+    const custom = g3w.app.dialog({
+      title: 'Details', message: '<p>Layer information</p>', className: 'details-dialog',
+      buttons: { save: { label: 'Save', callback() { callbacks.push(this.returnValue); } } },
+    });
+    const title = custom.querySelector('h4').textContent;
+    custom.querySelector('button[value="save"]').click();
+    await coreTestExports.waitFor(() => !document.querySelector('.details-dialog'), 1000);
+    return {
+      confirmed, rejected, emptyDisabled, value, choice, cancelRejected,
+      callbacks, title, dialogsRemaining: document.querySelectorAll('dialog').length,
+    };
+  });
+  assert.deepEqual(result, {
+    confirmed: true, rejected: false, emptyDisabled: true, value: 'Buildings',
+    choice: 'roads', cancelRejected: true, callbacks: ['save'], title: 'Details', dialogsRemaining: 0,
+  });
+});
+
+Then('galleries navigate images and loading indicators are removed', async function () {
+  const result = await this.corePage.evaluate(async () => {
+    g3w.app.showSpinner({ container: '#fixture', id: 'fixture-spinner', transparent: true, center: true });
+    g3w.app.showSpinner({ container: '#fixture', id: 'fixture-spinner' });
+    const spinnerCount = document.querySelectorAll('#fixture-spinner').length;
+    g3w.app.hideSpinner('fixture-spinner');
+    g3w.app.hideSpinner('fixture-spinner');
+    const spinnerRemoved = !document.querySelector('#fixture-spinner');
+    const image = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/%3E';
+    g3w.app.showGallery([{ src: image }, { src: image }], 0);
+    const dialog = document.querySelector('.modal-gallery');
+    const current = () => Array.from(dialog.querySelectorAll('img')).findIndex(img => !img.hidden);
+    const indexes = [current()];
+    dialog.querySelector('button[value="next"]').click();
+    indexes.push(current());
+    dialog.querySelector('button[value="prev"]').click();
+    indexes.push(current());
+    dialog.querySelector('button[value="prev"]').click();
+    indexes.push(current());
+    dialog.querySelector('button[value="close"]').click();
+    await coreTestExports.waitFor(() => !document.querySelector('.modal-gallery'), 1000);
+    g3w.app.hideSidebar();
+    const collapsed = document.body.classList.contains('sidebar-collapse');
+    g3w.app.toggleSidebar();
+    const expanded = document.body.classList.contains('sidebar-open');
+    g3w.app.toggleSidebar();
+    return {
+      spinnerCount, spinnerRemoved, indexes, galleryRemoved: !document.querySelector('.modal-gallery'),
+      collapsed, expanded, collapsedAgain: document.body.classList.contains('sidebar-collapse'),
+    };
+  });
+  assert.deepEqual(result, {
+    spinnerCount: 1, spinnerRemoved: true, indexes: [0, 1, 0, 1], galleryRemoved: true,
+    collapsed: true, expanded: true, collapsedAgain: true,
+  });
+});
