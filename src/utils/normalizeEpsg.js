@@ -1,40 +1,25 @@
-/**
- * @param { number | string | null | undefined} epsg or crs object
- * @param {boolean} [toString] whether to return EPSG data as string or CRS object
- * 
- * @returns { string | undefined | { { epsg: string, proj4: string, axisinverted: boolean, geographic: boolean } | null | undefined } }
- */
-export function normalizeEpsg(epsg, toString = true) {
-  if (toString && 'number' === typeof epsg) {
-    return `EPSG:${epsg}`;
-  }
-
-  if (toString) {
-    epsg = epsg.replace(/[^\d\.\-]/g, "");
-  }
-
-  if (toString && '' !== epsg) {
-    return `EPSG:${parseInt(epsg)}`;
-  }
-
-  const crs = epsg
-
-  // invalid conversion: EPSG (eg. 0) → CRS object 
-  if (!toString && ([undefined, null].includes(crs) || (crs && !crs.epsg))) {
+/** @param {number|string|object|null|undefined} crs @returns {string|null} */
+export function normalizeEpsg(crs) {
+  if (null == crs) {
     return null;
   }
 
-  if (!toString && crs.epsg) {
-    crs.epsg = normalizeEpsg(crs.epsg, true);
+  // Keep the full identifier for custom authorities, not just EPSG codes.
+  if (crs?.authid) {
+    return crs.authid;
+  }
+
+  const epsg = crs?.epsg ?? crs;
+  const code = Number(epsg);
+
+  // Leave already-formatted or custom string identifiers unchanged.
+  if (Number.isInteger(code) && code !== 0) {
+    return `EPSG:${code}`;
+  }
+
+  if (typeof crs === 'string') {
     return crs;
   }
 
-  if (!toString && !crs.epsg) {
-    return {
-      epsg:         normalizeEpsg(crs, true),
-      proj4:        "",
-      axisinverted: false,
-      geographic:   false
-    };
-  }
+  return null;
 }

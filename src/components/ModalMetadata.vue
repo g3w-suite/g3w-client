@@ -214,7 +214,7 @@
                           <template v-if="'epsg' === key">
                             <i  class="fas fa-globe" aria-hidden="true" style="margin-right: 3px;"></i>
                             <a
-                              :href  = "`https://epsg.io/${(project.crs.epsg || '').toLowerCase().replace('epsg:', '')}`"
+                              :href  = "`https://epsg.io/${project.crs.epsg}`"
                               target = "_blank"
                               title  = "Docs"
                             >
@@ -333,7 +333,7 @@
                         <td class = "col-sm-10 value">
                           <i  class="fas fa-globe" aria-hidden="true" style="margin-right: 3px;"></i>
                           <a
-                            :href  = "`https://epsg.io/${(layer.config.crs.epsg || '').toLowerCase().replace('epsg:', '')}`"
+                            :href  = "`https://epsg.io/${layer.config.crs.epsg}`"
                             target = "_blank"
                             title  = "Docs"
                           >
