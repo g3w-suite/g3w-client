@@ -10,7 +10,7 @@ const SERVER_URL = 'http://localhost:3000/';
 
 setDefaultTimeout(60_000);
 
-Before(async function () {
+Before({ tags: '@smoke' }, async function () {
   this.errors = [];
   this.localAssets = [];
   this.remoteAssets = [];
@@ -31,7 +31,7 @@ Before(async function () {
   });
 });
 
-After(async function () {
+After({ tags: '@smoke' }, async function () {
   console.log(`[g3w-test] static assets: ${this.localAssets.length} local, ${this.remoteAssets.length} remote`);
   this.localAssets.forEach(file => console.log(`  local  ${file}`));
   this.remoteAssets.forEach(url => console.log(`  remote ${url}`));
