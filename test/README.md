@@ -37,7 +37,7 @@ No additional npm commands are required.
 | `search.feature` | Configured search forms, cascading and cached choices, autocomplete ordering/cancellation, encoded filters, local search requests, related searches, follow-up forms and mobile dates/focus |
 | `tables.feature` | Mounted attribute tables, local sorting/search/pagination, selection across pages, plugin actions, relations, map bounds, cleanup and HTTP-error recovery |
 | `notifications.feature` | Sequential alerts, persisted read preferences, manager toggles, unread badges, native popover dragging and keyboard dismissal |
-| `measure.feature` | Real line/polygon drawing, point correction, measurement overlays, geometry-type selection and tool cleanup |
+| `map-controls.feature` | Real line/polygon drawing, point correction, measurement overlays, scale validation/synchronization and locally fulfilled Street View workflows |
 | `static.feature` | Localized labels, fixture-based geocoding, decoded/rendered images and fonts, stylesheet effects |
 | `coverage.feature` | Source integrity, scenario-to-file associations and a 100% runtime function gate |
 | `dev.g3wsuite.it.feature` | Remote project smoke tests (`@smoke`, requires the proxy) |
@@ -156,11 +156,17 @@ application-ready event and registered navbar action. Native popovers, bubbling
 DOM events and localStorage exercise the private alert lifecycle without
 calling private callbacks directly.
 
-The `@measure-workflows` scenarios load the original instrumented map control
+The `@map-control-workflows` scenarios load original instrumented map controls
 into a rendered OpenLayers map with its real stylesheet and footer padding.
 Real Draw interactions, native pointer/keyboard events and the GUI custom-select
-update line/polygon tooltips and release layers/overlays when disabled. Only
-map-control registration and map lookup are supplied by the host fixture.
+update line/polygon tooltips and release layers/overlays when disabled. Scale
+entry checks valid/invalid values, custom-option replacement, predefined scales
+and replacing the map view. The Street View script, preliminary image request
+and marker image are fulfilled locally; the vendor fixture emits position and
+heading changes and rejects unavailable panoramas. Tests check public URLs,
+marker coordinates/rotation, recentering, warning propagation and cleanup.
+Map registration/lookup and vendor/GUI presentation boundaries are controlled;
+production control methods and private state are not replaced.
 
 Add project examples to `features/dev.g3wsuite.it.feature` and their step
 definitions to `steps/dev.g3wsuite.it.js`.

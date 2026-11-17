@@ -9,6 +9,9 @@ Feature: Source tree integrity
   Scenario: Instrumentation preserves calls through circular imports
     Then instrumented circular imports can call a function before its module initializes
 
+  Scenario: Dynamically loaded scripts keep independent function counters
+    Then loading another classic script does not redirect existing function counters
+
   Scenario: Coverage is derived from actual Gherkin scenario tags
     Then coverage tags in comments and descriptions do not count as scenarios
 

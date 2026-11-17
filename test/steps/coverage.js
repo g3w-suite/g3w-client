@@ -125,6 +125,20 @@ Then('instrumented circular imports can call a function before its module initia
   assert.equal(summarizeFunctions(createCoverageMap(sandbox.__coverage__)).uncovered, 0);
 });
 
+Then('loading another classic script does not redirect existing function counters', function () {
+  const first = path.join(projectRoot, 'test', 'fixtures', 'first-script.js');
+  const second = path.join(projectRoot, 'test', 'fixtures', 'second-script.js');
+  const context = vm.createContext({});
+  vm.runInContext(instrumentCode('globalThis.first = function first() { return [1, 2].map(value => value * 2); }; first();', first).code, context);
+  vm.runInContext(instrumentCode('function second() { return 7; } second();', second).code, context);
+  assert.deepEqual(Array.from(context.first()), [2, 4]);
+  const coverage = createCoverageMap(context.__coverage__);
+  assert.deepEqual(Object.values(coverage.fileCoverageFor(first).f), [2, 4]);
+  assert.deepEqual(Object.values(coverage.fileCoverageFor(second).f), [1]);
+  assert.equal(summarizeFunctions(coverage).total, 3);
+  assert.equal(summarizeFunctions(coverage).uncovered, 0);
+});
+
 function listFeatureFiles(directory) {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
     const file = path.join(directory, entry.name);

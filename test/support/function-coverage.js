@@ -1,5 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
+const { createHash } = require('node:crypto');
 const { parse } = require('@vue/compiler-sfc');
 const { transformSync, types: t } = require('@babel/core');
 const { createCoverageMap } = require('istanbul-lib-coverage');
@@ -36,7 +37,7 @@ function instrumentCode(source, filename) {
       visitor: {
         Program: {
           enter(program) {
-            counter = program.scope.generateUidIdentifier('functionCoverage');
+            counter = program.scope.generateUidIdentifier(`functionCoverage_${createHash('sha256').update(filename).digest('hex').slice(0, 16)}`);
           },
           exit(program) {
             const runtime = t.memberExpression(t.identifier('globalThis'), t.identifier('__coverage__'));
