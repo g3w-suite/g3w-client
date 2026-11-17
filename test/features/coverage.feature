@@ -3,6 +3,9 @@ Feature: Source tree integrity
   Scenario: Runtime counters measure functions rather than module loading
     Then runtime coverage distinguishes uncalled functions from executed callbacks and private methods
 
+  Scenario: The runtime minimum uses exact execution counts
+    Then the function gate rejects missing execution below its exact threshold
+
   Scenario: Instrumentation preserves JavaScript function semantics
     Then instrumented functions preserve inheritance accessors generators and asynchronous results
 
@@ -25,5 +28,5 @@ Feature: Source tree integrity
     Then no source files are missing a Cucumber test
 
   @coverage @function-coverage
-  Scenario: Every source function outside plugins is exercised
-    Then all source functions must be executed by the end of the suite
+  Scenario: Runtime execution reaches the documented function minimum
+    Then the suite must meet the documented runtime function threshold

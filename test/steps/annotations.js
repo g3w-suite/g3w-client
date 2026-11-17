@@ -103,6 +103,7 @@ Then('the annotation import dialog projects saved shapes and supplies print entr
       coordinate: ol.proj.toLonLat(shapes.find(feature => feature.get('type') === 'Point').getGeometry().getCoordinates()),
       printTypes: printed.map(feature => feature.properties.type).sort(),
       printLabels: printed.filter(feature => feature.properties.type !== 'Point').map(feature => feature.properties.label).sort(),
+      printColors: printed.filter(feature => feature.properties.type !== 'Text').map(feature => feature.properties.style.color),
     };
   });
   assert.deepEqual(result.types, ['Circle', 'LineString', 'Point', 'Polygon', 'Rectangle', 'Text']);
@@ -111,6 +112,7 @@ Then('the annotation import dialog projects saved shapes and supplies print entr
   assert.ok(Math.abs(result.coordinate[1] - 2) < 1e-8);
   assert.deepEqual(result.printTypes, result.types);
   assert.deepEqual(result.printLabels, ['Saved Circle', 'Saved LineString', 'Saved Polygon', 'Saved Rectangle', 'Saved Text']);
+  assert.deepEqual(result.printColors, Array(5).fill('#f44e3b'));
   await action(tool, 'close').click();
   await tool.waitFor({ state: 'detached' });
 });

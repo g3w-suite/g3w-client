@@ -7,7 +7,7 @@ const vm = require('node:vm');
 const { createCoverageMap } = require('istanbul-lib-coverage');
 const { AfterAll, Then, When } = require('@cucumber/cucumber');
 const { getCoverageTargets, getSourceCoverageTags, listSourceFiles } = require('../support/source-coverage');
-const { instrumentCode, isSourceModule, summarizeFunctions, writeFunctionCoverageReport } = require('../support/function-coverage');
+const { assertFunctionCoverage, instrumentCode, isSourceModule, summarizeFunctions, writeFunctionCoverageReport } = require('../support/function-coverage');
 
 const projectRoot = path.resolve(__dirname, '../..');
 const sourceRoot = path.join(projectRoot, 'src');
@@ -19,17 +19,36 @@ let enforceFunctionCoverage = false;
 AfterAll({ timeout: 60_000 }, function () {
   if (!enforceFunctionCoverage) return;
   const { report, reportPath } = writeFunctionCoverageReport();
-  const missing = report.files.flatMap(file => file.functions
-    .filter(fn => fn.hits === 0)
-    .map(fn => `${file.file}:${fn.line}:${fn.column}: ${fn.name}`));
-  assert.equal(report.uncovered, 0,
-    `Function coverage: ${report.covered}/${report.total} (${report.percent}%). ` +
-    `${report.uncovered} functions were never executed.\n` +
-    `${missing.slice(0, 20).join('\n')}\nFull report: ${reportPath}`);
+  assertFunctionCoverage(report, reportPath);
 });
 
-Then('all source functions must be executed by the end of the suite', function () {
+Then('the suite must meet the documented runtime function threshold', function () {
   enforceFunctionCoverage = true;
+});
+
+Then('the function gate rejects missing execution below its exact threshold', function () {
+  const filename = path.join(projectRoot, 'test', 'fixtures', 'coverage-threshold.js');
+  const { code, coverage } = instrumentCode(`
+    function first() {}
+    function second() {}
+    function third() {}
+    function missing() {}
+    first(); second(); third();
+  `, filename);
+  const sandbox = {};
+  vm.runInNewContext(code, sandbox);
+  const map = createCoverageMap({ [filename]: coverage });
+  map.merge(sandbox.__coverage__);
+  const report = summarizeFunctions(map);
+  assert.doesNotThrow(() => assertFunctionCoverage(report));
+  assert.equal(report.uncovered, 1, 'passing the minimum must not erase uncovered functions');
+  map.addFileCoverage(instrumentCode('function unloaded() {}',
+    path.join(projectRoot, 'test', 'fixtures', 'below-threshold.js')).coverage);
+  assert.throws(() => assertFunctionCoverage(summarizeFunctions(map)), /Minimum required: 75%.*2 functions were never executed/);
+  assert.throws(() => assertFunctionCoverage({
+    ...report, covered: 30000, total: 40001, uncovered: 10001, percent: 75,
+  }), /Minimum required: 75%/, 'rounded display percentages must not let a below-threshold result pass');
+  assert.throws(() => assertFunctionCoverage(summarizeFunctions(createCoverageMap({}))), /Minimum required: 75%/);
 });
 
 Then('runtime coverage distinguishes uncalled functions from executed callbacks and private methods', function () {

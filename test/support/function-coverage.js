@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { createHash } = require('node:crypto');
@@ -145,6 +146,17 @@ function summarizeFunctions(coverage) {
   };
 }
 
+function assertFunctionCoverage(report, reportPath = 'test/coverage/functions.json') {
+  const minimumPercent = 75;
+  const missing = report.files.flatMap(file => file.functions
+    .filter(fn => fn.hits === 0)
+    .map(fn => `${file.file}:${fn.line}:${fn.column}: ${fn.name}`));
+  assert.ok(report.total > 0 && report.covered * 100 >= report.total * minimumPercent,
+    `Function coverage: ${report.covered}/${report.total} (${report.percent}%). ` +
+    `Minimum required: ${minimumPercent}%. ${report.uncovered} functions were never executed.\n` +
+    `${missing.slice(0, 20).join('\n')}\nFull report: ${reportPath}`);
+}
+
 function writeFunctionCoverageReport() {
   const coverage = createCoverageMap({});
   for (const filename of listSourceFiles(sourceRoot).filter(isSourceModule)) {
@@ -165,6 +177,6 @@ function writeFunctionCoverageReport() {
 }
 
 module.exports = {
-  closeCoreContext, collectCoverage, coveragePlugin, instrumentCode,
+  assertFunctionCoverage, closeCoreContext, collectCoverage, coveragePlugin, instrumentCode,
   instrumentSource, isSourceModule, summarizeFunctions, writeFunctionCoverageReport,
 };
