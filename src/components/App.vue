@@ -119,9 +119,10 @@
 
               <!-- LOGOUT URL -->
               <a
-                v-if  = "user && user.logout_url"
-                :href = "user.logout_url"
-                class = "nav-logout btn btn-default btn-flat skin-color"
+                v-if                = "user && user.logout_url"
+                href                = "#"
+                @click.prevent.stop = "logout(user.logout_url)"
+                class               = "nav-logout btn btn-default btn-flat skin-color"
               >
                 <b>{{ $t('Logout') }}</b><i class = "fas fa-sign-out-alt" aria-hidden = "true"></i>
               </a>
@@ -1026,6 +1027,25 @@ export default {
   },
 
   methods: {
+
+    /**
+     * @since 4.2.0 https://github.com/g3w-suite/g3w-client/issues/1007
+     * @param url 
+     */
+    async logout(url) {
+      try {
+        const response = await fetch(url, {
+          method:  'POST',
+          headers: { 'X-CSRFToken': GUI.getCookie('csrftoken') },
+        });
+        if (!response.ok) {
+          throw new Error(`Logout request failed: HTTP ${response.status}`);
+        }
+        window.location.reload();
+      } catch(e) {
+        console.error('Logout failed:', e);
+      }
+    },
 
     /**
      * @since 3.11.0
