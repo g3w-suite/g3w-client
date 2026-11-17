@@ -27,10 +27,10 @@ No additional npm commands or test dependencies are required.
 
 | Feature | Behavior checked |
 | --- | --- |
-| `core-runtime.feature` | Events, lifecycle, localization, projections, plugins, selections, controls, SDK, shims and startup failure handling |
-| `utils.feature`, `utility-behaviors.feature` | Data manipulation, geometry, filters, exports, requests, storage and async helpers |
-| `ui-behaviors.feature` | Component methods/computed state, directives, interactions and control callbacks |
-| `static-resources.feature` | Localized labels, fixture-based geocoding, decoded/rendered images and fonts, stylesheet effects |
+| `core.feature` | Events, lifecycle, localization, projections, plugins, selections, controls, SDK, shims and startup failure handling |
+| `utils.feature` | Data manipulation, geometry, filters, exports, requests, storage and async helpers |
+| `ui.feature` | Component methods/computed state, directives, interactions and control callbacks |
+| `static.feature` | Localized labels, fixture-based geocoding, decoded/rendered images and fonts, stylesheet effects |
 | `coverage.feature` | Source integrity and explicit scenario-to-file associations |
 | `dev.g3wsuite.it.feature` | Remote project smoke tests (`@smoke`, requires the proxy) |
 
