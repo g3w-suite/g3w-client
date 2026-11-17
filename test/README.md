@@ -34,6 +34,10 @@ No additional npm commands are required.
 | `ui.feature` | Component methods/computed state, directives, interactions and control callbacks |
 | `forms.feature` | Mounted Vue fields, validation, autocomplete, relation filters, uploads, map picking, rich text, saved queries, bookmarks and dialogs |
 | `query-results.feature` | Mounted query results, spatial summaries, nested forms and relations, action lifecycle, local pagination, sandboxed text/HTML and WMS info-format changes |
+| `search.feature` | Configured search forms, cascading and cached choices, autocomplete ordering/cancellation, encoded filters, local search requests, related searches, follow-up forms and mobile dates/focus |
+| `tables.feature` | Mounted attribute tables, local sorting/search/pagination, selection across pages, plugin actions, relations, map bounds, cleanup and HTTP-error recovery |
+| `notifications.feature` | Sequential alerts, persisted read preferences, manager toggles, unread badges, native popover dragging and keyboard dismissal |
+| `measure.feature` | Real line/polygon drawing, point correction, measurement overlays, geometry-type selection and tool cleanup |
 | `static.feature` | Localized labels, fixture-based geocoding, decoded/rendered images and fonts, stylesheet effects |
 | `coverage.feature` | Source integrity, scenario-to-file associations and a 100% runtime function gate |
 | `dev.g3wsuite.it.feature` | Remote project smoke tests (`@smoke`, requires the proxy) |
@@ -100,6 +104,12 @@ the behavioral tests and are **not** hidden by exclusions or artificial hits:
 | [Date/time picker limit getters](../src/shims/datetimepicker.js#L431) | After clearing limits with `minDate(false)` / `maxDate(false)`, the corresponding getters can throw: `false?.clone()` still attempts to call the missing `clone` method. |
 | [Date/time picker `today` / `clear` callbacks](../src/shims/datetimepicker.js#L314) | These callbacks have no corresponding widget actions, so the real widget cannot invoke them. They remain uncovered rather than being called artificially. |
 | [Query results JSON info-format changes](../src/components/QueryResults.vue#L1157) | Changing a raw-text result to `application/json`, using a local proxy returning a valid GeoJSON FeatureCollection, logs `TypeError: Cannot read properties of undefined (reading 'layer')` and leaves the original raw text and empty feature list. `changeInfoFormat` omits `projections`, which the [JSON parser](../src/g3w-layer.js#L3442) dereferences. The successful format-switch scenario uses the supported text/GML path; it does not treat the JSON failure as desired behavior. |
+| [Search service all-values filter](../src/components/g3w-search.js#L163) | Initialize a `selectfield` with attribute `kind` and operator `in`, leave its default all-values selection, then call `panel.getService().createFilter()`. It returns `['kind\|in\|(__G3W_ALL__)']`: the scalar-only exclusion does not recognize the array `['__G3W_ALL__']` and serializes the internal sentinel as a real value. The separate `doSearch` path checks individual array elements correctly. |
+| [Iframe projected coordinates](../src/g3w-iframe.js#L156) | Call `app:zoomtocoordinates` with `{ coordinates: [10, 20], epsg: 3857 }`. After resolving the projection, it throws `ReferenceError: coordinates is not defined`: the local variable is named `coords`. |
+| [Iframe default feature-search layers](../src/g3w-iframe.js#L216) | Omit `qgs_layer_id` with a configured spatial layer. The default mapping produces objects rather than layer IDs (and reads `id` / `name` directly from layer instances). The ID-based lookup cannot resolve them, so the command returns `null` and zooms to the initial extent without searching that layer. Explicit-ID scenarios exercise the real search pipeline instead. |
+| [Table relation highlighting](../src/components/Table.vue#L406) | A feature without geometry returns immediately; one with geometry either highlights directly or returns at the next guard. Consequently the relation-query callbacks starting at line 430 are unreachable for ordinary feature objects. No fixture changes geometry between reads to bypass these guards. |
+| [Table post-destruction placeholder](../src/components/Table.vue#L705) | Full-size cleanup assigns an empty `async_highlight` closure after destroying the component. Normal live-component interaction cannot invoke this replacement; the cleanup scenarios verify its observable map effects without calling dead placeholders. |
+| [Table search ordering](../src/components/Table.vue#L535) | Sort the second column, then use global search. `getData({ search })` defaults its ordering index to zero, so the request sorts the first column while `ordering` and the highlighted header still indicate the second. The successful combined sorting/search scenario explicitly selects the first column before searching. |
 
 These are not an exhaustive list of uncovered functions. The current report
 also includes reachable behavior for which scenarios still need to be written.
@@ -126,6 +136,31 @@ Local HTTP fixtures exercise pagination and WMS proxy requests. Related-feature
 boxes are checked independently, including resetting their state for a new
 response. Iframe checks verify plain-text escaping, content-driven sizing and
 confirmation before opening HTML links.
+
+The `@search-workflows` scenarios mount the actual search panel and service.
+Real layer methods and the GUI search pipeline send requests to local HTTP
+fixtures; only presentation outputs, map effects and user notifications are
+controlled. Native custom-select events, form submission and date-picker
+events update the search configuration. Autocomplete races use a held HTTP
+response, not artificial coverage hits or source-method replacements. Console
+warnings, failed requests and Vue/browser errors fail these scenarios.
+
+The `@attribute-tables` scenarios mount the actual table with real layer models,
+GUI selection state and OpenLayers geometries. Local HTTP fixtures implement
+ordering, global/column filters, pagination and selected-feature lookup. Map
+presentation and host layout boundaries are controlled, while an HTTP 500 case
+checks the actual error notification, preserved rows and successful retry.
+
+The `@notification-workflows` scenarios initialize alerts through the real
+application-ready event and registered navbar action. Native popovers, bubbling
+DOM events and localStorage exercise the private alert lifecycle without
+calling private callbacks directly.
+
+The `@measure-workflows` scenarios load the original instrumented map control
+into a rendered OpenLayers map with its real stylesheet and footer padding.
+Real Draw interactions, native pointer/keyboard events and the GUI custom-select
+update line/polygon tooltips and release layers/overlays when disabled. Only
+map-control registration and map lookup are supplied by the host fixture.
 
 Add project examples to `features/dev.g3wsuite.it.feature` and their step
 definitions to `steps/dev.g3wsuite.it.js`.

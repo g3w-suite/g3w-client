@@ -754,6 +754,74 @@ Then('iframe messages publish readiness and command outcomes', async function ()
   assert.deepEqual(result.zoomed, [-5, -5, 5, 5]);
 });
 
+Then('iframe feature searches try layers in order with highlight {string}', async function (highlight) {
+  const requests = [];
+  await this.corePage.route('**/vector/data/**', route => {
+    const id = new URL(route.request().url()).pathname.split('/').filter(Boolean).at(-1);
+    requests.push({ id, data: route.request().postDataJSON() });
+    return route.fulfill({ json: { result: true, vector: { count: id === 'empty' ? 0 : 1, data: {
+      type: 'FeatureCollection', features: id === 'empty' ? [] : [{
+        type: 'Feature', id: 7, properties: { name: 'Main & Side' },
+        geometry: id === 'records' ? null : { type: 'Point', coordinates: [12, 45] },
+      }],
+    } } } });
+  });
+  const result = await this.corePage.evaluate(async highlight => {
+    const layers = ['empty', 'records', 'roads'].map(id => createFixtureLayer({
+      id, name: id, geometrytype: id === 'records' ? 'NoGeometry' : 'Point', crs: { epsg: 'EPSG:3857' },
+    }));
+    g3w.state.project.state.layerstree = layers.map(layer => ({ id: layer.getId() }));
+    const zooms = [];
+    const warnings = [];
+    const warn = console.warn;
+    g3w.app.zoomToFeatures = async (features, options) => zooms.push({
+      ids: features.map(feature => feature.getId()), coordinates: features[0].getGeometry().getCoordinates(), ...options,
+    });
+    console.warn = message => warnings.push(String(message));
+    try {
+      const id = await coreTestExports.IframeApp.prototype['app:zoomtofeature']({
+        qgs_layer_id: ['empty', 'records', 'roads'], feature: { field: 'name', value: ['Main & Side', 'A/B'] }, highlight,
+      });
+      return { id, zooms, warnings };
+    } finally {
+      console.warn = warn;
+    }
+  }, highlight === 'true');
+  assert.deepEqual(result, {
+    id: 'roads', zooms: [{ ids: [7], coordinates: [12, 45], highlight: highlight === 'true' }],
+    warnings: ['invalid response', 'invalid response'],
+  });
+  assert.deepEqual(requests.map(request => request.id), ['empty', 'records', 'roads']);
+  assert.ok(requests.every(request => request.data.field === 'name|eq|Main%20%26%20Side|OR,name|eq|A%2FB'));
+});
+
+Then('iframe feature searches fall back after empty and unknown layers', async function () {
+  let requests = 0;
+  await this.corePage.route('**/vector/data/**', route => {
+    requests++;
+    return route.fulfill({ json: { result: true, vector: { count: 0, data: { type: 'FeatureCollection', features: [] } } } });
+  });
+  const result = await this.corePage.evaluate(async () => {
+    createFixtureLayer({ id: 'empty' });
+    Object.assign(g3w.state.project.state, { layerstree: [{ id: 'empty' }], initextent: [1, 2, 30, 40] });
+    const extents = [];
+    const warnings = [];
+    const warn = console.warn;
+    g3w.app.zoomToExtent = extent => extents.push(extent);
+    console.warn = message => warnings.push(String(message));
+    try {
+      const id = await coreTestExports.IframeApp.prototype['app:zoomtofeature']({
+        qgs_layer_id: ['empty', 'missing'], feature: { field: 'name', value: 'Absent' },
+      });
+      return { id, extents, warnings };
+    } finally {
+      console.warn = warn;
+    }
+  });
+  assert.deepEqual(result, { id: null, extents: [[1, 2, 30, 40]], warnings: ['invalid response', 'invalid response'] });
+  assert.equal(requests, 1);
+});
+
 Then('application dialogs resolve accepted values and reject cancellation', async function () {
   const result = await this.corePage.evaluate(async () => {
     const accepted = g3w.app.confirm('Apply the change?');

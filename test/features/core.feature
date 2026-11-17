@@ -109,3 +109,15 @@ Feature: Core client behavior without a server
   @core-expansion @covers:src/g3w-app.js
   Scenario: Galleries and loading indicators clean up their DOM elements
     Then galleries navigate images and loading indicators are removed
+
+  @layer-model @iframe-feature-query @covers:src/g3w-iframe.js
+  Scenario Outline: Iframe feature searches stop at the first matching geometry
+    Then iframe feature searches try layers in order with highlight "<highlight>"
+    Examples:
+      | highlight |
+      | true      |
+      | false     |
+
+  @layer-model @iframe-feature-query @covers:src/g3w-iframe.js
+  Scenario: Iframe feature searches restore the project extent when nothing matches
+    Then iframe feature searches fall back after empty and unknown layers
