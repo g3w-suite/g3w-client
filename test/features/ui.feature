@@ -2,21 +2,6 @@
 Feature: Offline UI behavior
   Component logic, directives, and pointer interactions run against local compiled code and narrow test doubles.
 
-  @covers:src/components/App.vue
-  Scenario: Main map title combines the map and group names
-    When I exercise UI behavior "app-main-title"
-    Then the observed UI effect matches the expected result
-
-  @covers:src/components/CatalogTree.vue
-  Scenario: Catalog tree distinguishes a zero feature count from no count
-    When I exercise UI behavior "catalog-feature-count"
-    Then the observed UI effect matches the expected result
-
-  @covers:src/components/ContextMenu.vue
-  Scenario: Context menu exposes the project layer URL
-    When I exercise UI behavior "context-menu-project-url"
-    Then the observed UI effect matches the expected result
-
   @covers:src/components/G3WField.vue
   Scenario: Field renderer maps photo fields to image display
     When I exercise UI behavior "field-renderer"
@@ -27,24 +12,9 @@ Feature: Offline UI behavior
     When I exercise UI behavior "tabs-layout"
     Then the observed UI effect matches the expected result
 
-  @covers:src/components/ModalAccessibility.vue
-  Scenario: High contrast selects the accessible theme color
-    When I exercise UI behavior "accessibility-contrast-color"
-    Then the observed UI effect matches the expected result
-
-  @covers:src/components/ModalAddLayer.vue
-  Scenario: WMS filtering keeps each layer's original index
-    When I exercise UI behavior "add-layer-filter"
-    Then the observed UI effect matches the expected result
-
   @covers:src/components/ModalChangeMap.vue
   Scenario: Returning to the map chooser root clears navigation history
     When I exercise UI behavior "change-map-root"
-    Then the observed UI effect matches the expected result
-
-  @covers:src/components/ModalLogin.vue
-  Scenario: Login iframe uses the configured login URL
-    When I exercise UI behavior "login-iframe-url"
     Then the observed UI effect matches the expected result
 
   @covers:src/components/ModalMetadata.vue
@@ -55,16 +25,6 @@ Feature: Offline UI behavior
   @covers:src/components/QueryBuilder.vue
   Scenario: Query builder quotes fields and values around operators
     When I exercise UI behavior "query-expression"
-    Then the observed UI effect matches the expected result
-
-  @covers:src/components/QueryResults.vue
-  Scenario: Query result panel reports available layer results
-    When I exercise UI behavior "query-results-present"
-    Then the observed UI effect matches the expected result
-
-  @covers:src/components/Relations.vue
-  Scenario: Relation table computes a ceiling page count
-    When I exercise UI behavior "relation-pages"
     Then the observed UI effect matches the expected result
 
   @covers:src/components/Search.vue

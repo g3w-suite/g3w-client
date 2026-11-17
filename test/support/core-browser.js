@@ -28,11 +28,38 @@ function bundleCore(entry) {
           import Metadata from './src/components/ModalMetadata.vue';
           import Bookmarks from './src/components/SpatialBookMarks.vue';
           import Tabs from './src/components/G3WTabs.vue';
+          import App from './src/components/App.vue';
+          import CatalogTree from './src/components/CatalogTree.vue';
+          import Field from './src/components/G3WField.vue';
+          import AddLayer from './src/components/ModalAddLayer.vue';
+          import Login from './src/components/ModalLogin.vue';
+          import Search from './src/components/Search.vue';
+          import SearchPanel from './src/components/SearchPanel.vue';
+          import Relations from './src/components/Relations.vue';
           import disabled from './src/directives/v-disabled.js';
           import translate from './src/directives/v-t.js';
           window.coreTestExports = {
             IframeApp, waitFor, QueryBuilder, QueryResults, Table, ContextMenu, createSearchPanel, Accessibility, ChangeMap, Metadata,
             Bookmarks, Tabs, disabled, translate,
+            vueComponents: {
+              'components/App.vue': App,
+              'components/CatalogTree.vue': CatalogTree,
+              'components/ContextMenu.vue': ContextMenu,
+              'components/G3WField.vue': Field,
+              'components/G3WTabs.vue': Tabs,
+              'components/ModalAccessibility.vue': Accessibility,
+              'components/ModalAddLayer.vue': AddLayer,
+              'components/ModalChangeMap.vue': ChangeMap,
+              'components/ModalLogin.vue': Login,
+              'components/ModalMetadata.vue': Metadata,
+              'components/QueryBuilder.vue': QueryBuilder,
+              'components/QueryResults.vue': QueryResults,
+              'components/Relations.vue': Relations,
+              'components/Search.vue': Search,
+              'components/SearchPanel.vue': SearchPanel,
+              'components/SpatialBookMarks.vue': Bookmarks,
+              'components/Table.vue': Table,
+            },
           };
         `,
         resolveDir: root,

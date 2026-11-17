@@ -32,6 +32,7 @@ No additional npm commands are required.
 | `shims.feature` | Browser behavior for jQuery, Moment, Select2 and the date/time picker |
 | `utils.feature` | Data manipulation, geometry, filters, exports, requests, storage and async helpers |
 | `ui.feature` | Component methods/computed state, directives, interactions and control callbacks |
+| `vue.feature` | One shared contract for every Vue file: independent data factories, computed caching, writable computed values and reactive updates with component-specific inputs/results |
 | `forms.feature` | Mounted Vue fields, validation, autocomplete, relation filters, uploads, map picking, rich text, saved queries, bookmarks and dialogs |
 | `query-results.feature` | Mounted query results, spatial summaries, nested forms and relations, action lifecycle, local pagination, sandboxed text/HTML and WMS info-format changes |
 | `search.feature` | Configured search forms, cascading and cached choices, autocomplete ordering/cancellation, encoded filters, local search requests, related searches, follow-up forms and mobile dates/focus |
@@ -94,6 +95,22 @@ aggregation currently expects Cucumber's default serial execution.
 Do not add tags or lower the threshold to resolve uncovered functions: add
 behavioral scenarios that exercise them. Function execution coverage does not
 prove that every branch was taken or that every function result was asserted.
+
+### Shared Vue options contract
+
+`vue.feature` discovers every `.vue` file in the source coverage scope and
+requires a real compiled definition and valid inputs for each one. The same
+contract creates two Vue instances using the source `props`, `data`, `computed`
+and `methods` options. It checks per-instance local state, reads every computed
+getter through Vue, then verifies expected values after a reactive change.
+Writable computed properties are exercised through their public setter.
+
+This deliberately isolates reactive options: it does not mount templates or
+run lifecycle hooks and watchers. Mounted workflow scenarios remain responsible
+for those integrations and for additional application-specific branches. Adding
+a Vue file without registering its definition and contract inputs fails the
+shared test. Data/computed functions are still instrumented normally; neither
+their counters nor the 100% threshold receive special treatment.
 
 ### Known source issues deferred to future PRs (after #1010 has been merged)
 

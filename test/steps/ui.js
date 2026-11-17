@@ -83,19 +83,6 @@ async function component(name, imports) {
 }
 
 const componentBehaviors = {
-  'app-main-title': async () => {
-    const app = await component('App.vue');
-    return [app.computed.main_title.call({ initConfig: { main_map_title: 'Map', title: 'Group' } }), 'Map - Group'];
-  },
-  'catalog-feature-count': async () => {
-    const tree = await component('CatalogTree.vue');
-    return [tree.computed.has_feature_count.call({ layerstree: { featurecount: 0 } }), true];
-  },
-  'context-menu-project-url': async () => {
-    const state = { project: { getState: () => ({ layers_url: '/layers/' }) } };
-    const menu = await component('ContextMenu.vue', stateImports(state));
-    return [menu.computed.layers_url.call({}), '/layers/'];
-  },
   'field-renderer': async () => {
     const field = await component('G3WField.vue');
     return [field.computed.type.call({ fieldType: 'photo_field', state: { value: null } }), 'image'];
@@ -111,17 +98,6 @@ const componentBehaviors = {
       nodes: [{ field_name: 'street' }, { field_name: 'city' }]
     }), [[{ field_name: 'street', alias: 'street' }, { field_name: 'city', alias: 'city' }]]];
   },
-  'accessibility-contrast-color': async () => {
-    const accessibility = await component('ModalAccessibility.vue');
-    return [accessibility.computed.theme_color.call({ high_contrast: true, skin_color: '#123456' }), '#212c31'];
-  },
-  'add-layer-filter': async () => {
-    const addLayer = await component('ModalAddLayer.vue');
-    return [addLayer.computed.wms_filtered_layers.call({
-      layers: [{ title: 'Roads' }, { title: 'Rivers' }],
-      wms_layers_filter: 'river'
-    }), [{ title: 'Rivers', __idx: '1' }]];
-  },
   'change-map-root': async () => {
     const modal = await component('ModalChangeMap.vue');
     const context = { current: 'projects', items: [], steps: [], macrogroups: [{ id: 'm1' }], groups: [{ id: 'g1' }] };
@@ -129,11 +105,6 @@ const componentBehaviors = {
     return [{ current: context.current, items: context.items, steps: context.steps }, {
       current: 'root', items: [{ id: 'm1' }, { id: 'g1' }], steps: []
     }];
-  },
-  'login-iframe-url': async () => {
-    globalThis.window = { initConfig: { user: { login_url: '/accounts/login/' } } };
-    const login = await component('ModalLogin.vue');
-    return [login.computed.login_url.call({}), '/accounts/login/'];
   },
   'metadata-empty-value': async () => {
     const metadata = await component('ModalMetadata.vue');
@@ -146,14 +117,6 @@ const componentBehaviors = {
     builder.methods.addToExpression.call(context, { value: '=', type: 'operator' });
     builder.methods.addToExpression.call(context, { value: 'Main St', type: 'value' });
     return [context.filter, '"road name" = \'Main St\''];
-  },
-  'query-results-present': async () => {
-    const results = await component('QueryResults.vue');
-    return [results.computed.hasResults.call({ state: { queried_layers: [{ id: 'roads' }] } }), true];
-  },
-  'relation-pages': async () => {
-    const relations = await component('Relations.vue');
-    return [relations.computed.pages.call({ table: { allfeatures: 11, page_size: 5 } }), 3];
   },
   'search-query-builder-panel': async () => {
     const events = [];
