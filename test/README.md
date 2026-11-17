@@ -32,6 +32,7 @@ No additional npm commands are required.
 | `shims.feature` | Browser behavior for jQuery, Moment, Select2 and the date/time picker |
 | `utils.feature` | Data manipulation, geometry, filters, exports, requests, storage and async helpers |
 | `ui.feature` | Component methods/computed state, directives, interactions and control callbacks |
+| `forms.feature` | Mounted Vue fields, validation, autocomplete, relation filters, uploads, map picking, rich text, saved queries, bookmarks and dialogs |
 | `static.feature` | Localized labels, fixture-based geocoding, decoded/rendered images and fonts, stylesheet effects |
 | `coverage.feature` | Source integrity, scenario-to-file associations and a 100% runtime function gate |
 | `dev.g3wsuite.it.feature` | Remote project smoke tests (`@smoke`, requires the proxy) |
@@ -108,6 +109,13 @@ Shared test loaders and browser fixtures live in `support/`; source modules are
 executed without changing the production module format or writing test bundles
 into the source tree. Runtime dependencies are replaced only where the tested
 behavior needs a controlled input (for example map services or HTTP responses).
+
+The `@form-workflows` scenarios mount the real compiled Vue components, observe
+their input schemas as a parent form would, and use real OpenLayers geometries,
+interactions and DOM selections. Local HTTP responses provide options, relation
+data, uploads and metadata; map/service fixtures supply only the dependencies
+needed by each workflow. Both browser errors and Vue lifecycle/watcher errors
+fail the scenario.
 
 Add project examples to `features/dev.g3wsuite.it.feature` and their step
 definitions to `steps/dev.g3wsuite.it.js`.
