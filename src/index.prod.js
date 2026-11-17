@@ -780,15 +780,6 @@ $.ajaxSetup({
   // init plugins
   try {
     Object.keys(window.initConfig.plugins).forEach(p => ApplicationState.plugins.push(p));
-
-    /** @TODO move this stuff within the "law" plugin */
-    if (ApplicationState.project?.getState()?.law?.length) {
-      window.initConfig.plugins.law     = ApplicationState.project.getState().law;
-      window.initConfig.plugins.law.gid = ApplicationState.project.getState().gid;
-    } else {
-      delete window.initConfig.plugins.law;
-    }
-
     /** @TODO check if deprecated */
     for (const p in window.initConfig.plugins) {
       Object

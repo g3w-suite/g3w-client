@@ -838,7 +838,7 @@ g3wsdk.core.project.ProjectsRegistry.setProjectAliasUrl = alias => { const p = w
 g3wsdk.core.i18n.getAppLanguage = () => window.initConfig.user.i18n || "en";
 /* function to translate plugins */
 g3wsdk.core.i18n.tPlugin        = text => _(`plugins.${text}`);
-/** used by the following plugins: "iframe", "law", "bforest", "sispi-worksite", "gsk", "arpalombardia-charts", "simplereporting", "politowps", "billboards", "ws-trento", "br-service", "datasinc", "archiweb", "fsimulator", "skeleton", "elevation-profile" */
+/** used by the following plugins: "iframe", "bforest", "sispi-worksite", "gsk", "arpalombardia-charts", "simplereporting", "politowps", "billboards", "ws-trento", "br-service", "datasinc", "archiweb", "fsimulator", "skeleton", "elevation-profile" */
 g3wsdk.core.i18n.addI18nPlugin  = ({ name, config }) =>  {
   console.warn('[G3W-I18N] g3wsdk.core.i18n.addI18nPlugin is deprecated, please use `g3wsdk.core.plugin.Plugin.setLocale` instead')
   for (const lang in config) {
