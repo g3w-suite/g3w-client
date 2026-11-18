@@ -6,6 +6,7 @@
 /dist
 /node_modules
 /npm-debug.log
+/test/coverage/
 /src/plugins/**
 !/src/plugins/README.md
 !/src/plugins/_version.js
