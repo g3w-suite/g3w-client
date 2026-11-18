@@ -87,6 +87,7 @@ Then('the annotation import dialog projects saved shapes and supplies print entr
     name: 'annotations.json', mimeType: 'application/json',
     buffer: Buffer.from(JSON.stringify({ type: 'FeatureCollection', features })),
   });
+  await page.waitForFunction(() => /Saved Polygon/.test(document.querySelector('#file_preview')?.textContent || ''));
   assert.match(await page.locator('#file_preview').textContent(), /Saved Polygon/);
   await page.locator('#confirm_button').click();
   await page.waitForFunction(() => g3w.app.getMapControl('annotation')._annotation.layer.getSource().getFeatures().length === 6);
