@@ -53,7 +53,7 @@ Behavioral coverage is tracked with `@covers:src/path/to/file.js` tags on
 scenarios. Run `node build/test.js --tags "@file-coverage"` to list source files
 without an associated scenario. The gate uses Cucumber's Gherkin parser, ignores
 tags mentioned in comments/descriptions, and discovers every file under `src/`
-except `src/plugins/`. Add tags only to scenarios exercising the file's behavior;
+except `src/plugins/` and Git metadata named `.git`. Add tags only to scenarios exercising the file's behavior;
 syntax checks do not qualify. This is a per-file association requirement, not a
 statement of 100% line or branch coverage.
 

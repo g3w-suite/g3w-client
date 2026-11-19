@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const { compileStyle, compileTemplate, parse } = require('@vue/compiler-sfc');
 const { build, transform } = require('esbuild');
@@ -286,4 +287,22 @@ Then('coverage tags in comments and descriptions do not count as scenarios', fun
     'Feature: Invalid coverage\n  @covers:src/empty.js\n  Scenario: No assertions\n',
     'empty.feature'
   ), /coverage scenario must contain steps/);
+});
+
+Then('source discovery excludes Git metadata but retains other hidden files', function () {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'g3w-source-coverage-'));
+  try {
+    for (const directory of ['.git/gk', 'nested/.git/objects', 'plugins', '.hidden', 'worktree']) {
+      fs.mkdirSync(path.join(root, directory), { recursive: true });
+    }
+    for (const file of ['.git/gk/config', 'nested/.git/objects/data', 'plugins/plugin.js', '.hidden/source.js', 'worktree/.git', 'source.js']) {
+      fs.writeFileSync(path.join(root, file), '');
+    }
+    assert.deepEqual(
+      listSourceFiles(root).map(file => path.relative(root, file).split(path.sep).join('/')).sort(),
+      ['.hidden/source.js', 'source.js']
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
