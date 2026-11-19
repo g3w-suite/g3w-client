@@ -223,7 +223,7 @@
         :legendplace               = "legendplace"
         :layerstree                = "_layerstree"
         :parent                    = "layerstree"
-        :parent_mutually_exclusive = "!!layerstree.mutually_exclusive"
+        :parent_mutually_exclusive = "!!layerstree['mutually-exclusive']"
       />
     </ul>
 
@@ -483,7 +483,7 @@ export default {
       }
 
       const visible            = this.layerstree?.parentGroup?.checked ?? true;
-      const mutually_exclusive = this.layerstree?.parentGroup?.mutually_exclusive;
+      const mutually_exclusive = this.layerstree?.parentGroup?.['mutually-exclusive'];
 
       if (!mutually_exclusive) {
         _setAllLayersVisible({ nodes: this.layerstree.nodes, visible });
@@ -524,7 +524,7 @@ export default {
 
       qlayer.setVisible(checked ? !this.layerstree.disabled : false);
 
-      if (checked && this.layerstree.parentGroup?.mutually_exclusive) {
+      if (checked && this.layerstree.parentGroup?.['mutually-exclusive']) {
         this.layerstree.parentGroup.nodes.forEach(n => n.checked = n.id === this.layerstree.id);
       }
 
@@ -873,7 +873,7 @@ export default {
     if (this.isGroup && !this.layerstree.checked) {
       this.onGroupChecked();
     }
-    if (this.isGroup && !this.root && this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive) {
+    if (this.isGroup && !this.root && this.parent_mutually_exclusive && !this.layerstree?.['mutually-exclusive']) {
       this.layerstree.nodes.forEach(node => { node.id && (node.uncheckable = true); })
     }
   },
