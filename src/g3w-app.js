@@ -2160,7 +2160,6 @@ export default new (class GUI extends Emitter {
   /**
    * ORIGINAL SOURCE: src/services/queryresults.js@v4.0.0
    * 
-   * Used by the following plugins: "law", "innovapuglia"
    *
    * @param element
    * 
