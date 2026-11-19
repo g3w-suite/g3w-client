@@ -23,6 +23,10 @@ Feature: Map and catalog context menus
   Scenario: Catalog styles and saved filters update the real layer
     Then catalog context actions change styles apply toggle and delete saved filters
 
+  @legend-action @covers:src/components/ContextMenu.vue
+  Scenario: Context menu legend action respects layer exclusion
+    Then excluded layers hide the legend action in the catalog context menu
+
   @covers:src/components/ContextMenu.vue
   Scenario: External image layers expose opacity ordering and projected extents
     Then external image context actions update their map layer and fit its extent

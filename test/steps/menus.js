@@ -246,6 +246,22 @@ Then('catalog context actions change styles apply toggle and delete saved filter
   assert.deepEqual(this.menuRequests.filter(request => request.params.mode).map(request => request.params.mode), ['apply', 'delete', 'delete_saved']);
 });
 
+Then('excluded layers hide the legend action in the catalog context menu', async function () {
+  const page = this.corePage;
+  const legendAction = page.locator('.context-menu > li:has(> i.fa-list)');
+  await page.evaluate(async () => {
+    menuCatalogLayer.state.exclude_from_legend = true;
+    await openCatalogMenu(menuCatalogLayer.state);
+  });
+  const excludedCount = await legendAction.count();
+  await page.evaluate(async () => {
+    menuView.closeMenu();
+    menuCatalogLayer.state.exclude_from_legend = false;
+    await openCatalogMenu(menuCatalogLayer.state);
+  });
+  assert.deepEqual([excludedCount, await legendAction.count()], [0, 1]);
+});
+
 Then('external image context actions update their map layer and fit its extent', async function () {
   await this.corePage.evaluate(async () => {
     window.menuImageNode = Vue.observable({
