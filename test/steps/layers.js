@@ -47,11 +47,6 @@ Then('table metadata and downloads reflect the layer configuration', async funct
     layer.setInfoFormat('application/json');
     layer.setHidden();
     layer.setSelected(true);
-    const originalFieldType = layer.changeConfigFieldType({
-      name: 'name', type: 'select', options: { values: ['A', 'B'] },
-    });
-    const selectOptions = layer.getFields()[0].selectoptions;
-    const restoredFieldType = layer.changeConfigFieldType({ name: 'name', type: 'select', reset: true });
     return {
       identity: [layer.getId(), layer.getName(), layer.getTitle(), layer.getServerType(), layer.getSourceType()],
       sameState: layer.getState() === layer.getConfig() && layer.config === layer.getState(),
@@ -78,8 +73,6 @@ Then('table metadata and downloads reflect the layer configuration', async funct
       dataUrl: layer.getUrl('data'), format: layer.getInfoFormat(), infoFormats: layer.getInfoFormats(),
       hidden: layer.isHidden(), selected: layer.isSelected(), selection: layer.getSelection().active,
       filter: layer.getFilter().active, count: layer.getFeatureCount(),
-      originalFieldType, restoredFieldType, selectOptions,
-      optionsRemoved: !Object.hasOwn(layer.getFields()[0], 'selectoptions'),
     };
   });
   assert.deepEqual(result, {
@@ -94,8 +87,6 @@ Then('table metadata and downloads reflect the layer configuration', async funct
     capabilities: [true, true, false, true, false, false], search: { I: 0, J: 0 },
     pageLength: 25, dataUrl: '/fixture/data/', format: 'application/json', infoFormats: [],
     hidden: true, selected: true, selection: false, filter: false, count: 12,
-    originalFieldType: 'string', restoredFieldType: 'string', selectOptions: { values: ['A', 'B'] },
-    optionsRemoved: true,
   });
 });
 

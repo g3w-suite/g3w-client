@@ -23,7 +23,11 @@ Then('native annotation controls draw edit export and remove a map point', async
     const x = rect.left + rect.width * 0.8, y = rect.top + rect.height * 0.55;
     return { x, y, coordinate: map.getEventCoordinate(new MouseEvent('click', { clientX: x, clientY: y })) };
   });
-  await page.mouse.click(point.x, point.y);
+  // Consume the delayed map selection before returning to the saved annotations.
+  await Promise.all([
+    page.evaluate(() => new Promise(resolve => g3w.app.getMap().once('singleclick', () => resolve()))),
+    page.mouse.click(point.x, point.y),
+  ]);
   await tool.locator('input[type="text"]').fill('Station note');
   await tool.locator('input[name="radius"]').fill('12');
   await tool.locator('input[name="feature-text"]').check();

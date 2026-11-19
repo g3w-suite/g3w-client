@@ -25,6 +25,10 @@ The browser scenarios use Playwright Chromium with local or in-memory fixtures
 and blocked external requests. The `@unit` scenarios do not start a browser.
 No additional npm commands are required.
 
+The annotation drawing scenario waits for OpenLayers' deferred `singleclick`
+before continuing, so a pending map selection cannot replace the saved-shape
+list while Playwright is clicking it.
+
 | Feature | Behavior checked |
 | --- | --- |
 | `bootstrap.feature` | Complete offline production startup with real project models, Vue and OpenLayers; registry filters/selection, catalog visibility and zoom, content navigation/docking/resizing, network events, plugin dependencies, GeoJSON/CSV/KMZ imports and persisted WMS/TMS connections |
