@@ -40,6 +40,10 @@ Feature: Offline production application
   Scenario: Sidebar panel state activates ownership watchers and stack controls
     Then sidebar panel ownership reacts to nested panels and native back and close actions
 
+  @legend-panel-workflow @covers:src/g3w-app.js @covers:src/g3w-layer.js
+  Scenario: Legend panel omits layers excluded by project configuration
+    Then the legend panel shows only layers allowed by project configuration
+
   @vue-state-workflows @external-layer-workflows @covers:src/components/App.vue
   Scenario: Imported layers enable external group actions
     Then external catalog group controls react to imported layers and remove them together

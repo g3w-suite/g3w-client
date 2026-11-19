@@ -31,11 +31,11 @@ list while Playwright is clicking it.
 
 | Feature | Behavior checked |
 | --- | --- |
-| `bootstrap.feature` | Complete offline production startup with real project models, Vue and OpenLayers; registry filters/selection, catalog visibility and zoom, content navigation/docking/resizing, network events, plugin dependencies, GeoJSON/CSV/KMZ imports and persisted WMS/TMS connections |
+| `bootstrap.feature` | Complete offline production startup with real project models, Vue and OpenLayers; registry filters/selection, catalog visibility and zoom, legend-panel exclusions, content navigation/docking/resizing, network events, plugin dependencies, GeoJSON/CSV/KMZ imports and persisted WMS/TMS connections |
 | `sdk.feature` | Plugin compatibility: editable feature cloning, field/media classification, nested server validation messages, real Vue mixin lifecycle, mutually exclusive/range validation, Select2 service notifications and global date/range widgets |
 | `annotations.feature` | Real point drawing, labels/styles, projected JSON downloads, visibility/editing/removal, imported annotation shapes and print entries |
 | `core.feature` | Events, lifecycle, dialogs, galleries, localization, projections, plugins, selections, controls, SDK and startup failure handling |
-| `layers.feature` | Layer metadata, relations, mutually exclusive catalog selections, legend exclusions, scale-dependent visibility, local data requests, styles, GeoJSON/GML parsing and permalinks |
+| `layers.feature` | Layer metadata, relations, mutually exclusive catalog selections, scale-dependent visibility, local data requests, styles, GeoJSON/GML parsing and permalinks |
 | `shims.feature` | Browser behavior for jQuery, Moment, Select2 and the date/time picker |
 | `utils.feature` | Data manipulation, geometry, filters, exports, requests, storage and async helpers |
 | `ui.feature` | Component methods/computed state, directives, interactions and control callbacks |

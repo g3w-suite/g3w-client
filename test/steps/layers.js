@@ -237,27 +237,6 @@ Then('catalog layer and group selections are mutually exclusive', async function
   });
 });
 
-Then('legend URLs include only layers not excluded from the legend', async function () {
-  const result = await this.corePage.evaluate(async () => {
-    const calls = [];
-    for (const [id, excluded] of [['excluded', true], ['included', false]]) {
-      const layer = createFixtureLayer({
-        id, exclude_from_legend: excluded, source: { type: 'wms', url: 'http://core.test/ows/' },
-      });
-      layer.getLegendUrl = () => {
-        calls.push(id);
-        return `http://core.test/legend?LAYER=${id}`;
-      };
-    }
-    const legends = await g3w.app.getLegendSrc();
-    return { calls, urls: legends.map(legend => legend.url) };
-  });
-  assert.deepEqual(result, {
-    calls: ['included'],
-    urls: ['http://core.test/legend?LAYER=included'],
-  });
-});
-
 Then('external WMS metadata legends and cache URLs preserve their expected parameters', async function () {
   const result = await this.corePage.evaluate(() => {
     const layer = createFixtureLayer({
