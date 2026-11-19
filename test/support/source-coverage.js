@@ -8,7 +8,7 @@ const { IdGenerator } = cucumberRequire('@cucumber/messages');
 
 function listSourceFiles(sourceRoot, directory = sourceRoot) {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
-    if (directory === sourceRoot && entry.name === 'plugins') {
+    if (entry.name === '.git' || (directory === sourceRoot && entry.name === 'plugins')) {
       return [];
     }
     const file = path.join(directory, entry.name);
