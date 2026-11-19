@@ -50,23 +50,18 @@
       <div
         class = "table-tools"
       >
-        <!-- DOWNLOAD BUTTON -->
         <button
+          v-for          = "action in relation_actions"
+          :key           = "action.id"
           type           = "button"
-          v-disabled     = "!table.hasfeatures && (!download_formats.length || ApplicationState.download)"
-          class          = "action-button fas fa-download"
-          @click.stop    = "showDownloadModal"
-          title          = "Downloads"
-          data-placement = "left"
-        ></button>
-
-        <!-- CHART BUTTON -->
-        <button
-          v-disabled     = "!table.hasfeatures && !has_charts"
-          class          = "action-button fas fa-chart-bar"
-          :class         = "[ chart.toggled ? 'toggled-white' : '',]"
-          @click.stop    = "toggleChart"
-          title          = "Show Chart"
+          v-disabled     = "!!action.state?.disabled"
+          class          = "action-button"
+          :class         = "[action.class, { 'toggled-white': action.state?.toggled }]"
+          :style         = "action.style"
+          @click.stop    = "action.cbk?.(layer.state, feature, action)"
+          :title         = "$t(action.hint)"
+          :aria-label    = "$t(action.hint)"
+          :aria-pressed  = "action.state?.toggled"
           data-placement = "bottom"
         ></button>
 
@@ -80,7 +75,8 @@
       <div
         ref    = "content"
         :style = "{
-          width:         chart.toggled ? '70%' : '100%',
+          flex:          '1',
+          minWidth:      '0',
           display:       'flex',
           flexDirection: 'column',
         }"
@@ -131,7 +127,7 @@
                 class = "table-tools"
               >
                 <span v-for = "action in getFeatureActions(table.features[i])" :key = "action.id"
-                  @click.stop    = "runAction(action, i)"
+                  @click.stop    = "action?.cbk?.(layer.state, table.features[i], action)"
                   :title         = "action.hint"
                   data-placement = "right"
                   class          = "action-button row-form skin-color"
@@ -171,40 +167,22 @@
         </div>
       </div>
 
-      <!-- QPLOTLY CHART -->
-      <div
-        id       = "chart_content"
-        ref      = "chart"
-        :style   = "{
-          width:    chart.toggled ? '30%' : '0',
-          display:  chart.toggled ? 'flex' : 'none',
-        }"
-      >
-        <!-- VERTICAL RESIZE -->
-        <div
-          style           = "border-inline: 1px solid hsl(from var(--skin-color) h s calc(l + 30)); min-width: 5px; background-color: #ddd; cursor: col-resize;margin:0 8px; user-select: none;"
-          @mousedown.stop = "onChartResize"
-        ></div>
-      </div>
-
     </div>
   </div>
 </template>
 
 <script>
 
-  import { G3W_FID, PAGELENGTHS, TIMEOUT } from 'g3w-constants';
-  import ApplicationState                  from 'g3w-state';
-  import Component                         from 'g3w-component';
-  import G3WField                          from 'components/G3WField.vue';
-  import G3WTabs                           from 'components/G3WTabs.vue';
-  import { toRawType }                     from 'utils/toRawType';
-  import GUI                               from 'g3w-app';
-  import { debounce }                      from 'utils/debounce';
-  import { getCatalogLayerById }           from 'utils/getCatalogLayerById';
-  import { createRelationsUrl }            from 'utils/createRelationsUrl';
-  import { getAlphanumericProps }          from 'utils/getAlphanumericProps';
-  import { saveBlob }                      from 'utils/saveBlob';
+  import { G3W_FID, PAGELENGTHS } from 'g3w-constants';
+  import ApplicationState         from 'g3w-state';
+  import Component                from 'g3w-component';
+  import G3WField                 from 'components/G3WField.vue';
+  import G3WTabs                  from 'components/G3WTabs.vue';
+  import GUI                      from 'g3w-app';
+  import { debounce }             from 'utils/debounce';
+  import { getCatalogLayerById }  from 'utils/getCatalogLayerById';
+  import { createRelationsUrl }   from 'utils/createRelationsUrl';
+  import { getAlphanumericProps } from 'utils/getAlphanumericProps';
 
   export default {
 
@@ -228,12 +206,9 @@
         ApplicationState,
 
         /**
-         * @since 4.0.0 chart state (action button)
+         * @since 4.2.0
          */
-        chart: {
-          toggled: false,
-        },
-
+        relation_actions: [], //relation actions buttons
         /**
          * @since 3.11.2 table state
          */
@@ -312,13 +287,6 @@
       /**
        * @since 4.1.0
        */
-      download_formats() {
-        return this.layer.getDownloadFormats().filter(f => 'pdf' !== f); // exclude pdf because already includes all features
-      },
-
-      /**
-       * @since 4.1.0
-       */
       form_structure() {
         return this.layer.getLayerEditingFormStructure();
       },
@@ -340,24 +308,6 @@
       /**
        * @since 4.1.0
        */
-      charts() {
-        if (this.relation) {
-          return GUI.plotLayerIds.find(pid => this.relation.referencingLayer == pid) ? [this.relation.referencingLayer] : [];
-        } else {
-          return this.relations.map(r => GUI.plotLayerIds.find(id => r.referencingLayer === id)).filter(Boolean);
-        }
-      },
-
-      /**
-       * @since 4.1.0
-       */
-      has_charts() {
-        return !!this.charts.find(id => this.relation?.referencingLayer === id);
-      },
-
-      /**
-       * @since 4.1.0
-       */
       parent_layer() {
         return getCatalogLayerById(this.$options.layerId);
       }
@@ -374,44 +324,21 @@
     },
 
     methods: {
-      getFieldType(field) {
-        let type = field.type;
-        if ('vue' !== type) {
-          const fieldValue = field.value;
-          const value = fieldValue && 'Object' === toRawType(fieldValue) && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
-          if (!value) {
-            type = 'simple';
-          } else if (value && 'object' === typeof value) {
-            if (value.coordinates) {
-              type = 'geo';
-            } else if (value.vue) {
-              type = 'vue';
-            }
-          } else if (value && Array.isArray(value)) {
-            if (value.length && value[0].photo) {
-              type = 'photo';
-            } else {
-              type = 'simple'
-            }
-          } else if (value.toString().toLowerCase().match(/^(https?:\/\/[^\s]+)\.(png|jpg|jpeg|gif)$/g)) {
-            type = 'photo';
-          } else if (value.toString().match(/^(https?:\/\/[^\s]+)/g)) {
-            type = 'link';
-          } else {
-            type = 'simple';
-          }
+      getFieldType({ type, value }) {
+        const fieldValue = value && 'object' === typeof value && !value.coordinates && !value.vue ? value.value : value;
+        if ('vue' === type || fieldValue?.vue) {
+          return 'vue_field';
         }
-        return `${type}_field`;
-      },
-
-      /**
-       * @since 4.2.0
-       * @param action the action to run
-       * @param feature the feature on which the action is run
-       * @param i the index of the action in the list
-       */
-      runAction(action, i) {
-        action?.cbk?.(this.layer.state, this.table.features[i], action);
+        if (fieldValue?.[0]?.photo || /^(https?:\/\/[^\s]+)\.(png|jpg|jpeg|gif)$/i.test(fieldValue)) {
+          return 'photo_field';
+        }
+        if (/^https?:\/\/[^\s]+/.test(fieldValue)) {
+          return 'link_field';
+        }
+        if (fieldValue?.coordinates) {
+          return 'geo_field';
+        }
+        return fieldValue && 'object' === typeof fieldValue ? `${type}_field` : 'simple_field';
       },
 
       /**
@@ -613,139 +540,6 @@
         });
       },
 
-      onChartResize() {
-        const move = e => {
-          const perc                     =  (Math.abs(e.x - window.innerWidth) * 100 / this.$refs.wrapper.clientWidth); // percentage
-          this.$refs.content.style.width = `${100 - perc}%`;
-          this.$refs.chart.style.width   = `${perc}%`;
-        };
-        const el = document.querySelector('#g3w-content');
-        el.addEventListener('mousemove', move);
-        el.addEventListener('mouseup', async () => { 
-          el.removeEventListener('mousemove', move); 
-          await this.$nextTick();
-          GUI.emit('resize') 
-        }, { once: true });
-      },
-
-      /**
-       * @since 4.1.0
-       */
-      async showDownloadModal() {
-        const _   = g3w.gettext;
-
-        let layer = getCatalogLayerById(this.nmRelation?.referencedLayer || this.relation?.referencingLayer || this.layerId);
-        layer     = layer.state;
-
-        if (!layer) {
-          throw 'no layer';
-        }
-
-        const catalog_layer  = getCatalogLayerById(layer.id);
-
-        const dialog = Object.assign(document.createElement('template'), {
-          innerHTML: /* html */`
-            <dialog>
-              <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31"><i class="fas fa-download" style="margin-right: .5ch;"></i> ${ _('Export features') }</h4>
-              <form method="dialog">
-
-                <div class="form-group">
-                  <label>${ _('Layer') }</label>
-                  <select name="layer" class="form-control" disabled>
-                    <option value="${layer.id}" selected>${ layer.name || layer.title } (${ this.layerId })</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label>${ _('Data Format') }</label>
-                  <select name="format" class="form-control">
-                    ${[
-                        catalog_layer?.isGeoTIFFDownloadable?.() ? /* html */`<option value="GeoTiff">${ _('GeoTiff') }</option>` : '',
-                        catalog_layer?.isShpDownloadable?.()     ? /* html */`<option value="Shp">${ _('Shapefile') }</option>` : '',
-                        catalog_layer?.isGpxDownloadable?.()     ? /* html */`<option value="Gpx">${ _('GPX') }</option>` : '',
-                        catalog_layer?.isGpkgDownloadable?.()    ? /* html */`<option value="Gpkg">${ _('GeoPackage') }</option>` : '',
-                        catalog_layer?.isCsvDownloadable?.()     ? /* html */`<option value="Csv">${ _('CSV') }</option>` : '',
-                        catalog_layer?.isXlsDownloadable?.()     ? /* html */`<option value="Xls">${ _('Excel') }</option>` : '',
-                      ].filter(Boolean).join('')
-                    }
-                  </select>
-                </div>
-
-                <menu style="display: flex; justify-content: space-between;">
-                  <button id="confirm_button" type="submit" value="confirm" class="btn btn-block btn-success">Download</button>
-                </menu>
-              </form>
-
-            </dialog>
-          `.trim()
-        }).content.firstChild;
-
-        dialog.addEventListener("click", e => {
-          if (e.target === dialog) {
-            dialog.close();
-          }
-        });
-
-        dialog.addEventListener('close', async () => {
-          if ('confirm' === dialog.returnValue) {
-
-            ApplicationState.download = true;
-            try {
-              const format   = dialog.querySelector('[name="format"]').value.toLowerCase();
-
-              const response = await fetch(createRelationsUrl({
-                  layerId:  this.layerId,
-                  fid:      this.featureId,
-                  relation: this.relation,
-                  type:     format
-                }), {
-                method:  'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Access-Control-Expose-Headers': 'Content-Disposition', // get filename from server
-                },
-                body: JSON.stringify({ formatter: 1 }),
-                signal: AbortSignal.timeout(TIMEOUT),
-              });
-
-              if (!response?.ok) {
-                throw (await response.json()).message;
-              }
-
-              saveBlob(await response.blob(), response.headers.get('content-disposition').split('filename=').at(-1));
-
-            } catch(e) {
-              console.warn(e);
-              GUI.showUserMessage({
-                type:     'alert',
-                message:  e ?? 'server_error',
-                closable: true,
-              });
-            }
-
-            ApplicationState.download = false;
-          }
-          dialog.remove();
-        });
-
-        document.body.appendChild(dialog);
-        dialog.showModal();
-      },
-
-      /**
-       * @since 4.1.0
-       */
-      async toggleChart() {
-        this.chart.toggled = !this.chart.toggled;
-        await this.$nextTick();
-        this.chart.container = this.chart.container || document.querySelector('#chart_content');
-        if (this.chart.toggled) {
-          GUI.showChart([this.relation.referencingLayer], this.chart.container, { relations: [this.relation], fid: this.featureId });
-        } else {
-          GUI.hideChart(this.chart.container);
-        }
-      },
-
     },
 
     async mounted() {
@@ -772,12 +566,22 @@
             condition: () => this.form_structure,
           }   
         ]);
-        //call setters
+        // Let plugins extend the actions attached to individual related records.
         GUI.addActionsForLayers(this.actions, [ {
           id:       this.table.layerId,
-          features: this.state.features,
+          features: this.table.features,
         }]);
-        
+
+        // Plugins append toolbar actions; each action can expose clear() for cleanup.
+        GUI.addActionsForRelation(this.relation_actions, {
+          // Layer containing the related records, and the relation being displayed.
+          layer:       this.nmRelation ? getCatalogLayerById(this.nmRelation.referencedLayer) : this.layer,
+          layerId:     this.layerId,
+          relation:    this.relation,
+          // Parent feature and its ID, used to filter content to this relation.
+          feature:     this.feature,
+          fid:         this.featureId,
+        });
 
         this.relation.title = this.relation.name;
         if ('ONE' !== this.relation.type) {
@@ -788,18 +592,9 @@
       }
     },
 
-    /**
-     * @fires hide-chart
-     */
-    async beforeDestroy() {
-      // hide opened chart
-      if (this.chart.toggled) {
-         GUI.hideChart(this.chart.container);
-      }
-      if (this.chart.container) {
-        this.$emit('hide-chart', this.chart.container);
-        this.chart.container = null;
-      }
+    beforeDestroy() {
+      // Release plugin content; one failed cleanup must not prevent the others.
+      Promise.allSettled(this.relation_actions.map(async action => action.clear?.()));
       // reset columns search
       this.columns.forEach(c => delete c.search); 
       if (1 === this.relations.length) {
