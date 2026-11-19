@@ -1,6 +1,7 @@
 @smoke
 Feature: Test the local client and plugins against remote projects
-  The local client build should work with projects served by dev.g3wsuite.it.
+  The local client build should work with projects served by the upstream server
+  configured by proxy in config.js.
 
   Background:
     Given local client assets are intercepted

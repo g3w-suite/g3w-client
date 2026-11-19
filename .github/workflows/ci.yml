@@ -40,7 +40,10 @@ jobs:
       - name: Install Playwright browser
         run: npx playwright install chromium
 
-      - name: Run BDD tests against the local proxy
+      - name: Run offline BDD tests
+        run: npm test
+
+      - name: Run smoke tests against the local proxy
         run: |
           node build/dev.js > /tmp/g3w-client-dev.log 2>&1 &
           DEV_PID=$!
@@ -55,4 +58,4 @@ jobs:
             cat /tmp/g3w-client-dev.log
             exit 1
           fi
-          npm test
+          npm run test:smoke

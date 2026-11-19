@@ -7,23 +7,22 @@ through the local development proxy.
 
 ## Run
 
-1. Run `npm run dev` and leave the development proxy at `http://localhost:3000`
-   running.
-2. In another terminal, run `npm test`.
+Run `npm test` for the offline suite. It does not need `config.js`, a
+development proxy, or access to the remote projects.
 
-The tests require network access to `dev.g3wsuite.it` and a Playwright Chromium
-installation. The project already depends on Playwright; install its browser
-with `npx playwright install chromium` if it is missing.
+For remote smoke tests, run `npm run dev` and leave the proxy at
+`http://localhost:3000` running, then run `npm run test:smoke` in another
+terminal.
 
-To run all offline scenarios, without the proxy or remote server:
+If a smoke project returns 404, check that it exists on the server configured
+by `proxy` in `config.js`. Restart `npm run dev` after changing that setting.
 
-```sh
-node build/test.js --tags "not @smoke"
-```
+The smoke tests require network access to the configured server. Both suites use
+Playwright Chromium; install it with `npx playwright install chromium` if it
+is missing.
 
 The browser scenarios use Playwright Chromium with local or in-memory fixtures
 and blocked external requests. The `@unit` scenarios do not start a browser.
-No additional npm commands are required.
 
 | Feature | Behavior checked |
 | --- | --- |
@@ -53,7 +52,7 @@ Behavioral coverage is tracked with `@covers:src/path/to/file.js` tags on
 scenarios. Run `node build/test.js --tags "@file-coverage"` to list source files
 without an associated scenario. The gate uses Cucumber's Gherkin parser, ignores
 tags mentioned in comments/descriptions, and discovers every file under `src/`
-except `src/plugins/`. Add tags only to scenarios exercising the file's behavior;
+except `src/plugins/` and Git metadata (`.git` entries). Add tags only to scenarios exercising the file's behavior;
 syntax checks do not qualify. This is a per-file association requirement, not a
 statement of 100% line or branch coverage.
 
@@ -96,7 +95,7 @@ and denominator; a successful run does not erase their zero counters.
 Run the entire offline suite to measure coverage:
 
 ```sh
-node build/test.js --tags "not @smoke"
+npm test
 ```
 
 Running only `@coverage` or `@function-coverage` does not exercise the application
@@ -309,7 +308,7 @@ flowchart LR
   Steps -->|smoke only| Browser["Playwright browser"]
   Browser --> Proxy["Local proxy :3000"]
   Proxy -->|local files available| Assets["Client/plugin assets"]
-  Proxy -->|otherwise| Remote["dev.g3wsuite.it"]
+  Proxy -->|otherwise| Remote["Server configured by proxy in config.js"]
 ```
 
 ```mermaid

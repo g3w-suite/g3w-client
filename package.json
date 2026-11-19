@@ -15,7 +15,8 @@
     "docker:down": "npm run docker down",
     "docker:config": "npm run docker config",
     "docker:logs": "npm run docker logs",
-    "test": "node build/test.js",
+    "test": "node build/test.js --tags \"not @smoke\"",
+    "test:smoke": "node build/test.js --tags @smoke",
     "preversion": "npm run test",
     "version": "npm run build && git add -A",
     "postversion": "git push && git push --tags"

@@ -4,7 +4,6 @@ const path = require('node:path');
 const { After, Before, Given, Then, When, setDefaultTimeout } = require('@cucumber/cucumber');
 const { chromium } = require('playwright');
 const packageJSON = require('../../package.json');
-const conf = require('../../config');
 
 const SERVER_URL = 'http://localhost:3000/';
 
@@ -44,9 +43,10 @@ After({ tags: '@smoke' }, async function () {
 });
 
 Given('local client assets are intercepted', function () {
+  const { admin_overrides_folder } = require('../../config');
   this.page.route('**/static/client/*', async (route, request) => {
     const assetPath = new URL(request.url()).pathname.slice(1);
-    const localPath = path.join(conf.admin_overrides_folder, assetPath);
+    const localPath = path.join(admin_overrides_folder, assetPath);
     if (fs.existsSync(localPath) && fs.statSync(localPath).isFile()) {
       this.localAssets.push(localPath);
       await route.fulfill({ path: localPath });
@@ -60,7 +60,9 @@ Given('local client assets are intercepted', function () {
 When('I open project {string}', async function (project) {
   const url = new URL(`it${project}/`, SERVER_URL).toString();
   console.log(`[g3w-test] opening ${url}`);
-  await this.page.goto(url);
+  const response = await this.page.goto(url);
+  assert.ok(response, `No navigation response for ${url}`);
+  assert.ok(response.ok(), `Project ${response.url()} returned HTTP ${response.status()}`);
   await this.page.waitForFunction(() => window.g3w, undefined, { timeout: 15_000 });
 });
 
