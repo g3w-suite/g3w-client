@@ -7,7 +7,6 @@ import Emitter          from 'g3w-emitter';
 import Component        from 'g3w-component';
 import ApplicationState from 'g3w-state';
 import GUI              from 'g3w-app';
-import { toRawType }    from 'utils/toRawType';
 import { waitFor }      from 'utils/waitFor';
 import { gettext as _ } from 'g3w-i18n';
 
@@ -105,7 +104,7 @@ export class Plugin extends Emitter {
    * @param { Object } config plugin configuration
    */
   setConfig(config = {}) {
-    this.config = 'Object' === toRawType(config) ? config : null;
+    this.config = Object.prototype.toString.call(config) === '[object Object]' ? config : null;
   }
 
   /**
