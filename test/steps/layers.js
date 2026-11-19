@@ -206,6 +206,46 @@ Then('layer visibility categories and style respect the current scale and ancest
   });
 });
 
+Then('catalog layer and group selections are mutually exclusive', async function () {
+  const result = await this.corePage.evaluate(() => {
+    const catalogTree = coreTestExports.vueComponents['components/CatalogTree.vue'];
+    createFixtureLayer({ id: 'exclusive-first', checked: true });
+    const secondLayer = createFixtureLayer({ id: 'exclusive-second', checked: true });
+    const layerGroup = { checked: true, 'mutually-exclusive': true, nodes: [] };
+    const layerNodes = ['exclusive-first', 'exclusive-second'].map(id => ({
+      id, checked: id === 'exclusive-first', disabled: false, projectLayer: true, parentGroup: layerGroup,
+    }));
+    layerGroup.nodes = layerNodes;
+    layerNodes[1].checked = true;
+    catalogTree.methods.onLayerChecked.call({ layerstree: layerNodes[1] });
+
+    const parentGroup = { checked: true, 'mutually-exclusive': true, nodes: [] };
+    const groupNodes = ['first', 'second'].map((groupId, index) => {
+      const id = `group-${groupId}`;
+      createFixtureLayer({ id, checked: true });
+      return {
+        groupId, checked: index === 0, parentGroup,
+        nodes: [{ id, checked: true, parentGroup: null }],
+      };
+    });
+    groupNodes.forEach(node => { node.nodes[0].parentGroup = node; });
+    parentGroup.nodes = groupNodes;
+    groupNodes[1].checked = true;
+    catalogTree.methods.onGroupChecked.call({ layerstree: groupNodes[1] });
+
+    return {
+      layers: layerNodes.map(node => node.checked),
+      selectedLayerVisible: secondLayer.isVisible(),
+      groups: groupNodes.map(node => node.checked),
+      selectedGroupLayerVisible: g3w.state.project.getLayerById('group-second').isVisible(),
+    };
+  });
+  assert.deepEqual(result, {
+    layers: [false, true], selectedLayerVisible: true,
+    groups: [false, true], selectedGroupLayerVisible: true,
+  });
+});
+
 Then('external WMS metadata legends and cache URLs preserve their expected parameters', async function () {
   const result = await this.corePage.evaluate(() => {
     const layer = createFixtureLayer({

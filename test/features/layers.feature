@@ -12,6 +12,10 @@ Feature: Layer configuration and relation behavior
   Scenario: Visibility respects checked ancestors and configured scale limits
     Then layer visibility categories and style respect the current scale and ancestors
 
+  @covers:src/components/CatalogTree.vue
+  Scenario: Mutually exclusive catalog entries keep a single selection
+    Then catalog layer and group selections are mutually exclusive
+
   @covers:src/g3w-layer.js
   Scenario: External WMS layers use source URLs without reserved request parameters
     Then external WMS metadata legends and cache URLs preserve their expected parameters
