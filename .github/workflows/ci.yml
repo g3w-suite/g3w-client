@@ -40,8 +40,19 @@ jobs:
       - name: Install Playwright browser
         run: npx playwright install chromium
 
-      - name: Build app
-        run: npm run build:ci
-
-      - name: Run tests
-        run: node test/dev.g3wsuite.it.js
+      - name: Run BDD tests against the local proxy
+        run: |
+          node build/dev.js > /tmp/g3w-client-dev.log 2>&1 &
+          DEV_PID=$!
+          trap 'kill "$DEV_PID"; wait "$DEV_PID" || true' EXIT
+          for i in {1..60}; do
+            if curl --silent --output /dev/null http://localhost:3000/; then
+              break
+            fi
+            sleep 1
+          done
+          if ! curl --silent --output /dev/null http://localhost:3000/; then
+            cat /tmp/g3w-client-dev.log
+            exit 1
+          fi
+          npm test
