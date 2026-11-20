@@ -17,6 +17,7 @@ Before({ tags: '@application-bootstrap', timeout: 60_000 }, async function ({ pi
   const withAnnotations = pickle.tags.some(tag => tag.name === '@annotation-workflows');
   const withHeader = pickle.tags.some(tag => tag.name === '@header-workflows');
   const withThemes = pickle.tags.some(tag => tag.name === '@map-theme-workflows');
+  const withLegendPanel = pickle.tags.some(tag => tag.name === '@legend-panel-workflow');
   const crs = { epsg: 'EPSG:3857', proj4: '', axisinverted: false, geographic: false };
   this.startupConfig = {
     id: 1, gid: 'qdjango:1', type: 'qdjango', name: 'Offline project',
@@ -34,6 +35,17 @@ Before({ tags: '@application-bootstrap', timeout: 60_000 }, async function ({ pi
     }],
     layerstree: [{ name: 'Transport', expanded: true, checked: true, nodes: [{ id: 'roads', toc: true, checked: true }] }],
   };
+  if (withLegendPanel) {
+    for (const id of ['excluded-legend', 'included-legend']) {
+      this.startupConfig.layers.push({
+        id, name: id, geometrytype: undefined, servertype: 'QGIS',
+        source: { type: 'wms', external: true, url: 'http://core.test/ows/', layer: id },
+        crs, styles: [{ name: 'default', current: true }],
+        checked: true, visible: true, exclude_from_legend: 'excluded-legend' === id,
+      });
+      this.startupConfig.layerstree[0].nodes.push({ id, toc: true, checked: true });
+    }
+  }
   if (withThemes) {
     this.startupConfig.map_themes.project.push({ theme: 'Quiet', styles: { roads: 'night' } });
     this.startupConfig.layers[0].styles.push({ name: 'night', current: false });
@@ -587,6 +599,18 @@ Then('sidebar panel ownership reacts to nested panels and native back and close 
     Array.from(document.querySelectorAll('#g3w-menu > li')).every(item => !item.inert));
   assert.equal(await page.locator('#legend-panel').count(), 0);
   assert.equal(await page.locator('#g3w-menu').getAttribute('data-panel-owner'), null);
+});
+
+Then('the legend panel shows only layers allowed by project configuration', async function () {
+  const page = this.corePage;
+  await page.locator('.cookie-button').click();
+  await page.locator('#legend > a').click();
+  await page.locator('#legend-panel').waitFor({ state: 'visible' });
+  await page.waitForFunction(() => document.querySelector('#legend-panel img[src]'));
+  const layers = await page.locator('#legend-panel img').evaluateAll(images =>
+    images.map(image => new URL(image.src).searchParams.get('LAYER'))
+  );
+  assert.deepEqual(layers, ['included-legend']);
 });
 
 Then('the production loader initializes a local plugin after its dependency', async function () {

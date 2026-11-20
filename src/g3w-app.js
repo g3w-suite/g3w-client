@@ -5157,6 +5157,8 @@ export default new (class GUI extends Emitter {
       await Promise.allSettled(
         Object.entries(
           (ApplicationState.project.getLayers({ GEOLAYER: true, ...(all ? {} : { VISIBLE: true }) }, { TOC_ORDER : true }) || [])
+            // filter out layers excluded from legend
+            .filter(l => !l.state.exclude_from_legend)
             .reduce((urls, layer) => {
               const url   = layer.getLegendUrl({
                 all:        !ApplicationState.project.state.context_base_legend, // true = dynamic legend

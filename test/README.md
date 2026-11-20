@@ -31,7 +31,7 @@ list while Playwright is clicking it.
 
 | Feature | Behavior checked |
 | --- | --- |
-| `bootstrap.feature` | Complete offline production startup with real project models, Vue and OpenLayers; registry filters/selection, catalog visibility and zoom, content navigation/docking/resizing, network events, plugin dependencies, GeoJSON/CSV/KMZ imports and persisted WMS/TMS connections |
+| `bootstrap.feature` | Complete offline production startup with real project models, Vue and OpenLayers; registry filters/selection, catalog visibility and zoom, legend-panel exclusions, content navigation/docking/resizing, network events, plugin dependencies, GeoJSON/CSV/KMZ imports and persisted WMS/TMS connections |
 | `sdk.feature` | Plugin compatibility: editable feature cloning, field/media classification, nested server validation messages, real Vue mixin lifecycle, mutually exclusive/range validation, Select2 service notifications and global date/range widgets |
 | `annotations.feature` | Real point drawing, labels/styles, projected JSON downloads, visibility/editing/removal, imported annotation shapes and print entries |
 | `core.feature` | Events, lifecycle, dialogs, galleries, localization, projections, plugins, selections, controls, SDK and startup failure handling |
@@ -48,7 +48,7 @@ list while Playwright is clicking it.
 | `geocoding.feature` | Dynamically loaded providers, projected coordinates, bounded local searches, synchronized map/query selection, lazy geometry, saved searches and draggable popovers |
 | `notifications.feature` | Sequential alerts, persisted read preferences, manager toggles, unread badges, native popover dragging and keyboard dismissal |
 | `map-controls.feature` | Real line/polygon drawing, point correction, measurement overlays, scale validation/synchronization and locally fulfilled Street View workflows |
-| `menus.feature` | Mounted map/catalog menus, coordinate copying and querying, navigation, plugin entries, dragging/mobile dismissal, layer styles/filters, external layer colors/opacity/order, downloaded file contents, metadata and attribute tables |
+| `menus.feature` | Mounted map/catalog menus, coordinate copying and querying, navigation, plugin entries, dragging/mobile dismissal, layer styles/filters and legend exclusions, external layer colors/opacity/order, downloaded file contents, metadata and attribute tables |
 | `static.feature` | Localized labels, fixture-based geocoding, decoded/rendered images and fonts, stylesheet effects |
 | `coverage.feature` | Source integrity, 100% scenario-to-file associations and a 75% runtime function gate with exact-boundary regression checks |
 | `dev.g3wsuite.it.feature` | Remote project smoke tests (`@smoke`, requires the proxy) |
