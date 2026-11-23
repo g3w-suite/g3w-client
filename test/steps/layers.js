@@ -90,6 +90,37 @@ Then('table metadata and downloads reflect the layer configuration', async funct
   });
 });
 
+Then('WCS metadata is generated only for raster layers with WCS capability', async function () {
+  const result = await this.corePage.evaluate(() => {
+    const wcsRaster = createFixtureLayer({
+      id: 'wcs-raster', servertype: 'QGIS', source: { type: 'wcs' },
+      geometrytype: undefined, crs: { epsg: 'EPSG:3857' }, ows: ['WMS', 'WCS'],
+    });
+    const rasterWithoutWcs = createFixtureLayer({
+      id: 'raster-without-wcs', servertype: 'QGIS', source: { type: 'wms' },
+      geometrytype: undefined, ows: ['WMS', 'WFS'],
+    });
+    const vectorWithWcs = createFixtureLayer({
+      id: 'vector-with-wcs', servertype: 'OGC', source: { type: 'wfs' },
+      geometrytype: 'Point', crs: { epsg: 'EPSG:3857' }, ows: ['WCS'],
+    });
+    g3w.state.project.getState = () => g3w.state.project.state;
+    Object.assign(initConfig, { version: '4.2.0', powered_by: false, urls: {} });
+
+    const metadata = coreTestExports.vueComponents['components/ModalMetadata.vue'].data();
+    return {
+      rasterTypes: [wcsRaster.getType(), rasterWithoutWcs.getType(), vectorWithWcs.getType()],
+      active: [wcsRaster.isWcsActive(), rasterWithoutWcs.isWcsActive(), vectorWithWcs.isWcsActive()],
+      url: metadata.project.metadata.wcs_url,
+    };
+  });
+  assert.deepEqual(result, {
+    rasterTypes: ['image', 'image', 'vector'],
+    active: [true, false, false],
+    url: '/ows/?service=WCS&version=1.3.0&request=GetCapabilities',
+  });
+});
+
 Then('related layers retain their relation identities fields and hierarchy', async function () {
   const result = await this.corePage.evaluate(() => {
     fixtureRelations.push(

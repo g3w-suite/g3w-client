@@ -203,6 +203,15 @@
                   </td> 
                 </tr>
 
+                <!-- PROJECT WCS (URL) -->
+                <tr v-if  = "project.metadata.wcs_url">
+                  <td class = "col-sm-2 label">{{ $t('WCS') }}</td>
+                  <td class = "col-sm-10 value">
+                    <i class="fas fa-layer-group" style="margin-right: 3px;"></i>
+                    <a :href = "project.metadata.wcs_url" target="_blank" :title="layers.filter(l => l.isWcsActive()).map(l => l.getName()).join('<br>')">{{ project.metadata.wcs_url }} </a>
+                  </td> 
+                </tr>
+
                 <!-- PROJECT CRS -->
                 <tr v-if  = "project.crs">
                   <td class = "col-sm-12 label">{{ $t('EPSG') }}</td>
@@ -578,6 +587,11 @@
       if (wfs_layer) {
         project.metadata.wfs_url  = `${project.WMSUrl}?service=WFS&version=1.3.0&request=GetCapabilities`;
         project.metadata.wfs3_url = `${project.WMSUrl}wfs3/`;
+      }
+      //@since 4.2.0 check if exist a layer with wcs capability
+      const wcs_layer = layers.find(l => l.isWcsActive?.());
+      if (wcs_layer) {
+        project.metadata.wcs_url = `${project.WMSUrl}?service=WCS&version=1.3.0&request=GetCapabilities`;
       }
 
       const version = window.initConfig.version.split('-')[0].split('.');
