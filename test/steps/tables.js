@@ -163,6 +163,36 @@ Then('attribute table column filters and pagination preserve their request param
   assert.equal(this.tableRequests.at(-1).field, result.filter);
 });
 
+Then('attribute table pagination keeps the selected sorting', async function () {
+  const result = await this.corePage.evaluate(async () => {
+    await mountTable();
+    await tablePageSize(10);
+    const header = tableView.$el.querySelector('thead tr').children[2];
+    header.click();
+    await coreTestExports.waitFor(() => tableView.search.ordering === 'kind' && !g3w.state.content.loading, 2000);
+    tableView.$el.querySelector('button[title="Forward"]').click();
+    await coreTestExports.waitFor(() => tableView.search.page === 2 && !g3w.state.content.loading, 2000);
+    const ascending = tableView.state.features.map(feature => feature.id);
+    tableView.$el.querySelector('button[title="Backward"]').click();
+    await coreTestExports.waitFor(() => tableView.search.page === 1 && !g3w.state.content.loading, 2000);
+    header.click();
+    await coreTestExports.waitFor(() => tableView.search.ordering === '-kind' && !g3w.state.content.loading, 2000);
+    const page = tableView.$el.querySelector('.table-toolbar select[title]');
+    page.value = '2';
+    page.dispatchEvent(new Event('change', { bubbles: true }));
+    await coreTestExports.waitFor(() => tableView.state.features[0]?.id === 9 && !g3w.state.content.loading, 2000);
+    return {
+      ascending,
+      descending: tableView.state.features.map(feature => feature.id),
+      ordering: tableView.ordering,
+    };
+  });
+  assert.deepEqual(result, { ascending: [10, 12], descending: [9, 11], ordering: [1, 'desc'] });
+  assert.deepEqual(this.tableRequests.slice(-5).map(({ page, ordering }) => [page, ordering]), [
+    [1, 'kind'], [2, 'kind'], [1, 'kind'], [1, '-kind'], [2, '-kind'],
+  ]);
+});
+
 Then('attribute table selection updates real layer selections across pages', async function () {
   const result = await this.corePage.evaluate(async () => {
     await mountTable();

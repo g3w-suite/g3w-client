@@ -171,6 +171,7 @@
       <div style="margin-left: auto;">
         <select
           v-model         = "search.page"
+          @change         = "reload({ page: Number(search.page) })"
           style           = "padding: 5px 12px; appearance: none; border: 0; text-align: center; border-radius: 3px; cursor: pointer;"
           :title          = "search.page + $t(' of ') + pages"
           data-placement  = "top"
@@ -532,7 +533,7 @@ export default {
      * @param { number } opts.page current page
      */
     async getData({
-      ordering  = 0,
+      ordering  = this.ordering[0],
       length    = this.layer.getAttributeTablePageLength() || PAGELENGTHS[1],
       columns   = {},
       search    = null,
