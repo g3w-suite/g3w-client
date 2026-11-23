@@ -117,7 +117,7 @@ Then('WCS metadata is generated only for raster layers with WCS capability', asy
   assert.deepEqual(result, {
     rasterTypes: ['image', 'image', 'vector'],
     active: [true, false, false],
-    url: '/ows/?service=WCS&version=1.3.0&request=GetCapabilities',
+    url: '/ows/?service=WCS&version=1.0.0&request=GetCapabilities',
   });
 });
 
