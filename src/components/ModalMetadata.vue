@@ -591,7 +591,7 @@
       //@since 4.2.0 check if exist a layer with wcs capability
       const wcs_layer = layers.find(l => l.isWcsActive?.());
       if (wcs_layer) {
-        project.metadata.wcs_url = `${project.WMSUrl}?service=WCS&version=1.3.0&request=GetCapabilities`;
+        project.metadata.wcs_url = `${project.WMSUrl}?service=WCS&version=1.0.0&request=GetCapabilities`;
       }
 
       const version = window.initConfig.version.split('-')[0].split('.');
