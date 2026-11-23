@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const { After, Before, Then, When } = require('@cucumber/cucumber');
 const { strToU8, zipSync } = require('fflate');
 const {
@@ -421,12 +422,11 @@ When('I exercise browser utilities', async function () {
     { copyUrl },
     { createMeasureTooltip, get_formatted_angle, get_formatted_area, get_formatted_length, get_formatted_radius },
     { createVectorLayerFromFile },
-    { downloadFeatures },
     { getUniqueDomId },
     { saveBlob },
   ] = await Promise.all([
     'copyUrl.js', 'createMeasureTooltip.js', 'createVectorLayerFromFile.js',
-    'downloadFeatures.js', 'getUniqueDomId.js', 'saveBlob.js',
+    'getUniqueDomId.js', 'saveBlob.js',
   ].map(loadUtility));
   copyUrl('https://example.test/map');
   const copiedInput = document.lastElement;
@@ -485,7 +485,6 @@ When('I exercise browser utilities', async function () {
       mapCrs: 'EPSG:4326',
       data: { headers: ['x', 'y', 'label'], values: ['1,2,Ada', 'bad,3,skip'], separator: ',', x: 'x', y: 'y' },
     });
-    await assert.rejects(downloadFeatures({}), error => error === 'no layer');
   } finally {
     URL.createObjectURL = createObjectURL;
     URL.revokeObjectURL = revokeObjectURL;
@@ -815,95 +814,67 @@ Then('real OpenLayers geometries retain their dimensions and split results', fun
 });
 
 When('I exercise registered download actions', async function () {
-  const { downloadFeatures } = await loadUtility('downloadFeatures.js', { fresh: true });
-  const feature = { attributes: { g3w_fid: 17 } };
-  const catalogLayer = {
-    id: 'roads',
-    getId() { return this.id; },
-    getName() { return 'Roads'; },
-    getUrl(format) { return `/download/${format}`; },
-    getToken() { return 'catalog-token'; },
-    isGeoTIFFDownloadable() { return true; },
-    isShpDownloadable() { return true; },
-    isGpxDownloadable() { return false; },
-    isGpkgDownloadable() { return false; },
-    isCsvDownloadable() { return false; },
-    isXlsDownloadable() { return false; },
-    hasDowloadableRelations() { return true; },
+  this.catalogRequests = [];
+  await this.corePage.route('**/fixture/catalog-download', async route => {
+    const request = route.request();
+    this.catalogRequests.push({
+      url: new URL(request.url()).pathname,
+      method: request.method(),
+      body: request.postData(),
+    });
+    await route.fulfill({
+      contentType: 'text/csv',
+      headers: { 'content-disposition': 'attachment; filename=roads.csv' },
+      body: 'name,value\nRoad,Main\n',
+    });
+  });
+  await this.corePage.evaluate(() => {
+    const layer = createFixtureLayer({
+      id: 'roads', name: 'Roads', title: 'Roads', download_csv: true,
+    });
+    layer.setUrl({ type: 'csv', url: '/fixture/catalog-download' });
+    const feature = { attributes: { g3w_fid: 17 } };
+    const actions = { roads: [] };
+    g3w.state.query = { type: 'polygon', fid: 17 };
+    g3w.app.addActionsForLayers(actions, [{ id: 'roads', downloads: ['Csv'], features: [feature] }]);
+    const [action] = actions.roads;
+    action.change({ features: [feature] });
+    delete action.state.toggled[0];
+    action.change({ features: [feature] });
+    action.cbk(layer.state, feature, action, 0);
+    window.catalogExportAction = action;
+  });
+  const dialog = this.corePage.locator('dialog[open]');
+  await dialog.waitFor();
+  await dialog.locator('[name="format"]').selectOption('Csv');
+  await dialog.locator('[name="down_with_polygon"]').selectOption('1');
+  const pending = this.corePage.waitForEvent('download');
+  await dialog.getByRole('button', { name: 'Download' }).click();
+  const download = await pending;
+  this.catalogDownload = {
+    filename: download.suggestedFilename(),
+    contents: fs.readFileSync(await download.path(), 'utf8'),
   };
-  const otherLayer = {
-    id: 'railways',
-    getId() { return this.id; },
-    getName() { return 'Railways'; },
-  };
-  this.state.project = {
-    getLayerById: id => id === catalogLayer.id ? catalogLayer : null,
-    getLayers: () => [otherLayer],
-  };
-  globalThis.__utilityGui.state.query = { type: 'polygon', fid: 17 };
-  globalThis.__utilityGui.getMapExtent = () => ({ toString: () => '0,0,10,10' });
-  const requestCalls = [];
-  globalThis.fetch = async (url, options) => {
-    requestCalls.push({ url, fields: Object.fromEntries(options.body.entries()) });
-    return {
-      ok: true,
-      blob: async () => new Blob(['exported']),
-      headers: { get: () => 'attachment; filename=roads.zip' },
-    };
-  };
-  URL.createObjectURL = () => 'blob:roads';
-  URL.revokeObjectURL = () => {};
-  const actions = { roads: [] };
-  const layers = [
-    { id: 'no-downloads' },
-    { id: 'roads', downloads: ['Shp'], features: [feature] },
-  ];
-  globalThis.__utilityGui.hooks.addActionsForLayers(actions, layers);
-  const [action] = actions.roads;
-  action.change({ features: [feature] });
-  delete action.state.toggled[0];
-  action.change({ features: [feature] });
-  action.cbk(layers[1], feature, action, 0);
-  const dialog = document.lastDialog;
-  await dialog.input('format', 'Pdf');
-  const relationForPdf = {
-    value: dialog.fields.down_with_relations.value,
-    disabled: dialog.fields.down_with_relations.disabled,
-  };
-  dialog.fields.format.value = 'GeoTiff-at-map-extent';
-  dialog.fields.down_with_relations.value = '1';
-  await dialog.emit('click', { target: dialog });
-  dialog.returnValue = 'confirm';
-  await dialog.emit('close');
-  this.download = {
-    actionState: action.state.toggled[0],
-    relationForPdf,
-    offersOtherLayer: dialog.innerHTML.includes('<option value="railways">Railways</option>'),
-    dialog: { open: dialog.open, closed: dialog.closed, removed: dialog.removed },
-    request: requestCalls,
-    link: { href: document.lastElement.href, filename: document.lastElement.download, clicked: document.lastElement.clicked },
-    downloadReset: this.state.download,
-  };
-  assert.equal(typeof downloadFeatures, 'function');
+  await this.corePage.waitForFunction(() => !g3w.state.download && !document.querySelector('dialog[open]'));
+  this.download = await this.corePage.evaluate(() => ({
+    actionState: catalogExportAction.state.toggled[0],
+    downloadReset: g3w.state.download,
+  }));
 });
 
 Then('catalog export requests and action state are preserved', function () {
   assert.equal(this.download.actionState, false);
-  assert.deepEqual(this.download.relationForPdf, { value: 0, disabled: true });
-  assert.equal(this.download.offersOtherLayer, true);
-  assert.deepEqual(this.download.dialog, { open: true, closed: true, removed: true });
-  assert.equal(this.download.request.length, 1);
-  assert.equal(this.download.request[0].url, '/download/geotiff');
-  assert.deepEqual(this.download.request[0].fields, {
-    down_with_relations: '1',
-    sbp_qgs_layer_id: 'roads',
-    sbp_fid: '1',
-    fids: '17',
-    filtertoken: 'catalog-token',
-    map_extent: '0,0,10,10',
-  });
-  assert.deepEqual(this.download.link, { href: 'blob:roads', filename: 'roads.zip', clicked: true });
   assert.equal(this.download.downloadReset, false);
+  assert.deepEqual(this.catalogRequests.map(({ url, method }) => ({ url, method })), [
+    { url: '/fixture/catalog-download', method: 'POST' },
+  ]);
+  assert.match(this.catalogRequests[0].body, /name="sbp_qgs_layer_id"\r\n\r\nroads/);
+  assert.match(this.catalogRequests[0].body, /name="sbp_fid"\r\n\r\n1/);
+  assert.match(this.catalogRequests[0].body, /name="fids"\r\n\r\n17/);
+  assert.deepEqual(this.catalogDownload, {
+    filename: 'roads.csv',
+    contents: 'name,value\nRoad,Main\n',
+  });
 });
 
 When('I exercise storage and request error paths', async function () {

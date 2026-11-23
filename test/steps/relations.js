@@ -221,17 +221,16 @@ Then('relation charts toggle resize and clean up their mounted container', async
 Then('relation export failures release download state and allow a successful retry', async function () {
   await this.corePage.evaluate(async () => { await openRelation(); });
   this.relationDownloadFailure = true;
-  this.relationExpectedWarnings = 1;
   await this.corePage.locator('.layer-relation .fa-download').click();
   await this.corePage.locator('dialog select[name="format"]').selectOption('Csv');
-  await this.corePage.locator('dialog #confirm_button').click();
+  await this.corePage.locator('dialog button[type="submit"][value="confirm"]').click();
   await this.corePage.waitForFunction(() => relationEffects.messages.length && !g3w.state.download);
   assert.equal(await this.corePage.evaluate(() => relationEffects.messages[0].message), 'Relation export failed');
   this.relationDownloadFailure = false;
   await this.corePage.locator('.layer-relation .fa-download').click();
   await this.corePage.locator('dialog select[name="format"]').selectOption('Csv');
   const downloadPromise = this.corePage.waitForEvent('download');
-  await this.corePage.locator('dialog #confirm_button').click();
+  await this.corePage.locator('dialog button[type="submit"][value="confirm"]').click();
   const download = await downloadPromise;
   assert.equal(download.suggestedFilename(), 'related.csv');
   const chunks = [];

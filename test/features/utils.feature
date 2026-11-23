@@ -17,7 +17,7 @@ Feature: Utility module behavior
     When I exercise project and search utilities
     Then configured layers projects and search values are returned
 
-  @offline @covers:src/utils/copyUrl.js @covers:src/utils/createMeasureTooltip.js @covers:src/utils/createVectorLayerFromFile.js @covers:src/utils/downloadFeatures.js @covers:src/utils/getUniqueDomId.js @covers:src/utils/saveBlob.js
+  @offline @covers:src/utils/copyUrl.js @covers:src/utils/createMeasureTooltip.js @covers:src/utils/createVectorLayerFromFile.js @covers:src/utils/getUniqueDomId.js @covers:src/utils/saveBlob.js
   @utility-behaviors
   Scenario: Browser-facing utilities use local fixtures
     When I exercise browser utilities
@@ -35,8 +35,7 @@ Feature: Utility module behavior
     When I exercise dimensional and splitting utilities
     Then real OpenLayers geometries retain their dimensions and split results
 
-  @offline @covers:src/utils/downloadFeatures.js
-  @utility-behaviors
+  @offline @core-runtime @layer-model @covers:src/g3w-app.js
   Scenario: Download actions submit catalog exports from the dialog
     When I exercise registered download actions
     Then catalog export requests and action state are preserved

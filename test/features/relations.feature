@@ -15,6 +15,7 @@ Feature: Browsing related records
   Scenario: Charts resize and release their host when the relation is closed
     Then relation charts toggle resize and clean up their mounted container
 
+  @covers:src/g3w-app.js
   Scenario: Relation exports recover from errors and download the requested data
     Then relation export failures release download state and allow a successful retry
 
