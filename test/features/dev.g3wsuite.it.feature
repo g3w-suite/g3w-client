@@ -6,7 +6,7 @@ Feature: Test the local client and plugins against remote projects
     Given local client assets are intercepted
 
   Scenario: Open a project without an additional plugin
-    When I open project "/map/demo-311"
+    When I open project "/map/demo"
     Then the local client version is used
     And at least one client asset is served locally
     And no browser errors are reported
