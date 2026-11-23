@@ -575,8 +575,7 @@ Then('sidebar panel ownership reacts to nested panels and native back and close 
   const page = this.corePage;
   await page.locator('.cookie-button').click();
   await page.locator('#legend > a').click();
-  await page.waitForFunction(() => g3w.state.sidebar.contentsdata.length === 1);
-  assert.notEqual(await page.locator('#legend-panel').evaluate(element => element.style.display), 'none');
+  await page.locator('#legend-panel').waitFor({ state: 'visible' });
   await page.waitForFunction(() => document.querySelector('#legend').classList.contains('panel-active') &&
     document.querySelector('#metadata').inert);
   await page.locator('.sidebar-aside-toggle').click();
@@ -590,11 +589,11 @@ Then('sidebar panel ownership reacts to nested panels and native back and close 
     }));
   });
   assert.equal(await page.locator('#nested-details').isVisible(), true);
-  assert.equal(await page.locator('#legend-panel').evaluate(element => element.style.display), 'none');
+  assert.equal(await page.locator('#legend-panel').isVisible(), false);
   await page.locator('.sidebar-panel button:is([title="back"], [data-i18n-title="back"])').click();
   await page.waitForFunction(() => g3w.state.sidebar.contentsdata.length === 1);
   assert.equal(await page.locator('#nested-details').count(), 0);
-  assert.equal(await page.locator('#legend-panel').evaluate(element => element.style.display), 'block');
+  assert.equal(await page.locator('#legend-panel').isVisible(), true);
   await page.locator('.sidebar-panel button[data-i18n-title="close"]').click();
   await page.waitForFunction(() => g3w.state.sidebar.contentsdata.length === 0 &&
     Array.from(document.querySelectorAll('#g3w-menu > li')).every(item => !item.inert));

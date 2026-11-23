@@ -55,4 +55,4 @@ jobs:
             cat /tmp/g3w-client-dev.log
             exit 1
           fi
-          node build/test.js --tags "not @smoke"
+          npm test
