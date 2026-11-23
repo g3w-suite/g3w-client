@@ -4,6 +4,9 @@ on:
     branches:
       - '**'
 
+permissions:
+  contents: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -56,3 +59,23 @@ jobs:
             exit 1
           fi
           npm test
+
+      - name: Build app
+        if: github.ref == 'refs/heads/dev'
+        run: npm run build:ci
+
+      - name: Publish canary release
+        if: github.ref == 'refs/heads/dev'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SHORT=$(git rev-parse --short HEAD)
+          ZIP=g3w-client-dev-$SHORT.zip
+          (cd build && zip -r ../$ZIP client)
+          git tag -f canary
+          git push -f origin refs/tags/canary
+          gh release delete canary --yes || true
+          gh release create canary $ZIP \
+            --prerelease --target "$GITHUB_SHA" \
+            --title "Canary release" \
+            --notes "Latest build of \`dev\` at [$SHORT](https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA) ($(date -u '+%Y-%m-%d %H:%M') UTC), updated automatically on every push. Not a stable release."
