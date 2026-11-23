@@ -6,16 +6,16 @@
   "scripts": {
     "preinstall": "",
     "prepare": "git config core.hooksPath .githooks",
-    "build": "node build.js build",
-    "build:ci": "node build.js build:ci",
-    "dev": "node build.js dev",
+    "build": "node build/build.js build",
+    "build:ci": "node build/ci.js",
+    "dev": "node build/dev.js",
     "docker": "docker compose --env-file ../g3w-suite-docker/.env --file ../g3w-suite-docker/docker-compose-dev.yml --project-name g3w-suite-docker --project-directory ../g3w-suite-docker",
     "docker:pull": "npm run docker pull",
     "docker:up": "npm run docker up -- -d",
     "docker:down": "npm run docker down",
     "docker:config": "npm run docker config",
     "docker:logs": "npm run docker logs",
-    "test": "node test/dev.g3wsuite.it.js",
+    "test": "node build/test.js",
     "preversion": "npm run test",
     "version": "npm run build && git add -A",
     "postversion": "git push && git push --tags"
@@ -38,8 +38,11 @@
     "vue": "2.7.16"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.13",
+    "@cucumber/cucumber": "^12.9.0",
     "@vue/compiler-sfc": "2.7.16",
     "esbuild": "^0.28.2",
+    "istanbul-lib-coverage": "^3.2.2",
     "playwright": "^1.55.0"
   },
   "engines": {

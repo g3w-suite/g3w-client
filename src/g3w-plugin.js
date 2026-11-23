@@ -415,7 +415,6 @@ export class Plugin extends Emitter {
  * - "cdu",
  * - "billboards",
  * - "politowps",
- * - "law",
  * - "cadastre",
  * - "simplereporting"
  * - "sispi-worksite",
