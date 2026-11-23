@@ -173,18 +173,16 @@
 
 <script>
 
-  import { G3W_FID, PAGELENGTHS, TIMEOUT } from 'g3w-constants';
-  import ApplicationState                  from 'g3w-state';
-  import Component                         from 'g3w-component';
-  import G3WField                          from 'components/G3WField.vue';
-  import G3WTabs                           from 'components/G3WTabs.vue';
-  import { toRawType }                     from 'utils/toRawType';
-  import GUI                               from 'g3w-app';
-  import { debounce }                      from 'utils/debounce';
-  import { getCatalogLayerById }           from 'utils/getCatalogLayerById';
-  import { createRelationsUrl }            from 'utils/createRelationsUrl';
-  import { getAlphanumericProps }          from 'utils/getAlphanumericProps';
-  import { saveBlob }                      from 'utils/saveBlob';
+  import { G3W_FID, PAGELENGTHS } from 'g3w-constants';
+  import ApplicationState         from 'g3w-state';
+  import Component                from 'g3w-component';
+  import G3WField                 from 'components/G3WField.vue';
+  import G3WTabs                  from 'components/G3WTabs.vue';
+  import GUI                      from 'g3w-app';
+  import { debounce }             from 'utils/debounce';
+  import { getCatalogLayerById }  from 'utils/getCatalogLayerById';
+  import { createRelationsUrl }   from 'utils/createRelationsUrl';
+  import { getAlphanumericProps } from 'utils/getAlphanumericProps';
 
   export default {
 
@@ -289,13 +287,6 @@
       /**
        * @since 4.1.0
        */
-      download_formats() {
-        return this.layer.getDownloadFormats().filter(f => 'pdf' !== f); // exclude pdf because already includes all features
-      },
-
-      /**
-       * @since 4.1.0
-       */
       form_structure() {
         return this.layer.getLayerEditingFormStructure();
       },
@@ -333,33 +324,21 @@
     },
 
     methods: {
-      getFieldType(field) {
-        const value = field.value && 'Object' === toRawType(field.value) && !field.value.coordinates && !field.value.vue ? field.value.value : field.value;
-        if ('vue' === field.type) {
-          return `${field.type}_field`;
-        }
-        if (!value) {
-          return 'simple_field';
-        }
-        if (Array.isArray(value)) {
-          return `${value.length && value[0]?.photo ? 'photo' : 'simple'}_field`;
-        }
-        if ('object' === typeof value && value.coordinates) {
-          return 'geo_field';
-        }
-        if ('object' === typeof value && value.vue) {
+      getFieldType({ type, value }) {
+        const fieldValue = value && 'object' === typeof value && !value.coordinates && !value.vue ? value.value : value;
+        if ('vue' === type || fieldValue?.vue) {
           return 'vue_field';
         }
-        if ('object' !== typeof value && value.toString().toLowerCase().match(/^(https?:\/\/[^\s]+)\.(png|jpg|jpeg|gif)$/g)) {
+        if (fieldValue?.[0]?.photo || /^(https?:\/\/[^\s]+)\.(png|jpg|jpeg|gif)$/i.test(fieldValue)) {
           return 'photo_field';
         }
-        if ('object' !== typeof value && value.toString().match(/^(https?:\/\/[^\s]+)/g)) {
+        if (/^https?:\/\/[^\s]+/.test(fieldValue)) {
           return 'link_field';
         }
-        if ('object' !== typeof value) {
-          return 'simple_field';
+        if (fieldValue?.coordinates) {
+          return 'geo_field';
         }
-        return `${field.type}_field`;
+        return fieldValue && 'object' === typeof fieldValue ? `${type}_field` : 'simple_field';
       },
 
       /**
@@ -561,110 +540,6 @@
         });
       },
 
-      /**
-       * @since 4.1.0
-       */
-      async showDownloadModal() {
-        const _   = g3w.gettext;
-
-        let layer = getCatalogLayerById(this.nmRelation?.referencedLayer || this.relation?.referencingLayer || this.layerId);
-        layer     = layer.state;
-
-        if (!layer) {
-          throw 'no layer';
-        }
-
-        const catalog_layer  = getCatalogLayerById(layer.id);
-
-        const dialog = Object.assign(document.createElement('template'), {
-          innerHTML: /* html */`
-            <dialog>
-              <h4 style="margin: 0; padding: .5em; color: #FFF; position: sticky; top: 0; background-color: #212c31"><i class="fas fa-download" style="margin-right: .5ch;"></i> ${ _('Export features') }</h4>
-              <form method="dialog">
-
-                <div class="form-group">
-                  <label>${ _('Layer') }</label>
-                  <select name="layer" class="form-control" disabled>
-                    <option value="${layer.id}" selected>${ layer.name || layer.title } (${ this.layerId })</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label>${ _('Data Format') }</label>
-                  <select name="format" class="form-control">
-                    ${[
-                        catalog_layer?.isGeoTIFFDownloadable?.() ? /* html */`<option value="GeoTiff">${ _('GeoTiff') }</option>` : '',
-                        catalog_layer?.isShpDownloadable?.()     ? /* html */`<option value="Shp">${ _('Shapefile') }</option>` : '',
-                        catalog_layer?.isGpxDownloadable?.()     ? /* html */`<option value="Gpx">${ _('GPX') }</option>` : '',
-                        catalog_layer?.isGpkgDownloadable?.()    ? /* html */`<option value="Gpkg">${ _('GeoPackage') }</option>` : '',
-                        catalog_layer?.isCsvDownloadable?.()     ? /* html */`<option value="Csv">${ _('CSV') }</option>` : '',
-                        catalog_layer?.isXlsDownloadable?.()     ? /* html */`<option value="Xls">${ _('Excel') }</option>` : '',
-                      ].filter(Boolean).join('')
-                    }
-                  </select>
-                </div>
-
-                <menu style="display: flex; justify-content: space-between;">
-                  <button id="confirm_button" type="submit" value="confirm" class="btn btn-block btn-success">Download</button>
-                </menu>
-              </form>
-
-            </dialog>
-          `.trim()
-        }).content.firstChild;
-
-        dialog.addEventListener("click", e => {
-          if (e.target === dialog) {
-            dialog.close();
-          }
-        });
-
-        dialog.addEventListener('close', async () => {
-          if ('confirm' === dialog.returnValue) {
-
-            ApplicationState.download = true;
-            try {
-              const format   = dialog.querySelector('[name="format"]').value.toLowerCase();
-
-              const response = await fetch(createRelationsUrl({
-                  layerId:  this.layerId,
-                  fid:      this.featureId,
-                  relation: this.relation,
-                  type:     format
-                }), {
-                method:  'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Access-Control-Expose-Headers': 'Content-Disposition', // get filename from server
-                },
-                body: JSON.stringify({ formatter: 1 }),
-                signal: AbortSignal.timeout(TIMEOUT),
-              });
-
-              if (!response?.ok) {
-                throw (await response.json()).message;
-              }
-
-              saveBlob(await response.blob(), response.headers.get('content-disposition').split('filename=').at(-1));
-
-            } catch(e) {
-              console.warn(e);
-              GUI.showUserMessage({
-                type:     'alert',
-                message:  e ?? 'server_error',
-                closable: true,
-              });
-            }
-
-            ApplicationState.download = false;
-          }
-          dialog.remove();
-        });
-
-        document.body.appendChild(dialog);
-        dialog.showModal();
-      },
-
     },
 
     async mounted() {
@@ -675,8 +550,6 @@
       });
       // autoload selected relation
       if (this.relation) {
-        const component = this;
-
         this.actions[this.table.layerId].push(...[
           {
             id :   "zoomgeometry",
@@ -699,24 +572,11 @@
           features: this.table.features,
         }]);
 
-        // Register built-in toolbar actions before plugins append their own.
-        this.relation_actions.push({
-          id:    'download',
-          class: 'fas fa-download',
-          hint:  'Downloads',
-          cbk:   () => this.showDownloadModal(),
-          state: {
-            // Keep the action in sync with feature availability and active downloads.
-            get disabled() {
-              return !component.table.hasfeatures && (!component.download_formats.length || ApplicationState.download);
-            },
-          },
-        });
-
         // Plugins append toolbar actions; each action can expose clear() for cleanup.
         GUI.addActionsForRelation(this.relation_actions, {
           // Layer containing the related records, and the relation being displayed.
-          layer:       this.layer,
+          layer:       this.nmRelation ? getCatalogLayerById(this.nmRelation.referencedLayer) : this.layer,
+          layerId:     this.layerId,
           relation:    this.relation,
           // Parent feature and its ID, used to filter content to this relation.
           feature:     this.feature,

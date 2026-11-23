@@ -538,7 +538,6 @@
   import G3WTabs                  from 'components/G3WTabs.vue';
   import { throttle }             from 'utils/throttle';
   import { getCatalogLayerById }  from 'utils/getCatalogLayerById';
-  import { downloadFeatures }     from 'utils/downloadFeatures';
   import GUI                      from 'g3w-app';
   import { Layer }                from 'g3w-layer';
   import { getAlphanumericProps } from 'utils/getAlphanumericProps';
@@ -833,7 +832,7 @@
       },
 
       showDownloadModal(layer) {
-        downloadFeatures({
+        GUI.downloadFeatures({
           layer,
           features:          layer.features,
           down_with_polygon: 'polygon' === this.state.query.type && `${ this.state.query.fid }`,
