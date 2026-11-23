@@ -4,6 +4,10 @@ Feature: Layer configuration and relation behavior
   Scenario: Table metadata and download eligibility follow the configured fields and capabilities
     Then table metadata and downloads reflect the layer configuration
 
+  @covers:src/g3w-layer.js @covers:src/components/ModalMetadata.vue
+  Scenario: WCS metadata is available for raster layers with WCS capability
+    Then WCS metadata is generated only for raster layers with WCS capability
+
   @covers:src/g3w-layer.js
   Scenario: Related layers expose parent child and editable relation information
     Then related layers retain their relation identities fields and hierarchy

@@ -2772,6 +2772,13 @@ export class Layer extends Emitter {
   }
 
   /**
+   * @since 4.2.0
+   */
+  isWcsActive() {
+    return this.isRaster() && Array.isArray(this.state.ows) && this.state.ows.some(t => 'WCS' === t);
+  }
+
+  /**
    * @since 4.1.0
    */
   getWfsUrl() {
