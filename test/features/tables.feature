@@ -12,6 +12,9 @@ Feature: Layer attribute tables in the local browser
   Scenario: Column searches combine filters and pagination follows the selected page size
     Then attribute table column filters and pagination preserve their request parameters
 
+  Scenario: Changing pages preserves the selected sorting field and direction
+    Then attribute table pagination keeps the selected sorting
+
   Scenario: Selection includes unloaded records and supports inversion and clearing
     Then attribute table selection updates real layer selections across pages
 
