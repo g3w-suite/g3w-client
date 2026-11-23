@@ -98,7 +98,7 @@ Then('WCS metadata is generated only for raster layers with WCS capability', asy
     });
     const rasterWithoutWcs = createFixtureLayer({
       id: 'raster-without-wcs', servertype: 'QGIS', source: { type: 'wms' },
-      geometrytype: undefined, ows: ['WMS', 'WFS'],
+      geometrytype: undefined, crs: { epsg: 'EPSG:3857' }, ows: ['WMS', 'WFS'],
     });
     const vectorWithWcs = createFixtureLayer({
       id: 'vector-with-wcs', servertype: 'OGC', source: { type: 'wfs' },
@@ -108,16 +108,25 @@ Then('WCS metadata is generated only for raster layers with WCS capability', asy
     Object.assign(initConfig, { version: '4.2.0', powered_by: false, urls: {} });
 
     const metadata = coreTestExports.vueComponents['components/ModalMetadata.vue'].data();
+    const url = metadata.project.metadata.wcs_url;
+    const negativeCases = [rasterWithoutWcs, vectorWithWcs].map(layer => {
+      g3w.state.project.state.metadata = {};
+      g3w.state.project.getLayers = () => [layer];
+      const metadata = coreTestExports.vueComponents['components/ModalMetadata.vue'].data().project.metadata;
+      return Object.hasOwn(metadata, 'wcs_url');
+    });
     return {
       rasterTypes: [wcsRaster.getType(), rasterWithoutWcs.getType(), vectorWithWcs.getType()],
       active: [wcsRaster.isWcsActive(), rasterWithoutWcs.isWcsActive(), vectorWithWcs.isWcsActive()],
-      url: metadata.project.metadata.wcs_url,
+      url,
+      negativeCases,
     };
   });
   assert.deepEqual(result, {
     rasterTypes: ['image', 'image', 'vector'],
     active: [true, false, false],
     url: '/ows/?service=WCS&version=1.0.0&request=GetCapabilities',
+    negativeCases: [false, false],
   });
 });
 
