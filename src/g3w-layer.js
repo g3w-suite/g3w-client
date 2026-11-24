@@ -3493,7 +3493,7 @@ Layer._parse = function(type, params, opts) {
       }
 
       // fields starting with an invalid key
-      const invalids = response && Array.from(response.matchAll(/qgs:(\d+(?:\.\d+)?)(\w+)/g)).filter((_, i) => 0 === i % 2);
+      const invalids = response && Array.from(response.matchAll(/qgs:(\d+(?:\.\d+)?)(\w+)/g));
 
       // numeric value (integer or float)
       if (invalids) {
@@ -3565,7 +3565,25 @@ Layer._parse = function(type, params, opts) {
             }
           });
 
-          feats = (new ol.format.WMSGetFeatureInfo()).readFeatures(cloned.documentElement.outerHTML);
+          const featureXml = (new DOMParser).parseFromString(cloned.documentElement.outerHTML, 'text/xml');
+          feats = (new ol.format.WMSGetFeatureInfo()).readFeatures(featureXml);
+
+          const members = featureXml.querySelectorAll('FeatureCollection > featureMember');
+          feats.forEach((feature, index) => {
+            const fields = [...members[index].lastElementChild.children];
+            fields.forEach((field, fieldIndex) => {
+              if (!['true', '1'].includes(field.getAttributeNS('http://www.w3.org/2001/XMLSchema-instance', 'nil')?.trim())) {
+                return;
+              }
+              const value = feature.get(field.localName);
+              if (Array.isArray(value)) {
+                const position = fields.slice(0, fieldIndex).filter(other => other.localName === field.localName).length;
+                value[position] = null;
+              } else {
+                feature.set(field.localName, null);
+              }
+            });
+          });
 
           // whether need to re-project features
           const is_reprojected = projections.layer && projections.layer.getCode() !== projections.map.getCode() && feats.length && !!feats[0].getGeometry();
