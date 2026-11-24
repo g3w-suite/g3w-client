@@ -1,8 +1,15 @@
-name: Test deploy (dev.g3wsuite.it)
+# Test and validate on every push
+# - Runs BDD tests against local dev proxy
+# - Triggers canary release on success (dev branch only)
+name: CI
+
 on:
   push:
     branches:
       - '**'
+
+permissions:
+  contents: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -16,6 +23,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Replace template config with test-environment paths
       - name: Setup config.js
         run: |
           cp config.template.js config.js
@@ -31,6 +39,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Cache Playwright browsers to avoid re-downloading on every run
       - name: Cache Playwright browsers
         uses: actions/cache@v3
         with:
@@ -40,6 +49,8 @@ jobs:
       - name: Install Playwright browser
         run: npx playwright install chromium
 
+      # Start dev proxy, wait for healthy response, run BDD tests
+      # Logs to /tmp in case of failure
       - name: Run BDD tests against the local proxy
         run: |
           node build/dev.js > /tmp/g3w-client-dev.log 2>&1 &
