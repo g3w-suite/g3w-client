@@ -12,6 +12,7 @@ Before({ tags: '@application-bootstrap', timeout: 60_000 }, async function ({ pi
   this.coreContext = undefined;
   this.startupErrors = [];
   this.startupRequests = [];
+  this.owsMapRequests = [];
   const withPlugin = pickle.tags.some(tag => tag.name === '@startup-plugin');
   const withExternalLayers = pickle.tags.some(tag => tag.name === '@external-layer-workflows');
   const withAnnotations = pickle.tags.some(tag => tag.name === '@annotation-workflows');
@@ -35,6 +36,8 @@ Before({ tags: '@application-bootstrap', timeout: 60_000 }, async function ({ pi
     }],
     layerstree: [{ name: 'Transport', expanded: true, checked: true, nodes: [{ id: 'roads', toc: true, checked: true }] }],
   };
+  if (pickle.tags.some(tag => tag.name === '@ows-get')) this.startupConfig.ows_method = 'GET';
+  if (pickle.tags.some(tag => tag.name === '@ows-post')) this.startupConfig.ows_method = 'POST';
   if (withLegendPanel) {
     for (const id of ['excluded-legend', 'included-legend']) {
       this.startupConfig.layers.push({
@@ -121,7 +124,12 @@ Before({ tags: '@application-bootstrap', timeout: 60_000 }, async function ({ pi
     }
     await page.route('**/api/config/**', route => route.fulfill({ json: this.startupConfig }));
     await page.route('**/ows/**', route => {
-      this.startupRequests.push(Object.fromEntries(new URL(route.request().url()).searchParams));
+      const request = route.request();
+      const params = new URLSearchParams(request.method() === 'POST'
+        ? request.postData()
+        : new URL(request.url()).search);
+      this.startupRequests.push(Object.fromEntries(new URL(request.url()).searchParams));
+      if (params.get('REQUEST') === 'GetMap') this.owsMapRequests.push(request.method());
       return route.fulfill({
         contentType: 'image/svg+xml',
         body: '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><path d="M0 128H256" stroke="blue"/></svg>',
@@ -204,6 +212,43 @@ Then('the production application displays its project catalog and a ready map', 
   assert.equal(result.map, true);
   assert.equal(result.epsg, 'EPSG:3857');
   assert.equal(result.spinner, false);
+});
+
+Then('map requests and a coordinate query use {string}', async function (method) {
+  const requests = [];
+  await this.corePage.route('**/ows/**', route => {
+    const request = route.request();
+    const params = new URLSearchParams(request.method() === 'POST'
+      ? request.postData()
+      : new URL(request.url()).search);
+    if (params.get('REQUEST') !== 'GetFeatureInfo') return route.fallback();
+    requests.push({ method: request.method(), params: Object.fromEntries(params) });
+    return route.fulfill({ json: {
+      type: 'FeatureCollection',
+      features: [{ type: 'Feature', id: 7, geometry: null, properties: { name: 'Example' } }],
+    } });
+  });
+  const result = await this.corePage.evaluate(async () => {
+    await g3w.app.isMapReady();
+    const layer = g3w.state.project.getLayerById('roads');
+    layer.setInfoFormat('application/json');
+    const response = await g3w.app['getData/query:coordinates']({ coordinates: [0, 0], layerIds: ['roads'] });
+    return {
+      projectMethod: g3w.state.project.state.ows_method,
+      layerMethod: layer.getOwsMethod(),
+      features: response.data.map(({ features }) => features.map(feature => feature.get('name'))),
+    };
+  });
+  assert.equal(result.projectMethod, method);
+  assert.equal(result.layerMethod, method);
+  assert.ok(this.owsMapRequests.length > 0, 'expected at least one GetMap request');
+  assert.ok(this.owsMapRequests.every(actual => actual === method), `GetMap methods: ${this.owsMapRequests}`);
+  assert.deepEqual(result.features, [['Example']]);
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].method, method);
+  assert.equal(requests[0].params.SERVICE, 'WMS');
+  assert.equal(requests[0].params.REQUEST, 'GetFeatureInfo');
+  assert.equal(requests[0].params.QUERY_LAYERS, 'roads');
 });
 
 Then('the account logout sends a CSRF-protected POST and handles a {string} response', async function (outcome) {

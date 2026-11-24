@@ -464,6 +464,9 @@ $.ajaxSetup({
   //Used by permalink to create the difference between the original and current layerstree
   const layerstree = structuredClone(config.layerstree ?? []);
 
+  //set default OWS method if not specified in config
+  config.ows_method = config.ows_method || 'GET';
+
   // change config.layerstree to have a root group node, so that the TOC can be rendered properly
   config.layerstree = [{
     name:        config.name || config.gid,
@@ -502,6 +505,7 @@ $.ajaxSetup({
       }
     }
   })(config.layerstree);
+
   
   //set project to aplication state
   const project = ApplicationState.project = Object.assign(new Emitter, {
@@ -534,7 +538,6 @@ $.ajaxSetup({
       }),
       /** actived catalog tab */
       catalog_tab:            CONFIG.toc_tab_default        || CONFIG._catalog_tab || 'layers',
-      ows_method:             CONFIG.ows_method             || 'GET',
       toc_layers_init_status: CONFIG.toc_layers_init_status || 'not_collapsed',
       toc_themes_init_status: CONFIG.toc_themes_init_status || 'collapsed',
       query_point_tolerance:  CONFIG.query_point_tolerance  || QUERY_POINT_TOLERANCE,
@@ -681,6 +684,7 @@ $.ajaxSetup({
 
   // Layer factory: instance each layer and add to project.layers array
   project.addLayers(project.state.layers.concat(project.state.baselayers).map(l => {
+    console.log( project.state.ows_method)
     const config = Object.assign({}, l, {
       crs:               normalizeEpsg(l.crs || project.state.crs, false), // @v4.0 Fix In case of missing layer crs, set project crs
       projection:        l.crs ? ApplicationState.projections.get(l.crs) : project.config.projection,
