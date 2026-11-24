@@ -328,7 +328,7 @@ globalThis.g3wsdk = {
         let type = field.type;
         if ('vue' !== type) {
           const fieldValue = field.value;
-          const value = fieldValue && 'Object' === toRawType(fieldValue) && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
+          const value = Object.prototype.toString.call(fieldValue) === '[object Object]' && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
           if (!value) {
             type = 'simple';
           } else if (value && 'object' === typeof value) {
