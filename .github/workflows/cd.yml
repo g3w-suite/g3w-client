@@ -1,0 +1,120 @@
+# Build and publish stable/canary releases
+# - Publishes canary release on successful CI run on dev branch
+# - Publishes stable release assets when a release is published on GitHub
+name: CD
+
+on:
+  release:
+    types: [published]
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [dev]
+
+permissions:
+  contents: write
+
+jobs:
+  canary:
+    # Only run after successful test workflow on dev
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Setup config.js
+        run: |
+          cp config.template.js config.js
+          sed -i "s|\.\./g3w-admin/g3w-admin|./build|g" config.js
+          sed -i "s|\.\./g3w-suite-docker/config/g3w-suite/overrides|./build/client|g" config.js
+          sed -i "s|\.\./g3w-suite-docker/shared-volume/plugins||g" config.js
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build app
+        run: npm run build:ci
+
+      # Build archive, determine base commit for changelog, generate release notes with commits
+      # Base: existing canary tag → last stable tag → first commit of repo
+      # Notes: list commits with author and SHA from base to HEAD
+      # Creates or updates canary release with archive and changelog
+      - name: Publish canary release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          SHORT=${HEAD_SHA:0:7}
+          ZIP=g3w-client-dev-$SHORT.zip
+          (cd build && zip -r ../$ZIP client)
+          if gh release view canary >/dev/null 2>&1; then
+            BASE_SHA=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/canary" -q .object.sha)
+          else
+            BASE_SHA=$(git describe --tags --abbrev=0 --exclude=canary 2>/dev/null || echo "")
+            if [ -z "$BASE_SHA" ]; then
+              BASE_SHA=$(git rev-list --max-parents=0 HEAD)
+            fi
+          fi
+          NOTES=$(gh api "repos/$GITHUB_REPOSITORY/compare/${BASE_SHA}...${HEAD_SHA}" --jq \
+            '.commits[] | if .author.login then "- \(.commit.message | split("\n")[0]) by @\(.author.login) in \(.sha[0:7])" else "- \(.commit.message | split("\n")[0]) by \(.commit.author.name) in \(.sha[0:7])" end')
+          [ -n "$NOTES" ] || NOTES="No commits since the previous release."
+          if ! gh release view canary >/dev/null 2>&1; then
+            gh release create canary --prerelease --target "$HEAD_SHA" \
+              --title "Canary" --notes ""
+          fi
+          NOTES="Latest build of dev at [$SHORT](https://github.com/$GITHUB_REPOSITORY/commit/$HEAD_SHA) ($(date -u '+%Y-%m-%d %H:%M') UTC), updated automatically on every push. Not a stable release.
+
+          $NOTES"
+          gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/canary" \
+            -f sha="$HEAD_SHA" -F force=true >/dev/null
+          gh release edit canary \
+            --notes "$NOTES"
+          gh release upload canary "$ZIP" --clobber
+
+  build:
+    # Only run when a stable release is published
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup config.js
+        run: |
+          cp config.template.js config.js
+          sed -i "s|\.\./g3w-admin/g3w-admin|./build|g" config.js
+          sed -i "s|\.\./g3w-suite-docker/config/g3w-suite/overrides|./build/client|g" config.js
+          sed -i "s|\.\./g3w-suite-docker/shared-volume/plugins||g" config.js
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build app
+        run: npm run build:ci
+
+      # Create archive and attach to release
+      - name: Create Zip Archive
+        run: |
+          cd build
+          zip -r ../g3w-client.zip client
+
+      - name: Upload Zip to GitHub Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: g3w-client.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

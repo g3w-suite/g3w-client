@@ -2233,26 +2233,6 @@ export class Layer extends Emitter {
   }
 
   /**
-   * Used by the following plugins: "law"
-   */
-  changeConfigFieldType({ name, type, options = {}, reset = false, }) {
-    const field = this.getFields().find(f => name === f.name);
-    if (field && reset) {
-      field.type = field._type;
-      delete field._type;
-      delete field[`${type}options`];
-      return field.type;
-    }
-
-    if (field && !reset) {
-      field._type             = field.type;
-      field.type              = type;
-      field[`${type}options`] = options;
-      return field._type;
-    }
-  }
-
-  /**
    * Function called in case of change project to remove all stored information 
    */
   clear() {}
@@ -2789,6 +2769,13 @@ export class Layer extends Emitter {
    */
   isWfsActive() {
     return this.isRaster() && Array.isArray(this.state.ows) && this.state.ows.some(t => 'WFS' === t);
+  }
+
+  /**
+   * @since 4.2.0
+   */
+  isWcsActive() {
+    return this.isRaster() && Array.isArray(this.state.ows) && this.state.ows.some(t => 'WCS' === t);
   }
 
   /**
