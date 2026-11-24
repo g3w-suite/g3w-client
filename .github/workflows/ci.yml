@@ -1,4 +1,8 @@
-name: Test deploy (dev.g3wsuite.it)
+# Test and validate on every push
+# - Runs BDD tests against local dev proxy
+# - Triggers canary release on success (dev branch only)
+name: CI
+
 on:
   push:
     branches:
@@ -19,6 +23,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Replace template config with test-environment paths
       - name: Setup config.js
         run: |
           cp config.template.js config.js
@@ -34,6 +39,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Cache Playwright browsers to avoid re-downloading on every run
       - name: Cache Playwright browsers
         uses: actions/cache@v3
         with:
@@ -43,6 +49,8 @@ jobs:
       - name: Install Playwright browser
         run: npx playwright install chromium
 
+      # Start dev proxy, wait for healthy response, run BDD tests
+      # Logs to /tmp in case of failure
       - name: Run BDD tests against the local proxy
         run: |
           node build/dev.js > /tmp/g3w-client-dev.log 2>&1 &
@@ -59,23 +67,3 @@ jobs:
             exit 1
           fi
           npm test
-
-      - name: Build app
-        if: github.ref == 'refs/heads/dev'
-        run: npm run build:ci
-
-      - name: Publish canary release
-        if: github.ref == 'refs/heads/dev'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          SHORT=$(git rev-parse --short HEAD)
-          ZIP=g3w-client-dev-$SHORT.zip
-          (cd build && zip -r ../$ZIP client)
-          git tag -f canary
-          git push -f origin refs/tags/canary
-          gh release delete canary --yes || true
-          gh release create canary $ZIP \
-            --prerelease --target "$GITHUB_SHA" \
-            --title "Canary release" \
-            --notes "Latest build of \`dev\` at [$SHORT](https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA) ($(date -u '+%Y-%m-%d %H:%M') UTC), updated automatically on every push. Not a stable release."
