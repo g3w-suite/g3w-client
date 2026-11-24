@@ -3492,7 +3492,7 @@ Layer._parse = function(type, params, opts) {
         }, response);
       }
 
-      // fields starting with an invalid key
+      // Include every match: self-closing fields have no matching closing tag.
       const invalids = response && Array.from(response.matchAll(/qgs:(\d+(?:\.\d+)?)(\w+)/g));
 
       // numeric value (integer or float)
@@ -3565,23 +3565,31 @@ Layer._parse = function(type, params, opts) {
             }
           });
 
+          // Reparse serialized elements so regrouped feature members have their XML namespaces.
           const featureXml = (new DOMParser).parseFromString(cloned.documentElement.outerHTML, 'text/xml');
           feats = (new ol.format.WMSGetFeatureInfo()).readFeatures(featureXml);
 
+          // OpenLayers retains xsi:nil as an attribute object; convert XML Schema nil values to null.
+          const XSI_NAMESPACE = 'http://www.w3.org/2001/XMLSchema-instance';
           const members = featureXml.querySelectorAll('FeatureCollection > featureMember');
+          // Features and XML members are matched by their order in the parsed document.
           feats.forEach((feature, index) => {
             const fields = [...members[index].lastElementChild.children];
             fields.forEach((field, fieldIndex) => {
-              if (!['true', '1'].includes(field.getAttributeNS('http://www.w3.org/2001/XMLSchema-instance', 'nil')?.trim())) {
+              const nil = field.getAttributeNS(XSI_NAMESPACE, 'nil')?.trim();
+              // XML Schema accepts both "true" and "1" as nil values.
+              if (!['true', '1'].includes(nil)) return;
+
+              const name = field.localName;
+              const value = feature.get(name);
+              if (!Array.isArray(value)) {
+                feature.set(name, null);
                 return;
               }
-              const value = feature.get(field.localName);
-              if (Array.isArray(value)) {
-                const position = fields.slice(0, fieldIndex).filter(other => other.localName === field.localName).length;
-                value[position] = null;
-              } else {
-                feature.set(field.localName, null);
-              }
+
+              // Repeated fields are returned as an array in their original XML order.
+              const position = fields.slice(0, fieldIndex).filter(other => other.localName === name).length;
+              value[position] = null;
             });
           });
 
