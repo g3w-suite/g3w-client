@@ -7,6 +7,25 @@ Feature: Offline production application
   Scenario: A configured project starts the complete application offline
     Then the production application displays its project catalog and a ready map
 
+  @ows-method @covers:src/index.prod.js @covers:src/g3w-layer.js @covers:src/g3w-app.js
+  Scenario Outline: Map and coordinate queries use the configured OWS method
+    Then map requests and a coordinate query use "<method>"
+
+    @ows-default
+    Examples:
+      | method |
+      | GET    |
+
+    @ows-get
+    Examples:
+      | method |
+      | GET    |
+
+    @ows-post
+    Examples:
+      | method |
+      | POST   |
+
   @header-workflows @logout-workflows @covers:src/components/App.vue
   Scenario Outline: Account logout uses its rendered Vue click handler
     Then the account logout sends a CSRF-protected POST and handles a "<response>" response
