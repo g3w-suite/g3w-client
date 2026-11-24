@@ -684,7 +684,6 @@ $.ajaxSetup({
 
   // Layer factory: instance each layer and add to project.layers array
   project.addLayers(project.state.layers.concat(project.state.baselayers).map(l => {
-    console.log( project.state.ows_method)
     const config = Object.assign({}, l, {
       crs:               normalizeEpsg(l.crs || project.state.crs, false), // @v4.0 Fix In case of missing layer crs, set project crs
       projection:        l.crs ? ApplicationState.projections.get(l.crs) : project.config.projection,
