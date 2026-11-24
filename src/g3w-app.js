@@ -1852,7 +1852,7 @@ export default new (class GUI extends Emitter {
    * @returns {string}
    */
   #errorToMessage(error) {
-    if (error instanceof Error) {
+    if (error instanceof Error || '[object Error]' === Object.prototype.toString.call(error)) {
       return `CLIENT - ${error.message}`;
     }
 

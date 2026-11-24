@@ -179,7 +179,6 @@ const componentBehaviors = {
       'g3w-app': { _projectLayerIds: ['roads'] },
       'utils/getUniqueDomId': { getUniqueDomId: () => 'input-1' },
       'utils/getCatalogLayerById': { getCatalogLayerById: () => layer },
-      'utils/toRawType': { toRawType: value => Object.prototype.toString.call(value).slice(8, -1) },
       'utils/debounce': { debounce: callback => callback },
       'utils/getDataForSearchInput': { getDataForSearchInput: async () => [] },
     });
