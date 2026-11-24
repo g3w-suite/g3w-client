@@ -476,11 +476,21 @@ Then('the GML parser preserves numeric column names and geographic coordinates',
       id: 'roads', name: 'Roads', geometrytype: 'Point', crs: { epsg: 'EPSG:4326' },
     });
     const response = `<?xml version="1.0"?>
-      <wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs" xmlns:gml="http://www.opengis.net/gml" xmlns:qgs="http://www.qgis.org/gml">
+      <wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs" xmlns:gml="http://www.opengis.net/gml" xmlns:qgs="http://www.qgis.org/gml" xmlns:instance="http://www.w3.org/2001/XMLSchema-instance" xmlns:other="urn:other">
         <gml:featureMember>
           <qgs:Roads fid="Roads.7">
             <qgs:name>Main road</qgs:name><qgs:1_code>R1</qgs:1_code>
+            <qgs:missing instance:nil="true"/><qgs:1_empty instance:nil="1"/><qgs:2_empty instance:nil="true"/>
+            <qgs:literal>NULL</qgs:literal><qgs:present instance:nil="false">value</qgs:present>
+            <qgs:other other:nil="true">value</qgs:other>
+            <qgs:repeated>value</qgs:repeated><qgs:repeated instance:nil="true"/>
             <qgs:geometry><gml:Point srsName="EPSG:4326"><gml:coordinates decimal="." cs="," ts=" ">12,45</gml:coordinates></gml:Point></qgs:geometry>
+          </qgs:Roads>
+        </gml:featureMember>
+        <gml:featureMember>
+          <qgs:Roads fid="Roads.8">
+            <qgs:name>Second road</qgs:name><qgs:1_code>R2</qgs:1_code>
+            <qgs:missing>present</qgs:missing><qgs:1_empty>42</qgs:1_empty><qgs:2_empty>43</qgs:2_empty>
           </qgs:Roads>
         </gml:featureMember>
       </wfs:FeatureCollection>`;
@@ -491,10 +501,18 @@ Then('the GML parser preserves numeric column names and geographic coordinates',
     const feature = parsed[0].features[0];
     return {
       count: parsed[0].features.length, name: feature.get('name'), code: feature.get('1_code'),
+      missing: feature.get('missing'), numericNull: [feature.get('1_empty'), feature.get('2_empty')],
+      literal: feature.get('literal'), present: feature.get('present'), other: feature.get('other'), repeated: feature.get('repeated'),
+      second: [parsed[0].features[1].get('missing'), parsed[0].features[1].get('1_empty'), parsed[0].features[1].get('2_empty')],
       coordinates: feature.getGeometry().getCoordinates(), sameLayer: parsed[0].layer === layer,
     };
   });
-  assert.deepEqual(result, { count: 1, name: 'Main road', code: 'R1', coordinates: [12, 45], sameLayer: true });
+  assert.deepEqual(result, {
+    count: 2, name: 'Main road', code: 'R1', missing: null, numericNull: [null, null], literal: 'NULL',
+    present: { _content_: 'value', 'instance:nil': 'false' }, other: { _content_: 'value', 'other:nil': 'true' },
+    repeated: ['value', null],
+    second: ['present', '42', '43'], coordinates: [12, 45], sameLayer: true,
+  });
 });
 
 Then('permalink creation preserves changed layer state and selectable URL parameters', async function () {

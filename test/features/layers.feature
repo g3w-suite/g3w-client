@@ -37,7 +37,7 @@ Feature: Layer configuration and relation behavior
     Then layer parsers preserve GeoJSON coordinates field labels and raw responses
 
   @covers:src/g3w-layer.js
-  Scenario: QGIS GML sanitizes numeric column names and preserves geographic coordinate order
+  Scenario: QGIS GML preserves null values numeric column names and geographic coordinate order
     Then the GML parser preserves numeric column names and geographic coordinates
 
   @covers:src/g3w-app.js

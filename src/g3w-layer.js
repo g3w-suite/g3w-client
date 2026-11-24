@@ -3492,8 +3492,8 @@ Layer._parse = function(type, params, opts) {
         }, response);
       }
 
-      // fields starting with an invalid key
-      const invalids = response && Array.from(response.matchAll(/qgs:(\d+(?:\.\d+)?)(\w+)/g)).filter((_, i) => 0 === i % 2);
+      // Include every match: self-closing fields have no matching closing tag.
+      const invalids = response && Array.from(response.matchAll(/qgs:(\d+(?:\.\d+)?)(\w+)/g));
 
       // numeric value (integer or float)
       if (invalids) {
@@ -3565,7 +3565,33 @@ Layer._parse = function(type, params, opts) {
             }
           });
 
-          feats = (new ol.format.WMSGetFeatureInfo()).readFeatures(cloned.documentElement.outerHTML);
+          // Reparse serialized elements so regrouped feature members have their XML namespaces.
+          const featureXml = (new DOMParser).parseFromString(cloned.documentElement.outerHTML, 'text/xml');
+          feats = (new ol.format.WMSGetFeatureInfo()).readFeatures(featureXml);
+
+          // OpenLayers retains xsi:nil as an attribute object; convert XML Schema nil values to null.
+          const XSI_NAMESPACE = 'http://www.w3.org/2001/XMLSchema-instance';
+          const members = featureXml.querySelectorAll('FeatureCollection > featureMember');
+          // Features and XML members are matched by their order in the parsed document.
+          feats.forEach((feature, index) => {
+            const fields = [...members[index].lastElementChild.children];
+            fields.forEach((field, fieldIndex) => {
+              const nil = field.getAttributeNS(XSI_NAMESPACE, 'nil')?.trim();
+              // XML Schema accepts both "true" and "1" as nil values.
+              if (!['true', '1'].includes(nil)) return;
+
+              const name = field.localName;
+              const value = feature.get(name);
+              if (!Array.isArray(value)) {
+                feature.set(name, null);
+                return;
+              }
+
+              // Repeated fields are returned as an array in their original XML order.
+              const position = fields.slice(0, fieldIndex).filter(other => other.localName === name).length;
+              value[position] = null;
+            });
+          });
 
           // whether need to re-project features
           const is_reprojected = projections.layer && projections.layer.getCode() !== projections.map.getCode() && feats.length && !!feats[0].getGeometry();
