@@ -325,7 +325,7 @@
 
     methods: {
       getFieldType({ type, value }) {
-        const fieldValue = value && 'object' === typeof value && !value.coordinates && !value.vue ? value.value : value;
+        const fieldValue = Object.prototype.toString.call(value) === '[object Object]' && !value.coordinates && !value.vue ? value.value : value;
         if ('vue' === type || fieldValue?.vue) {
           return 'vue_field';
         }
