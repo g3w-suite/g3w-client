@@ -31,7 +31,7 @@ list while Playwright is clicking it.
 
 | Feature | Behavior checked |
 | --- | --- |
-| `bootstrap.feature` | Complete offline production startup with real project models, Vue and OpenLayers; registry filters/selection, catalog visibility and zoom, legend-panel exclusions, content navigation/docking/resizing, network events, plugin dependencies, GeoJSON/CSV/KMZ imports and persisted WMS/TMS connections |
+| `bootstrap.feature` | Complete offline production startup with real project models, Vue and OpenLayers; configured GET/POST OWS map and coordinate requests, registry filters/selection, catalog visibility and zoom, legend-panel exclusions, content navigation/docking/resizing, network events, plugin dependencies, GeoJSON/CSV/KMZ imports and persisted WMS/TMS connections |
 | `sdk.feature` | Plugin compatibility: editable feature cloning, field/media classification, nested server validation messages, real Vue mixin lifecycle, mutually exclusive/range validation, Select2 service notifications and global date/range widgets |
 | `annotations.feature` | Real point drawing, labels/styles, projected JSON downloads, visibility/editing/removal, imported annotation shapes and print entries |
 | `core.feature` | Events, lifecycle, dialogs, galleries, localization, projections, plugins, selections, controls, SDK and startup failure handling |
