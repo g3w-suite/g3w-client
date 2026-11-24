@@ -126,14 +126,15 @@
                 v-if  = "showTools"
                 class = "table-tools"
               >
-                <span v-for = "action in getFeatureActions(table.features[i])" :key = "action.id"
+                <button v-for = "action in getFeatureActions(table.features[i])" :key = "action.id"
+                  type           = "button"
                   @click.stop    = "action?.cbk?.(layer.state, table.features[i], action)"
                   :title         = "action.hint"
                   data-placement = "right"
                   class          = "action-button row-form skin-color"
                   :class         = "[action.class, { 'disabled': !!(action.state || {}).disabled }]"
                   :style         = "action.style"
-                ></span>
+                ></button>
               </td>
               <td v-for = "value in row">
                 <g3w-field :field-type = "getFieldType({ value })" :state = "{ value }" />
@@ -267,7 +268,10 @@
        * @since 3.9.0
        */
       showTools() {
-        return [!!this.layer.isEditable(), !!this.form_structure, !!this.table.features?.some(f => f.geometry)].filter(Boolean).length;
+        return Math.max(
+          [!!this.layer.isEditable(), !!this.form_structure, !!this.table.features?.some(f => f.geometry)].filter(Boolean).length,
+          ...this.table.features.map(feature => this.getFeatureActions(feature).length)
+        );
       },
 
       /**
@@ -594,7 +598,11 @@
 
     beforeDestroy() {
       // Release plugin content; one failed cleanup must not prevent the others.
-      Promise.allSettled(this.relation_actions.map(async action => action.clear?.()));
+      Promise.allSettled(this.relation_actions.map(async action => action.clear?.())
+      ).then(results => results
+        .filter(result => 'rejected' === result.status)
+        .forEach(result => console.warn(result.reason))
+      );
       // reset columns search
       this.columns.forEach(c => delete c.search); 
       if (1 === this.relations.length) {

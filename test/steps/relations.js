@@ -84,8 +84,6 @@ Before({ tags: '@relation-workflows' }, async function () {
       await Vue.nextTick();
     };
     g3w.app.zoomToExtent = (extent, options) => relationEffects.zooms.push({ extent, highlight: options.highlight, type: options.highLightGeometry.getType() });
-    g3w.app.showChart = (ids, container, options) => relationEffects.charts.push({ ids, container, options });
-    g3w.app.hideChart = container => relationEffects.hidden.push(container);
     g3w.app.showUserMessage = message => relationEffects.messages.push(message);
     g3w.app.on('resize', () => { relationEffects.resized++; });
     g3w.app.onbefore('addActionsForLayers', actions => {
@@ -120,15 +118,13 @@ Then('the relation menu opens its selected relation through the real application
     const menu = await openRelation(null);
     const names = menu.relations.map(relation => relation.name);
     const info = menu.feature_info();
-    g3w.app.plotLayerIds = ['children'];
-    const chartLayers = [...new Set(menu.charts)];
     menu.$el.querySelector('button').click();
     await coreTestExports.waitFor(() => relationEffects.views.at(-1).table.features.length && !g3w.state.content.loading, 2000);
-    return { names, info, chartLayers, title: relationEffects.options.at(-1).title, rows: relationEffects.views.at(-1).table.rows.length };
+    return { names, info, title: relationEffects.options.at(-1).title, rows: relationEffects.views.at(-1).table.rows.length };
   });
   assert.deepEqual(result, {
     names: ['Children', 'Zebra'], info: [{ label: 'Name', value: 'Parent' }, { label: 'Code', value: 0 }, { label: 'Extra', value: 'Visible' }],
-    chartLayers: ['children'], title: 'Children', rows: 10,
+    title: 'Children', rows: 10,
   });
   assert.equal(this.relationRequests[0].relation, 'children|17');
 });
@@ -184,38 +180,53 @@ Then('relation row actions zoom to geometry and mount the real attribute form', 
   assert.deepEqual(result.options, { title: 1, push: true });
 });
 
-Then('relation charts toggle resize and clean up their mounted container', async function () {
+Then('each relation toolbar action uses its relation context and is cleaned up', async function () {
   const result = await this.corePage.evaluate(async () => {
-    g3w.app.plotLayerIds = ['children'];
-    const view = await openRelation();
-    const chart = view.$el.querySelector('.fa-chart-bar');
-    chart.click();
+    const cleared = [];
+    const called = [];
+    g3w.app.onafter('addActionsForRelation', (actions, { relation, fid }) => {
+      actions.push({
+        id: 'test-chart', class: 'test-chart', hint: 'Show Chart',
+        cbk: () => called.push({ relation: relation.id, fid }),
+        clear: () => cleared.push(relation.id),
+      });
+    });
+    await openRelation('children');
+    const second = await openRelation('zebra');
+    second.$el.querySelector('.test-chart').click();
+    second.$destroy();
     await Vue.nextTick();
-    const content = document.querySelector('#g3w-content');
-    view.$refs.chart.firstElementChild.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-    content.dispatchEvent(new MouseEvent('mousemove', { clientX: 1000, bubbles: true }));
-    content.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
-    await Vue.nextTick();
-    const width = parseFloat(view.$refs.chart.style.width);
-    const expectedWidth = Math.abs(1000 - innerWidth) * 100 / view.$refs.wrapper.clientWidth;
-    chart.click();
-    await Vue.nextTick();
-    chart.click();
-    await Vue.nextTick();
-    let emitted = false;
-    view.$on('hide-chart', () => { emitted = true; });
-    view.$destroy();
-    return {
-      charts: relationEffects.charts.map(effect => ({ ids: effect.ids, fid: effect.options.fid })),
-      hidden: relationEffects.hidden.length, resized: relationEffects.resized, emitted, width, expectedWidth, container: view.chart.container,
-    };
+    return { called, cleared };
   });
-  assert.deepEqual(result.charts, [{ ids: ['children'], fid: 17 }, { ids: ['children'], fid: 17 }]);
-  assert.equal(result.hidden, 2);
-  assert.equal(result.resized, 1);
-  assert.equal(result.emitted, true);
-  assert.ok(Math.abs(result.width - result.expectedWidth) < 0.001);
-  assert.equal(result.container, null);
+  assert.deepEqual(result, { called: [{ relation: 'zebra', fid: 17 }], cleared: ['zebra'] });
+});
+
+Then('a related row action receives its feature without being cleared on navigation', async function () {
+  const result = await this.corePage.evaluate(async () => {
+    const calls = [];
+    g3w.app.onafter('addActionsForLayers', actions => {
+      actions.children.push({
+        id: 'row-chart', class: 'row-chart', hint: 'Show row chart',
+        cbk: function (layer, feature, action) {
+          calls.push({ layer: layer.id, feature: feature.id, action: action.id, arguments: arguments.length });
+        },
+        clear: () => {
+          calls.push('clear');
+        },
+      });
+    });
+    relationChild.isEditable = () => false;
+    relationChild.getLayerEditingFormStructure = () => null;
+    const view = await openRelation();
+    view.table.features.forEach(feature => { feature.geometry = null; });
+    await Vue.nextTick();
+    view.$el.querySelectorAll('.row-chart')[1].click();
+    await Vue.nextTick();
+    view.$destroy();
+    await Vue.nextTick();
+    return { calls };
+  });
+  assert.deepEqual(result, { calls: [{ layer: 'children', feature: 2, action: 'row-chart', arguments: 3 }] });
 });
 
 Then('relation export failures release download state and allow a successful retry', async function () {
