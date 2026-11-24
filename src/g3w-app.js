@@ -5232,7 +5232,7 @@ export default new (class GUI extends Emitter {
               </div>
             ` : ''}
             <menu style="display: flex; justify-content: space-between;">
-              <button type="submit" value="confirm" class="btn btn-block btn-success">${_('Download')}</button>
+              <button id="confirm_button" type="submit" value="confirm" class="btn btn-block btn-success">${_('Download')}</button>
             </menu>
           </form>
         </dialog>
