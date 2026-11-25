@@ -40,6 +40,7 @@ When('I classify empty, wrapped, geometry, Vue and array values', function () {
     empty: [undefined, null, '', 0, false, {}, [], [1], { value: null }, { value: 0 }]
       .map(value => classify({ type: 'simple', value })),
     media: classify({ value: { value: 'https://example.com/file.png' } }),
+    photos: filename.endsWith('Relations.vue') ? classify({ value: [{ photo: 'image.png' }] }) : null,
     geometry: classify({ value: { coordinates: [1, 2] } }),
     vue: classify({ value: { vue: true } }),
   }));
@@ -49,6 +50,7 @@ Then('each field type is preserved', function () {
   for (const result of this.classifications) {
     assert.deepEqual(result.empty, Array(10).fill('simple_field'), result.filename);
     assert.equal(result.media, 'photo_field', result.filename);
+    if (result.filename.endsWith('Relations.vue')) assert.equal(result.photos, 'photo_field', result.filename);
     assert.equal(result.geometry, 'geo_field', result.filename);
     assert.equal(result.vue, 'vue_field', result.filename);
   }

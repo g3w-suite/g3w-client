@@ -384,7 +384,7 @@ Then('exporting an external layer opens the real download dialog and saves its r
   assert.equal(await dialog.locator('[name="layer"]').inputValue(), 'tracks');
   assert.equal(await dialog.locator('[name="format"]').inputValue(), 'external-url');
   const pending = this.corePage.waitForEvent('download');
-  await dialog.locator('#confirm_button').click();
+  await dialog.getByRole('button', { name: 'Download' }).click();
   const download = await pending;
   assert.equal(download.suggestedFilename(), 'tracks.geojson');
   assert.equal(fs.readFileSync(await download.path(), 'utf8'), contents);

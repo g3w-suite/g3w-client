@@ -43,8 +43,8 @@ After({ tags: '@smoke' }, async function () {
   }
 });
 
-Given('local client assets are intercepted', function () {
-  this.page.route('**/static/client/*', async (route, request) => {
+Given('local client assets are intercepted', async function () {
+  await this.page.route('**/static/client/**', async (route, request) => {
     const assetPath = new URL(request.url()).pathname.slice(1);
     const localPath = path.join(conf.admin_overrides_folder, assetPath);
     if (fs.existsSync(localPath) && fs.statSync(localPath).isFile()) {

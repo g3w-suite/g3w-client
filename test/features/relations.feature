@@ -12,9 +12,13 @@ Feature: Browsing related records
   Scenario: Related geometry and forms retain their originating layer and feature
     Then relation row actions zoom to geometry and mount the real attribute form
 
-  Scenario: Charts resize and release their host when the relation is closed
-    Then relation charts toggle resize and clean up their mounted container
+  Scenario: Relation toolbar actions are called and cleaned up
+    Then each relation toolbar action uses its relation context and is cleaned up
 
+  Scenario: Related row actions retain their callback contract
+    Then a related row action receives its feature without being cleared on navigation
+
+  @covers:src/g3w-app.js
   Scenario: Relation exports recover from errors and download the requested data
     Then relation export failures release download state and allow a successful retry
 

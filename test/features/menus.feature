@@ -35,7 +35,7 @@ Feature: Map and catalog context menus
   Scenario: External vector colors respond to pointer keyboard and slider input
     Then the context color picker updates the actual vector style and preserves alpha
 
-  @covers:src/components/ContextMenu.vue @covers:src/utils/downloadFeatures.js @covers:src/utils/saveBlob.js
+  @covers:src/components/ContextMenu.vue @covers:src/g3w-app.js @covers:src/utils/saveBlob.js
   Scenario: External layer exports download the selected local resource
     Then exporting an external layer opens the real download dialog and saves its response
 
